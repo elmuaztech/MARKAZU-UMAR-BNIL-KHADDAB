@@ -42,6 +42,7 @@ export default function HomePage() {
   // Gallery Sample Data Categories
   const galleryCategories = [
     'All',
+    'School Officials',
     'Students',
     'Teachers',
     'Classrooms',
@@ -52,6 +53,11 @@ export default function HomePage() {
   ];
 
   const galleryItems = [
+    {
+      title: 'Alh. Salisu Abubakar Daneji (Director)',
+      category: 'School Officials',
+      image: '/gallery/director.jpg',
+    },
     {
       title: 'Markazu Umar Female Tahfiz Students & Teachers',
       category: 'Students',
@@ -71,30 +77,6 @@ export default function HomePage() {
       title: 'Tahfiz Quran Recitation Class',
       category: 'Tahfiz',
       image: '/gallery/gallery-4.jpg',
-    },
-    {
-      title: 'Annual Hifz Graduation Ceremony',
-      category: 'Graduation',
-      image:
-        'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      title: 'Qur’an Competition Winners',
-      category: 'Competitions',
-      image:
-        'https://images.unsplash.com/photo-1577896851231-70ef18881754?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      title: 'Qualified Huffaz Faculty',
-      category: 'Teachers',
-      image:
-        'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&auto=format&fit=crop&q=80',
-    },
-    {
-      title: 'Modern Islamiyya Classroom',
-      category: 'Classrooms',
-      image:
-        'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&auto=format&fit=crop&q=80',
     },
   ];
 
@@ -135,28 +117,34 @@ export default function HomePage() {
   // Faculty Preview Cards
   const staffMembers = [
     {
+      name: 'Alh. Salisu Abubakar Daneji',
+      title: 'Director',
+      spec: 'Director of Markazu Umar bn Al-Khattab Islamiyyah',
+      avatar: '/gallery/director.jpg',
+    },
+    {
       name: 'Ustaz Ahmad Muhammad',
       title: 'Head of Tahfiz & Hifz Master',
       spec: '30-Juz Hafiz, Ijazah in Hafs & Warsh',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
+      avatar: '',
     },
     {
       name: 'Mallam Ibrahim Daneji',
       title: 'Director of Academic Studies',
       spec: 'M.A. Islamic Studies & Arabic Syntax',
-      avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
+      avatar: '',
     },
     {
       name: 'Ustaz Hafiz Sulaiman',
       title: 'Senior Sabki & Manzil Inspector',
       spec: 'Tajweed Specialist & Competition Coach',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200',
+      avatar: '',
     },
     {
       name: 'Malama Fatima Abubakar',
       title: 'Female Halqa & Tarbiyya Supervisor',
       spec: 'B.Ed Islamic Studies & Qur’an Reciter',
-      avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200',
+      avatar: '',
     },
   ];
 
@@ -614,17 +602,25 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
             {staffMembers.map((staff, idx) => (
-              <div key={idx} className="p-6 rounded-2xl glass-card border border-emerald-500/30 text-center space-y-3">
-                <img
-                  src={staff.avatar}
-                  alt={staff.name}
-                  className="w-20 h-20 rounded-full mx-auto object-cover border-2 border-emerald-400/40 shadow-md"
-                />
+              <div key={idx} className="p-6 rounded-2xl glass-card border border-emerald-500/30 text-center space-y-3 flex flex-col justify-between">
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">{staff.name}</h4>
-                  <p className="text-xs text-emerald-600 dark:text-amber-400 font-semibold">{staff.title}</p>
+                  {staff.avatar ? (
+                    <img
+                      src={staff.avatar}
+                      alt={staff.name}
+                      className="w-20 h-20 rounded-full mx-auto object-cover border-2 border-amber-400 shadow-md"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full mx-auto bg-gradient-to-br from-emerald-800 to-emerald-950 border-2 border-emerald-500/40 flex items-center justify-center text-amber-300 font-black text-xl shadow-md">
+                      {staff.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                    </div>
+                  )}
+                  <div className="mt-3">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{staff.name}</h4>
+                    <p className="text-xs text-emerald-600 dark:text-amber-400 font-semibold">{staff.title}</p>
+                  </div>
                 </div>
                 <p className="text-[11px] text-slate-600 dark:text-emerald-200/70 border-t border-emerald-200 dark:border-emerald-800/40 pt-2">
                   {staff.spec}

@@ -16,12 +16,41 @@ export interface EmailPayload {
   };
 }
 
+export function getAppBaseUrl(): string {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin;
+  }
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    let url = process.env.NEXT_PUBLIC_APP_URL.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
+    return url.replace(/\/+$/, '');
+  }
+  if (process.env.VERCEL_URL) {
+    let url = process.env.VERCEL_URL.trim();
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      url = `https://${url}`;
+    }
+    return url.replace(/\/+$/, '');
+  }
+  return 'https://markazu-umar-bnil-khaddab-.vercel.app';
+}
+
 export function generateEmailHtml(payload: EmailPayload): string {
   const schoolNameEng = "MARKAZU UMARU BNIL KHATTAB DANEJI";
   const schoolNameArab = "مركز عمر ابن الخطاب دنيج";
   const schoolMotto = "Knowledge and Discipline (العلم والتربية)";
   const schoolAddress = "NO. 32 DANEJI QTR., KANO, NIGERIA";
-  const portalUrl = payload.metadata?.portalUrl || 'http://localhost:3000';
+  
+  const rawPortalUrl = payload.metadata?.portalUrl || getAppBaseUrl();
+  let portalUrl = rawPortalUrl;
+  if (portalUrl.includes('localhost')) {
+    const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
+    if (configuredUrl && !configuredUrl.includes('localhost')) {
+      portalUrl = configuredUrl.replace(/\/+$/, '');
+    }
+  }
   const supportEmail = 'markazuumarislamiyyah@gmail.com';
 
   const headerHtml = `

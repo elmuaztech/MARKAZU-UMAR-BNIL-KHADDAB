@@ -86,6 +86,30 @@ export default function AboutPage() {
           </div>
         </div>
 
+        {/* Director Leadership Spotlight */}
+        <div className="p-8 rounded-3xl bg-gradient-to-r from-[#032417] via-[#043322] to-[#021d14] border border-emerald-500/40 shadow-2xl text-white">
+          <div className="flex flex-col md:flex-row items-center gap-8">
+            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden border-4 border-amber-400/80 shadow-2xl shrink-0">
+              <img
+                src="/gallery/director.jpg"
+                alt="Alh. Salisu Abubakar Daneji (Director)"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="space-y-3 text-center md:text-left flex-1">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> School Director
+              </div>
+              <h3 className="text-2xl sm:text-3xl font-black text-white">
+                Alh. Salisu Abubakar Daneji <span className="text-amber-300 text-lg font-bold">(Director)</span>
+              </h3>
+              <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-medium">
+                Under the visionary leadership of Alh. Salisu Abubakar Daneji, Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School continues to achieve excellence in nurturing 30-Juz Qur'an Huffaz, Tajweed mastery, and Islamic discipline across Kano State.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* School Profile & History */}
         <div className="p-8 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-xl space-y-6">
           <h3 className="text-2xl font-black text-slate-900 dark:text-white border-b border-emerald-200 dark:border-emerald-800/60 pb-3">
@@ -95,7 +119,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4 text-sm text-slate-600 dark:text-emerald-100/90 leading-relaxed">
               <p>
-                Located in the heart of Daneji Quarters, Kano, Nigeria (Behind Sahad Store), <strong>Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School</strong> stands as a premier beacon of Islamic scholarship and Qur'anic memorization.
+                Located in the heart of Daneji Quarters, Kano, Nigeria (Behind Sahad Store), <strong>Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School</strong> stands as a premier beacon of Islamic scholarship and Qur'anic memorization under Director Alh. Salisu Abubakar Daneji.
               </p>
               <p>
                 With over 1,000 enrolled students across various Tahfiz Halqas and Islamiyya streams, the institution combines traditional oral retention methods with modern structured assessment frameworks to ensure perfect retention of the 30 Juz of the Qur'an.
@@ -110,6 +134,10 @@ export default function AboutPage() {
                 Official Campus Quick Facts
               </h4>
               <div className="space-y-2.5 text-slate-700 dark:text-emerald-200/90">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span><strong>Director:</strong> Alh. Salisu Abubakar Daneji</span>
+                </div>
                 <div className="flex items-center gap-2">
                   <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span><strong>Capacity:</strong> 1,000+ Enrolled Students</span>

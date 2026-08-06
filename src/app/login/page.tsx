@@ -71,6 +71,7 @@ export default function LoginPage() {
     const otpCode = generatePasswordResetToken(userMatch.email, userMatch.id);
 
     try {
+      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : undefined;
       await sendSystemEmail({
         to: userMatch.email,
         recipientName: userMatch.name,
@@ -78,6 +79,7 @@ export default function LoginPage() {
         template: 'PASSWORD_RESET_REQUEST',
         metadata: {
           resetToken: otpCode,
+          portalUrl: currentOrigin,
         },
       });
 

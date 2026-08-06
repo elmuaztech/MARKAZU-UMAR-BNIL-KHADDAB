@@ -25,6 +25,15 @@ export async function POST(req: NextRequest) {
 
     const resetToken = generatePasswordResetToken(user.email, user.id);
 
+    const origin = req.headers.get('origin');
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
+    const proto = req.headers.get('x-forwarded-proto') || 'https';
+
+    let portalUrl = origin || (host ? `${proto}://${host}` : undefined);
+    if (!portalUrl || portalUrl.includes('localhost')) {
+      portalUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://markazu-umar-bnil-khaddab-.vercel.app');
+    }
+
     await sendSystemEmail({
       to: user.email,
       recipientName: user.name,
@@ -32,6 +41,7 @@ export async function POST(req: NextRequest) {
       template: 'PASSWORD_RESET_REQUEST',
       metadata: {
         resetToken,
+        portalUrl,
       },
     });
 
