@@ -63,39 +63,7 @@ export function PublicNavbar() {
         )}
       </div>
 
-      {/* Top Notification Bar */}
-      <div className="bg-[#064E3B] text-emerald-100 text-[11px] py-2 px-4 border-b border-emerald-700/50 overflow-hidden">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-6 text-center sm:text-left">
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-            <span className="font-arabic font-bold text-amber-300 text-xs">
-              العلم و التربية — Knowledge and Discipline
-            </span>
-            <span className="text-emerald-300/40 hidden sm:inline">|</span>
-            <span className="flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>No. 32 Daneji Quarters, Kano, Nigeria</span>
-            </span>
-          </div>
 
-          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-6">
-            <a
-              href="tel:08167109421"
-              className="flex items-center gap-1.5 hover:text-white transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>08167109421</span>
-            </a>
-            <span className="text-emerald-300/40 hidden sm:inline">|</span>
-            <a
-              href="mailto:markazuumarbnkhaddabdaneji@gmail.com"
-              className="flex items-center gap-1.5 hover:text-white transition-colors font-mono"
-            >
-              <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>markazuumarbnkhaddabdaneji@gmail.com</span>
-            </a>
-          </div>
-        </div>
-      </div>
 
       {/* Main Navbar */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#032015]/95 backdrop-blur-md border-b border-emerald-200 dark:border-emerald-800/40 shadow-sm transition-colors duration-200">

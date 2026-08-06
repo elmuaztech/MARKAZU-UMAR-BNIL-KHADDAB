@@ -75,6 +75,21 @@ export default function HomePage() {
       image: '/gallery/headmaster-asuba-maghrib.jpg',
     },
     {
+      title: 'Female Tahfiz Halqa Recitation Class',
+      category: 'Students',
+      image: '/gallery/students-group-1.jpg',
+    },
+    {
+      title: 'Markazu Umar Female Students Assembly',
+      category: 'Students',
+      image: '/gallery/students-group-2.jpg',
+    },
+    {
+      title: 'Islamic Studies & Quran Hifz Practice',
+      category: 'Students',
+      image: '/gallery/students-group-3.jpg',
+    },
+    {
       title: 'Markazu Umar Female Tahfiz Students & Teachers',
       category: 'Students',
       image: '/gallery/gallery-1.jpg',
@@ -173,9 +188,9 @@ export default function HomePage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-12 md:py-16 space-y-24">
         {/* HERO SECTION WITH SCHOOL BACKGROUND IMAGE */}
         <section className="relative rounded-3xl overflow-hidden shadow-2xl border border-emerald-500/40 p-8 sm:p-12 md:p-16 text-center text-white my-4 min-h-[460px] flex flex-col items-center justify-center">
-          {/* Background Image Container */}
+          {/* Background Image Container with Soft Opacity and High Contrast */}
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25 transition-transform duration-700 hover:scale-105"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 transition-transform duration-700 hover:scale-105"
             style={{ backgroundImage: "url('/school-bg.jpg')" }}
           />
           
@@ -183,13 +198,13 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-b from-[#031c13]/85 via-[#043322]/80 to-[#021810]/90 backdrop-blur-[1px]" />
 
           {/* Content Layer */}
-          <div className="relative z-10 space-y-6 max-w-4xl mx-auto">
+          <div className="relative z-10 space-y-5 max-w-4xl mx-auto px-2">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/40 text-amber-300 font-semibold text-xs shadow-lg backdrop-blur-md">
               <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" /> Welcome to
             </div>
 
-            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white max-w-4xl mx-auto drop-shadow-md">
-              Markazu Umar bn Al-Khattab <br />
+            <h1 className="text-xl sm:text-3xl md:text-5xl font-black tracking-tight leading-snug sm:leading-tight text-white max-w-full sm:max-w-4xl mx-auto drop-shadow-md text-center px-1">
+              Markazu Umar bn Al-Khattab <br className="hidden sm:inline" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-amber-300 to-sky-300">
                 Centre for Qur'an Memorization and Islamic Studies - Daneji
               </span>
@@ -355,6 +370,71 @@ export default function HomePage() {
                 To produce graduates possessing verified, flawless 30-Juz Qur'an memorization accompanied by deep Islamic jurisprudence, Arabic language mastery, and noble moral character.
               </p>
             </div>
+          </div>
+        </section>
+
+        {/* SECTION 1.5: FILTERABLE MEDIA GALLERY WITH LIGHTBOX (PLACED IMMEDIATELY AFTER ABOUT SECTION) */}
+        <section className="space-y-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
+                Campus Life & Events
+              </span>
+              <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+                Markazu Umar Media Gallery
+              </h2>
+            </div>
+
+            {/* Category Filter Tabs */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {galleryCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveGalleryTab(cat)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    activeGalleryTab === cat
+                      ? 'bg-emerald-600 text-white shadow-md'
+                      : 'bg-white dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-slate-700 dark:text-emerald-200 hover:bg-emerald-50'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredGallery.map((item, idx) => (
+              <div
+                key={idx}
+                onClick={() => openLightbox(idx)}
+                className="rounded-3xl overflow-hidden glass-card border border-emerald-500/30 group hover:shadow-2xl hover:border-emerald-400/60 transition-all duration-300 cursor-pointer bg-white dark:bg-[#021d14] flex flex-col"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-slate-900">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="px-3 py-1.5 rounded-full bg-emerald-500/90 text-white font-bold text-xs shadow-lg flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5" /> View Photo
+                    </span>
+                  </div>
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-950/70 text-amber-300 text-[10px] font-bold backdrop-blur-md border border-amber-400/30">
+                    {item.category}
+                  </span>
+                </div>
+                <div className="p-4 flex-1 flex flex-col justify-between">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-amber-300 transition-colors line-clamp-2">
+                    {item.title}
+                  </h4>
+                  <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 pt-2 font-medium">
+                    Click to expand high-res photo
+                  </p>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 

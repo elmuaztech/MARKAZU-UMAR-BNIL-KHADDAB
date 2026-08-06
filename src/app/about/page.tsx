@@ -16,10 +16,10 @@ export default function AboutPage() {
         {/* Header Hero Banner with School Background */}
         <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-emerald-500/40 p-8 sm:p-12 text-center text-white space-y-4 max-w-5xl mx-auto">
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat opacity-30 transition-transform duration-700 hover:scale-105"
             style={{ backgroundImage: "url('/school-bg.jpg')" }}
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#031c13]/90 via-[#043322]/85 to-[#021810]/95 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#031c13]/85 via-[#043322]/80 to-[#021810]/90 backdrop-blur-[1px]" />
 
           <div className="relative z-10 space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/40 text-amber-300 font-semibold text-xs shadow-lg backdrop-blur-md">
