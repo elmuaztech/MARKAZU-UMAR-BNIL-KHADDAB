@@ -3,6 +3,8 @@ import { MOCK_USERS } from '../../../../lib/mockData';
 import { verifyPassword, validatePasswordPolicy, isPasswordInHistory, recordPasswordInHistory, hashPassword } from '../../../../lib/security';
 import { sendSystemEmail } from '../../../../lib/emailService';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();

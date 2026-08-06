@@ -4,6 +4,8 @@ import path from 'path';
 import fs from 'fs';
 import { generateEmailHtml, EmailPayload } from '@/lib/emailService';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     // API Authorization Security Guard

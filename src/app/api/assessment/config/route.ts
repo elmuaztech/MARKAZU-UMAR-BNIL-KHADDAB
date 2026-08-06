@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DEFAULT_ASSESSMENT_CONFIG } from '@/lib/mockData';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   return NextResponse.json({
     status: 200,

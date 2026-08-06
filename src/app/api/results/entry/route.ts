@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { MOCK_GRADES } from '@/lib/mockData';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const classId = searchParams.get('classId');
