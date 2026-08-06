@@ -8,6 +8,7 @@ import { PublicFooter } from '../components/navigation/PublicFooter';
 import { AdmissionFormModal } from '../components/public/AdmissionFormModal';
 import { AnimatedCounter } from '../components/ui/AnimatedCounter';
 import { GalleryLightbox } from '../components/public/GalleryLightbox';
+import { FloatingWhatsApp } from '../components/ui/FloatingWhatsApp';
 import {
   Sparkles,
   BookOpen,
@@ -57,6 +58,21 @@ export default function HomePage() {
       title: 'Alh. Salisu Abubakar Daneji (Director)',
       category: 'School Officials',
       image: '/gallery/director.jpg',
+    },
+    {
+      title: 'Ustaz Sani Abubakar Daneji (Deputy Director)',
+      category: 'School Officials',
+      image: '/gallery/deputy-director.jpg',
+    },
+    {
+      title: 'Mal. Ahmad Abba - Headmaster, Matan Aure Section',
+      category: 'School Officials',
+      image: '/gallery/headmaster-matan-aure.jpg',
+    },
+    {
+      title: 'Mal. Siraɗullahi Balarabe Lawan - Headmaster, Asuba da Maghrib Section',
+      category: 'School Officials',
+      image: '/gallery/headmaster-asuba-maghrib.jpg',
     },
     {
       title: 'Markazu Umar Female Tahfiz Students & Teachers',
@@ -159,17 +175,17 @@ export default function HomePage() {
         <section className="relative rounded-3xl overflow-hidden shadow-2xl border border-emerald-500/40 p-8 sm:p-12 md:p-16 text-center text-white my-4 min-h-[460px] flex flex-col items-center justify-center">
           {/* Background Image Container */}
           <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-700 hover:scale-105"
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-25 transition-transform duration-700 hover:scale-105"
             style={{ backgroundImage: "url('/school-bg.jpg')" }}
           />
           
           {/* Rich Dark Emerald Overlay with Backdrop Blur */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#031c13]/90 via-[#043322]/85 to-[#021810]/95 backdrop-blur-[2px]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#031c13]/85 via-[#043322]/80 to-[#021810]/90 backdrop-blur-[1px]" />
 
           {/* Content Layer */}
           <div className="relative z-10 space-y-6 max-w-4xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/40 text-amber-300 font-semibold text-xs shadow-lg backdrop-blur-md">
-              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" /> Official School Faculty & Students
+              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" /> Welcome to
             </div>
 
             <h1 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight text-white max-w-4xl mx-auto drop-shadow-md">
@@ -588,45 +604,135 @@ export default function HomePage() {
 
 
 
-        {/* SECTION 7: STAFF FACULTY PROFILE CARDS */}
-        <section className="space-y-8">
+        {/* SECTION 7: OFFICIAL INSTITUTIONAL LEADERSHIP */}
+        <section className="space-y-10">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-bold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
-              Dedicated Educators
+            <span className="text-xs font-extrabold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
+              Institutional Leadership
             </span>
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white">
-              Our Qualified Huffaz & Faculty
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+              School Leadership & Directorate
             </h2>
-            <p className="text-xs text-slate-600 dark:text-emerald-200/80">
-              Over 40 certified Islamic scholars and Huffaz leading our Halqas.
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-emerald-200/80">
+              Guiding Markazu Umar bn Al-Khattab with Islamic scholarship, tarbiyya, and administrative excellence.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-            {staffMembers.map((staff, idx) => (
-              <div key={idx} className="p-6 rounded-2xl glass-card border border-emerald-500/30 text-center space-y-3 flex flex-col justify-between">
-                <div>
-                  {staff.avatar ? (
-                    <img
-                      src={staff.avatar}
-                      alt={staff.name}
-                      className="w-20 h-20 rounded-full mx-auto object-cover border-2 border-amber-400 shadow-md"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-full mx-auto bg-gradient-to-br from-emerald-800 to-emerald-950 border-2 border-emerald-500/40 flex items-center justify-center text-amber-300 font-black text-xl shadow-md">
-                      {staff.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
-                    </div>
-                  )}
-                  <div className="mt-3">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">{staff.name}</h4>
-                    <p className="text-xs text-emerald-600 dark:text-amber-400 font-semibold">{staff.title}</p>
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-600 dark:text-emerald-200/70 border-t border-emerald-200 dark:border-emerald-800/40 pt-2">
-                  {staff.spec}
+          {/* Director & Deputy Director Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+            {/* Director Card */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#032417] via-[#043322] to-[#021d14] border border-amber-400/50 shadow-2xl text-white flex flex-col sm:flex-row items-center gap-6 group hover:border-amber-400 transition-all">
+              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-xl shrink-0">
+                <img
+                  src="/gallery/director.jpg"
+                  alt="Alh. Salisu Abubakar Daneji (Director)"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+              <div className="space-y-2 text-center sm:text-left flex-1">
+                <span className="inline-block px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-bold">
+                  ⭐ Director
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-white">
+                  Alh. Salisu Abubakar Daneji
+                </h3>
+                <p className="text-xs text-amber-300/90 font-semibold">
+                  Director of Markazu Umar bn Al-Khattab
+                </p>
+                <p className="text-xs text-emerald-100/80 leading-relaxed pt-1">
+                  Leading institutional growth, Qur'an memorization standards, and Islamic tarbiyya across Kano.
                 </p>
               </div>
-            ))}
+            </div>
+
+            {/* Deputy Director Card */}
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#032417] via-[#043322] to-[#021d14] border border-emerald-500/40 shadow-2xl text-white flex flex-col sm:flex-row items-center gap-6 group hover:border-emerald-400 transition-all">
+              <div className="w-32 h-32 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-xl shrink-0">
+                <img
+                  src="/gallery/deputy-director.jpg"
+                  alt="Ustaz Sani Abubakar Daneji (Deputy Director)"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+              <div className="space-y-2 text-center sm:text-left flex-1">
+                <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold">
+                  🌙 Deputy Director
+                </span>
+                <h3 className="text-xl sm:text-2xl font-black text-white">
+                  Ustaz Sani Abubakar Daneji
+                </h3>
+                <p className="text-xs text-emerald-300/90 font-semibold">
+                  Deputy Director of Markazu Umar bn Al-Khattab
+                </p>
+                <p className="text-xs text-emerald-100/80 leading-relaxed pt-1">
+                  Overseeing academic affairs, Halqa discipline, and Tahfiz examination quality assurance.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Section Headmasters Side-by-Side Cards */}
+          <div className="space-y-4 max-w-5xl mx-auto pt-4">
+            <div className="text-center">
+              <span className="text-xs font-extrabold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
+                Section Headmasters
+              </span>
+              <h3 className="text-2xl font-black text-slate-900 dark:text-white">
+                Academic Section Leadership
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Card: Mal. Ahmad Abba */}
+              <div className="p-6 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-xl flex flex-col sm:flex-row items-center gap-5 group hover:shadow-2xl hover:border-emerald-400 transition-all">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-2 border-emerald-500/40 shadow-md shrink-0">
+                  <img
+                    src="/gallery/headmaster-matan-aure.jpg"
+                    alt="Mal. Ahmad Abba (Headmaster, Matan Aure Section)"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="space-y-1.5 text-center sm:text-left flex-1">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-amber-300 text-[10px] font-bold border border-emerald-300 dark:border-emerald-800">
+                    Matan Aure Section
+                  </span>
+                  <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                    Mal. Ahmad Abba
+                  </h4>
+                  <p className="text-xs text-emerald-600 dark:text-amber-400 font-bold">
+                    Headmaster, Matan Aure Section
+                  </p>
+                  <p className="text-[11px] text-slate-600 dark:text-emerald-200/70 leading-relaxed pt-1">
+                    Supervising adult female Tahfiz Halqas, Tajweed instruction, and specialized Islamic tarbiyya curriculum.
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Card: Mal. Siraɗullahi Balarabe Lawan */}
+              <div className="p-6 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-xl flex flex-col sm:flex-row items-center gap-5 group hover:shadow-2xl hover:border-emerald-400 transition-all">
+                <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-2 border-emerald-500/40 shadow-md shrink-0">
+                  <img
+                    src="/gallery/headmaster-asuba-maghrib.jpg"
+                    alt="Mal. Siraɗullahi Balarabe Lawan (Headmaster, Asuba da Maghrib Section)"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="space-y-1.5 text-center sm:text-left flex-1">
+                  <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-amber-300 text-[10px] font-bold border border-emerald-300 dark:border-emerald-800">
+                    Asuba da Maghrib Section
+                  </span>
+                  <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                    Mal. Siraɗullahi Balarabe Lawan
+                  </h4>
+                  <p className="text-xs text-emerald-600 dark:text-amber-400 font-bold">
+                    Headmaster, Asuba da Maghrib Section
+                  </p>
+                  <p className="text-[11px] text-slate-600 dark:text-emerald-200/70 leading-relaxed pt-1">
+                    Managing morning & evening Tahfiz streams, daily Hifz tracking, and student attendance discipline.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -710,6 +816,8 @@ export default function HomePage() {
         isOpen={admissionModalOpen}
         onClose={() => setAdmissionModalOpen(false)}
       />
+      {/* Floating WhatsApp Contact Widget */}
+      <FloatingWhatsApp />
     </div>
   );
 }

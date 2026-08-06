@@ -101,8 +101,8 @@ const STORAGE_THEME_KEY = 'markazu_theme_mode';
 const STORAGE_COLOR_KEY = 'markazu_brand_color';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>('dark');
-  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setThemeState] = useState<ThemeMode>('light');
+  const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   const [brandColor, setBrandColorState] = useState<BrandColorPreset>('emerald');
   const [mounted, setMounted] = useState(false);
 
@@ -127,7 +127,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const applyTheme = (currentTheme: ThemeMode) => {
-      let activeTheme: 'light' | 'dark' = 'dark';
+      let activeTheme: 'light' | 'dark' = 'light';
 
       if (currentTheme === 'system') {
         activeTheme = mediaQuery.matches ? 'dark' : 'light';

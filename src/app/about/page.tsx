@@ -5,6 +5,8 @@ import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
 import { Sparkles, BookOpen, Award, ShieldCheck, Users, HeartHandshake, CheckCircle2, MapPin, Phone, Mail } from 'lucide-react';
 
+import { FloatingWhatsApp } from '../../components/ui/FloatingWhatsApp';
+
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-white flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200">
@@ -86,26 +88,111 @@ export default function AboutPage() {
           </div>
         </div>
 
-        {/* Director Leadership Spotlight */}
-        <div className="p-8 rounded-3xl bg-gradient-to-r from-[#032417] via-[#043322] to-[#021d14] border border-emerald-500/40 shadow-2xl text-white">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden border-4 border-amber-400/80 shadow-2xl shrink-0">
-              <img
-                src="/gallery/director.jpg"
-                alt="Alh. Salisu Abubakar Daneji (Director)"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="space-y-3 text-center md:text-left flex-1">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" /> School Director
+        {/* Directorate & Leadership Spotlight */}
+        <div className="space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-extrabold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
+              Institutional Leadership
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+              Directorate & Headmasters
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Director Spotlight Card */}
+            <div className="p-8 rounded-3xl bg-gradient-to-br from-[#032417] via-[#043322] to-[#021d14] border border-amber-400/50 shadow-2xl text-white flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-36 h-36 rounded-2xl overflow-hidden border-2 border-amber-400/80 shadow-xl shrink-0">
+                <img
+                  src="/gallery/director.jpg"
+                  alt="Alh. Salisu Abubakar Daneji (Director)"
+                  className="w-full h-full object-cover"
+                />
               </div>
-              <h3 className="text-2xl sm:text-3xl font-black text-white">
-                Alh. Salisu Abubakar Daneji <span className="text-amber-300 text-lg font-bold">(Director)</span>
-              </h3>
-              <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-medium">
-                Under the visionary leadership of Alh. Salisu Abubakar Daneji, Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School continues to achieve excellence in nurturing 30-Juz Qur'an Huffaz, Tajweed mastery, and Islamic discipline across Kano State.
-              </p>
+              <div className="space-y-2 text-center sm:text-left flex-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Director
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white">
+                  Alh. Salisu Abubakar Daneji
+                </h3>
+                <p className="text-xs text-amber-300 font-semibold">
+                  Director of Markazu Umar bn Al-Khattab
+                </p>
+                <p className="text-xs text-emerald-100/90 leading-relaxed pt-1">
+                  Guiding institutional growth, 30-Juz Tahfiz excellence, and moral tarbiyya across Kano State.
+                </p>
+              </div>
+            </div>
+
+            {/* Deputy Director Spotlight Card */}
+            <div className="p-8 rounded-3xl bg-gradient-to-br from-[#032417] via-[#043322] to-[#021d14] border border-emerald-500/40 shadow-2xl text-white flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-36 h-36 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-xl shrink-0">
+                <img
+                  src="/gallery/deputy-director.jpg"
+                  alt="Ustaz Sani Abubakar Daneji (Deputy Director)"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="space-y-2 text-center sm:text-left flex-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" /> Deputy Director
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-white">
+                  Ustaz Sani Abubakar Daneji
+                </h3>
+                <p className="text-xs text-emerald-300 font-semibold">
+                  Deputy Director of Markazu Umar bn Al-Khattab
+                </p>
+                <p className="text-xs text-emerald-100/90 leading-relaxed pt-1">
+                  Managing Halqa administration, examination standards, and senior academic supervision.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Side-by-side Headmasters */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-xl flex flex-col sm:flex-row items-center gap-5">
+              <div className="w-28 h-28 rounded-2xl overflow-hidden border-2 border-emerald-500/40 shadow-md shrink-0">
+                <img
+                  src="/gallery/headmaster-matan-aure.jpg"
+                  alt="Mal. Ahmad Abba"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="space-y-1.5 text-center sm:text-left flex-1">
+                <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-amber-300 text-[10px] font-bold border border-emerald-300 dark:border-emerald-800">
+                  Matan Aure Section
+                </span>
+                <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                  Mal. Ahmad Abba
+                </h4>
+                <p className="text-xs text-emerald-600 dark:text-amber-400 font-bold">
+                  Headmaster, Matan Aure Section
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-xl flex flex-col sm:flex-row items-center gap-5">
+              <div className="w-28 h-28 rounded-2xl overflow-hidden border-2 border-emerald-500/40 shadow-md shrink-0">
+                <img
+                  src="/gallery/headmaster-asuba-maghrib.jpg"
+                  alt="Mal. Siraɗullahi Balarabe Lawan"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="space-y-1.5 text-center sm:text-left flex-1">
+                <span className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-amber-300 text-[10px] font-bold border border-emerald-300 dark:border-emerald-800">
+                  Asuba da Maghrib Section
+                </span>
+                <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                  Mal. Siraɗullahi Balarabe Lawan
+                </h4>
+                <p className="text-xs text-emerald-600 dark:text-amber-400 font-bold">
+                  Headmaster, Asuba da Maghrib Section
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -192,6 +279,7 @@ export default function AboutPage() {
       </main>
 
       <PublicFooter />
+      <FloatingWhatsApp />
     </div>
   );
 }

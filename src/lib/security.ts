@@ -95,6 +95,21 @@ const COMMON_WEAK_PASSWORDS = new Set([
   'welcome123',
 ]);
 
+// Helper to check if an email or username string matches an Admin account alias
+export function isAdminAlias(input: string): boolean {
+  if (!input) return false;
+  const s = input.trim().toLowerCase();
+  return (
+    s === 'elmuazdesignservices@gmail.com' ||
+    s === 'elmuaztechnologiesltd@gmail.com' ||
+    s === 'elmuaztechnologies@gmail.com' ||
+    s === 'admin' ||
+    s === 'superadmin' ||
+    s === 'usr-superadmin-1' ||
+    s === 'usr-admin-1'
+  );
+}
+
 // 1. Password Hashing (Salted Argon2id / Enterprise Sha-256 Digest Simulation)
 export function hashPassword(password: string): string {
   const salt = 'MARKAZU_UMAR_ARGON2_SALT_2026_V1';

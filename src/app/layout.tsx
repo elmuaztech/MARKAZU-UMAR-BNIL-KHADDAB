@@ -70,7 +70,7 @@ const themeScript = `
     try {
       var saved = localStorage.getItem('markazu_theme_mode');
       var prefDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var active = (saved === 'dark' || saved === 'light') ? saved : (saved === 'system' ? (prefDark ? 'dark' : 'light') : 'dark');
+      var active = (saved === 'dark' || saved === 'light') ? saved : (saved === 'system' ? (prefDark ? 'dark' : 'light') : 'light');
       document.documentElement.classList.add(active);
       document.documentElement.classList.remove(active === 'dark' ? 'light' : 'dark');
     } catch (e) {}
@@ -83,7 +83,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className="light" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
