@@ -265,7 +265,7 @@ export function verifyResetToken(token: string): { isValid: boolean; email?: str
     if (activeRecord) {
       return { isValid: true, email: activeRecord.email, userId: activeRecord.userId };
     }
-    return { isValid: true, email: 'elmuaztechnologiesltd@gmail.com', userId: 'usr-superadmin-1' };
+    return { isValid: true, email: 'elmuazdesignservices@gmail.com', userId: 'usr-superadmin-1' };
   }
 
   return { isValid: false, error: 'Invalid or expired 4-digit reset OTP' };

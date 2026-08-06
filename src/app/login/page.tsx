@@ -16,7 +16,7 @@ export default function LoginPage() {
   const { users, setCurrentUser, updateUserPasswordByEmail, addAuditLog, schoolLogo, notify } = useApp();
 
   const [activeTab, setActiveTab] = useState<UserRole>('SUPER_ADMIN');
-  const [email, setEmail] = useState('elmuaztechnologiesltd@gmail.com');
+  const [email, setEmail] = useState('elmuazdesignservices@gmail.com');
   const [password, setPassword] = useState('admin123');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -182,9 +182,9 @@ export default function LoginPage() {
   const handleTabChange = (role: UserRole) => {
     setActiveTab(role);
     setErrorMsg('');
-    if (role === 'SUPER_ADMIN') setEmail('elmuaztechnologiesltd@gmail.com');
-    else if (role === 'ADMIN') setEmail('elmuaztechnologiesltd@gmail.com');
-    else if (role === 'TEACHER') setEmail('elmuaztechnologiesltd@gmail.com');
+    if (role === 'SUPER_ADMIN') setEmail('elmuazdesignservices@gmail.com');
+    else if (role === 'ADMIN') setEmail('elmuazdesignservices@gmail.com');
+    else if (role === 'TEACHER') setEmail('elmuazdesignservices@gmail.com');
     else if (role === 'STUDENT') setEmail('student@markazuumar.edu.ng');
     else if (role === 'PARENT') setEmail('parent@markazuumar.edu.ng');
   };

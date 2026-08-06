@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const targetEmail = (tokenVerification.email || 'elmuaztechnologiesltd@gmail.com').toLowerCase();
+    const targetEmail = (tokenVerification.email || 'elmuazdesignservices@gmail.com').toLowerCase();
     const primaryUser = MOCK_USERS.find((u) => u.id === tokenVerification.userId || u.email.toLowerCase() === targetEmail);
 
     if (!primaryUser) {

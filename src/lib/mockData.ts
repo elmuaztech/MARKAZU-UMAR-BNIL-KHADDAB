@@ -76,7 +76,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'usr-superadmin-1',
     name: 'Dr. Abubakar Umar (Super Admin)',
-    email: 'elmuaztechnologiesltd@gmail.com',
+    email: 'elmuazdesignservices@gmail.com',
     role: 'SUPER_ADMIN',
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
     phone: '+234 816 710 9421',
@@ -90,7 +90,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'usr-admin-1',
     name: 'Malam Umar Faruq (School Admin)',
-    email: 'elmuaztechnologiesltd@gmail.com',
+    email: 'elmuazdesignservices@gmail.com',
     role: 'ADMIN',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
     phone: '+234 803 123 4567',
@@ -104,7 +104,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'usr-teacher-1',
     name: 'Ustaz Abubakar Sadiq',
-    email: 'elmuaztechnologiesltd@gmail.com',
+    email: 'elmuazdesignservices@gmail.com',
     role: 'TEACHER',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
     phone: '+234 802 234 5678',
@@ -663,7 +663,7 @@ export const MOCK_TEACHERS: Teacher[] = [
     full_name_english: 'Ustaz Abubakar Sadiq',
     full_name_arabic: 'أستاذ أبوبكر الصديق',
     fullName: 'Ustaz Abubakar Sadiq',
-    email: 'elmuaztechnologiesltd@gmail.com',
+    email: 'elmuazdesignservices@gmail.com',
     phone: '+234 802 234 5678',
     qualification: 'B.A. Islamic Studies (Al-Azhar University), Ijazah in 10 Qira\'at',
     specialization: "Qur'an Memorization & Tajweed Rules",
