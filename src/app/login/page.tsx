@@ -292,7 +292,7 @@ export default function LoginPage() {
 
   const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setResetSuccess('');
+    setResetSuccessMsg('');
     setGeneratedToken('');
 
     const cleanInput = resetEmail.trim().toLowerCase();
@@ -301,7 +301,7 @@ export default function LoginPage() {
     );
 
     if (!targetUser) {
-      setResetSuccess('No registered user found with this email address or username. Please enter your registered email address or Username (Staff ID / Admission No).');
+      setResetSuccessMsg('No registered user found with this email address or username. Please enter your registered email address or Username (Staff ID / Admission No).');
       return;
     }
 
@@ -371,55 +371,50 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={() => handleTabChange('SUPER_ADMIN')}
-              className={`py-2 rounded-xl transition-all ${
-                activeTab === 'SUPER_ADMIN'
+              className={`py-2 rounded-xl transition-all ${activeTab === 'SUPER_ADMIN'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
-              }`}
+                }`}
             >
               Super
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('ADMIN')}
-              className={`py-2 rounded-xl transition-all ${
-                activeTab === 'ADMIN'
+              className={`py-2 rounded-xl transition-all ${activeTab === 'ADMIN'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
-              }`}
+                }`}
             >
               Admin
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('TEACHER')}
-              className={`py-2 rounded-xl transition-all ${
-                activeTab === 'TEACHER'
+              className={`py-2 rounded-xl transition-all ${activeTab === 'TEACHER'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
-              }`}
+                }`}
             >
               Teacher
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('STUDENT')}
-              className={`py-2 rounded-xl transition-all ${
-                activeTab === 'STUDENT'
+              className={`py-2 rounded-xl transition-all ${activeTab === 'STUDENT'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
-              }`}
+                }`}
             >
               Student
             </button>
             <button
               type="button"
               onClick={() => handleTabChange('PARENT')}
-              className={`py-2 rounded-xl transition-all ${
-                activeTab === 'PARENT'
+              className={`py-2 rounded-xl transition-all ${activeTab === 'PARENT'
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
-              }`}
+                }`}
             >
               Parent
             </button>
