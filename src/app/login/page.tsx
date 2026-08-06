@@ -290,55 +290,6 @@ export default function LoginPage() {
     }, 500);
   };
 
-  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setResetSuccessMsg('');
-    setGeneratedToken('');
-
-    const cleanInput = resetEmail.trim().toLowerCase();
-    const targetUser = users.find(
-      (u) => u.email.toLowerCase() === cleanInput || u.username?.toLowerCase() === cleanInput
-    );
-
-    if (!targetUser) {
-      setResetSuccessMsg('No registered user found with this email address or username. Please enter your registered email address or Username (Staff ID / Admission No).');
-      return;
-    }
-
-    const resetToken = generatePasswordResetToken(targetUser.email, targetUser.id);
-    setGeneratedToken(resetToken);
-
-    // Send real password reset email directly to recipient
-    await sendSystemEmail({
-      to: targetUser.email,
-      recipientName: targetUser.name,
-      subject: 'MARKAZU UMARU BNIL KHATTAB DANEJI - Password Reset 4-Digit OTP',
-      template: 'PASSWORD_RESET_REQUEST',
-      metadata: {
-        resetToken: resetToken,
-      },
-    });
-
-    setResetSuccess(`Password reset 4-digit OTP has been sent to ${targetUser.email}! OTP is valid for 10 minutes.`);
-
-    if (notify) {
-      notify({
-        type: 'success',
-        title: 'Password Reset 4-Digit OTP Dispatched',
-        message: `4-Digit OTP successfully sent to ${targetUser.email}. Please check your inbox or spam folder. OTP valid for 10 minutes.`,
-      });
-    }
-
-    addAuditLog({
-      action: 'PASSWORD_RESET_REQUESTED',
-      performedBy: targetUser.name,
-      userRole: targetUser.role,
-      details: `Dispatched 10-minute password reset 4-digit OTP to ${targetUser.email}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `User/${targetUser.id}`,
-      status: 'SUCCESS',
-    });
-  };
 
   return (
     <div className="min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200">

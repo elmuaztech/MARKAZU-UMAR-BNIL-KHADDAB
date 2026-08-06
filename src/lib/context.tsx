@@ -1922,7 +1922,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     notify({
       type: 'warning',
       title: 'Parent/Guardian Profile Deleted',
-      message: `Parent profile and login credentials for ${targetParent?.fatherName || targetParent?.motherName || id} have been deleted.`,
+      message: `Parent profile and login credentials for ${targetParent?.fullName || id} have been deleted.`,
     });
     addAuditLog({
       action: 'PARENT_DELETED',
