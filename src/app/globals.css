@@ -1,0 +1,192 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-poppins: 'Poppins', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Poppins', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-dashboard: 'Manrope', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-arabic: 'Noto Naskh Arabic', 'Amiri', 'Traditional Arabic', serif;
+  
+  --bg-primary-dark: #031c13;
+  --bg-primary-light: #f4f8f5;
+  --text-dark: #f8fafc;
+  --text-light: #0f172a;
+
+  --color-emerald-primary: #064e3b;
+  --color-emerald-accent: #10b981;
+  --color-gold-accent: #f59e0b;
+}
+
+html, body {
+  font-family: var(--font-poppins);
+  min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  scroll-behavior: smooth;
+}
+
+/* GPU Acceleration & Performance Optimizations */
+.gpu-accelerated {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 400px;
+}
+
+img, video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Smooth Responsive Touch Scrolling */
+.mobile-table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.font-poppins {
+  font-family: var(--font-poppins);
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-poppins);
+  letter-spacing: -0.02em;
+}
+
+/* =========================================================
+   AUTHENTICATED PORTAL THEME OVERRIDES
+   Automatic inheritance for all routes under /dashboard/...
+   ========================================================= */
+.portal-theme {
+  --font-sans: 'Manrope', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+  --font-poppins: 'Manrope', system-ui, sans-serif !important;
+  font-family: var(--font-dashboard) !important;
+}
+
+.portal-theme h1,
+.portal-theme h2,
+.portal-theme h3,
+.portal-theme h4,
+.portal-theme h5,
+.portal-theme h6,
+.portal-theme p,
+.portal-theme span,
+.portal-theme input,
+.portal-theme select,
+.portal-theme textarea,
+.portal-theme button,
+.portal-theme table {
+  font-family: var(--font-dashboard) !important;
+}
+
+.portal-theme .font-arabic {
+  font-family: var(--font-arabic) !important;
+}
+
+html.dark body {
+  background-color: var(--bg-primary-dark);
+  color: var(--text-dark);
+}
+
+html.light body {
+  background-color: var(--bg-primary-light);
+  color: var(--text-light);
+}
+
+/* Custom Scrollbars */
+html.dark ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html.dark ::-webkit-scrollbar-track {
+  background: #022c22;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #0f5132;
+  border-radius: 9999px;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}
+
+html.light ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+html.light ::-webkit-scrollbar-track {
+  background: #e2f2e9;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-radius: 9999px;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
+
+/* Enterprise Glass Panels & Cards */
+html.dark .glass-panel {
+  background: rgba(4, 36, 25, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+html.dark .glass-card {
+  background: linear-gradient(135deg, rgba(4, 36, 25, 0.85) 0%, rgba(2, 24, 16, 0.95) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+}
+
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+html.light .glass-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Accessible Focus States */
+:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* Continuous Infinite Marquee Animation (Right-to-Left) */
+@keyframes marquee-continuous {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-smooth {
+  display: flex;
+  width: max-content;
+  animation: marquee-continuous 30s linear infinite;
+}
+
+.animate-marquee-smooth:hover {
+  animation-play-state: paused;
+}

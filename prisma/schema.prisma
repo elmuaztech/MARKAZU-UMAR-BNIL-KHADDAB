@@ -1,0 +1,574 @@
+// Prisma Schema for Markazu Umar School Management System (MSSMS)
+// Client: Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School (Kano, Nigeria)
+// Owner: Elmuaz Technologies LTD
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  TEACHER
+  STUDENT
+  PARENT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum StudentStatus {
+  ACTIVE
+  GRADUATED
+  SUSPENDED
+}
+
+enum TeacherStatus {
+  ACTIVE
+  ON_LEAVE
+}
+
+enum ClassCategory {
+  TAHFIZ
+  ISLAMIYYA_PRIMARY
+  ISLAMIYYA_SECONDARY
+}
+
+enum SubjectCategory {
+  TAHFIZ
+  ISLAMIC
+  GENERAL
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum AkhlaqRating {
+  EXCELLENT
+  VERY_GOOD
+  GOOD
+  NEEDS_IMPROVEMENT
+}
+
+enum AnnouncementCategory {
+  ACADEMIC
+  TAHFIZ
+  GENERAL
+  URGENT
+}
+
+enum TargetRole {
+  ALL
+  TEACHERS
+  PARENTS
+  STUDENTS
+}
+
+model User {
+  id                  String    @id @default(uuid())
+  name                String
+  email               String    @unique
+  password            String
+  role                UserRole
+  avatar              String?
+  phone               String?
+  status              String    @default("ACTIVE")
+  isFirstLogin        Boolean   @default(true)
+  isLocked            Boolean   @default(false)
+  failedLoginAttempts Int       @default(0)
+  lockoutUntil        DateTime?
+  lastLoginAt         DateTime?
+  mustChangePassword  Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  // Relations
+  student           Student?
+  teacher           Teacher?
+  parent            Parent?
+  auditLogs         AuditLog[]
+  sessions          UserSession[]
+  passwordHistories PasswordHistory[]
+  resetTokens       PasswordResetToken[]
+
+  @@map("users")
+}
+
+model UserSession {
+  id               String   @id @default(uuid())
+  sessionId        String   @unique
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddress        String
+  userAgent        String
+  browser          String
+  operatingSystem String
+  device           String
+  refreshTokenHash String
+  revoked          Boolean  @default(false)
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_sessions")
+}
+
+model PasswordHistory {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_histories")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId, tokenHash])
+  @@map("password_reset_tokens")
+}
+
+model Student {
+  id           String        @id @default(uuid())
+  userId       String?       @unique
+  user         User?         @relation(fields: [userId], references: [id])
+  admissionNo  String        @unique
+  fullName     String
+  gender       Gender
+  dob          DateTime
+  dateEnrolled DateTime      @default(now())
+  classId      String
+  schoolClass  SchoolClass   @relation(fields: [classId], references: [id])
+  guardianId   String
+  parent       Parent        @relation(fields: [guardianId], references: [id])
+  status       StudentStatus @default(ACTIVE)
+
+  // Tahfiz Progress
+  currentJuz           Int    @default(1)
+  juzCompleted         Int    @default(0)
+  currentSurah         String @default("Surah Al-Fatihah")
+  currentAyah          Int    @default(1)
+  completedSurahsCount Int    @default(0)
+  tajweedRating        Int    @default(5)
+  sabkiRating          Int    @default(5)
+  manzilRating         Int    @default(5)
+
+  akhlaqRating AkhlaqRating @default(EXCELLENT)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  attendance    AttendanceRecord[]
+  tahfizRecords TahfizRecord[]
+  gradeRecords  GradeRecord[]
+
+  @@index([classId])
+  @@index([guardianId])
+  @@map("students")
+}
+
+model Teacher {
+  id              String        @id @default(uuid())
+  userId          String?       @unique
+  user            User?         @relation(fields: [userId], references: [id])
+  staffNo         String        @unique
+  fullName        String
+  email           String        @unique
+  phone           String
+  qualification   String
+  specialization  String
+  dateJoined      DateTime      @default(now())
+  status          TeacherStatus @default(ACTIVE)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  deletedAt       DateTime?
+
+  classesManaged     SchoolClass[]
+  tahfizLogs         TahfizRecord[]
+  teacherAssignments TeacherAssignment[]
+
+  @@map("teachers")
+}
+
+model Parent {
+  id         String    @id @default(uuid())
+  userId     String?   @unique
+  user       User?     @relation(fields: [userId], references: [id])
+  fullName   String
+  email      String    @unique
+  phone      String
+  occupation String
+  address    String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  wards Student[]
+
+  @@map("parents")
+}
+
+enum ProgrammeStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum SubjectStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model Programme {
+  id          String          @id @default(uuid())
+  code        String          @unique
+  nameEnglish String
+  nameArabic  String?
+  description String?
+  status      ProgrammeStatus @default(ACTIVE)
+  displayOrder Int            @default(1)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  classes            SchoolClass[]
+  subjects           Subject[]
+  teacherAssignments TeacherAssignment[]
+
+  @@map("programmes")
+}
+
+model SchoolClass {
+  id             String        @id @default(uuid())
+  name           String
+  category       ClassCategory
+  section        String
+  capacity       Int           @default(30)
+  programmeId    String?
+  programme      Programme?    @relation(fields: [programmeId], references: [id])
+  classTeacherId String?
+  classTeacher   Teacher?      @relation(fields: [classTeacherId], references: [id])
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  students           Student[]
+  attendance         AttendanceRecord[]
+  tahfizRecords      TahfizRecord[]
+  gradeRecords       GradeRecord[]
+  subjects           Subject[]
+  teacherAssignments TeacherAssignment[]
+  timetablePeriods   TimetablePeriod[]
+
+  @@map("school_classes")
+}
+
+model Subject {
+  id           String          @id @default(uuid())
+  name         String
+  arabicName   String?
+  code         String
+  category     SubjectCategory @default(GENERAL)
+  description  String?
+  programmeId  String?
+  programme    Programme?      @relation(fields: [programmeId], references: [id])
+  classId      String?
+  schoolClass  SchoolClass?    @relation(fields: [classId], references: [id])
+  status       SubjectStatus   @default(ACTIVE)
+  displayOrder Int             @default(1)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  gradeRecords GradeRecord[]
+  assignedTo   TeacherAssignmentSubject[]
+
+  @@unique([classId, code])
+  @@map("subjects")
+}
+
+model TeacherAssignment {
+  id          String      @id @default(uuid())
+  teacherId   String
+  teacher     Teacher     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  programmeId String
+  programme   Programme   @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  classId     String
+  schoolClass SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  assignedSubjects TeacherAssignmentSubject[]
+
+  @@unique([teacherId, programmeId, classId])
+  @@map("teacher_assignments")
+}
+
+model TeacherAssignmentSubject {
+  id                  String            @id @default(uuid())
+  teacherAssignmentId String
+  teacherAssignment   TeacherAssignment @relation(fields: [teacherAssignmentId], references: [id], onDelete: Cascade)
+  subjectId           String
+  subject             Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt           DateTime          @default(now())
+
+  @@unique([teacherAssignmentId, subjectId])
+  @@map("teacher_assignment_subjects")
+}
+
+model AttendanceRecord {
+  id          String           @id @default(uuid())
+  date        DateTime
+  studentId   String
+  student     Student          @relation(fields: [studentId], references: [id])
+  classId     String
+  schoolClass SchoolClass      @relation(fields: [classId], references: [id])
+  programmeId String?
+  teacherId   String?
+  status      AttendanceStatus
+  statusEnum  String           @default("PRESENT") // PRESENT, ABSENT, LATE, EXCUSED, MEDICAL_LEAVE, OFFICIAL_ASSIGNMENT, HOLIDAY
+  remarks     String?
+  isDraft     Boolean          @default(false)
+  editedBy    String?
+  editedAt    DateTime?
+  editReason  String?
+  createdAt   DateTime         @default(now())
+
+  @@index([date, studentId])
+  @@index([classId, date])
+  @@map("attendance_records")
+}
+
+model TahfizRecord {
+  id                  String      @id @default(uuid())
+  date                DateTime    @default(now())
+  studentId           String
+  student             Student     @relation(fields: [studentId], references: [id])
+  classId             String
+  schoolClass         SchoolClass @relation(fields: [classId], references: [id])
+  programmeId         String?
+  teacherId           String
+  teacher             Teacher     @relation(fields: [teacherId], references: [id])
+  hifzSurah           String
+  hifzFromAyah        Int
+  hifzToAyah          Int
+  hifzPages           Float       @default(1.0)
+  currentJuz          Int         @default(1)
+  sabkiSurah          String
+  sabkiRating         Int         @default(5)
+  manzilJuz           Int         @default(1)
+  manzilRating        Int         @default(5)
+  revisionStatus      String      @default("GOOD")
+  memorizationStatus  String      @default("ACTIVE")
+  studentBehaviour    String      @default("EXCELLENT")
+  completionPercentage Float      @default(0)
+  teacherNotes        String
+  teacherComment      String?
+  createdAt           DateTime    @default(now())
+
+  @@index([studentId])
+  @@index([classId, date])
+  @@map("tahfiz_records")
+}
+
+model TimetablePeriod {
+  id          String      @id @default(uuid())
+  programmeId String?
+  classId     String
+  schoolClass SchoolClass @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subjectId   String
+  subjectName String
+  teacherId   String
+  teacherName String
+  dayOfWeek   String      // MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+  startTime   String      // e.g. "08:00 AM"
+  endTime     String      // e.g. "09:00 AM"
+  room        String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([classId, dayOfWeek])
+  @@index([teacherId, dayOfWeek])
+  @@map("timetable_periods")
+}
+
+model DirectMessage {
+  id                 String   @id @default(uuid())
+  senderId           String
+  senderName         String
+  senderRole         String   @default("TEACHER")
+  recipientStudentId String
+  studentName        String
+  parentPhone        String?
+  programmeId        String?
+  classId            String?
+  className          String?
+  messageType        String   @default("GENERAL_NOTICE") // GENERAL_NOTICE, HOMEWORK, ASSIGNMENT, REMINDER, BEHAVIOUR, EXAMINATION, TAHFIZ_REMINDER, CUSTOM
+  subject            String
+  content            String
+  attachments        String   @default("[]") // JSON string of attachments
+  isRead             Boolean  @default(false)
+  isArchived         Boolean  @default(false)
+  createdAt          DateTime @default(now())
+
+  @@index([recipientStudentId, isRead])
+  @@index([senderId])
+  @@map("direct_messages")
+}
+
+model GradeRecord {
+  id              String      @id @default(uuid())
+  studentId       String
+  student         Student     @relation(fields: [studentId], references: [id])
+  programmeId     String?
+  classId         String
+  schoolClass     SchoolClass @relation(fields: [classId], references: [id])
+  subjectId       String
+  subject         Subject     @relation(fields: [subjectId], references: [id])
+  teacherId       String?
+  term            String
+  session         String
+  assignmentScore Float       @default(0)
+  ca1Score        Float       @default(0)
+  ca2Score        Float       @default(0)
+  testScore       Float       @default(0)
+  projectScore    Float       @default(0)
+  practicalScore  Float       @default(0)
+  examScore       Float       @default(0)
+  totalScore      Float       @default(0)
+  grade           String      @default("A")
+  remarks         String
+  status          String      @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, RETURNED
+  submissionId    String?
+  rejectionReason String?
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  approvedBy      String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([studentId, term, session])
+  @@index([programmeId, classId, subjectId])
+  @@map("grade_records")
+}
+
+model AssessmentConfig {
+  id               String   @id @default(uuid())
+  session          String   @default("2023/2024")
+  term             String   @default("Term 2")
+  enableAssignment Boolean  @default(true)
+  maxAssignment    Float    @default(10)
+  enableCa1        Boolean  @default(true)
+  maxCa1           Float    @default(20)
+  enableCa2        Boolean  @default(true)
+  maxCa2           Float    @default(20)
+  enableTest       Boolean  @default(false)
+  maxTest          Float    @default(10)
+  enableProject    Boolean  @default(false)
+  maxProject       Float    @default(10)
+  enablePractical  Boolean  @default(false)
+  maxPractical     Float    @default(10)
+  enableExam       Boolean  @default(true)
+  maxExam          Float    @default(50)
+  passMark         Float    @default(40)
+  gradingScale     String   @default("[{\"grade\":\"A\",\"minScore\":75,\"maxScore\":100,\"remark\":\"Distinction\"},{\"grade\":\"B\",\"minScore\":60,\"maxScore\":74.99,\"remark\":\"Very Good\"},{\"grade\":\"C\",\"minScore\":50,\"maxScore\":59.99,\"remark\":\"Good\"},{\"grade\":\"D\",\"minScore\":40,\"maxScore\":49.99,\"remark\":\"Pass\"},{\"grade\":\"F\",\"minScore\":0,\"maxScore\":39.99,\"remark\":\"Fail\"}]")
+  calcPosition     Boolean  @default(true)
+  updatedAt        DateTime @updatedAt
+
+  @@map("assessment_configs")
+}
+
+model ResultApprovalSubmission {
+  id               String    @id @default(uuid())
+  teacherId        String
+  teacherName      String
+  programmeId      String
+  programmeName    String
+  classId          String
+  className        String
+  subjectId        String
+  subjectName      String
+  term             String
+  session          String
+  totalStudents    Int       @default(0)
+  completedRecords Int       @default(0)
+  missingScores    Int       @default(0)
+  classAverage     Float     @default(0)
+  highestScore     Float     @default(0)
+  lowestScore      Float     @default(0)
+  status           String    @default("PENDING") // PENDING, APPROVED, REJECTED, RETURNED
+  adminComments    String?
+  submittedAt      DateTime  @default(now())
+  reviewedAt       DateTime?
+  reviewedBy       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([teacherId, status])
+  @@index([programmeId, classId, subjectId])
+  @@map("result_approval_submissions")
+}
+
+model Announcement {
+  id         String               @id @default(uuid())
+  title      String
+  content    String
+  date       DateTime             @default(now())
+  category   AnnouncementCategory @default(GENERAL)
+  targetRole TargetRole           @default(ALL)
+  author     String
+  pinned     Boolean              @default(false)
+  createdAt  DateTime             @default(now())
+
+  @@map("announcements")
+}
+
+model SchoolSession {
+  id          String   @id @default(uuid())
+  sessionName String
+  activeTerm  String   @default("Term 1")
+  isCurrent   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("school_sessions")
+}
+
+model AuditLog {
+  id               String   @id @default(uuid())
+  action           String
+  performedBy      String
+  userRole         String?
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id])
+  details          String
+  ipAddress        String?
+  browser          String?
+  operatingSystem String?
+  device           String?
+  targetRecord     String?
+  status           String   @default("SUCCESS")
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@map("audit_logs")
+}
