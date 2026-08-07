@@ -94,29 +94,19 @@ export default function HomePage() {
       image: '/gallery/students-group-2.jpg',
     },
     {
-      title: 'Islamic Studies & Quran Hifz Practice',
-      category: 'Students',
-      image: '/gallery/students-group-3.jpg',
+      title: 'Teachers',
+      category: 'Teachers',
+      image: '/gallery/teachers-1.jpg',
     },
     {
-      title: 'Markazu Umar Female Tahfiz Students & Teachers',
-      category: 'Students',
-      image: '/gallery/gallery-1.jpg',
+      title: 'Teachers',
+      category: 'Teachers',
+      image: '/gallery/teachers-2.jpg',
     },
     {
-      title: 'Annual Markazu Umar Islamiyyah Student Assembly',
-      category: 'Students',
-      image: '/gallery/gallery-2.jpg',
-    },
-    {
-      title: 'Outdoor Islamic Studies & Recitation Assembly',
-      category: 'Students',
-      image: '/gallery/gallery-3.jpg',
-    },
-    {
-      title: 'Tahfiz Quran Recitation Class',
-      category: 'Tahfiz',
-      image: '/gallery/gallery-4.jpg',
+      title: 'Teachers',
+      category: 'Teachers',
+      image: '/gallery/teachers-3.jpg',
     },
   ];
 
