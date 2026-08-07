@@ -43,17 +43,26 @@ export default function HomePage() {
   // Gallery Sample Data Categories
   const galleryCategories = [
     'All',
+    'Classes',
     'School Officials',
     'Students',
     'Teachers',
-    'Classrooms',
     'Tahfiz',
     'Graduation',
     'Islamic Events',
-    'Competitions',
   ];
 
   const galleryItems = [
+    {
+      title: 'Huffazu Daru Abi-Bakr As-Siddiq',
+      category: 'Classes',
+      image: '/gallery/huffazu-abi-bakr.jpg',
+    },
+    {
+      title: 'Huffazu Daru Umar Bin Khaddab',
+      category: 'Classes',
+      image: '/gallery/huffazu-umar-bin-khaddab.jpg',
+    },
     {
       title: 'Alh. Salisu Abubakar Daneji (Director)',
       category: 'School Officials',
@@ -621,66 +630,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SECTION 5: FILTERABLE MEDIA GALLERY WITH LIGHTBOX */}
-        <section className="space-y-8">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <span className="text-xs font-bold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
-                Campus Life & Events
-              </span>
-              <h2 className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-                Markazu Umar Media Gallery
-              </h2>
-            </div>
 
-            {/* Category Filter Tabs */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {galleryCategories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveGalleryTab(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    activeGalleryTab === cat
-                      ? 'bg-emerald-600 text-white shadow-md'
-                      : 'bg-white dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-slate-700 dark:text-emerald-200 hover:bg-emerald-50'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredGallery.map((item, idx) => (
-              <div
-                key={idx}
-                onClick={() => openLightbox(idx)}
-                className="rounded-3xl overflow-hidden glass-card border border-emerald-500/30 group hover:shadow-2xl hover:border-emerald-400/60 transition-all duration-300 cursor-pointer bg-white dark:bg-[#021d14] flex flex-col"
-              >
-                <div className="h-56 relative overflow-hidden bg-emerald-950/80 rounded-t-3xl">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                    onContextMenu={(e) => e.preventDefault()}
-                  />
-                  <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-950/80 text-amber-300 text-[10px] font-bold backdrop-blur-md border border-amber-500/30 shadow-md">
-                    {item.category}
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-emerald-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <span className="px-4 py-2 rounded-2xl bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl tracking-wide transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                      Expand Full View 🔍
-                    </span>
-                  </div>
-                </div>
-                <div className="p-4 flex-1 flex flex-col justify-between">
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-relaxed line-clamp-2">{item.title}</h4>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
 
 
