@@ -31,7 +31,7 @@ export default function AcademicsPage() {
 
         {/* 4 Primary Programmes */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* 1. Tahfiz Programme */}
+          {/* 1. Asubah & Magrib Section */}
           <div className="p-8 rounded-3xl glass-card border border-emerald-500/30 space-y-4">
             <div className="w-14 h-14 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/30">
               <BookOpen className="w-7 h-7" />
@@ -39,38 +39,34 @@ export default function AcademicsPage() {
 
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                1. 30-Juz Tahfiz Programme
+                1. Asubah & Magrib Section
               </h2>
-              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 text-xs font-bold">
-                Core Program
+              <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 text-xs font-bold">
+                Morning & Evening Tracks
               </span>
             </div>
 
             <p className="text-xs text-slate-600 dark:text-emerald-100/80 leading-relaxed">
-              Full 30-Juz memorization track structured across small-group Halqas under verified Huffaz masters. Includes daily Hifz new verses, Sabki previous juz revision, and Manzil long-term retention.
+              Specialized morning and evening session tracks tailored for intensive Qur'an memorization and foundational Islamic studies.
             </p>
 
             <ul className="space-y-2 text-xs text-slate-700 dark:text-emerald-200/90 pt-2 border-t border-emerald-200 dark:border-emerald-800/40">
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Daily 1 to 2 Pages New Hifz Assignment</span>
+                <span><strong>Asubah Only:</strong> Early morning Qur'an recitation & Hifz session</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Daily Sabki (1/4 to 1/2 Juz Recent Memorization)</span>
+                <span><strong>Magrib Only:</strong> Evening post-Magrib Tajweed & Islamic studies session</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Daily Manzil (1 to 2 Juz Cumulative Retention)</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span>Tajweed Rules & Verse Pronunciation Testing</span>
+                <span><strong>Tahfeez:</strong> Dedicated 30-Juz daily memorization, Sabki & Manzil revision track</span>
               </li>
             </ul>
           </div>
 
-          {/* 2. Islamiyya Programme */}
+          {/* 2. Super Markaz Section */}
           <div className="p-8 rounded-3xl glass-card border border-emerald-500/30 space-y-4">
             <div className="w-14 h-14 rounded-2xl bg-sky-500/20 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-sky-500/30">
               <School className="w-7 h-7" />
@@ -78,38 +74,34 @@ export default function AcademicsPage() {
 
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                2. Islamiyya Programme
+                2. Super Markaz Section
               </h2>
               <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-600 dark:text-sky-300 border border-sky-500/30 text-xs font-bold">
-                Level 1 to 6
+                Advanced Curriculum
               </span>
             </div>
 
             <p className="text-xs text-slate-600 dark:text-emerald-100/80 leading-relaxed">
-              Systematic Islamic school curriculum structured across progressive levels for young learners and adolescents, instilling authentic Islamic knowledge and moral discipline.
+              Intensive academic stream focusing on higher Arabic grammar (Nahu & Sarf), deep Fiqh jurisprudence, and scholarly Tarbiyya.
             </p>
 
             <ul className="space-y-2 text-xs text-slate-700 dark:text-emerald-200/90 pt-2 border-t border-emerald-200 dark:border-emerald-800/40">
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                <span>Primary & Secondary Islamiyya Classes</span>
+                <span>Advanced Fiqh & Hadith Classical Texts</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                <span>Structured Termly Examinations & Continuous Assessment</span>
+                <span>Arabic Grammar (Nahu, Sarf & Balagha)</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                <span>Character & Ethics Evaluation</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                <span>Graduation Certification upon Completion</span>
+                <span>Leadership & High Ethical Character Development</span>
               </li>
             </ul>
           </div>
 
-          {/* 3. Arabic Language Studies */}
+          {/* 3. Islamiyyah Section */}
           <div className="p-8 rounded-3xl glass-card border border-emerald-500/30 space-y-4">
             <div className="w-14 h-14 rounded-2xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-500/30">
               <BookMarked className="w-7 h-7" />
@@ -117,38 +109,34 @@ export default function AcademicsPage() {
 
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                3. Arabic Language Studies
+                3. Islamiyyah Section
               </h2>
               <span className="px-2.5 py-1 rounded-full bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30 text-xs font-bold">
-                Language Mastery
+                Levels 1 to 6
               </span>
             </div>
 
             <p className="text-xs text-slate-600 dark:text-emerald-100/80 leading-relaxed">
-              Comprehensive instruction in classical Quranic Arabic to enable students to understand, speak, read, and write Arabic with grammatical precision.
+              Progressive 6-level structured Islamiyyah education covering comprehensive Islamic foundational knowledge and character building.
             </p>
 
             <ul className="space-y-2 text-xs text-slate-700 dark:text-emerald-200/90 pt-2 border-t border-emerald-200 dark:border-emerald-800/40">
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span>Al-Nahu (Arabic Syntax & Grammar)</span>
+                <span>Progressive Levels 1 through 6 Curriculum</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span>Al-Sarf (Morphology & Word Derivatives)</span>
+                <span>Tawhid, Fiqh, Sirah & Quranic Recitation</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span>Al-Muhadatha (Arabic Conversation & Dictation)</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                <span>Quranic Vocabulary Expansion</span>
+                <span>Termly Assessment & Continuous Progress Tracking</span>
               </li>
             </ul>
           </div>
 
-          {/* 4. Classical Islamic Sciences */}
+          {/* 4. Matan Aure Section */}
           <div className="p-8 rounded-3xl glass-card border border-emerald-500/30 space-y-4">
             <div className="w-14 h-14 rounded-2xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/30">
               <Award className="w-7 h-7" />
@@ -156,33 +144,29 @@ export default function AcademicsPage() {
 
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-black text-slate-900 dark:text-white">
-                4. Classical Islamic Sciences
+                4. Matan Aure Section
               </h2>
               <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30 text-xs font-bold">
-                Sciences
+                Women's Education
               </span>
             </div>
 
             <p className="text-xs text-slate-600 dark:text-emerald-100/80 leading-relaxed">
-              In-depth teaching of the fundamental pillars of Islamic knowledge based on authentic textual references and classical scholarly texts.
+              Dedicated, specialized section for married women and mothers providing flexible Islamic studies, Quranic memorization, and practical jurisprudence.
             </p>
 
             <ul className="space-y-2 text-xs text-slate-700 dark:text-emerald-200/90 pt-2 border-t border-emerald-200 dark:border-emerald-800/40">
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span>Fiqh (Islamic Jurisprudence & Worship)</span>
+                <span>Tailored Schedule for Married Women & Mothers</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span>Hadith (Prophetic Traditions & Explanation)</span>
+                <span>Women's Fiqh, Tahfeez & Household Tarbiyya</span>
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span>Tauhid (Pure Monotheism & Creed)</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                <span>Seerah (Prophetic Biography & Ethics)</span>
+                <span>Nurturing & Respectful Learning Atmosphere</span>
               </li>
             </ul>
           </div>

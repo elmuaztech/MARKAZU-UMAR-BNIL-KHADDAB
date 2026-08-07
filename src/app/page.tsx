@@ -546,40 +546,55 @@ export default function HomePage() {
               <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">
                 01
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Tahfiz Programme</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Asubah & Magrib Section</h3>
               <p className="text-xs text-slate-600 dark:text-emerald-200/80 leading-relaxed">
-                30-Juz Qur'an memorization track with daily Hifz, Sabki revision, and verified Sanad certification.
+                Special morning and evening sessions offering three specialized tracks: Asubah Only, Magrib Only, and Tahfeez.
               </p>
+              <div className="pt-2 flex flex-wrap gap-1">
+                <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">Asubah Only</span>
+                <span className="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">Magrib Only</span>
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-bold">Tahfeez</span>
+              </div>
             </div>
 
             <div className="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
               <div className="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-bold text-sm">
                 02
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Islamiyya Programme</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Super Markaz Section</h3>
               <p className="text-xs text-slate-600 dark:text-emerald-200/80 leading-relaxed">
-                Progressive levels 1 through 6 covering Quranic studies, Islamic jurisprudence, and moral discipline.
+                Advanced intensive program covering classical Islamic jurisprudence, Arabic grammar (Nahu/Sarf), and scholarship.
               </p>
+              <div className="pt-2 flex flex-wrap gap-1">
+                <span className="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-700 dark:text-sky-300 text-[10px] font-bold">Advanced Studies</span>
+                <span className="px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-700 dark:text-sky-300 text-[10px] font-bold">Tarbiyya</span>
+              </div>
             </div>
 
             <div className="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
               <div className="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm">
                 03
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Tajweed & Phonetics</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Islamiyyah Section</h3>
               <p className="text-xs text-slate-600 dark:text-emerald-200/80 leading-relaxed">
-                Phonetics, Makharij articulation, and Quranic recitation rules.
+                Progressive structured Islamiyyah curriculum from Level 1 through Level 6 covering Quranic studies, Tawhid, Fiqh, and Sirah.
               </p>
+              <div className="pt-2 flex flex-wrap gap-1">
+                <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-700 dark:text-purple-300 text-[10px] font-bold">Levels 1 - 6</span>
+              </div>
             </div>
 
             <div className="p-6 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 space-y-3">
               <div className="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-sm">
                 04
               </div>
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">Islamic Sciences</h3>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">Matan Aure Section</h3>
               <p className="text-xs text-slate-600 dark:text-emerald-200/80 leading-relaxed">
-                Fiqh (Jurisprudence), Hadith (Prophetic Traditions), Tauhid (Creed), and Seerah (Prophetic History).
+                Dedicated section providing comprehensive Islamic education, Quranic memorization, and Fiqh tailored for married women.
               </p>
+              <div className="pt-2 flex flex-wrap gap-1">
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-bold">Women's Education</span>
+              </div>
             </div>
           </div>
         </section>
