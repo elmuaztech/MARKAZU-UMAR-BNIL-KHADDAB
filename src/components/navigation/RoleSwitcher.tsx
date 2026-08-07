@@ -18,6 +18,11 @@ export function RoleSwitcher() {
       icon: ShieldCheck,
       colorClass: 'bg-teal-500/20 text-teal-700 dark:text-teal-300 border-teal-500/30',
     },
+    HEADMASTER: {
+      label: 'Section Headmaster',
+      icon: ShieldCheck,
+      colorClass: 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30',
+    },
     TEACHER: {
       label: 'Teacher Portal',
       icon: UserCheck,

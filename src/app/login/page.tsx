@@ -16,8 +16,8 @@ export default function LoginPage() {
   const { users, setCurrentUser, updateUserPasswordByEmail, addAuditLog, schoolLogo, notify } = useApp();
 
   const [activeTab, setActiveTab] = useState<UserRole>('SUPER_ADMIN');
-  const [email, setEmail] = useState('elmuazdesignservices@gmail.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('markazuumarbnkhaddabdaneji@gmail.com');
+  const [password, setPassword] = useState('Absaj@2785');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -168,7 +168,7 @@ export default function LoginPage() {
     setCurrentUser(user);
     resetModalState();
 
-    if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+    if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN' || user.role === 'HEADMASTER') {
       router.push('/dashboard');
     } else if (user.role === 'TEACHER') {
       router.push('/dashboard/teacher');
@@ -182,11 +182,25 @@ export default function LoginPage() {
   const handleTabChange = (role: UserRole) => {
     setActiveTab(role);
     setErrorMsg('');
-    if (role === 'SUPER_ADMIN') setEmail('elmuazdesignservices@gmail.com');
-    else if (role === 'ADMIN') setEmail('elmuazdesignservices@gmail.com');
-    else if (role === 'TEACHER') setEmail('elmuazdesignservices@gmail.com');
-    else if (role === 'STUDENT') setEmail('student@markazuumar.edu.ng');
-    else if (role === 'PARENT') setEmail('parent@markazuumar.edu.ng');
+    if (role === 'SUPER_ADMIN') {
+      setEmail('markazuumarbnkhaddabdaneji@gmail.com');
+      setPassword('Absaj@2785');
+    } else if (role === 'ADMIN') {
+      setEmail('admin@markazuumar.edu.ng');
+      setPassword('admin123');
+    } else if (role === 'HEADMASTER') {
+      setEmail('hm.asbah@markazuumar.edu.ng');
+      setPassword('admin123');
+    } else if (role === 'TEACHER') {
+      setEmail('teacher@markazuumar.edu.ng');
+      setPassword('admin123');
+    } else if (role === 'STUDENT') {
+      setEmail('student@markazuumar.edu.ng');
+      setPassword('admin123');
+    } else if (role === 'PARENT') {
+      setEmail('parent@markazuumar.edu.ng');
+      setPassword('admin123');
+    }
   };
 
   const handleLoginSubmit = (e: React.FormEvent) => {
@@ -320,7 +334,7 @@ export default function LoginPage() {
           </div>
 
           {/* Role Login Tabs */}
-          <div className="grid grid-cols-5 gap-1 p-1.5 rounded-2xl bg-slate-200/80 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/20 text-[10px] font-bold">
+          <div className="grid grid-cols-6 gap-1 p-1.5 rounded-2xl bg-slate-200/80 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/20 text-[9px] font-bold">
             <button
               type="button"
               onClick={() => handleTabChange('SUPER_ADMIN')}
@@ -340,6 +354,16 @@ export default function LoginPage() {
                 }`}
             >
               Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange('HEADMASTER')}
+              className={`py-2 rounded-xl transition-all ${activeTab === 'HEADMASTER'
+                  ? 'bg-emerald-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
+                }`}
+            >
+              Headmaster
             </button>
             <button
               type="button"

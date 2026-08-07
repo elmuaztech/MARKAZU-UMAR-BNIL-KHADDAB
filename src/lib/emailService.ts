@@ -13,6 +13,10 @@ export interface EmailPayload {
     portalUrl?: string;
     supportContact?: string;
     lockoutDurationMinutes?: number;
+    role?: string;
+    assignedProgramme?: string;
+    email?: string;
+    loginUrl?: string;
   };
 }
 
@@ -281,7 +285,7 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
   const htmlContent = generateEmailHtml(payload);
   const smtpHost = process.env.SMTP_HOST || process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com';
   const smtpPort = Number(process.env.SMTP_PORT || process.env.EMAIL_SERVER_PORT || 587);
-  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'elmuazdesignservices@gmail.com';
+  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'markazuumarbnkhaddabdaneji@gmail.com';
   const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD || '';
   const smtpPass = rawPass.replace(/\s+/g, '');
 

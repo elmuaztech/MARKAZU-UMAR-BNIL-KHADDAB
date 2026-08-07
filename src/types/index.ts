@@ -1,4 +1,4 @@
-export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'TEACHER' | 'STUDENT' | 'PARENT';
+export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'HEADMASTER' | 'TEACHER' | 'STUDENT' | 'PARENT';
 
 export interface User {
   id: string;
@@ -17,6 +17,8 @@ export interface User {
   mustChangePassword?: boolean;
   createdAt?: string;
   username?: string;
+  assignedProgrammeId?: string;
+  assignedProgrammeName?: string;
 }
 
 export interface Programme {

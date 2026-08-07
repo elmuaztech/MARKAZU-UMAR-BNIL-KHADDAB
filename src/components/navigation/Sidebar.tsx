@@ -301,7 +301,7 @@ export function Sidebar({
     { id: 'downloads', label: 'Downloads Center', href: '/dashboard/downloads', icon: Download, group: 'REPORTS & PUBLISHING' },
 
     // SYSTEM & SECURITY
-    { id: 'security', label: 'Security & Audit Logs', href: '/dashboard/security', icon: ShieldCheck, badge: 'Audit', group: 'SYSTEM & SECURITY' },
+    { id: 'security', label: 'User Accounts & Security', href: '/dashboard/security', icon: ShieldCheck, badge: 'SuperAdmin', group: 'SYSTEM & SECURITY' },
     { id: 'settings', label: 'System Settings', href: '/dashboard/settings', icon: Settings, group: 'SYSTEM & SECURITY' },
   ];
 

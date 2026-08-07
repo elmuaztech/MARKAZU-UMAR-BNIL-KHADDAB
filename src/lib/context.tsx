@@ -177,6 +177,16 @@ interface AppContextType {
   setCurrentUser: (user: User) => void;
   
   // Security & Account Management
+  createUserAccount: (userData: {
+    name: string;
+    email: string;
+    phone?: string;
+    role: UserRole;
+    assignedProgrammeId?: string;
+    assignedProgrammeName?: string;
+  }) => Promise<User>;
+  deleteUserAccount: (userId: string) => void;
+  updateUserAccount: (userId: string, updates: Partial<User>) => void;
   unlockAccount: (userId: string) => void;
   resetUserPassword: (userId: string, newPass: string) => void;
   updateUserPasswordByEmail: (email: string, newPass: string) => void;
@@ -357,7 +367,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         const savedUsers = localStorage.getItem('markazu_users');
-        if (savedUsers) return JSON.parse(savedUsers);
+        if (savedUsers) {
+          const parsed: User[] = JSON.parse(savedUsers);
+          const updated = parsed.map((u) => {
+            if (u.id === 'usr-superadmin-1' || u.role === 'SUPER_ADMIN') {
+              return {
+                ...u,
+                email: 'markazuumarbnkhaddabdaneji@gmail.com',
+                passwordHash: hashPassword('Absaj@2785'),
+              };
+            }
+            return u;
+          });
+          MOCK_USERS.forEach((mockUser) => {
+            if (!updated.some((u) => u.id === mockUser.id || u.email.toLowerCase() === mockUser.email.toLowerCase())) {
+              updated.push(mockUser);
+            }
+          });
+          return updated;
+        }
 
         const savedPass = localStorage.getItem('markazu_user_passwords');
         if (savedPass) {
@@ -1366,6 +1394,143 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       details: `Switched view context to ${role}`,
       ipAddress: '197.210.227.14',
       status: 'SUCCESS',
+    });
+  };
+
+  const createUserAccount = async (userData: {
+    name: string;
+    email: string;
+    phone?: string;
+    role: UserRole;
+    assignedProgrammeId?: string;
+    assignedProgrammeName?: string;
+  }): Promise<User> => {
+    const cleanEmail = userData.email.trim().toLowerCase();
+    const existing = users.find((u) => u.email.toLowerCase() === cleanEmail);
+    if (existing) {
+      notify({
+        type: 'error',
+        title: 'Account Creation Failed',
+        message: `An account with email ${cleanEmail} already exists.`,
+      });
+      throw new Error(`An account with email ${cleanEmail} already exists.`);
+    }
+
+    const rolePrefixMap: Record<UserRole, string> = {
+      SUPER_ADMIN: 'SADM',
+      ADMIN: 'ADM',
+      HEADMASTER: 'HM',
+      TEACHER: 'TCHR',
+      STUDENT: 'STUD',
+      PARENT: 'PRNT',
+    };
+    const prefix = rolePrefixMap[userData.role] || 'USR';
+    const randomNum = Math.floor(100 + Math.random() * 900);
+    const generatedUsername = `muk_${prefix.toLowerCase()}_${randomNum}`;
+    const tempPassword = `MUK@${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newUser: User = {
+      id: `usr-${prefix.toLowerCase()}-${Date.now()}`,
+      name: userData.name,
+      email: cleanEmail,
+      role: userData.role,
+      username: generatedUsername,
+      phone: userData.phone,
+      assignedProgrammeId: userData.assignedProgrammeId,
+      assignedProgrammeName: userData.assignedProgrammeName,
+      status: 'ACTIVE',
+      passwordHash: hashPassword(tempPassword),
+      isFirstLogin: true,
+      mustChangePassword: true,
+      isLocked: false,
+      failedLoginAttempts: 0,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updatedUsers = [newUser, ...users];
+    setUsers(updatedUsers);
+    safeLocalStorageSet('markazu_users', updatedUsers);
+
+    try {
+      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+      await sendSystemEmail({
+        to: cleanEmail,
+        recipientName: userData.name,
+        subject: `MARKAZU UMAR - Account Login Credentials (${userData.role})`,
+        template: 'WELCOME_NEW_ACCOUNT',
+        metadata: {
+          username: generatedUsername,
+          tempPassword: tempPassword,
+          role: userData.role,
+          assignedProgramme: userData.assignedProgrammeName || 'All School Programs',
+          email: cleanEmail,
+          loginUrl: `${currentOrigin}/login`,
+        },
+      });
+    } catch (e) {
+      console.warn('[createUserAccount] Email dispatch warning:', e);
+    }
+
+    notify({
+      type: 'success',
+      title: 'User Account Created',
+      message: `Account created for ${userData.name} (${userData.role}). Credentials sent to ${cleanEmail}. Username: ${generatedUsername}, Temp Password: ${tempPassword}`,
+    });
+
+    addAuditLog({
+      action: 'USER_ACCOUNT_CREATED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Created new ${userData.role} user account for ${userData.name} (${cleanEmail})`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `User/${newUser.id}`,
+      status: 'SUCCESS',
+    });
+
+    return newUser;
+  };
+
+  const deleteUserAccount = (userId: string) => {
+    const userToDelete = users.find((u) => u.id === userId);
+    if (!userToDelete) return;
+    if (userToDelete.role === 'SUPER_ADMIN') {
+      notify({
+        type: 'error',
+        title: 'Action Prohibited',
+        message: 'Super Admin primary account cannot be deleted.',
+      });
+      return;
+    }
+    const updated = users.filter((u) => u.id !== userId);
+    setUsers(updated);
+    safeLocalStorageSet('markazu_users', updated);
+
+    notify({
+      type: 'success',
+      title: 'User Account Deleted',
+      message: `User account for ${userToDelete.name} has been deleted.`,
+    });
+
+    addAuditLog({
+      action: 'USER_ACCOUNT_DELETED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Deleted ${userToDelete.role} user account: ${userToDelete.name} (${userToDelete.email})`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `User/${userId}`,
+      status: 'SUCCESS',
+    });
+  };
+
+  const updateUserAccount = (userId: string, updates: Partial<User>) => {
+    const updated = users.map((u) => (u.id === userId ? { ...u, ...updates } : u));
+    setUsers(updated);
+    safeLocalStorageSet('markazu_users', updated);
+
+    notify({
+      type: 'success',
+      title: 'Account Updated',
+      message: `User account updated successfully.`,
     });
   };
 
@@ -2813,6 +2978,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteAcademicEvent,
         switchRole,
         setCurrentUser,
+        createUserAccount,
+        deleteUserAccount,
+        updateUserAccount,
         unlockAccount,
         resetUserPassword,
         updateUserPasswordByEmail,

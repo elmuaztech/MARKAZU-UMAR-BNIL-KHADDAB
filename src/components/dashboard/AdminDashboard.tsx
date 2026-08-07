@@ -225,7 +225,7 @@ export function AdminDashboard() {
                 className="px-5 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-poppins font-bold text-xs flex items-center justify-center gap-2 border border-emerald-400/40 transition-all hover:scale-105"
               >
                 <Lock className="w-4 h-4 text-emerald-300" />
-                <span>Security Center</span>
+                <span>User Accounts & Security</span>
               </Link>
             )}
           </div>
@@ -487,7 +487,7 @@ export function AdminDashboard() {
               className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-800 hover:text-white dark:hover:bg-emerald-700 transition-all border border-slate-200 dark:border-emerald-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
             >
               <Lock className="w-4 h-4 text-slate-600 dark:text-emerald-300 group-hover:text-white" />
-              <span className="text-[11px] font-bold">Audit Logs</span>
+              <span className="text-[11px] font-bold">User Accounts</span>
             </Link>
           )}
         </div>

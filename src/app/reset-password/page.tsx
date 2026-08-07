@@ -67,7 +67,7 @@ function ResetPasswordForm() {
       if (response.ok) {
         // Also sync local React state & localStorage
         const tokenCheck = verifyResetToken(cleanToken);
-        const targetEmail = (tokenCheck.email || 'elmuazdesignservices@gmail.com').toLowerCase();
+        const targetEmail = (tokenCheck.email || 'markazuumarbnkhaddabdaneji@gmail.com').toLowerCase();
         updateUserPasswordByEmail(targetEmail, newPassword);
 
         setSuccessMsg(data.message || 'Password successfully reset! You can now log in.');
@@ -86,7 +86,7 @@ function ResetPasswordForm() {
         return;
       }
 
-      const targetEmail = (tokenCheck.email || 'elmuazdesignservices@gmail.com').toLowerCase();
+      const targetEmail = (tokenCheck.email || 'markazuumarbnkhaddabdaneji@gmail.com').toLowerCase();
       const targetUser = users.find((u) => u.id === tokenCheck.userId || u.email.toLowerCase() === targetEmail);
       if (!targetUser) {
         setErrorMsg('Associated user account was not found.');
@@ -127,7 +127,7 @@ function ResetPasswordForm() {
         return;
       }
 
-      const targetEmail = (tokenCheck.email || 'elmuazdesignservices@gmail.com').toLowerCase();
+      const targetEmail = (tokenCheck.email || 'markazuumarbnkhaddabdaneji@gmail.com').toLowerCase();
       const targetUser = users.find((u) => u.id === tokenCheck.userId || u.email.toLowerCase() === targetEmail);
       if (!targetUser) {
         setErrorMsg('User account record not found.');

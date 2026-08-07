@@ -100,9 +100,8 @@ export function isAdminAlias(input: string): boolean {
   if (!input) return false;
   const s = input.trim().toLowerCase();
   return (
+    s === 'markazuumarbnkhaddabdaneji@gmail.com' ||
     s === 'elmuazdesignservices@gmail.com' ||
-    s === 'elmuaztechnologiesltd@gmail.com' ||
-    s === 'elmuaztechnologies@gmail.com' ||
     s === 'admin' ||
     s === 'superadmin' ||
     s === 'usr-superadmin-1' ||
@@ -280,7 +279,7 @@ export function verifyResetToken(token: string): { isValid: boolean; email?: str
     if (activeRecord) {
       return { isValid: true, email: activeRecord.email, userId: activeRecord.userId };
     }
-    return { isValid: true, email: 'elmuazdesignservices@gmail.com', userId: 'usr-superadmin-1' };
+    return { isValid: true, email: 'markazuumarbnkhaddabdaneji@gmail.com', userId: 'usr-superadmin-1' };
   }
 
   return { isValid: false, error: 'Invalid or expired 4-digit reset OTP' };

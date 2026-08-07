@@ -2,7 +2,7 @@
 
 import { UserRole, User, Student, Parent, AttendanceRecord, TahfizRecord, GradeRecord, TeacherAssignment } from '../types';
 
-export type ExtendedRole = 'SUPER_ADMIN' | 'ADMIN' | 'TEACHER' | 'STUDENT' | 'PARENT';
+export type ExtendedRole = 'SUPER_ADMIN' | 'ADMIN' | 'HEADMASTER' | 'TEACHER' | 'STUDENT' | 'PARENT';
 
 export interface RolePermissions {
   canViewAllStudents: boolean;
@@ -64,6 +64,26 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canAssignTeachers: true,
     canManageSubjects: true,
     canManageProgrammes: true,
+    canManageClasses: true,
+  },
+  HEADMASTER: {
+    canViewAllStudents: true,
+    canEditStudents: true,
+    canViewAllAttendance: true,
+    canMarkAttendance: true,
+    canViewAllTahfiz: true,
+    canAddTahfizRecord: true,
+    canViewAllGrades: true,
+    canEnterGrades: true,
+    canManageAssessmentConfig: true,
+    canAccessSecurityDashboard: false, // Super Admin only
+    canManageUsers: false, // Super Admin only
+    canManageSettings: true,
+    canAccessCommunicationCenter: true,
+    canAccessReportSheets: true,
+    canAssignTeachers: true,
+    canManageSubjects: true,
+    canManageProgrammes: false,
     canManageClasses: true,
   },
   TEACHER: {
@@ -130,26 +150,26 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
 
 // Route & Page Authorization Mapping
 export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
-  '/dashboard': ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/admissions': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/programmes': ['SUPER_ADMIN', 'ADMIN', 'TEACHER'],
-  '/dashboard/tahfiz': ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/students': ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'PARENT'],
-  '/dashboard/teachers': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/parents': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/classes': ['SUPER_ADMIN', 'ADMIN', 'TEACHER'],
-  '/dashboard/subjects': ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT'],
-  '/dashboard/attendance': ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/assessment': ['SUPER_ADMIN', 'ADMIN', 'TEACHER'],
-  '/dashboard/results': ['SUPER_ADMIN', 'ADMIN', 'STUDENT', 'PARENT'],
-  '/dashboard/communication': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/messages': ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/sessions': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
+  '/dashboard/admissions': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/programmes': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
+  '/dashboard/tahfiz': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
+  '/dashboard/students': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'PARENT'],
+  '/dashboard/teachers': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/parents': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/classes': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
+  '/dashboard/subjects': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT'],
+  '/dashboard/attendance': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
+  '/dashboard/assessment': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
+  '/dashboard/results': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'STUDENT', 'PARENT'],
+  '/dashboard/communication': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/messages': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
+  '/dashboard/sessions': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
   '/dashboard/security': ['SUPER_ADMIN'],
-  '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
 };
 
 export function hasPageAccess(role: UserRole | string, pathname: string): boolean {
@@ -175,6 +195,13 @@ export function filterStudentsForUser(
   teacherAssignments: TeacherAssignment[] = []
 ): Student[] {
   if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+    return allStudents;
+  }
+
+  if (currentUser.role === 'HEADMASTER') {
+    if (currentUser.assignedProgrammeId) {
+      return allStudents.filter((s) => s.programmeId === currentUser.assignedProgrammeId);
+    }
     return allStudents;
   }
 
