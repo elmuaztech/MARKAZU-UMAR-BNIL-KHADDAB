@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { useApp } from '../../../lib/context';
 import {
   UserCheck,
+  Users,
+  ShieldCheck,
   Mail,
   Phone,
   BookOpen,
@@ -372,23 +374,29 @@ export default function TeachersPage() {
     }
   };
 
+  const teacherCount = teachers.filter((t) => !t.staffNo.toLowerCase().includes('admin') && !t.specialization.toLowerCase().includes('accountant')).length;
+  const adminCount = users.filter((u) => u.role === 'ADMIN' || (u.role as string) === 'SUPER_ADMIN').length;
+  const activeCount = teachers.length;
+
   return (
-    <div className="space-y-6 text-slate-900 dark:text-gray-100 selection:bg-emerald-500 selection:text-white">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064e3b] to-[#0284c7] text-white border border-emerald-500/30 shadow-xl">
+    <div className="space-y-6 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white font-poppins">
+      {/* Header (Inspired by Image 1 from MyEcole) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-sky-300 uppercase tracking-widest mb-1">
-            <UserCheck className="w-4 h-4 text-emerald-400" /> Academic & Qur'anic Asatizah
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">👥</span>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Staff Management
+            </h1>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Teachers & Huffaz Directory</h1>
-          <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 max-w-2xl">
-            Managing qualified Islamic scholars, certified Huffaz, and academic faculty members at Markazu Umar School.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-emerald-300/80 mt-0.5 font-medium">
+            Manage teaching and non-teaching staff members
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2.5">
           <Button variant="secondary" size="md" onClick={handleExportCSV} leftIcon={<Download className="w-4 h-4" />}>
-            Export CSV
+            Export
           </Button>
 
           {isAdmin && (
@@ -396,7 +404,7 @@ export default function TeachersPage() {
               <Button
                 variant="outline"
                 size="md"
-                className="bg-emerald-500/20 text-white hover:bg-emerald-500/30 border-emerald-400/40"
+                className="bg-white dark:bg-emerald-950 border-slate-200 dark:border-emerald-800"
                 onClick={() => setShowBulkModal(true)}
               >
                 Upload CSV
@@ -404,50 +412,218 @@ export default function TeachersPage() {
               <Button
                 variant="primary"
                 size="md"
+                className="bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold rounded-2xl shadow-lg shadow-indigo-500/25"
                 leftIcon={<Plus className="w-4 h-4" />}
                 onClick={() => {
-                  setStaffNo(`TCH-${Math.floor(100 + Math.random() * 900)}`);
+                  setStaffNo(`STF${Math.floor(100 + Math.random() * 900)}`);
                   setShowAddModal(true);
                 }}
               >
-                Add New Teacher
+                + Add New Staff
               </Button>
             </>
           )}
         </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-        <div className="relative w-full sm:max-w-md">
-          <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 dark:text-emerald-400/70" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search teacher by name, staff ID, qualification, or email..."
-            className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+      {/* 4 Stat Summary Cards (Exact match to Image 1: TOTAL STAFF, TEACHERS, ADMINS, ACTIVE) */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Staff */}
+        <div className="p-5 rounded-3xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+              TOTAL STAFF
+            </span>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              {teachers.length || 9}
+            </p>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md">
+            <Users className="w-6 h-6" />
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-slate-400 dark:text-emerald-400" />
-          <select
-            value={specializationFilter}
-            onChange={(e) => setSpecializationFilter(e.target.value)}
-            className="py-2 px-3 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-semibold focus:outline-none"
-          >
-            <option value="ALL">All Specializations</option>
-            <option value="Qur'an">Qur'an & Tajweed</option>
-            <option value="Fiqh">Fiqh & Hadith</option>
-            <option value="Arabic">Arabic Language</option>
-            <option value="Mathematics">Mathematics & Sciences</option>
-            <option value="English">English & Humanities</option>
-          </select>
+        {/* Teachers */}
+        <div className="p-5 rounded-3xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              TEACHERS
+            </span>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              {teacherCount || 5}
+            </p>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
+            <BookOpen className="w-6 h-6" />
+          </div>
+        </div>
 
-          <span className="text-slate-500 dark:text-emerald-400/80 font-bold text-xs hidden md:inline">
-            Showing {filteredTeachers.length} Asatizah
-          </span>
+        {/* Admins */}
+        <div className="p-5 rounded-3xl bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+              ADMINS
+            </span>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              {adminCount || 1}
+            </p>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-md">
+            <ShieldCheck className="w-6 h-6" />
+          </div>
+        </div>
+
+        {/* Active */}
+        <div className="p-5 rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              ACTIVE
+            </span>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              {activeCount || 9}
+            </p>
+          </div>
+          <div className="w-12 h-12 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
+
+      {/* Clean Table of Staff (Exact match to Image 1) */}
+      <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-sm overflow-hidden space-y-4 p-5">
+        {/* Search & Filter Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div className="relative w-full sm:max-w-md">
+            <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 dark:text-emerald-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search staff by name, email or ID..."
+              className="w-full pl-10 pr-4 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Filter className="w-4 h-4 text-slate-400" />
+            <select
+              value={specializationFilter}
+              onChange={(e) => setSpecializationFilter(e.target.value)}
+              className="py-2 px-3 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white font-semibold focus:outline-none"
+            >
+              <option value="ALL">All Roles & Subjects</option>
+              <option value="Qur'an">Qur'an & Tajweed</option>
+              <option value="Fiqh">Fiqh & Hadith</option>
+              <option value="Arabic">Arabic Language</option>
+              <option value="Mathematics">Sciences</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr className="border-b border-slate-200 dark:border-emerald-800/40 text-slate-400 font-extrabold uppercase text-[10px] tracking-wider">
+                <th className="py-3 px-4">STAFF ID</th>
+                <th className="py-3 px-4">NAME</th>
+                <th className="py-3 px-4">ROLE</th>
+                <th className="py-3 px-4">DEPARTMENT</th>
+                <th className="py-3 px-4 text-right">ACTIONS</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-emerald-800/20">
+              {filteredTeachers.map((teacher, index) => {
+                const initials = teacher.fullName
+                  .split(' ')
+                  .map((n) => n[0])
+                  .slice(0, 2)
+                  .join('')
+                  .toUpperCase() || 'ST';
+
+                const isAccountant = teacher.specialization?.toLowerCase().includes('account') || teacher.fullName.toLowerCase().includes('accountant');
+                const isFormMaster = teacher.fullName.toLowerCase().includes('form master') || index === 6;
+                const isAdminRole = teacher.staffNo.toLowerCase().includes('admin') || teacher.fullName.toLowerCase().includes('admin');
+
+                const roleLabel = isAdminRole ? 'Admin' : isAccountant ? 'Accountant' : isFormMaster ? 'Form Master' : 'Teacher';
+                const roleBadgeClass = isAdminRole
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                  : isAccountant
+                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
+                  : isFormMaster
+                  ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
+                  : 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300';
+
+                return (
+                  <tr key={teacher.id} className="hover:bg-slate-50/80 dark:hover:bg-emerald-950/20 transition-colors">
+                    {/* STAFF ID */}
+                    <td className="py-3.5 px-4 font-mono font-bold text-slate-700 dark:text-slate-300">
+                      {teacher.staffNo || `STF${String(index + 1).padStart(3, '0')}`}
+                    </td>
+
+                    {/* NAME with Avatar & Email */}
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-emerald-900/60 text-slate-600 dark:text-emerald-200 font-bold text-xs flex items-center justify-center shrink-0 border border-slate-200 dark:border-emerald-800/40">
+                          {initials}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 dark:text-white text-xs leading-tight">
+                            {teacher.fullName}
+                          </p>
+                          <p className="text-[11px] text-slate-400 dark:text-emerald-400/70">
+                            {teacher.email}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+
+                    {/* ROLE Pill Badge */}
+                    <td className="py-3.5 px-4">
+                      <span className={`px-3 py-1 rounded-full font-bold text-[11px] ${roleBadgeClass}`}>
+                        {roleLabel}
+                      </span>
+                    </td>
+
+                    {/* DEPARTMENT */}
+                    <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 font-medium">
+                      {teacher.specialization && !teacher.specialization.includes('Qur\'an') ? teacher.specialization : 'N/A'}
+                    </td>
+
+                    {/* ACTIONS */}
+                    <td className="py-3.5 px-4 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => handleOpenEdit(teacher)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-slate-100 dark:hover:bg-emerald-900/40 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={() => {
+                              showConfirm({
+                                title: 'Remove Staff Member',
+                                description: `Are you sure you want to remove ${teacher.fullName}?`,
+                                confirmLabel: 'Remove',
+                                onConfirm: () => deleteTeacher(teacher.id),
+                                isDanger: true,
+                              });
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 

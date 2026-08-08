@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useApp } from '../../../lib/context';
 import { SchoolClass } from '@/types';
 import { School, Users, UserCheck, Plus, Edit, Trash2, UserX, RefreshCw } from 'lucide-react';
@@ -177,7 +178,7 @@ export default function ClassesPage() {
   };
 
   return (
-    <div className="space-y-6 font-sans relative">
+    <div className="space-y-6 font-poppins text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white">
       {/* Toast Banner */}
       <AnimatePresence>
         {toastMessage && (
@@ -195,44 +196,44 @@ export default function ClassesPage() {
         )}
       </AnimatePresence>
 
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white border border-emerald-500/40 shadow-xl">
+      {/* Header (Exact match to Image 2: 🏫 Classes Management) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-widest font-poppins">
-            <School className="w-4 h-4 text-amber-400" /> Academic Classes & Halqas
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🏫</span>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Classes Management
+            </h1>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black font-poppins tracking-tight mt-1">Classes Stream & Programme Linkage</h1>
-          <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 font-medium">
-            Every class belongs to a specific Master Programme. Manage class streams, capacities, and assigned teachers.
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-emerald-300/80 mt-0.5 font-medium">
+            Organize and manage school classes
           </p>
         </div>
 
         {isAdmin && (
           <Button
-            variant="warning"
+            variant="primary"
             size="md"
+            className="bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold rounded-2xl shadow-lg shadow-indigo-500/25"
             leftIcon={<Plus className="w-4 h-4" />}
             onClick={handleOpenAdd}
           >
-            Add New Class
+            + Add New Class
           </Button>
         )}
       </div>
 
-      {/* Programme Selector Filter */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md flex items-center gap-3 overflow-x-auto">
-        <span className="text-xs font-bold font-poppins text-slate-700 dark:text-emerald-300 whitespace-nowrap">
-          Filter by Programme:
-        </span>
+      {/* Programme Filter Tabs */}
+      <div className="p-3.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-xs flex items-center gap-2 overflow-x-auto">
         <button
           onClick={() => setSelectedProgrammeFilter('ALL')}
-          className={`px-3 py-1.5 rounded-xl text-xs font-bold font-poppins transition-all whitespace-nowrap ${
+          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             selectedProgrammeFilter === 'ALL'
-              ? 'bg-emerald-600 text-white shadow'
-              : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300'
+              ? 'bg-[#6366f1] text-white shadow-sm'
+              : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
           }`}
         >
-          All Programmes ({classes.length})
+          All Classes ({classes.length})
         </button>
         {programmes.map((prog) => {
           const count = classes.filter((c) => c.programmeId === prog.id || c.programmeName === prog.programme_name).length;
@@ -240,111 +241,91 @@ export default function ClassesPage() {
             <button
               key={prog.id}
               onClick={() => setSelectedProgrammeFilter(prog.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold font-poppins transition-all whitespace-nowrap flex items-center gap-2 ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 selectedProgrammeFilter === prog.id
-                  ? 'bg-emerald-600 text-white shadow'
-                  : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300'
+                  ? 'bg-[#6366f1] text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
               }`}
             >
-              <BilingualText
-                english={prog.programme_name_english || prog.programme_name}
-                arabic={prog.programme_name_arabic}
-                inline
-                englishClassName={selectedProgrammeFilter === prog.id ? 'text-white' : ''}
-              />
-              <span>({count})</span>
+              {prog.programme_name_english || prog.programme_name} ({count})
             </button>
           );
         })}
       </div>
 
-      {/* Classes Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredClasses.map((c) => (
-          <div
-            key={c.id}
-            className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 space-y-3 shadow-md hover:border-emerald-500 hover:shadow-xl transition-all flex flex-col justify-between"
-          >
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-extrabold font-poppins uppercase px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/30">
-                  <BilingualText
-                    english={c.programmeName || 'General'}
-                    arabic={c.programmeNameArabic}
-                    inline
-                    arabicClassName="text-[10px] text-amber-600 dark:text-amber-400 font-semibold"
-                  />
-                </span>
-                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{c.section}</span>
-              </div>
+      {/* Grid of Class Cards (Exact match to Image 2) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        {filteredClasses.map((c) => {
+          const teacherName = c.classTeacherName && c.classTeacherName !== 'Unassigned' ? c.classTeacherName : 'Not assigned';
 
-              <BilingualText
-                english={c.class_name_english || c.name}
-                arabic={c.class_name_arabic}
-                englishClassName="text-base font-bold font-poppins text-slate-900 dark:text-white leading-snug"
-                arabicClassName="text-sm font-semibold font-arabic text-amber-600 dark:text-amber-300"
-              />
-
-              <div className="pt-3 border-t border-slate-200 dark:border-emerald-800/40 space-y-2 text-xs font-poppins">
-                <div className="flex items-center justify-between text-slate-600 dark:text-emerald-200">
-                  <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-                    <Users className="w-3.5 h-3.5" /> Enrolled Students:
-                  </span>
-                  <span className="font-bold text-slate-900 dark:text-white">
-                    {c.studentCount} / {c.capacity}
-                  </span>
+          return (
+            <div
+              key={c.id}
+              className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all"
+            >
+              {/* Card Header with vibrant gradient (Blue/Purple from Image 2) */}
+              <div className="p-5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white flex items-start justify-between">
+                <div>
+                  <h3 className="text-xl font-black text-white tracking-tight">
+                    {c.class_name_english || c.name}
+                  </h3>
+                  <p className="text-xs text-indigo-100 font-semibold mt-0.5">
+                    {c.section || 'Section A'}
+                  </p>
                 </div>
 
-                <div className="flex items-start justify-between text-slate-600 dark:text-emerald-200 pt-1">
-                  <span className="flex items-center gap-1.5 text-sky-600 dark:text-sky-400 font-medium whitespace-nowrap">
-                    <UserCheck className="w-3.5 h-3.5" /> Teacher:
-                  </span>
-                  <div className="text-right">
-                    {c.classTeacherId ? (
-                      <BilingualText
-                        english={c.classTeacherName}
-                        arabic={c.classTeacherNameArabic}
-                        englishClassName="font-bold text-slate-800 dark:text-emerald-300 text-xs"
-                        arabicClassName="text-[11px] font-semibold text-amber-600 dark:text-amber-400"
-                      />
-                    ) : (
-                      <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded">
-                        Unassigned
-                      </span>
-                    )}
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white font-extrabold text-[10px] flex items-center gap-1 shadow-xs">
+                  ✓ Active
+                </span>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                <div className="space-y-2.5">
+                  {/* Box 1: Class Teacher */}
+                  <div className="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/30 space-y-0.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                      CLASS TEACHER
+                    </span>
+                    <p className="text-xs font-bold text-slate-800 dark:text-white truncate">
+                      {teacherName}
+                    </p>
                   </div>
+
+                  {/* Box 2: Students Enrolled */}
+                  <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/30 space-y-0.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                      STUDENTS ENROLLED
+                    </span>
+                    <p className="text-xs font-bold text-slate-800 dark:text-white">
+                      <span className="text-sm font-black text-slate-900 dark:text-white">{c.studentCount || 0}</span> / {c.capacity || 40}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Bottom Action Buttons: [👁 View] [✏️ Edit] */}
+                <div className="pt-2 flex items-center gap-2">
+                  <Link
+                    href={`/dashboard/students?classId=${c.id}`}
+                    className="flex-1 py-2.5 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all"
+                  >
+                    <span>👁 View</span>
+                  </Link>
+
+                  {isAdmin && (
+                    <button
+                      onClick={() => handleOpenEdit(c)}
+                      className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-emerald-950/60 hover:bg-slate-200 dark:hover:bg-emerald-900 text-slate-700 dark:text-emerald-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200 dark:border-emerald-800/40 transition-all"
+                    >
+                      <span className="text-amber-500">✏️</span>
+                      <span>Edit</span>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
-
-            {isAdmin && (
-              <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-emerald-800/40 text-xs font-poppins font-bold">
-                <button
-                  onClick={() => setReassigningTeacherClass(c)}
-                  className="px-2.5 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500 text-sky-600 hover:text-white dark:text-sky-300 transition-colors text-[11px] flex items-center gap-1"
-                >
-                  <RefreshCw className="w-3 h-3" /> Change Teacher
-                </button>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => handleOpenEdit(c)}
-                    className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500 text-amber-600 hover:text-white dark:text-amber-300 transition-colors"
-                    title="Edit Class Details"
-                  >
-                    <Edit className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => setDeletingClass(c)}
-                    className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white dark:text-rose-400 transition-colors"
-                    title="Delete Class"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* ADD CLASS MODAL */}

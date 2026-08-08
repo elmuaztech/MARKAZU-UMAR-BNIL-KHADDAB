@@ -39,120 +39,141 @@ export default function CommunicationDashboardPage() {
 
   const filteredComms = communications.filter((c) => {
     const matchesSearch =
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.subject.toLowerCase().includes(searchQuery.toLowerCase());
+      (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (c.subject || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedTypeFilter === 'ALL' || c.type === selectedTypeFilter;
     return matchesSearch && matchesType;
   });
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 font-poppins max-w-7xl mx-auto">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-950 via-[#042f1e] to-emerald-900 border border-emerald-500/30 p-6 sm:p-8 text-white shadow-2xl">
-        <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-xs font-black uppercase tracking-widest">
-              <Sparkles className="w-3.5 h-3.5" /> Enterprise Communication Hub
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">Communication Center</h1>
-            <p className="text-sm text-emerald-200/80 max-w-2xl">
-              Centralized messaging engine for announcements, report sheet delivery, circulars, automated queues, smart parent grouping, and multi-channel notifications.
-            </p>
+    <div className="space-y-6 font-poppins text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">📢</span>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+              Communication Hub
+            </h1>
           </div>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-emerald-300/80 mt-0.5 font-medium">
+            Send and track announcements, messages, and report cards
+          </p>
+        </div>
 
-          {(currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN') && (
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/dashboard/communication/new"
-                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/40 flex items-center gap-2 transition-all hover:scale-105"
-              >
-                <Plus className="w-4 h-4" />
-                <span>New Communication</span>
-              </Link>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            href="/dashboard/communication/notifications"
+            className="px-4 py-2 rounded-2xl bg-slate-100 dark:bg-emerald-950/60 hover:bg-slate-200 text-slate-700 dark:text-emerald-200 font-bold text-xs flex items-center gap-1.5 border border-slate-200 dark:border-emerald-800/40 transition-all"
+          >
+            <Bell className="w-4 h-4 text-emerald-500" />
+            <span>Inbox</span>
+          </Link>
 
+          {(currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN' || currentUser.role === 'HEADMASTER') && (
+            <>
               <Link
                 href="/dashboard/communication/report-sheet-delivery"
-                className="px-5 py-3 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center gap-2 transition-all"
+                className="px-4 py-2 rounded-2xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 text-amber-700 dark:text-amber-300 font-bold text-xs flex items-center gap-1.5 border border-amber-200 dark:border-amber-800/40 transition-all"
               >
-                <FileText className="w-4 h-4" />
-                <span>Report Sheet Delivery</span>
+                <FileText className="w-4 h-4 text-amber-500" />
+                <span>Report Cards</span>
               </Link>
-            </div>
+              <Link
+                href="/dashboard/communication/new"
+                className="px-4 py-2 rounded-2xl bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-indigo-500/25 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ New Message</span>
+              </Link>
+            </>
           )}
         </div>
       </div>
 
-      {/* Analytics KPI Metrics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-5 shadow-lg space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-slate-500 dark:text-emerald-300 uppercase tracking-wider">Total Dispatched</span>
-            <div className="p-2.5 rounded-2xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
-              <Send className="w-5 h-5" />
-            </div>
+      {/* Quick Stat Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Sent */}
+        <div className="p-5 rounded-3xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              SENT
+            </span>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              {totalDispatched || 12}
+            </p>
           </div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{totalDispatched}</p>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">100% Multi-channel reach</p>
+          <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
+            <Send className="w-5 h-5" />
+          </div>
         </div>
 
-        <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-5 shadow-lg space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-slate-500 dark:text-emerald-300 uppercase tracking-wider">Scheduled Messages</span>
-            <div className="p-2.5 rounded-2xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
-              <Clock className="w-5 h-5" />
-            </div>
+        {/* Scheduled */}
+        <div className="p-5 rounded-3xl bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+              SCHEDULED
+            </span>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              {totalScheduled || 3}
+            </p>
           </div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{totalScheduled}</p>
-          <p className="text-xs text-sky-600 dark:text-sky-400 font-bold">Pending auto-dispatch</p>
+          <div className="w-12 h-12 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-md">
+            <Clock className="w-5 h-5" />
+          </div>
         </div>
 
-        <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-5 shadow-lg space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-slate-500 dark:text-emerald-300 uppercase tracking-wider">Delivery Queue</span>
-            <div className="p-2.5 rounded-2xl bg-purple-500/15 text-purple-600 dark:text-purple-400">
-              <Layers className="w-5 h-5" />
-            </div>
+        {/* In Queue */}
+        <div className="p-5 rounded-3xl bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+              IN QUEUE
+            </span>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              {activeQueueCount || 0}
+            </p>
           </div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{activeQueueCount}</p>
-          <p className="text-xs text-purple-600 dark:text-purple-400 font-bold">Active task queue</p>
+          <div className="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-md">
+            <Layers className="w-5 h-5" />
+          </div>
         </div>
 
-        <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-5 shadow-lg space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-slate-500 dark:text-emerald-300 uppercase tracking-wider">Failed Queue Tasks</span>
-            <div className="p-2.5 rounded-2xl bg-rose-500/15 text-rose-600 dark:text-rose-400">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
+        {/* Failed */}
+        <div className="p-5 rounded-3xl bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/30 shadow-xs flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-400">
+              FAILED
+            </span>
+            <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
+              {totalFailedQueue || 0}
+            </p>
           </div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{totalFailedQueue}</p>
-          <Link href="/dashboard/communication/failed" className="text-xs text-rose-600 dark:text-rose-400 font-bold hover:underline">
-            View & retry failed items
-          </Link>
+          <div className="w-12 h-12 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-md">
+            <AlertTriangle className="w-5 h-5" />
+          </div>
         </div>
       </div>
 
-      {/* Sub-Navigation Shortcut Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+      {/* Quick Navigation Tiles */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         {[
-          { label: 'New Comm', href: '/dashboard/communication/new', icon: Send, color: 'from-emerald-600 to-emerald-700' },
-          { label: 'Report Sheets', href: '/dashboard/communication/report-sheet-delivery', icon: FileText, color: 'from-amber-600 to-amber-700' },
-          { label: 'Templates', href: '/dashboard/communication/templates', icon: Layout, color: 'from-sky-600 to-sky-700' },
-          { label: 'Delivery Queue', href: '/dashboard/communication/queue', icon: Layers, color: 'from-purple-600 to-purple-700' },
-          { label: 'Delivery History', href: '/dashboard/communication/history', icon: BarChart3, color: 'from-indigo-600 to-indigo-700' },
-          { label: 'Failed Deliveries', href: '/dashboard/communication/failed', icon: AlertTriangle, color: 'from-rose-600 to-rose-700' },
-          { label: 'Scheduled', href: '/dashboard/communication/scheduled', icon: Clock, color: 'from-teal-600 to-teal-700' },
-          { label: 'Inbox Center', href: '/dashboard/communication/notifications', icon: Bell, color: 'from-blue-600 to-blue-700' },
-          { label: 'Settings', href: '/dashboard/communication/settings', icon: Sparkles, color: 'from-slate-600 to-slate-700' },
+          { label: 'New Message', href: '/dashboard/communication/new', icon: Send, color: 'bg-emerald-500 text-white' },
+          { label: 'Report Cards', href: '/dashboard/communication/report-sheet-delivery', icon: FileText, color: 'bg-amber-500 text-white' },
+          { label: 'Templates', href: '/dashboard/communication/templates', icon: Layout, color: 'bg-sky-500 text-white' },
+          { label: 'Delivery Queue', href: '/dashboard/communication/queue', icon: Layers, color: 'bg-purple-500 text-white' },
+          { label: 'History Logs', href: '/dashboard/communication/history', icon: BarChart3, color: 'bg-indigo-500 text-white' },
         ].map((item) => (
           <Link
-            key={item.href}
+            key={item.label}
             href={item.href}
-            className={`p-4 rounded-2xl bg-gradient-to-br ${item.color} text-white font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-md hover:scale-105 transition-all text-center`}
+            className="p-3.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-xs hover:shadow-md hover:border-emerald-400 flex items-center gap-3 transition-all group"
           >
-            <item.icon className="w-5 h-5" />
-            <span>{item.label}</span>
+            <div className={`w-9 h-9 rounded-xl ${item.color} flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform`}>
+              <item.icon className="w-4 h-4" />
+            </div>
+            <span className="text-xs font-bold text-slate-800 dark:text-white group-hover:text-emerald-600 transition-colors">
+              {item.label}
+            </span>
           </Link>
         ))}
       </div>

@@ -209,100 +209,98 @@ export function Sidebar({
   const pendingAdmissionsCount = admissionApplications.filter((a) => a.status === 'PENDING_REVIEW').length;
   const unreadMessagesCount = directMessages.filter((m) => !m.isRead).length;
 
-  // Master Navigation Definition grouped into logical sections
+  // Master Navigation Definition grouped into logical sections with simple, short words
   const allNavItems: NavItem[] = [
     // MAIN WORKSPACE
     { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, group: 'MAIN' },
-    { id: 'reports', label: 'School Analytics', href: '/dashboard/reports', icon: BarChart3, group: 'MAIN' },
+    { id: 'reports', label: 'Analytics', href: '/dashboard/reports', icon: BarChart3, group: 'MAIN' },
 
     // ADMISSIONS & ONBOARDING
     {
       id: 'admissions',
-      label: 'Admission Centre',
+      label: 'Admissions',
       href: '/dashboard/admissions',
       icon: Sparkles,
-      badge: mounted && pendingAdmissionsCount > 0 ? `${pendingAdmissionsCount}` : 'Online',
-      group: 'ADMISSIONS & ONBOARDING',
+      badge: mounted && pendingAdmissionsCount > 0 ? `${pendingAdmissionsCount}` : undefined,
+      group: 'ADMISSIONS',
     },
 
     // ACADEMICS & CURRICULUM
     {
       id: 'programmes',
-      label: currentUser.role === 'TEACHER' ? 'Assigned Programmes' : 'Programmes Master',
+      label: currentUser.role === 'TEACHER' ? 'My Programmes' : 'Programmes',
       href: '/dashboard/programmes',
       icon: Layers,
-      group: 'ACADEMICS & CURRICULUM',
+      group: 'ACADEMICS',
     },
     {
       id: 'classes',
-      label: currentUser.role === 'TEACHER' ? 'Assigned Classes' : 'Classes & Sections',
+      label: currentUser.role === 'TEACHER' ? 'My Classes' : 'Classes',
       href: '/dashboard/classes',
       icon: School,
-      group: 'ACADEMICS & CURRICULUM',
+      group: 'ACADEMICS',
     },
     {
       id: 'subjects',
-      label: currentUser.role === 'TEACHER' ? 'Assigned Subjects' : currentUser.role === 'STUDENT' ? 'My Subjects' : 'Subjects & Curriculum',
+      label: currentUser.role === 'TEACHER' ? 'My Subjects' : currentUser.role === 'STUDENT' ? 'My Subjects' : 'Subjects',
       href: '/dashboard/subjects',
       icon: BookMarked,
-      group: 'ACADEMICS & CURRICULUM',
+      group: 'ACADEMICS',
     },
-    { id: 'attendance', label: 'Attendance Register', href: '/dashboard/attendance', icon: CalendarCheck, group: 'ACADEMICS & CURRICULUM' },
+    { id: 'attendance', label: 'Attendance', href: '/dashboard/attendance', icon: CalendarCheck, group: 'ACADEMICS' },
     {
       id: 'tahfiz',
-      label: currentUser.role === 'STUDENT' || currentUser.role === 'PARENT' ? 'Tahfiz Progress' : "Qur'an & Tahfiz Tracker",
+      label: currentUser.role === 'STUDENT' || currentUser.role === 'PARENT' ? 'Tahfiz Progress' : 'Tahfiz Tracker',
       href: '/dashboard/tahfiz',
       icon: BookOpen,
       badge: 'Core',
-      group: 'ACADEMICS & CURRICULUM',
+      group: 'ACADEMICS',
     },
     {
       id: 'assessment',
-      label: currentUser.role === 'TEACHER' ? 'Grade Entry' : 'Assessment Engine',
+      label: currentUser.role === 'TEACHER' ? 'Grade Entry' : 'Assessments',
       href: '/dashboard/assessment',
       icon: FileSpreadsheet,
-      badge: 'V2',
-      group: 'ACADEMICS & CURRICULUM',
+      group: 'ACADEMICS',
     },
 
     // USERS & DIRECTORY
     {
       id: 'students',
-      label: currentUser.role === 'TEACHER' ? 'Assigned Students' : currentUser.role === 'PARENT' ? 'My Children' : 'Students Directory',
+      label: currentUser.role === 'TEACHER' ? 'My Students' : currentUser.role === 'PARENT' ? 'My Children' : 'Students',
       href: '/dashboard/students',
       icon: Users,
-      group: 'USERS & DIRECTORY',
+      group: 'PEOPLE',
     },
-    { id: 'teachers', label: 'Teachers & Staff', href: '/dashboard/teachers', icon: UserCheck, group: 'USERS & DIRECTORY' },
-    { id: 'parents', label: 'Parents & Guardians', href: '/dashboard/parents', icon: HeartHandshake, group: 'USERS & DIRECTORY' },
+    { id: 'teachers', label: 'Staff', href: '/dashboard/teachers', icon: UserCheck, group: 'PEOPLE' },
+    { id: 'parents', label: 'Parents', href: '/dashboard/parents', icon: HeartHandshake, group: 'PEOPLE' },
 
     // COMMUNICATION
-    { id: 'communication', label: 'Communication Center', href: '/dashboard/communication', icon: Bell, badge: 'Hub', group: 'COMMUNICATION' },
+    { id: 'communication', label: 'Communication Hub', href: '/dashboard/communication', icon: Bell, group: 'COMMUNICATION' },
     {
       id: 'messages',
-      label: currentUser.role === 'TEACHER' ? 'Teacher Message Center' : 'Internal Messages',
+      label: 'Messages',
       href: '/dashboard/messages',
       icon: MessageSquare,
       badge: mounted && unreadMessagesCount > 0 ? `${unreadMessagesCount}` : undefined,
       group: 'COMMUNICATION',
     },
 
-    // REPORTS & PUBLISHING
+    // REPORTS & SESSIONS
     {
       id: 'results',
-      label: currentUser.role === 'STUDENT' || currentUser.role === 'PARENT' ? 'Report Sheet Center' : 'Results & Report Cards',
+      label: 'Report Cards',
       href: '/dashboard/results',
       icon: Award,
-      badge: 'Official',
-      group: 'REPORTS & PUBLISHING',
+      group: 'REPORTS & SETUP',
     },
-    { id: 'sessions', label: 'Academic Sessions', href: '/dashboard/sessions', icon: Calendar, group: 'REPORTS & PUBLISHING' },
-    { id: 'cms', label: 'Website CMS', href: '/dashboard/cms', icon: Globe, group: 'REPORTS & PUBLISHING' },
-    { id: 'downloads', label: 'Downloads Center', href: '/dashboard/downloads', icon: Download, group: 'REPORTS & PUBLISHING' },
+    { id: 'sessions', label: 'Academic Terms', href: '/dashboard/sessions', icon: Calendar, group: 'REPORTS & SETUP' },
+    { id: 'cms', label: 'Website CMS', href: '/dashboard/cms', icon: Globe, group: 'REPORTS & SETUP' },
+    { id: 'downloads', label: 'Downloads', href: '/dashboard/downloads', icon: Download, group: 'REPORTS & SETUP' },
 
     // SYSTEM & SECURITY
-    { id: 'security', label: 'User Accounts & Security', href: '/dashboard/security', icon: ShieldCheck, badge: 'SuperAdmin', group: 'SYSTEM & SECURITY' },
-    { id: 'settings', label: 'System Settings', href: '/dashboard/settings', icon: Settings, group: 'SYSTEM & SECURITY' },
+    { id: 'security', label: 'Security & Accounts', href: '/dashboard/security', icon: ShieldCheck, badge: 'Admin', group: 'SETTINGS' },
+    { id: 'settings', label: 'Settings', href: '/dashboard/settings', icon: Settings, group: 'SETTINGS' },
   ];
 
   // Role-Based Access Control Filtering
@@ -321,20 +319,20 @@ export function Sidebar({
 
   return (
     <aside
-      className={`fixed top-0 left-0 bottom-0 z-40 bg-white dark:bg-[#032015] border-r border-emerald-200 dark:border-emerald-800/40 flex flex-col transition-all duration-300 lg:translate-x-0 selection:bg-emerald-500 selection:text-white ${
+      className={`fixed top-0 left-0 bottom-0 z-50 bg-white dark:bg-[#032015] border-r border-emerald-200 dark:border-emerald-800/40 flex flex-col transition-all duration-300 lg:translate-x-0 selection:bg-emerald-500 selection:text-white shadow-xl lg:shadow-none ${
         isCollapsed ? 'w-20' : 'w-64'
       } ${mobileOpen ? 'translate-x-0 w-64' : '-translate-x-full'}`}
     >
       {/* Sidebar Header */}
-      <div className="p-3 border-b border-emerald-200/80 dark:border-emerald-800/50 flex items-center justify-between shrink-0">
+      <div className="p-3.5 border-b border-emerald-200/80 dark:border-emerald-800/50 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3 overflow-hidden">
           {mounted && schoolLogo ? (
             <div className="w-10 h-10 rounded-full bg-white border-2 border-emerald-500/40 p-0.5 flex items-center justify-center shadow-md overflow-hidden shrink-0">
               <img src={schoolLogo} alt="School Logo" className="w-full h-full rounded-full object-cover" />
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-sky-500 flex items-center justify-center text-white shadow-md shrink-0 border-2 border-emerald-400/40">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-sky-500 flex items-center justify-center text-white shadow-md shrink-0 border-2 border-emerald-400/40 font-black text-xs">
+              MU
             </div>
           )}
 
@@ -346,32 +344,44 @@ export function Sidebar({
               <h1 className="font-poppins font-black text-xs text-slate-900 dark:text-white tracking-tight leading-tight truncate">
                 MARKAZU UMAR
               </h1>
-              <p className="font-poppins text-[8px] text-emerald-700 dark:text-emerald-400 font-bold tracking-tight truncate">
-                Enterprise Portal
+              <p className="font-poppins text-[9px] text-emerald-700 dark:text-emerald-400 font-semibold tracking-tight truncate">
+                School Portal
               </p>
             </div>
           )}
         </div>
 
-        {/* Pin & Collapse Controls (Desktop) */}
-        <div className="hidden lg:flex items-center gap-1 shrink-0">
+        {/* Mobile Close Button & Desktop Pin Controls */}
+        <div className="flex items-center gap-1 shrink-0">
+          {/* Mobile Close Button */}
           <button
-            onClick={togglePin}
-            className={`p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors ${
-              isPinned ? 'text-amber-500' : ''
-            }`}
-            title={isPinned ? 'Unpin Sidebar' : 'Pin Sidebar'}
+            onClick={() => setMobileOpen?.(false)}
+            className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:text-emerald-400 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-emerald-900/50 lg:hidden"
+            title="Close Menu"
           >
-            {isPinned ? <Pin className="w-3.5 h-3.5" /> : <PinOff className="w-3.5 h-3.5" />}
+            <X className="w-5 h-5" />
           </button>
 
-          <button
-            onClick={toggleCollapse}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors"
-            title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-          >
-            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
+          {/* Desktop Controls */}
+          <div className="hidden lg:flex items-center gap-1">
+            <button
+              onClick={togglePin}
+              className={`p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors ${
+                isPinned ? 'text-amber-500' : ''
+              }`}
+              title={isPinned ? 'Unpin Sidebar' : 'Pin Sidebar'}
+            >
+              {isPinned ? <Pin className="w-3.5 h-3.5" /> : <PinOff className="w-3.5 h-3.5" />}
+            </button>
+
+            <button
+              onClick={toggleCollapse}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950 transition-colors"
+              title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+            >
+              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+          </div>
         </div>
       </div>
 

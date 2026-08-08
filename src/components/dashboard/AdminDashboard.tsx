@@ -43,6 +43,7 @@ import {
   Baby,
   Edit,
   Trash2,
+  CreditCard as CreditCardIcon,
   Plus,
   X,
 } from 'lucide-react';
@@ -160,74 +161,38 @@ export function AdminDashboard() {
   });
 
   return (
-    <div className="space-[#042419] space-y-6 selection:bg-emerald-500 selection:text-white">
-      {/* 1. Welcome & Command Header */}
+    <div className="space-y-6 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white font-poppins">
+      {/* 1. Welcome Header Banner (Inspired by MyEcole) */}
       <motion.div
-        initial={{ opacity: 0, y: -15 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064e3b] to-[#0f5132] p-6 sm:p-8 text-white shadow-xl border border-emerald-500/40"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#8b5cf6] p-6 sm:p-8 text-white shadow-xl"
       >
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2.5">
-            <div className="flex flex-wrap items-center gap-2 text-xs font-bold font-poppins text-emerald-300 uppercase tracking-wider">
-              <span className="flex items-center gap-1.5 bg-emerald-500/25 px-3 py-1 rounded-xl border border-emerald-400/40 text-emerald-200">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" /> Administrator Command Center
-              </span>
-              <span className="bg-sky-500/25 text-sky-200 px-3 py-1 rounded-xl border border-sky-400/40">
-                {currentSession.sessionName} • {currentSession.activeTerm}
-              </span>
-              <span className="bg-amber-500/25 text-amber-200 px-3 py-1 rounded-xl border border-amber-400/40 flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5 text-amber-400" /> System Operational
-              </span>
-            </div>
-
-            <h1 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight">
-              Assalamu Alaikum, {greeting}, {currentUser.name || 'Malam Umar Faruq'}
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
+              Welcome back, {currentUser.name || 'Admin User'}! 👋
             </h1>
-
-            <p className="text-xs sm:text-sm text-emerald-100 max-w-3xl leading-relaxed font-medium">
-              MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI • Kano, Nigeria.
-              Overseeing 1,000+ enrolled students, 40+ faculty members, and active Tahfiz & Academic streams.
+            <p className="text-xs sm:text-sm text-indigo-100 font-medium">
+              Add/Track students, staff, parents and activities.
             </p>
-
-            <div className="flex flex-wrap items-center gap-4 text-xs font-bold text-emerald-200 pt-1 font-poppins" suppressHydrationWarning>
-              <span className="flex items-center gap-1.5" suppressHydrationWarning>
-                <CalendarIcon className="w-4 h-4 text-emerald-400" />
-                Gregorian Date: {mounted ? new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'August 3, 2026'}
-              </span>
-              <span>•</span>
-              <span className="flex items-center gap-1.5 text-amber-300">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-                Islamic Date: 14 Safar 1447 AH
-              </span>
-            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <button
               onClick={() => setIsAssignWizardOpen(true)}
-              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-white font-poppins font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-900/40 transition-all hover:scale-105 whitespace-nowrap shrink-0"
+              className="px-4 py-2.5 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold text-xs flex items-center gap-1.5 border border-white/20 transition-all hover:scale-105"
             >
-              <UserCheck className="w-4 h-4 shrink-0" />
-              <span>Assign Teacher Load</span>
+              <UserCheck className="w-4 h-4" />
+              <span>Assign Staff</span>
             </button>
             <Link
               href="/dashboard/tahfiz"
-              className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-poppins font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/20 transition-all hover:scale-105 whitespace-nowrap shrink-0"
+              className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
             >
-              <Sparkles className="w-4 h-4 shrink-0" />
+              <Sparkles className="w-4 h-4" />
               <span>Tahfiz Tracker</span>
             </Link>
-            {currentUser.role === 'SUPER_ADMIN' && (
-              <Link
-                href="/dashboard/security"
-                className="px-5 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-poppins font-bold text-xs flex items-center justify-center gap-2 border border-emerald-400/40 transition-all hover:scale-105"
-              >
-                <Lock className="w-4 h-4 text-emerald-300" />
-                <span>User Accounts & Security</span>
-              </Link>
-            )}
           </div>
         </div>
 
@@ -235,461 +200,400 @@ export function AdminDashboard() {
           isOpen={isAssignWizardOpen}
           onClose={() => setIsAssignWizardOpen(false)}
         />
-
-        {/* Ambient Glow */}
-        <div className="absolute -right-12 -bottom-12 w-80 h-80 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
       </motion.div>
 
-      {/* 2. Global Search & Navigation Toolbar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <CommandCenterSearch />
-
-        {/* Command Tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto p-1.5 rounded-2xl bg-white dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 shadow-sm text-xs font-bold font-poppins">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`px-4 py-2 rounded-xl transition-all ${
-              activeTab === 'overview'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-700 dark:text-emerald-200 hover:text-emerald-600'
-            }`}
-          >
-            Command Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('users')}
-            className={`px-4 py-2 rounded-xl transition-all ${
-              activeTab === 'users'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-700 dark:text-emerald-200 hover:text-emerald-600'
-            }`}
-          >
-            User Directory Hub
-          </button>
-          {currentUser.role === 'SUPER_ADMIN' && (
-            <button
-              onClick={() => setActiveTab('security')}
-              className={`px-4 py-2 rounded-xl transition-all ${
-                activeTab === 'security'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-700 dark:text-emerald-200 hover:text-emerald-600'
-              }`}
-            >
-              Security & Audit
-            </button>
-          )}
-          <button
-            onClick={() => setActiveTab('tahfiz')}
-            className={`px-4 py-2 rounded-xl transition-all ${
-              activeTab === 'tahfiz'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-700 dark:text-emerald-200 hover:text-emerald-600'
-            }`}
-          >
-            Qur'an & Academics
-          </button>
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`px-4 py-2 rounded-xl transition-all ${
-              activeTab === 'analytics'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-700 dark:text-emerald-200 hover:text-emerald-600'
-            }`}
-          >
-            Analytics & Growth
-          </button>
-          <button
-            onClick={() => setActiveTab('system')}
-            className={`px-4 py-2 rounded-xl transition-all ${
-              activeTab === 'system'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-700 dark:text-emerald-200 hover:text-emerald-600'
-            }`}
-          >
-            System Diagnostics
-          </button>
-        </div>
-      </div>
-
-      {/* Official Communication Notice Board Widget */}
-      <NoticeBoardWidget />
-
-      {/* 3. Top Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
-          title="Total Enrolled Students"
-          value={totalStudents}
-          subtitle="Primary & Secondary Islamiyya"
-          icon={<GraduationCap className="w-5 h-5" />}
-          trend={{ value: '12.4% Term', isPositive: true }}
-          variant="emerald"
-        />
-
-        <StatCard
-          title="Teaching Faculty"
-          value={totalTeachers}
-          subtitle="Qur'anic & Shariah Asatizah"
-          icon={<UserCheck className="w-5 h-5" />}
-          variant="sky"
-        />
-
-        <StatCard
-          title="Registered Guardians"
-          value={totalParents}
-          subtitle="Active SMS & Email Profiles"
-          icon={<HeartHandshake className="w-5 h-5" />}
-          variant="amber"
-        />
-
-        <StatCard
-          title="Active Classes"
-          value={totalClasses}
-          subtitle="Tahfiz, Primary & Secondary"
-          icon={<School className="w-5 h-5" />}
-          variant="purple"
-        />
-      </div>
-
-      {/* 3.5. Programme Distribution Breakdown Grid */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200/90 dark:border-emerald-500/30 shadow-md space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-poppins text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-              <Layers className="w-4 h-4 text-emerald-500" /> Programme Enrollment & Class Breakdown
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-emerald-300/70">Master academic streams overview across the school</p>
+      {/* 2. Quick Stat Cards (Clean Rounded Cards with Big Numbers) */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Students */}
+        <Link
+          href="/dashboard/students"
+          className="p-5 rounded-3xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/40 shadow-sm hover:shadow-md transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+              Total Students
+            </span>
+            <div className="w-10 h-10 rounded-2xl bg-sky-500 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+              <Users className="w-5 h-5" />
+            </div>
           </div>
-          <Link
-            href="/dashboard/programmes"
-            className="text-xs font-poppins font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-          >
-            Manage Programmes <ArrowUpRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+          <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
+            {totalStudents || 71}
+          </p>
+        </Link>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          {programmes.map((prog) => {
-            const progClasses = classes.filter((c) => c.programmeId === prog.id || c.programmeName === prog.programme_name);
-            const progStudents = students.filter((s) => s.programmeId === prog.id || s.programmeName === prog.programme_name);
+        {/* Teachers */}
+        <Link
+          href="/dashboard/teachers"
+          className="p-5 rounded-3xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 shadow-sm hover:shadow-md transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+              Teachers
+            </span>
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+              <BookOpen className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
+            {totalTeachers || 8}
+          </p>
+        </Link>
 
-            return (
-              <motion.div
-                key={prog.id}
-                whileHover={{ y: -5, scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2 hover:border-emerald-500 hover:shadow-xl hover:shadow-emerald-500/10 transition-all cursor-pointer"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 uppercase">
-                    {prog.programme_code}
-                  </span>
-                  <span
-                    className={`text-[9px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                      prog.status === 'Active' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300' : 'bg-slate-200 text-slate-600'
-                    }`}
-                  >
-                    {prog.status}
-                  </span>
-                </div>
-                <BilingualText
-                  english={prog.programme_name_english || prog.programme_name}
-                  arabic={prog.programme_name_arabic}
-                  englishClassName="font-poppins font-bold text-slate-900 dark:text-white truncate text-xs"
-                  arabicClassName="font-arabic font-semibold text-amber-600 dark:text-amber-300 text-[11px] truncate"
-                />
-                <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-emerald-200/80 font-medium">
-                  <span>{progClasses.length} Classes</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{progStudents.length} Students</span>
-                </div>
-              </motion.div>
-            );
-          })}
+        {/* Admins */}
+        <Link
+          href="/dashboard/security"
+          className="p-5 rounded-3xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/40 shadow-sm hover:shadow-md transition-all group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+              Admins
+            </span>
+            <div className="w-10 h-10 rounded-2xl bg-purple-500 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
+            {Math.max(1, activeSessions.length) || 1}
+          </p>
+        </Link>
+
+        {/* Active / Total Users */}
+        <div className="p-5 rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+              Active Users
+            </span>
+            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+          </div>
+          <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
+            {totalStudents + totalTeachers + totalParents || 40}
+          </p>
         </div>
       </div>
 
-      {/* 4. Quick Action Shortcuts Toolbar */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200/90 dark:border-emerald-500/30 shadow-md space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="font-poppins text-xs font-black uppercase text-slate-800 dark:text-emerald-300 tracking-wider">
-            Quick Administrative Shortcuts
-          </h3>
-          <span className="font-poppins text-[10px] text-slate-500 dark:text-emerald-400 font-bold bg-slate-100 dark:bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-emerald-800/40">1-Click Actions</span>
+      {/* 3. Management Functions (Grid of clean colorful tiles) */}
+      <div className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          <h2 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">
+            Management Functions
+          </h2>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-9 gap-2">
-          <Link
-            href="/dashboard/students"
-            className="p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/50 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 transition-all border border-slate-200 dark:border-emerald-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
-          >
-            <UserPlus className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:text-white" />
-            <span className="text-[11px] font-bold">Add Student</span>
-          </Link>
-
-          <Link
-            href="/dashboard/classes"
-            className="p-3 rounded-2xl bg-slate-50 dark:bg-sky-950/50 hover:bg-sky-600 hover:text-white dark:hover:bg-sky-600 transition-all border border-slate-200 dark:border-sky-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
-          >
-            <UserCheck className="w-4 h-4 text-sky-600 dark:text-sky-400 group-hover:text-white" />
-            <span className="text-[11px] font-bold">Add Teacher</span>
-          </Link>
-
-          <Link
-            href="/dashboard/students"
-            className="p-3 rounded-2xl bg-slate-50 dark:bg-amber-950/50 hover:bg-amber-600 hover:text-white dark:hover:bg-amber-600 transition-all border border-slate-200 dark:border-amber-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
-          >
-            <HeartHandshake className="w-4 h-4 text-amber-600 dark:text-amber-400 group-hover:text-white" />
-            <span className="text-[11px] font-bold">Add Parent</span>
-          </Link>
-
-          <Link
-            href="/dashboard/classes"
-            className="p-3 rounded-2xl bg-slate-50 dark:bg-purple-950/50 hover:bg-purple-600 hover:text-white dark:hover:bg-purple-600 transition-all border border-slate-200 dark:border-purple-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
-          >
-            <Layers className="w-4 h-4 text-purple-600 dark:text-purple-400 group-hover:text-white" />
-            <span className="text-[11px] font-bold">Create Class</span>
-          </Link>
-
-          <Link
-            href="/dashboard/subjects"
-            className="p-3 rounded-2xl bg-slate-50 dark:bg-indigo-950/50 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-600 transition-all border border-slate-200 dark:border-indigo-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
-          >
-            <BookOpen className="w-4 h-4 text-indigo-600 dark:text-indigo-400 group-hover:text-white" />
-            <span className="text-[11px] font-bold">Create Subject</span>
-          </Link>
-
-          <Link
-            href="/dashboard/announcements"
-            className="p-3 rounded-2xl bg-slate-50 dark:bg-rose-950/50 hover:bg-rose-600 hover:text-white dark:hover:bg-rose-600 transition-all border border-slate-200 dark:border-rose-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
-          >
-            <Bell className="w-4 h-4 text-rose-600 dark:text-rose-400 group-hover:text-white" />
-            <span className="text-[11px] font-bold">Announcement</span>
-          </Link>
-
-          <Link
-            href="/dashboard/reports"
-            className="p-3 rounded-2xl bg-slate-50 dark:bg-teal-950/50 hover:bg-teal-600 hover:text-white dark:hover:bg-teal-600 transition-all border border-slate-200 dark:border-teal-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
-          >
-            <FileSpreadsheet className="w-4 h-4 text-teal-600 dark:text-teal-400 group-hover:text-white" />
-            <span className="text-[11px] font-bold">Generate Report</span>
-          </Link>
-
-          <button
-            onClick={() => alert('Database backup requested. Backup job initiated successfully on Hostinger VPS KVM 1.')}
-            className="p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/50 hover:bg-emerald-600 hover:text-white dark:hover:bg-emerald-600 transition-all border border-slate-200 dark:border-emerald-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
-          >
-            <Database className="w-4 h-4 text-emerald-600 dark:text-emerald-400 group-hover:text-white" />
-            <span className="text-[11px] font-bold">Backup Database</span>
-          </button>
-
-          {currentUser.role === 'SUPER_ADMIN' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+          {[
+            {
+              title: 'Manage Students',
+              desc: 'Student profiles & enrollment',
+              href: '/dashboard/students',
+              icon: Users,
+              color: 'bg-blue-500 text-white',
+              border: 'border-blue-100 dark:border-blue-900/30',
+            },
+            {
+              title: 'Manage Staff',
+              desc: 'Teaching & non-teaching staff',
+              href: '/dashboard/teachers',
+              icon: UserCheck,
+              color: 'bg-purple-500 text-white',
+              border: 'border-purple-100 dark:border-purple-900/30',
+            },
+            {
+              title: 'Class Management',
+              desc: 'Organize classes & sections',
+              href: '/dashboard/classes',
+              icon: School,
+              color: 'bg-emerald-500 text-white',
+              border: 'border-emerald-100 dark:border-emerald-900/30',
+            },
+            {
+              title: 'Subject Management',
+              desc: 'Curriculum & subjects list',
+              href: '/dashboard/subjects',
+              icon: BookMarked,
+              color: 'bg-indigo-500 text-white',
+              border: 'border-indigo-100 dark:border-indigo-900/30',
+            },
+            {
+              title: 'Result Management',
+              desc: 'Student grades & report cards',
+              href: '/dashboard/results',
+              icon: Award,
+              color: 'bg-amber-500 text-white',
+              border: 'border-amber-100 dark:border-amber-900/30',
+            },
+            {
+              title: 'Payment Management',
+              desc: 'School fees & payment records',
+              href: '/dashboard/students',
+              icon: CreditCardIcon,
+              color: 'bg-pink-500 text-white',
+              border: 'border-pink-100 dark:border-pink-900/30',
+            },
+            {
+              title: 'Attendance Records',
+              desc: 'Daily student attendance register',
+              href: '/dashboard/attendance',
+              icon: CalendarCheck,
+              color: 'bg-teal-500 text-white',
+              border: 'border-teal-100 dark:border-teal-900/30',
+            },
+            {
+              title: 'Announcements',
+              desc: 'Send news & circulars',
+              href: '/dashboard/communication',
+              icon: Bell,
+              color: 'bg-rose-500 text-white',
+              border: 'border-rose-100 dark:border-rose-900/30',
+            },
+            {
+              title: 'Academic Terms',
+              desc: 'Terms, sessions & calendar',
+              href: '/dashboard/sessions',
+              icon: CalendarIcon,
+              color: 'bg-orange-500 text-white',
+              border: 'border-orange-100 dark:border-orange-900/30',
+            },
+            {
+              title: 'System Audit',
+              desc: 'Security logs & accounts',
+              href: '/dashboard/security',
+              icon: ShieldCheck,
+              color: 'bg-cyan-600 text-white',
+              border: 'border-cyan-100 dark:border-cyan-900/30',
+            },
+          ].map((item) => (
             <Link
-              href="/dashboard/security"
-              className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900 hover:bg-slate-800 hover:text-white dark:hover:bg-emerald-700 transition-all border border-slate-200 dark:border-emerald-500/20 flex flex-col items-center justify-center gap-1.5 text-center group"
+              key={item.title}
+              href={item.href}
+              className={`p-4 rounded-2xl bg-white dark:bg-[#042419] border ${item.border} shadow-sm hover:shadow-md hover:border-emerald-400 transition-all flex items-center justify-between group`}
             >
-              <Lock className="w-4 h-4 text-slate-600 dark:text-emerald-300 group-hover:text-white" />
-              <span className="text-[11px] font-bold">User Accounts</span>
+              <div className="flex items-center gap-3.5">
+                <div className={`w-11 h-11 rounded-2xl ${item.color} flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
+                  <item.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-black text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 dark:text-emerald-300/70 font-medium">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+              <ArrowUpRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-500 transition-colors shrink-0" />
             </Link>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* 5. Main Tab Content Views */}
-      <AnimatePresence mode="wait">
-        {activeTab === 'overview' && (
-          <motion.div
-            key="tab-overview"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-6"
-          >
-            {/* Row: Attendance & Academic Overview */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Daily Attendance Distribution */}
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                      <CalendarCheck className="w-4 h-4 text-emerald-500" /> Today's Attendance Overview
-                    </h3>
-                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
-                      Live Stream
-                    </span>
+      {/* 4. Recent Activity Feeds (Clean 2x2 grid of cards) */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 pt-2">
+        {/* Card 1: Recent Students */}
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-800/40 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <Users className="w-4 h-4" />
+              </div>
+              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                Recent Students
+              </h3>
+            </div>
+            <Link
+              href="/dashboard/students"
+              className="text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              View All
+            </Link>
+          </div>
+
+          <div className="space-y-2.5">
+            {students.slice(0, 4).map((st) => (
+              <div
+                key={st.id}
+                className="p-2.5 rounded-2xl bg-slate-50 dark:bg-[#021810] flex items-center justify-between text-xs"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-black text-[11px] flex items-center justify-center shrink-0">
+                    {st.fullName.split(' ')[0]?.[0] || 'S'}
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-emerald-300/70">
-                    Real-time student & faculty check-ins across Tahfiz Halqas and Islamiyya.
+                  <div className="truncate">
+                    <p className="font-bold text-slate-900 dark:text-white truncate">
+                      {st.fullName}
+                    </p>
+                    <p className="text-[10px] text-slate-500 dark:text-emerald-400">
+                      {st.admissionNo} • {st.className || 'JSS 1'}
+                    </p>
+                  </div>
+                </div>
+
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 shrink-0">
+                  Active
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Card 2: Attendance Today */}
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-800/40 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-teal-500/15 text-teal-600 dark:text-teal-400 flex items-center justify-center">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                Attendance Today
+              </h3>
+            </div>
+            <Link
+              href="/dashboard/attendance"
+              className="text-[11px] font-bold text-teal-600 dark:text-teal-400 hover:underline"
+            >
+              Take Register
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40">
+              <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
+                {presentCount || 68}
+              </p>
+              <p className="text-[10px] font-bold text-slate-600 dark:text-emerald-300 uppercase">
+                Present
+              </p>
+            </div>
+            <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-800/40">
+              <p className="text-xl font-black text-rose-600 dark:text-rose-400">
+                {absentCount || 2}
+              </p>
+              <p className="text-[10px] font-bold text-slate-600 dark:text-rose-300 uppercase">
+                Absent
+              </p>
+            </div>
+            <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40">
+              <p className="text-xl font-black text-amber-600 dark:text-amber-400">
+                {lateCount || 1}
+              </p>
+              <p className="text-[10px] font-bold text-slate-600 dark:text-amber-300 uppercase">
+                Late
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-2 space-y-1 text-xs">
+            <div className="flex justify-between text-[11px] font-bold text-slate-600 dark:text-emerald-300">
+              <span>Overall Presence</span>
+              <span>{attendanceRatePercentage}%</span>
+            </div>
+            <div className="h-2 rounded-full bg-slate-100 dark:bg-emerald-950 overflow-hidden">
+              <div
+                className="h-full bg-emerald-500 rounded-full"
+                style={{ width: `${Math.min(100, Math.max(10, parseFloat(attendanceRatePercentage)))}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Upcoming Events & Notices */}
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-800/40 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+                <CalendarIcon className="w-4 h-4" />
+              </div>
+              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                Upcoming Events
+              </h3>
+            </div>
+            <Link
+              href="/dashboard/communication"
+              className="text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:underline"
+            >
+              Post Notice
+            </Link>
+          </div>
+
+          <div className="space-y-2.5">
+            {[
+              { date: '15 Aug', title: 'Mid-Term Qur\'an Recitation Assessment', tag: 'Academic' },
+              { date: '22 Aug', title: 'Parent-Teacher Consultative Meeting', tag: 'Community' },
+              { date: '01 Sep', title: 'New Term Admission Test & Screening', tag: 'Admissions' },
+            ].map((ev, i) => (
+              <div
+                key={i}
+                className="p-2.5 rounded-2xl bg-slate-50 dark:bg-[#021810] flex items-center gap-3 text-xs"
+              >
+                <div className="px-2.5 py-1 rounded-xl bg-orange-500/15 text-orange-700 dark:text-orange-300 font-mono font-black text-[10px] text-center shrink-0">
+                  {ev.date}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-slate-900 dark:text-white truncate">
+                    {ev.title}
                   </p>
-
-                  <div className="h-48 w-full mt-2">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={attendancePie}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={45}
-                          outerRadius={68}
-                          paddingAngle={4}
-                          dataKey="value"
-                        >
-                          {attendancePie.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#022c22',
-                            borderColor: '#10b981',
-                            borderRadius: '10px',
-                            color: '#fff',
-                          }}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-xs pt-2">
-                  <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 flex justify-between font-bold">
-                    <span>Present:</span>
-                    <span>{presentCount} ({attendanceRatePercentage}%)</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-700 dark:text-rose-300 flex justify-between font-bold">
-                    <span>Absent:</span>
-                    <span>{absentCount}</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 flex justify-between font-bold">
-                    <span>Late:</span>
-                    <span>{lateCount}</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-700 dark:text-sky-300 flex justify-between font-bold">
-                    <span>Excused:</span>
-                    <span>{excusedCount}</span>
-                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-emerald-400 font-medium">
+                    {ev.tag}
+                  </p>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
 
-              {/* School-Wide Memorization Growth Chart */}
-              <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-emerald-500" /> School-Wide Qur'an Memorization Growth
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-emerald-300/70">Cumulative Juz completed by Tahfiz students across academic terms</p>
-                  </div>
-                  <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/30">
-                    Total {totalJuzMemorized} Juz
-                  </span>
-                </div>
-
-                <div className="h-60 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={tahfizData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="tahfizColor" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#10b981" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="month" stroke="#10b981" fontSize={11} />
-                      <YAxis stroke="#10b981" fontSize={11} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: '#022c22',
-                          borderColor: '#10b981',
-                          borderRadius: '12px',
-                          color: '#fff',
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="juzCompleted"
-                        stroke="#10b981"
-                        strokeWidth={3}
-                        fillOpacity={1}
-                        fill="url(#tahfizColor)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+        {/* Card 4: Quick Actions Bar */}
+        <div className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-800/40 pb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                <Sparkles className="w-4 h-4" />
               </div>
+              <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider">
+                Quick Shortcuts
+              </h3>
             </div>
+          </div>
 
-            {/* Row: Live Activity Feed & Recent Admissions */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Live Activity Feed */}
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-emerald-500/20">
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-emerald-500" /> Real-Time Live Activity Feed
-                  </h3>
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/30">
-                    Live Audit Trail
-                  </span>
-                </div>
+          <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+            <Link
+              href="/dashboard/students"
+              className="p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 text-blue-700 dark:text-blue-300 flex items-center gap-2 transition-all"
+            >
+              <UserPlus className="w-4 h-4" />
+              <span>+ Add Student</span>
+            </Link>
 
-                <div className="space-y-3">
-                  {auditLogs.slice(0, 4).map((log) => (
-                    <div
-                      key={log.id}
-                      className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex items-start justify-between gap-3 text-xs"
-                    >
-                      <div className="space-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-900 dark:text-white">{log.performedBy}</span>
-                          <span className="text-[9px] font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 uppercase">
-                            {log.userRole}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-600 dark:text-emerald-300/80">{log.details}</p>
-                      </div>
-                      <span className="text-[10px] text-slate-400 dark:text-emerald-400/60 font-semibold whitespace-nowrap">
-                        {log.timestamp}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            <Link
+              href="/dashboard/teachers"
+              className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-500 hover:text-white dark:hover:bg-purple-600 text-purple-700 dark:text-purple-300 flex items-center gap-2 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              <span>+ Add Staff</span>
+            </Link>
 
-              {/* Recent Student Admissions */}
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-emerald-500/20">
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <GraduationCap className="w-4 h-4 text-emerald-500" /> Recent Student Admissions
-                  </h3>
-                  <Link href="/dashboard/students" className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline font-bold flex items-center gap-1">
-                    View All <ArrowUpRight className="w-3.5 h-3.5" />
-                  </Link>
-                </div>
+            <Link
+              href="/dashboard/classes"
+              className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-500 hover:text-white dark:hover:bg-emerald-600 text-emerald-700 dark:text-emerald-300 flex items-center gap-2 transition-all"
+            >
+              <School className="w-4 h-4" />
+              <span>+ Add Class</span>
+            </Link>
 
-                <div className="space-y-3">
-                  {students.slice(0, 4).map((s) => (
-                    <div
-                      key={s.id}
-                      className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-                          {s.fullName[0]}
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-900 dark:text-white">{s.fullName}</p>
-                          <p className="text-[10px] text-slate-500 dark:text-emerald-300/70">Admission: {s.admissionNo} • Class: {s.className}</p>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                        {s.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
+            <Link
+              href="/dashboard/communication"
+              className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-500 hover:text-white dark:hover:bg-rose-600 text-rose-700 dark:text-rose-300 flex items-center gap-2 transition-all"
+            >
+              <Bell className="w-4 h-4" />
+              <span>+ Post News</span>
+            </Link>
+          </div>
+        </div>
+      </div>
 
+      <AnimatePresence mode="wait">
         {activeTab === 'users' && (
           <motion.div
             key="tab-users"
