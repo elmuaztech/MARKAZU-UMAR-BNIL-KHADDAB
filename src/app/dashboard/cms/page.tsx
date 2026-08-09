@@ -13,6 +13,7 @@ import {
   X,
   Eye,
   Trash2,
+  Edit,
   Upload,
   Sparkles,
   Filter,
@@ -20,24 +21,49 @@ import {
 } from 'lucide-react';
 
 export default function WebsiteCMSPage() {
-  const { currentUser, newsArticles, addNewsArticle, deleteNewsArticle, galleryItems, addGalleryItem, deleteGalleryItem, addAuditLog, notify } = useApp();
+  const {
+    currentUser,
+    newsArticles,
+    addNewsArticle,
+    updateNewsArticle,
+    deleteNewsArticle,
+    galleryItems,
+    addGalleryItem,
+    updateGalleryItem,
+    deleteGalleryItem,
+    addAuditLog,
+    notify,
+  } = useApp();
 
   const [activeTab, setActiveTab] = useState<'news' | 'gallery'>('news');
   const [galleryCategoryFilter, setGalleryCategoryFilter] = useState<string>('All');
   const [notice, setNotice] = useState<string>('');
 
-  // News Modal State
+  // Add News Modal State
   const [showAddNewsModal, setShowAddNewsModal] = useState(false);
   const [newsTitle, setNewsTitle] = useState('');
   const [newsCategory, setNewsCategory] = useState('Musabaqah & Tahfiz');
   const [newsSummary, setNewsSummary] = useState('');
   const [newsImage, setNewsImage] = useState('/gallery/huffazu-abi-bakr.jpg');
 
-  // Gallery Modal State
+  // Edit News Modal State
+  const [editingNews, setEditingNews] = useState<NewsArticle | null>(null);
+  const [editNewsTitle, setEditNewsTitle] = useState('');
+  const [editNewsCategory, setEditNewsCategory] = useState('');
+  const [editNewsSummary, setEditNewsSummary] = useState('');
+  const [editNewsImage, setEditNewsImage] = useState('');
+
+  // Add Gallery Modal State
   const [showAddGalleryModal, setShowAddGalleryModal] = useState(false);
   const [galleryTitle, setGalleryTitle] = useState('');
   const [galleryCategory, setGalleryCategory] = useState<'Teachers' | 'Students' | 'Classes' | 'School Officials' | 'Islamic Events' | 'General'>('Students');
   const [galleryImage, setGalleryImage] = useState<string>('');
+
+  // Edit Gallery Modal State
+  const [editingGalleryItem, setEditingGalleryItem] = useState<GalleryItem | null>(null);
+  const [editGalleryTitle, setEditGalleryTitle] = useState('');
+  const [editGalleryCategory, setEditGalleryCategory] = useState<'Teachers' | 'Students' | 'Classes' | 'School Officials' | 'Islamic Events' | 'General'>('Students');
+  const [editGalleryImage, setEditGalleryImage] = useState('');
 
   const isAdmin = currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN';
 
@@ -95,6 +121,42 @@ export default function WebsiteCMSPage() {
     setTimeout(() => setNotice(''), 4000);
   };
 
+  // Open Edit News Modal
+  const handleOpenEditNews = (art: NewsArticle) => {
+    setEditingNews(art);
+    setEditNewsTitle(art.title);
+    setEditNewsCategory(art.category);
+    setEditNewsSummary(art.summary);
+    setEditNewsImage(art.image);
+  };
+
+  // Submit Edit News Article
+  const handleUpdateNews = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingNews || !editNewsTitle || !editNewsSummary) return;
+
+    updateNewsArticle(editingNews.id, {
+      title: editNewsTitle.trim(),
+      category: editNewsCategory,
+      summary: editNewsSummary.trim(),
+      image: editNewsImage,
+    });
+
+    addAuditLog({
+      action: 'WEBSITE_CMS_ARTICLE_UPDATED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Updated news article: "${editNewsTitle}"`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `Article/${editingNews.id}`,
+      status: 'SUCCESS',
+    });
+
+    setNotice(`News article "${editNewsTitle}" updated successfully!`);
+    setEditingNews(null);
+    setTimeout(() => setNotice(''), 4000);
+  };
+
   // Submit Gallery Photo
   const handleCreateGalleryPhoto = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,6 +189,40 @@ export default function WebsiteCMSPage() {
     setGalleryTitle('');
     setGalleryImage('');
     setShowAddGalleryModal(false);
+    setTimeout(() => setNotice(''), 4000);
+  };
+
+  // Open Edit Gallery Modal
+  const handleOpenEditGallery = (item: GalleryItem) => {
+    setEditingGalleryItem(item);
+    setEditGalleryTitle(item.title);
+    setEditGalleryCategory(item.category);
+    setEditGalleryImage(item.image);
+  };
+
+  // Submit Edit Gallery Item
+  const handleUpdateGalleryItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingGalleryItem || !editGalleryTitle || !editGalleryImage) return;
+
+    updateGalleryItem(editingGalleryItem.id, {
+      title: editGalleryTitle.trim(),
+      category: editGalleryCategory,
+      image: editGalleryImage,
+    });
+
+    addAuditLog({
+      action: 'WEBSITE_GALLERY_PHOTO_UPDATED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Updated Gallery photo under [${editGalleryCategory}]: "${editGalleryTitle}"`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `Gallery/${editingGalleryItem.id}`,
+      status: 'SUCCESS',
+    });
+
+    setNotice(`Gallery photo "${editGalleryTitle}" updated successfully!`);
+    setEditingGalleryItem(null);
     setTimeout(() => setNotice(''), 4000);
   };
 
@@ -237,13 +333,22 @@ export default function WebsiteCMSPage() {
                 </span>
 
                 {isAdmin && (
-                  <button
-                    onClick={() => deleteNewsArticle(art.id)}
-                    className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white transition-colors"
-                    title="Delete News Article"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleOpenEditNews(art)}
+                      className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white transition-colors flex items-center gap-1 text-[11px] font-bold px-2.5"
+                      title="Edit News Article"
+                    >
+                      <Edit className="w-3.5 h-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={() => deleteNewsArticle(art.id)}
+                      className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white transition-colors"
+                      title="Delete News Article"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 )}
               </div>
             </div>
@@ -298,13 +403,22 @@ export default function WebsiteCMSPage() {
                 <div className="pt-2 border-t border-slate-100 dark:border-emerald-500/20 flex items-center justify-between text-xs">
                   <span className="text-[10px] text-slate-400 font-mono">Section: {item.category}</span>
                   {isAdmin && (
-                    <button
-                      onClick={() => deleteGalleryItem(item.id)}
-                      className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white transition-colors"
-                      title="Delete Photo"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleOpenEditGallery(item)}
+                        className="p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500 text-amber-600 dark:text-amber-400 hover:text-slate-950 transition-colors flex items-center gap-1 text-[11px] font-bold px-2.5"
+                        title="Edit Photo Details"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={() => deleteGalleryItem(item.id)}
+                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white transition-colors"
+                        title="Delete Photo"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -316,7 +430,7 @@ export default function WebsiteCMSPage() {
       {/* ADD NEWS / EVENT MODAL */}
       {showAddNewsModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
+          <div className="max-w-xl w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
             <button
               onClick={() => setShowAddNewsModal(false)}
               className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
@@ -394,10 +508,95 @@ export default function WebsiteCMSPage() {
         </div>
       )}
 
+      {/* EDIT NEWS / EVENT MODAL */}
+      {editingNews && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="max-w-xl w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
+            <button
+              onClick={() => setEditingNews(null)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                <Edit className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Edit News / Event Article</h3>
+                <p className="text-slate-500 dark:text-emerald-300/70">Update details or replace event photo</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdateNews} className="space-y-3">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Article / Event Title *</label>
+                <input
+                  type="text"
+                  required
+                  value={editNewsTitle}
+                  onChange={(e) => setEditNewsTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Category *</label>
+                <select
+                  value={editNewsCategory}
+                  onChange={(e) => setEditNewsCategory(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-semibold focus:outline-none"
+                >
+                  <option value="Musabaqah & Tahfiz">Musabaqah & Tahfiz</option>
+                  <option value="Admissions">Admissions</option>
+                  <option value="Academic Calendar">Academic Calendar</option>
+                  <option value="General News">General News</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Replace Event Photo / Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageFileChange(e, setEditNewsImage)}
+                  className="w-full p-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white font-mono cursor-pointer"
+                />
+              </div>
+
+              {editNewsImage && (
+                <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 dark:border-emerald-500/20">
+                  <img src={editNewsImage} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Summary / Event Description *</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={editNewsSummary}
+                  onChange={(e) => setEditNewsSummary(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all uppercase tracking-wider"
+              >
+                Save Article Changes
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* ADD GALLERY PHOTO MODAL */}
       {showAddGalleryModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
+          <div className="max-w-xl w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
             <button
               onClick={() => setShowAddGalleryModal(false)}
               className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
@@ -466,6 +665,82 @@ export default function WebsiteCMSPage() {
                 className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow-lg transition-all uppercase tracking-wider"
               >
                 Save Photo to Gallery
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT GALLERY PHOTO MODAL */}
+      {editingGalleryItem && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="max-w-xl w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
+            <button
+              onClick={() => setEditingGalleryItem(null)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                <Edit className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Edit Gallery Photo Details</h3>
+                <p className="text-slate-500 dark:text-emerald-300/70">Update caption, change section, or replace photo file</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdateGalleryItem} className="space-y-3">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Photo Title / Caption *</label>
+                <input
+                  type="text"
+                  required
+                  value={editGalleryTitle}
+                  onChange={(e) => setEditGalleryTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Target Gallery Section *</label>
+                <select
+                  value={editGalleryCategory}
+                  onChange={(e) => setEditGalleryCategory(e.target.value as any)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold focus:outline-none"
+                >
+                  <option value="Students">Students Section</option>
+                  <option value="Teachers">Teachers Section</option>
+                  <option value="Classes">Classes Section</option>
+                  <option value="School Officials">School Officials Section</option>
+                  <option value="Islamic Events">Islamic Events / Musabaqah</option>
+                  <option value="General">General Premises</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Replace Image File (Laptop or Phone)</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => handleImageFileChange(e, setEditGalleryImage)}
+                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-dashed border-amber-500/50 text-xs text-slate-900 dark:text-white font-mono cursor-pointer"
+                />
+              </div>
+
+              {editGalleryImage && (
+                <div className="w-full h-36 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 dark:border-emerald-500/20">
+                  <img src={editGalleryImage} alt="Preview" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="w-full py-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow-lg transition-all uppercase tracking-wider"
+              >
+                Save Photo Changes
               </button>
             </form>
           </div>

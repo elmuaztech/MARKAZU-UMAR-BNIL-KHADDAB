@@ -63,7 +63,7 @@ export function Modal({
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className={`relative z-50 w-full ${maxWidthClasses[maxWidth]} rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl overflow-hidden font-sans space-y-4`}
+            className={`relative z-50 w-full ${maxWidthClasses[maxWidth]} max-h-[85vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl font-sans space-y-4`}
           >
             {/* Header */}
             <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-emerald-500/20 flex items-center justify-between">

@@ -702,7 +702,7 @@ export default function TeachersPage() {
       {/* Add Teacher Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
+          <div className="max-w-2xl w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
             <button
               onClick={() => setShowAddModal(false)}
               className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
@@ -835,32 +835,6 @@ export default function TeachersPage() {
                         </button>
                       );
                     })}
-                </div>
-              </div>
-
-              {/* Subject Selection Cascade */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">
-                  Step 3: Assign Subject(s) Taught by Teacher
-                </label>
-                <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-28 overflow-y-auto">
-                  {subjects.map((s) => {
-                    const isSelected = selectedSubjects.includes(s.name) || selectedSubjects.includes(s.id);
-                    return (
-                      <button
-                        type="button"
-                        key={s.id}
-                        onClick={() => toggleArrayItem(s.name, selectedSubjects, setSelectedSubjects)}
-                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold font-poppins transition-all flex items-center gap-1 ${
-                          isSelected
-                            ? 'bg-sky-600 text-white shadow'
-                            : 'bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300'
-                        }`}
-                      >
-                        <span>{s.name}</span>
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
 
@@ -1089,7 +1063,7 @@ export default function TeachersPage() {
       {/* Edit Teacher Modal */}
       {editingTeacher && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
+          <div className="max-w-2xl w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
             <button
               onClick={() => setEditingTeacher(null)}
               className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"

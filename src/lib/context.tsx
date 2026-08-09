@@ -219,10 +219,12 @@ interface AppContextType {
 
   newsArticles: NewsArticle[];
   addNewsArticle: (article: NewsArticle) => void;
+  updateNewsArticle: (id: string, updatedFields: Partial<NewsArticle>) => void;
   deleteNewsArticle: (id: string) => void;
 
   galleryItems: GalleryItem[];
   addGalleryItem: (item: GalleryItem) => void;
+  updateGalleryItem: (id: string, updatedFields: Partial<GalleryItem>) => void;
   deleteGalleryItem: (id: string) => void;
 
   saveAttendanceBatch: (records: AttendanceRecord[], isDraft?: boolean) => void;
@@ -637,6 +639,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const updateNewsArticle = (id: string, updatedFields: Partial<NewsArticle>) => {
+    setNewsArticles((prev) => {
+      const updated = prev.map((a) => (a.id === id ? { ...a, ...updatedFields } : a));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('markazu_news_articles', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
+
   const deleteNewsArticle = (id: string) => {
     setNewsArticles((prev) => {
       const updated = prev.filter((a) => a.id !== id);
@@ -652,6 +666,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addGalleryItem = (item: GalleryItem) => {
     setGalleryItems((prev) => {
       const updated = [item, ...prev];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('markazu_gallery_items', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
+
+  const updateGalleryItem = (id: string, updatedFields: Partial<GalleryItem>) => {
+    setGalleryItems((prev) => {
+      const updated = prev.map((g) => (g.id === id ? { ...g, ...updatedFields } : g));
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('markazu_gallery_items', JSON.stringify(updated));
@@ -3180,9 +3206,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateCommunicationSettings,
         newsArticles,
         addNewsArticle,
+        updateNewsArticle,
         deleteNewsArticle,
         galleryItems,
         addGalleryItem,
+        updateGalleryItem,
         deleteGalleryItem,
         addProgramme,
         updateProgramme,

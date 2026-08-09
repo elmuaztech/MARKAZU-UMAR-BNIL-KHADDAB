@@ -492,7 +492,7 @@ export default function StudentsPage() {
       {/* Enrolment Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl text-slate-900 dark:text-white relative text-xs">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-md max-h-[85vh] overflow-y-auto p-6 space-y-4 shadow-2xl text-slate-900 dark:text-white relative text-xs">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/60 pb-3">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-emerald-500" /> Enrol New Student (Child)
@@ -635,7 +635,7 @@ export default function StudentsPage() {
       {/* Edit Student Modal */}
       {editingStudent && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl text-slate-900 dark:text-white relative text-xs">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-md max-h-[85vh] overflow-y-auto p-6 space-y-4 shadow-2xl text-slate-900 dark:text-white relative text-xs">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/60 pb-3">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <Edit className="w-5 h-5 text-sky-500" /> Edit Student Details
