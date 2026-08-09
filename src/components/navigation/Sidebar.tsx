@@ -26,6 +26,8 @@ import {
   Calendar,
   Globe,
   Download,
+  Database,
+  HardDrive,
   Layers,
   FileSpreadsheet,
   Camera,
@@ -300,6 +302,7 @@ export function Sidebar({
 
     // SYSTEM & SECURITY
     { id: 'security', label: 'Security & Accounts', href: '/dashboard/security', icon: ShieldCheck, badge: 'Admin', group: 'SETTINGS' },
+    { id: 'backup', label: 'Backup Center', href: '/dashboard/backup', icon: Database, badge: 'Admin', group: 'SETTINGS' },
     { id: 'settings', label: 'Settings', href: '/dashboard/settings', icon: Settings, group: 'SETTINGS' },
   ];
 
