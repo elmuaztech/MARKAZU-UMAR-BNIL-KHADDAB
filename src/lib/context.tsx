@@ -1784,10 +1784,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUsers(updated);
     safeLocalStorageSet('markazu_users', updated);
 
+    // Update MOCK_USERS in memory as well
+    MOCK_USERS.forEach((mu, idx) => {
+      if (mu.id === userId || (updates.role && mu.role === updates.role)) {
+        MOCK_USERS[idx] = { ...mu, ...updates };
+      }
+    });
+
+    if (currentUser && (currentUser.id === userId || (updates.role && currentUser.role === updates.role))) {
+      const updatedCurr = { ...currentUser, ...updates };
+      setCurrentUser(updatedCurr);
+      safeLocalStorageSet('markazu_current_user', updatedCurr);
+    }
+
     notify({
       type: 'success',
-      title: 'Account Updated',
-      message: `User account updated successfully.`,
+      title: 'Account Credentials Updated',
+      message: `User account details updated successfully. You can now log in using your updated email address.`,
     });
   };
 

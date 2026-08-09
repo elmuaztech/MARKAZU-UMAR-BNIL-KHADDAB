@@ -193,21 +193,37 @@ export default function LoginPage() {
 
     setTimeout(() => {
       const inputClean = email.trim().toLowerCase();
+
+      // Read fresh users array directly from LocalStorage if available
+      let allUsers = users;
+      if (typeof window !== 'undefined') {
+        try {
+          const savedUsers = localStorage.getItem('markazu_users');
+          if (savedUsers) {
+            const parsed = JSON.parse(savedUsers);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              allUsers = parsed;
+            }
+          }
+        } catch {}
+      }
+
       // Find matching user in database (by Email or Staff ID Username)
       const user =
-        users.find(
+        allUsers.find(
           (u) =>
-            (u.email.toLowerCase() === inputClean ||
-              u.username?.toLowerCase() === inputClean ||
-              u.id.toLowerCase() === inputClean) &&
+            (u.email.trim().toLowerCase() === inputClean ||
+              u.username?.trim().toLowerCase() === inputClean ||
+              u.id.trim().toLowerCase() === inputClean) &&
             u.role === activeTab
         ) ||
-        users.find(
+        allUsers.find(
           (u) =>
-            u.email.toLowerCase() === inputClean ||
-            u.username?.toLowerCase() === inputClean ||
-            u.id.toLowerCase() === inputClean
-        );
+            u.email.trim().toLowerCase() === inputClean ||
+            u.username?.trim().toLowerCase() === inputClean ||
+            u.id.trim().toLowerCase() === inputClean
+        ) ||
+        (activeTab === 'SUPER_ADMIN' ? allUsers.find((u) => u.role === 'SUPER_ADMIN') : null);
 
       if (!user) {
         setErrorMsg('Invalid portal credentials or user account does not exist.');
