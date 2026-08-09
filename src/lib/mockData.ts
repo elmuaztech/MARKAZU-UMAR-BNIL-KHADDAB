@@ -82,7 +82,7 @@ export const MOCK_USERS: User[] = [
     avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
     phone: '+234 816 710 9421',
     status: 'ACTIVE',
-    passwordHash: hashPassword('Absaj@2785'),
+    passwordHash: hashPassword('@Aa123456789'),
     isFirstLogin: false,
     isLocked: false,
     failedLoginAttempts: 0,

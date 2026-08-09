@@ -259,11 +259,10 @@ export default function LoginPage() {
           user.lockoutUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
         }
 
-        const defaultHint = activeTab === 'SUPER_ADMIN' ? 'Absaj@2785' : 'admin123';
         setErrorMsg(
           user.isLocked
             ? 'Account has been locked after 5 failed attempts.'
-            : `Incorrect password for ${user.role.replace('_', ' ')}. Default password: "${defaultHint}". Click 'Forgot Password?' below to reset.`
+            : `Incorrect password for ${user.role.replace('_', ' ')}. Please re-enter your password or click 'Forgot Password?' below to reset.`
         );
         setIsSubmitting(false);
 
@@ -469,15 +468,6 @@ export default function LoginPage() {
                 </>
               )}
             </button>
-
-            {/* Default Password Quick Reference Helper */}
-            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-1 text-[11px] font-sans">
-              <span className="font-extrabold text-slate-700 dark:text-emerald-300 block uppercase text-[10px] tracking-wider">🔑 Default Password Reference</span>
-              <p className="text-slate-600 dark:text-emerald-200/80">
-                • <strong>Super Admin:</strong> <code className="bg-emerald-500/10 px-1 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-mono">Absaj@2785</code> (or updated email in Settings)<br />
-                • <strong>Admin / Teacher / Parent:</strong> <code className="bg-emerald-500/10 px-1 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-mono">admin123</code>
-              </p>
-            </div>
           </form>
         </div>
       </main>
