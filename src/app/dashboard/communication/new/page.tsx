@@ -182,28 +182,31 @@ export default function NewCommunicationPage() {
       </div>
 
       {/* Progress Wizard Indicator */}
-      <div className="grid grid-cols-5 gap-2 sm:gap-4 text-center text-xs font-bold">
-        {[
-          { num: 1, label: '1. Recipients' },
-          { num: 2, label: '2. Channels' },
-          { num: 3, label: '3. Composer' },
-          { num: 4, label: '4. Preview & Test' },
-          { num: 5, label: '5. Dispatch' },
-        ].map((s) => (
-          <div
-            key={s.num}
-            onClick={() => setStep(s.num as any)}
-            className={`py-3 px-2 rounded-2xl border cursor-pointer transition-all ${
-              step === s.num
-                ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/30 font-black'
-                : step > s.num
-                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
-                : 'bg-white dark:bg-[#042419] text-slate-400 dark:text-emerald-300/40 border-slate-200 dark:border-emerald-500/20'
-            }`}
-          >
-            {s.label}
-          </div>
-        ))}
+      <div className="overflow-x-auto pb-2 scrollbar-none">
+        <div className="flex sm:grid sm:grid-cols-5 gap-2 min-w-[540px] sm:min-w-0 text-center text-xs font-bold">
+          {[
+            { num: 1, label: '1. Recipients' },
+            { num: 2, label: '2. Channels' },
+            { num: 3, label: '3. Composer' },
+            { num: 4, label: '4. Preview & Test' },
+            { num: 5, label: '5. Dispatch' },
+          ].map((s) => (
+            <button
+              type="button"
+              key={s.num}
+              onClick={() => setStep(s.num as any)}
+              className={`flex-1 sm:flex-none py-3 px-3 rounded-2xl border text-center whitespace-nowrap cursor-pointer transition-all ${
+                step === s.num
+                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/30 font-black'
+                  : step > s.num
+                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                  : 'bg-white dark:bg-[#042419] text-slate-400 dark:text-emerald-300/40 border-slate-200 dark:border-emerald-500/20'
+              }`}
+            >
+              {s.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* STEP 1: RECIPIENT SELECTION WIZARD */}

@@ -157,7 +157,7 @@ export function PublicFooter() {
             </span>
             <span className="text-emerald-700">|</span>
             <a
-              href="mailto:nmastechnologieslimited@gmail.com"
+              href="mailto:Elmuaz technologieslimited@gmail.com"
               className="font-mono text-amber-400 hover:underline flex items-center gap-1 font-semibold"
               title="Contact Developer"
             >

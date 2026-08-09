@@ -383,24 +383,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         const savedUsers = localStorage.getItem('markazu_users');
-        if (savedUsers) {
+        if (savedUsers !== null) {
           const parsed: User[] = JSON.parse(savedUsers);
-          const updated = parsed.map((u) => {
+          return parsed.map((u) => {
             if (u.id === 'usr-superadmin-1' || u.role === 'SUPER_ADMIN') {
               return {
                 ...u,
-                email: 'markazuumarbnkhaddabdaneji@gmail.com',
+                email: 'markazuumarbndaneji@gmail.com',
                 passwordHash: hashPassword('Absaj@2785'),
               };
             }
             return u;
           });
-          MOCK_USERS.forEach((mockUser) => {
-            if (!updated.some((u) => u.id === mockUser.id || u.email.toLowerCase() === mockUser.email.toLowerCase())) {
-              updated.push(mockUser);
-            }
-          });
-          return updated;
         }
 
         const savedPass = localStorage.getItem('markazu_user_passwords');
@@ -460,7 +454,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const updateUserAvatar = (avatarUrl: string) => {
     setCurrentUser((prev) => ({ ...prev, avatar: avatarUrl }));
-    setUsers((prev) => prev.map((u) => (u.id === currentUser.id ? { ...u, avatar: avatarUrl } : u)));
+    setUsers((prev) => prev.map((u) => (u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...u, avatar: avatarUrl } : u)));
+    setTeachers((prev) => prev.map((t) => (t.id === currentUser.id || t.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...t, avatar: avatarUrl } : t)));
+    setStudents((prev) => prev.map((s) => (s.id === currentUser.id || (s.email && s.email.toLowerCase() === currentUser.email.toLowerCase()) ? { ...s, avatar: avatarUrl } : s)));
+    setParents((prev) => prev.map((p) => (p.id === currentUser.id || p.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...p, avatar: avatarUrl } : p)));
+
     if (typeof window !== 'undefined' && currentUser?.id) {
       try {
         localStorage.setItem(`markazu_user_avatar_${currentUser.id}`, avatarUrl);
@@ -496,12 +494,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const [programmes, setProgrammes] = useState<Programme[]>(MOCK_PROGRAMMES);
+  const [programmes, setProgrammes] = useState<Programme[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('markazu_programmes');
+        if (saved !== null) return JSON.parse(saved);
+      } catch {}
+    }
+    return MOCK_PROGRAMMES;
+  });
   const [students, setStudents] = useState<Student[]>(() => {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('markazu_students');
-        if (saved) return JSON.parse(saved);
+        if (saved !== null) return JSON.parse(saved);
       } catch {}
     }
     return MOCK_STUDENTS;
@@ -510,7 +516,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('markazu_teachers');
-        if (saved) return JSON.parse(saved);
+        if (saved !== null) return JSON.parse(saved);
       } catch {}
     }
     return MOCK_TEACHERS;
@@ -519,13 +525,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('markazu_parents');
-        if (saved) return JSON.parse(saved);
+        if (saved !== null) return JSON.parse(saved);
       } catch {}
     }
     return MOCK_PARENTS;
   });
-  const [classes, setClasses] = useState<SchoolClass[]>(MOCK_CLASSES);
-  const [subjects, setSubjects] = useState<Subject[]>(MOCK_SUBJECTS);
+  const [classes, setClasses] = useState<SchoolClass[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('markazu_classes');
+        if (saved !== null) return JSON.parse(saved);
+      } catch {}
+    }
+    return MOCK_CLASSES;
+  });
+  const [subjects, setSubjects] = useState<Subject[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('markazu_subjects');
+        if (saved !== null) return JSON.parse(saved);
+      } catch {}
+    }
+    return MOCK_SUBJECTS;
+  });
   const [teacherAssignments, setTeacherAssignments] = useState<TeacherAssignment[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -580,7 +602,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('markazu_news_articles');
-        if (saved) return JSON.parse(saved);
+        if (saved !== null) return JSON.parse(saved);
       } catch {}
     }
     return [
@@ -609,7 +631,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('markazu_gallery_items');
-        if (saved) return JSON.parse(saved);
+        if (saved !== null) return JSON.parse(saved);
       } catch {}
     }
     return [
@@ -626,6 +648,63 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       { id: 'gal-11', title: 'Tahfiz Instructors Assembly', category: 'Teachers', image: '/gallery/teachers-3.jpg' },
     ];
   });
+
+  // Permanent Auto-Syncing useEffect Hooks to ensure zero data loss on logout/login/refresh
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('markazu_users', JSON.stringify(users));
+      } catch {}
+    }
+  }, [users]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('markazu_students', JSON.stringify(students));
+      } catch {}
+    }
+  }, [students]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('markazu_teachers', JSON.stringify(teachers));
+      } catch {}
+    }
+  }, [teachers]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('markazu_parents', JSON.stringify(parents));
+      } catch {}
+    }
+  }, [parents]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('markazu_programmes', JSON.stringify(programmes));
+      } catch {}
+    }
+  }, [programmes]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('markazu_classes', JSON.stringify(classes));
+      } catch {}
+    }
+  }, [classes]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('markazu_subjects', JSON.stringify(subjects));
+      } catch {}
+    }
+  }, [subjects]);
 
   const addNewsArticle = (art: NewsArticle) => {
     setNewsArticles((prev) => {
@@ -1938,7 +2017,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const updateStudent = (id: string, updated: Partial<Student>) => {
     setStudents((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, ...updated } : s))
+      prev.map((s) => {
+        if (s.id === id) {
+          const newName = updated.fullName || s.fullName;
+          const newEmail = updated.email || s.email;
+          const newAvatar = updated.avatar !== undefined ? updated.avatar : s.avatar;
+
+          setUsers((uPrev) =>
+            uPrev.map((u) => {
+              if (u.id === id || u.id === s.userId || (s.admissionNo && u.username === s.admissionNo)) {
+                return {
+                  ...u,
+                  name: newName,
+                  email: newEmail || u.email,
+                  avatar: newAvatar,
+                };
+              }
+              return u;
+            })
+          );
+
+          if (currentUser && (currentUser.id === id || currentUser.id === s.userId || (s.admissionNo && currentUser.username === s.admissionNo))) {
+            setCurrentUser((cPrev) => ({
+              ...cPrev,
+              name: newName,
+              email: newEmail || cPrev.email,
+              avatar: newAvatar,
+            }));
+          }
+
+          return { ...s, ...updated, avatar: newAvatar };
+        }
+        return s;
+      })
     );
     addAuditLog({
       action: 'STUDENT_UPDATED',
@@ -2059,12 +2170,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (t.id === id) {
           const englishName = updated.full_name_english || updated.fullName || t.full_name_english || t.fullName;
           const arabicName = updated.full_name_arabic !== undefined ? updated.full_name_arabic : t.full_name_arabic;
+          const newAvatar = updated.avatar !== undefined ? updated.avatar : t.avatar;
+          const newEmail = updated.email !== undefined ? updated.email : t.email;
+
+          setUsers((uPrev) =>
+            uPrev.map((u) => {
+              if (u.id === id || (t.email && u.email.toLowerCase() === t.email.toLowerCase()) || (t.staffNo && u.username === t.staffNo)) {
+                return {
+                  ...u,
+                  name: englishName,
+                  email: newEmail,
+                  avatar: newAvatar,
+                };
+              }
+              return u;
+            })
+          );
+
+          if (currentUser && (currentUser.id === id || (t.email && currentUser.email.toLowerCase() === t.email.toLowerCase()) || (t.staffNo && currentUser.username === t.staffNo))) {
+            setCurrentUser((cPrev) => ({
+              ...cPrev,
+              name: englishName,
+              email: newEmail,
+              avatar: newAvatar,
+            }));
+          }
+
           return {
             ...t,
             ...updated,
             full_name_english: englishName,
             full_name_arabic: arabicName,
             fullName: englishName,
+            avatar: newAvatar,
           };
         }
         return t;
@@ -2232,7 +2370,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const updateParent = (id: string, updated: Partial<Parent>) => {
     setParents((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updated } : p))
+      prev.map((p) => {
+        if (p.id === id) {
+          const newName = updated.fullName || p.fullName;
+          const newEmail = updated.email || p.email;
+          const newAvatar = updated.avatar !== undefined ? updated.avatar : p.avatar;
+
+          setUsers((uPrev) =>
+            uPrev.map((u) => {
+              if (u.id === id || u.id === p.userId || (p.email && u.email.toLowerCase() === p.email.toLowerCase())) {
+                return {
+                  ...u,
+                  name: newName,
+                  email: newEmail,
+                  avatar: newAvatar,
+                };
+              }
+              return u;
+            })
+          );
+
+          if (currentUser && (currentUser.id === id || currentUser.id === p.userId || (p.email && currentUser.email.toLowerCase() === p.email.toLowerCase()))) {
+            setCurrentUser((cPrev) => ({
+              ...cPrev,
+              name: newName,
+              email: newEmail,
+              avatar: newAvatar,
+            }));
+          }
+
+          return { ...p, ...updated, avatar: newAvatar };
+        }
+        return p;
+      })
     );
     addAuditLog({
       action: 'PARENT_UPDATED',

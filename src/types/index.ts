@@ -70,6 +70,7 @@ export interface Student {
   status: 'ACTIVE' | 'GRADUATED' | 'SUSPENDED';
   hifzProgress: StudentHifzProgress;
   akhlaqRating: 'EXCELLENT' | 'VERY_GOOD' | 'GOOD' | 'NEEDS_IMPROVEMENT';
+  avatar?: string;
 }
 
 export interface Teacher {
@@ -88,6 +89,7 @@ export interface Teacher {
   subjectsAssigned: string[];
   dateJoined: string;
   status: 'ACTIVE' | 'ON_LEAVE';
+  avatar?: string;
 }
 
 export interface Parent {
@@ -98,6 +100,7 @@ export interface Parent {
   phone: string;
   whatsapp?: string;
   relationship?: string;
+  avatar?: string;
   occupation: string;
   address: string;
   wardsCount: number;

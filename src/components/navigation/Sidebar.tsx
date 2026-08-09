@@ -251,14 +251,6 @@ export function Sidebar({
     },
     { id: 'attendance', label: 'Attendance', href: '/dashboard/attendance', icon: CalendarCheck, group: 'ACADEMICS' },
     {
-      id: 'tahfiz',
-      label: currentUser.role === 'STUDENT' || currentUser.role === 'PARENT' ? 'Tahfiz Progress' : 'Tahfiz Tracker',
-      href: '/dashboard/tahfiz',
-      icon: BookOpen,
-      badge: 'Core',
-      group: 'ACADEMICS',
-    },
-    {
       id: 'assessment',
       label: currentUser.role === 'TEACHER' ? 'Grade Entry' : 'Assessments',
       href: '/dashboard/assessment',
