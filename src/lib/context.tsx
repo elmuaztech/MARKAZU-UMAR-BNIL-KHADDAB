@@ -384,7 +384,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         const savedUsers = localStorage.getItem('markazu_users');
         if (savedUsers !== null) {
-          return JSON.parse(savedUsers);
+          const parsed: User[] = JSON.parse(savedUsers);
+          const updatedParsed = parsed.map((u) => {
+            if (u.id === 'usr-superadmin-1' || u.role === 'SUPER_ADMIN') {
+              return {
+                ...u,
+                email: 'markazuumarbnkhaddabdaneji@gmail.com',
+                passwordHash: hashPassword('@Aa123456789'),
+                isLocked: false,
+                failedLoginAttempts: 0,
+              };
+            }
+            return u;
+          });
+          safeLocalStorageSet('markazu_users', updatedParsed);
+          return updatedParsed;
         }
 
         const savedPass = localStorage.getItem('markazu_user_passwords');

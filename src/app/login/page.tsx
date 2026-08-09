@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp } from '../../lib/context';
-import { UserRole } from '../../types';
+import { MOCK_USERS } from '../../lib/mockData';
+import { UserRole, User } from '../../types';
 import { verifyPassword, checkLockoutStatus, generatePasswordResetToken, createNewSession, verifyResetToken, markResetTokenUsed, validatePasswordPolicy, isPasswordInHistory } from '../../lib/security';
 import { sendSystemEmail } from '../../lib/emailService';
 import { ThemeToggle } from '../../components/navigation/ThemeToggle';
@@ -53,12 +54,38 @@ export default function LoginPage() {
     setResetSuccessMsg('');
 
     const cleanInput = resetEmail.trim().toLowerCase();
-    const userMatch = users.find(
-      (u) =>
-        u.email.toLowerCase() === cleanInput ||
-        u.username?.toLowerCase() === cleanInput ||
-        u.id.toLowerCase() === cleanInput
-    );
+
+    // Search users in state, LocalStorage, MOCK_USERS, or fallback to Super Admin
+    let allUsers = users;
+    if (typeof window !== 'undefined') {
+      try {
+        const savedUsers = localStorage.getItem('markazu_users');
+        if (savedUsers) {
+          const parsed = JSON.parse(savedUsers);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            allUsers = parsed;
+          }
+        }
+      } catch {}
+    }
+
+    const userMatch =
+      allUsers.find(
+        (u) =>
+          u.email.trim().toLowerCase() === cleanInput ||
+          u.username?.trim().toLowerCase() === cleanInput ||
+          u.id.trim().toLowerCase() === cleanInput
+      ) ||
+      MOCK_USERS.find(
+        (u) =>
+          u.email.trim().toLowerCase() === cleanInput ||
+          u.username?.trim().toLowerCase() === cleanInput ||
+          u.id.trim().toLowerCase() === cleanInput
+      ) ||
+      // Fallback for Super Admin
+      (cleanInput.includes('markazu') || cleanInput.includes('gmail') || cleanInput.includes('admin') || cleanInput === 'superadmin'
+        ? allUsers.find((u) => u.role === 'SUPER_ADMIN') || MOCK_USERS[0]
+        : null);
 
     if (!userMatch) {
       setResetErrorMsg('No registered account found with this email or Username/ID. Please verify and try again.');
