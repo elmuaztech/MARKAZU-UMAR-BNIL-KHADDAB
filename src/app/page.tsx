@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
-  const { academicEvents } = useApp();
+  const { academicEvents, galleryItems: cmsGalleryItems, newsArticles: cmsNewsArticles } = useApp();
 
   const [admissionModalOpen, setAdmissionModalOpen] = useState(false);
   const [activeGalleryTab, setActiveGalleryTab] = useState<string>('All');
@@ -47,73 +47,13 @@ export default function HomePage() {
     'School Officials',
     'Students',
     'Teachers',
-    'Tahfiz',
-    'Graduation',
     'Islamic Events',
-  ];
-
-  const galleryItems = [
-    {
-      title: 'Huffazu Daru Abi-Bakr As-Siddiq',
-      category: 'Classes',
-      image: '/gallery/huffazu-abi-bakr.jpg',
-    },
-    {
-      title: 'Huffazu Daru Umar Bin Khaddab',
-      category: 'Classes',
-      image: '/gallery/huffazu-umar-bin-khaddab.jpg',
-    },
-    {
-      title: 'Alh. Salisu Abubakar Daneji (Director)',
-      category: 'School Officials',
-      image: '/gallery/director.jpg',
-    },
-    {
-      title: 'Ustaz Sani Abubakar Daneji (Deputy Director)',
-      category: 'School Officials',
-      image: '/gallery/deputy-director.jpg',
-    },
-    {
-      title: 'Mal. Ahmad Abba - Headmaster, Matan Aure Section',
-      category: 'School Officials',
-      image: '/gallery/headmaster-matan-aure.jpg',
-    },
-    {
-      title: 'Mal. Siraɗullahi Balarabe Lawan - Headmaster, Asuba da Maghrib Section',
-      category: 'School Officials',
-      image: '/gallery/headmaster-asuba-maghrib.jpg',
-    },
-    {
-      title: 'Female Tahfiz Halqa Recitation Class',
-      category: 'Students',
-      image: '/gallery/students-group-1.jpg',
-    },
-    {
-      title: 'Markazu Umar Female Students Assembly',
-      category: 'Students',
-      image: '/gallery/students-group-2.jpg',
-    },
-    {
-      title: 'Teachers',
-      category: 'Teachers',
-      image: '/gallery/teachers-1.jpg',
-    },
-    {
-      title: 'Teachers',
-      category: 'Teachers',
-      image: '/gallery/teachers-2.jpg',
-    },
-    {
-      title: 'Teachers',
-      category: 'Teachers',
-      image: '/gallery/teachers-3.jpg',
-    },
   ];
 
   const filteredGallery =
     activeGalleryTab === 'All'
-      ? galleryItems
-      : galleryItems.filter((item) => item.category === activeGalleryTab);
+      ? cmsGalleryItems
+      : cmsGalleryItems.filter((item) => item.category === activeGalleryTab);
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
@@ -149,31 +89,26 @@ export default function HomePage() {
     {
       name: 'Alh. Salisu Abubakar Daneji',
       title: 'Director',
-      spec: 'Director of Markazu Umar bn Al-Khattab Islamiyyah',
       avatar: '/gallery/director.jpg',
     },
     {
       name: 'Ustaz Ahmad Muhammad',
       title: 'Head of Tahfiz & Hifz Master',
-      spec: '30-Juz Hafiz, Ijazah in Hafs & Warsh',
       avatar: '',
     },
     {
       name: 'Mallam Ibrahim Daneji',
       title: 'Director of Academic Studies',
-      spec: 'M.A. Islamic Studies & Arabic Syntax',
       avatar: '',
     },
     {
       name: 'Ustaz Hafiz Sulaiman',
       title: 'Senior Sabki & Manzil Inspector',
-      spec: 'Tajweed Specialist & Competition Coach',
       avatar: '',
     },
     {
       name: 'Malama Fatima Abubakar',
       title: 'Female Halqa & Tarbiyya Supervisor',
-      spec: 'B.Ed Islamic Studies & Qur’an Reciter',
       avatar: '',
     },
   ];
@@ -635,9 +570,120 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* SECTION 5: LATEST NEWS & EVENTS */}
+        <section className="space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
+              News & Announcements
+            </span>
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white">
+              Latest Musabaqah & School News
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-emerald-200/80">
+              Stay updated with Quranic competitions, academic calendars, and institutional events.
+            </p>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {cmsNewsArticles.map((art) => (
+              <div
+                key={art.id}
+                className="p-6 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-xl space-y-4 flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  {art.image && (
+                    <div className="w-full h-48 rounded-2xl overflow-hidden bg-slate-100 dark:bg-emerald-950 border border-emerald-500/20">
+                      <img src={art.image} alt={art.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20 uppercase">
+                      {art.category}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">{art.date}</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-snug">{art.title}</h3>
+                  <p className="text-xs text-slate-600 dark:text-emerald-200/80 leading-relaxed">{art.summary}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
 
+        {/* SECTION 6: SCHOOL PHOTO GALLERY */}
+        <section className="space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
+              Visual Highlights
+            </span>
+            <h2 className="text-3xl font-black text-slate-900 dark:text-white">
+              Markazu Umar School Photo Gallery
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-emerald-200/80">
+              Explore photo archives categorized by Teachers, Students, Classes, Officials, and Events.
+            </p>
 
+            {/* Gallery Category Filter Tabs */}
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
+              {galleryCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveGalleryTab(cat)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    activeGalleryTab === cat
+                      ? 'bg-emerald-600 text-white shadow-lg'
+                      : 'bg-emerald-50 dark:bg-emerald-950/60 text-slate-700 dark:text-emerald-300 hover:bg-emerald-100'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredGallery.map((item, idx) => (
+              <div
+                key={item.id || idx}
+                onClick={() => openLightbox(idx)}
+                className="group cursor-pointer p-3 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-xl space-y-3"
+              >
+                <div className="relative w-full h-52 rounded-2xl overflow-hidden bg-slate-100 dark:bg-emerald-950">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <span className="absolute top-3 left-3 text-[10px] font-bold bg-black/60 text-white px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20 uppercase">
+                    {item.category}
+                  </span>
+                </div>
+                <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{item.title}</h4>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Lightbox Modal */}
+        {lightboxOpen && filteredGallery[lightboxIndex] && (
+          <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute top-6 right-6 text-white text-xl font-bold bg-white/10 p-3 rounded-full hover:bg-white/20"
+            >
+              ✕
+            </button>
+            <div className="max-w-4xl w-full text-center space-y-4">
+              <img
+                src={filteredGallery[lightboxIndex].image}
+                alt={filteredGallery[lightboxIndex].title}
+                className="max-h-[75vh] mx-auto rounded-2xl object-contain shadow-2xl"
+              />
+              <h3 className="text-white text-base font-bold">{filteredGallery[lightboxIndex].title}</h3>
+              <p className="text-amber-400 text-xs font-semibold uppercase">{filteredGallery[lightboxIndex].category} Section</p>
+            </div>
+          </div>
+        )}
 
         {/* SECTION 7: OFFICIAL INSTITUTIONAL LEADERSHIP */}
         <section className="space-y-10">

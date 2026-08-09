@@ -326,12 +326,12 @@ export function AdminDashboard() {
               border: 'border-amber-100 dark:border-amber-900/30',
             },
             {
-              title: 'Payment Management',
-              desc: 'School fees & payment records',
-              href: '/dashboard/students',
-              icon: CreditCardIcon,
-              color: 'bg-pink-500 text-white',
-              border: 'border-pink-100 dark:border-pink-900/30',
+              title: 'Download & Backup Center',
+              desc: 'Official forms & system database backup',
+              href: '/dashboard/backup',
+              icon: Download,
+              color: 'bg-emerald-600 text-white',
+              border: 'border-emerald-100 dark:border-emerald-900/30',
             },
             {
               title: 'Attendance Records',
@@ -709,7 +709,6 @@ export function AdminDashboard() {
                       <tr className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 font-bold uppercase text-[10px]">
                         <th className="py-3 px-4">Staff ID</th>
                         <th className="py-3 px-4">Teacher Name</th>
-                        <th className="py-3 px-4">Specialization</th>
                         <th className="py-3 px-4">Contact Info</th>
                         <th className="py-3 px-4">Classes Assigned</th>
                         <th className="py-3 px-4 text-right">Action</th>
@@ -721,7 +720,7 @@ export function AdminDashboard() {
                           (t) =>
                             t.fullName.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
                             t.staffNo.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
-                            t.specialization.toLowerCase().includes(userSearchQuery.toLowerCase())
+                            t.email.toLowerCase().includes(userSearchQuery.toLowerCase())
                         )
                         .map((teacher) => (
                           <tr key={teacher.id} className="hover:bg-slate-50 dark:hover:bg-emerald-950/40">
@@ -730,9 +729,6 @@ export function AdminDashboard() {
                             </td>
                             <td className="py-3 px-4 font-bold text-slate-900 dark:text-white">
                               {teacher.fullName}
-                            </td>
-                            <td className="py-3 px-4 text-amber-600 dark:text-amber-300 font-semibold">
-                              {teacher.specialization}
                             </td>
                             <td className="py-3 px-4 text-slate-600 dark:text-emerald-300/80 font-mono">
                               {teacher.email} • {teacher.phone}
@@ -1495,7 +1491,6 @@ export function AdminDashboard() {
                           <tr className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 font-bold uppercase text-[10px]">
                             <th className="py-3 px-4">Staff ID</th>
                             <th className="py-3 px-4">Teacher Name</th>
-                            <th className="py-3 px-4">Specialization</th>
                             <th className="py-3 px-4">Email & Contact</th>
                           </tr>
                         </thead>
@@ -1504,7 +1499,6 @@ export function AdminDashboard() {
                             <tr key={t.id} className="hover:bg-slate-50 dark:hover:bg-emerald-950/30">
                               <td className="py-2.5 px-4 font-mono font-bold text-sky-600 dark:text-sky-400">{t.staffNo}</td>
                               <td className="py-2.5 px-4 font-bold">{t.fullName}</td>
-                              <td className="py-2.5 px-4 text-amber-600 dark:text-amber-300 font-semibold">{t.specialization}</td>
                               <td className="py-2.5 px-4 font-mono">{t.email} • {t.phone}</td>
                             </tr>
                           ))}

@@ -33,6 +33,8 @@ import {
   AcademicEvent,
   ReportCardTemplate,
   DEFAULT_REPORT_CARD_TEMPLATE,
+  NewsArticle,
+  GalleryItem,
 } from '../types';
 import {
   MOCK_USERS,
@@ -214,6 +216,14 @@ interface AppContextType {
   resultSubmissions: ResultApprovalSubmission[];
   reportCardTemplate: ReportCardTemplate;
   updateReportCardTemplate: (updated: Partial<ReportCardTemplate>) => void;
+
+  newsArticles: NewsArticle[];
+  addNewsArticle: (article: NewsArticle) => void;
+  deleteNewsArticle: (id: string) => void;
+
+  galleryItems: GalleryItem[];
+  addGalleryItem: (item: GalleryItem) => void;
+  deleteGalleryItem: (id: string) => void;
 
   saveAttendanceBatch: (records: AttendanceRecord[], isDraft?: boolean) => void;
   adminOverrideAttendance: (attendanceId: string, newStatus: AttendanceStatusType, reason: string) => void;
@@ -563,6 +573,105 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     return DEFAULT_REPORT_CARD_TEMPLATE;
   });
+
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('markazu_news_articles');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [
+      {
+        id: 'art-01',
+        title: 'Annual Qur’an Recitation Competition (Musabaqah 1447 AH) Announced',
+        category: 'Musabaqah & Tahfiz',
+        date: '2026-08-01',
+        summary: 'Markazu Umar in Kano hosts its flagship annual Musabaqah across 10 Juz, 20 Juz, and 30 Juz categories with state dignitaries.',
+        image: '/gallery/huffazu-abi-bakr.jpg',
+        published: true,
+      },
+      {
+        id: 'art-02',
+        title: 'Admissions Open for 1447/1448 AH Tahfiz & Islamiyya Stream',
+        category: 'Admissions',
+        date: '2026-07-25',
+        summary: 'Entrance applications now available online and at the administrative office for Primary & Secondary Islamiyya.',
+        image: '/gallery/students-group-1.jpg',
+        published: true,
+      },
+    ];
+  });
+
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('markazu_gallery_items');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [
+      { id: 'gal-01', title: 'Huffazu Daru Abi-Bakr As-Siddiq', category: 'Classes', image: '/gallery/huffazu-abi-bakr.jpg' },
+      { id: 'gal-02', title: 'Huffazu Daru Umar Bin Khaddab', category: 'Classes', image: '/gallery/huffazu-umar-bin-khaddab.jpg' },
+      { id: 'gal-03', title: 'Alh. Salisu Abubakar Daneji (Director)', category: 'School Officials', image: '/gallery/director.jpg' },
+      { id: 'gal-04', title: 'Ustaz Sani Abubakar Daneji (Deputy Director)', category: 'School Officials', image: '/gallery/deputy-director.jpg' },
+      { id: 'gal-05', title: 'Mal. Ahmad Abba - Headmaster, Matan Aure Section', category: 'School Officials', image: '/gallery/headmaster-matan-aure.jpg' },
+      { id: 'gal-06', title: 'Mal. Siraɗullahi Balarabe Lawan - Headmaster, Asuba da Maghrib Section', category: 'School Officials', image: '/gallery/headmaster-asuba-maghrib.jpg' },
+      { id: 'gal-07', title: 'Female Tahfiz Halqa Recitation Class', category: 'Students', image: '/gallery/students-group-1.jpg' },
+      { id: 'gal-08', title: 'Markazu Umar Female Students Assembly', category: 'Students', image: '/gallery/students-group-2.jpg' },
+      { id: 'gal-09', title: 'Academic Teachers Halqa Supervision', category: 'Teachers', image: '/gallery/teachers-1.jpg' },
+      { id: 'gal-10', title: 'Markazu Umar Teaching Staff', category: 'Teachers', image: '/gallery/teachers-2.jpg' },
+      { id: 'gal-11', title: 'Tahfiz Instructors Assembly', category: 'Teachers', image: '/gallery/teachers-3.jpg' },
+    ];
+  });
+
+  const addNewsArticle = (art: NewsArticle) => {
+    setNewsArticles((prev) => {
+      const updated = [art, ...prev];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('markazu_news_articles', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
+
+  const deleteNewsArticle = (id: string) => {
+    setNewsArticles((prev) => {
+      const updated = prev.filter((a) => a.id !== id);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('markazu_news_articles', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
+
+  const addGalleryItem = (item: GalleryItem) => {
+    setGalleryItems((prev) => {
+      const updated = [item, ...prev];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('markazu_gallery_items', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
+
+  const deleteGalleryItem = (id: string) => {
+    setGalleryItems((prev) => {
+      const updated = prev.filter((g) => g.id !== id);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('markazu_gallery_items', JSON.stringify(updated));
+        } catch {}
+      }
+      return updated;
+    });
+  };
 
   const updateReportCardTemplate = (updated: Partial<ReportCardTemplate>) => {
     setReportCardTemplateState((prev) => {
@@ -3069,6 +3178,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteNotification,
         publishReportSheetsBatch,
         updateCommunicationSettings,
+        newsArticles,
+        addNewsArticle,
+        deleteNewsArticle,
+        galleryItems,
+        addGalleryItem,
+        deleteGalleryItem,
         addProgramme,
         updateProgramme,
         toggleProgrammeStatus,

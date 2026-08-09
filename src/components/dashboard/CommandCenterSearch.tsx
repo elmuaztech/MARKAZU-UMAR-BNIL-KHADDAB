@@ -17,7 +17,7 @@ export function CommandCenterSearch() {
     : [];
 
   const filteredTeachers = cleanQuery
-    ? teachers.filter((t) => t.fullName.toLowerCase().includes(cleanQuery) || t.staffNo.toLowerCase().includes(cleanQuery) || t.specialization.toLowerCase().includes(cleanQuery)).slice(0, 4)
+    ? teachers.filter((t) => t.fullName.toLowerCase().includes(cleanQuery) || t.staffNo.toLowerCase().includes(cleanQuery) || t.email.toLowerCase().includes(cleanQuery)).slice(0, 4)
     : [];
 
   const filteredParents = cleanQuery
@@ -123,7 +123,7 @@ export function CommandCenterSearch() {
                       >
                         <div>
                           <p className="font-bold text-slate-900 dark:text-white">{t.fullName}</p>
-                          <p className="text-[10px] text-slate-500 dark:text-sky-300/70">Staff: {t.staffNo} • Specialization: {t.specialization}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-sky-300/70">Staff: {t.staffNo} • Email: {t.email}</p>
                         </div>
                         <ArrowRight className="w-3.5 h-3.5 text-sky-500" />
                       </Link>

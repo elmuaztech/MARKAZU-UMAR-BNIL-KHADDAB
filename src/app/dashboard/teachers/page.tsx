@@ -43,8 +43,6 @@ export default function TeachersPage() {
   const [staffNo, setStaffNo] = useState(`TCH-${Math.floor(100 + Math.random() * 900)}`);
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [qualification, setQualification] = useState('B.A. Islamic Studies & Hafiz');
-  const [specialization, setSpecialization] = useState("Qur'an & Tajweed");
   const [customPassword, setCustomPassword] = useState('');
   const [selectedProgrammes, setSelectedProgrammes] = useState<string[]>(['prog-02']);
   const [selectedClasses, setSelectedClasses] = useState<string[]>(['cls-tahfiz-1']);
@@ -75,8 +73,6 @@ export default function TeachersPage() {
   const [editStaffNo, setEditStaffNo] = useState('');
   const [editEmail, setEditEmail] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editQualification, setEditQualification] = useState('');
-  const [editSpecialization, setEditSpecialization] = useState('');
   const [editSelectedProgrammes, setEditSelectedProgrammes] = useState<string[]>([]);
   const [editSelectedClasses, setEditSelectedClasses] = useState<string[]>([]);
 
@@ -112,11 +108,9 @@ export default function TeachersPage() {
         fullName: fullNameEnglish.trim(),
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
-        qualification: qualification || 'Faculty',
-        specialization: specialization || "Qur'an & Tajweed",
         programmeIds: selectedProgrammes.length ? selectedProgrammes : ['prog-02'],
         classesAssigned: selectedClasses.length ? selectedClasses : ['cls-tahfiz-1'],
-        subjectsAssigned: selectedSubjects.length ? selectedSubjects : [specialization],
+        subjectsAssigned: selectedSubjects.length ? selectedSubjects : ["Qur'an"],
         dateJoined: new Date().toISOString().split('T')[0],
         status: 'ACTIVE',
       },
@@ -320,8 +314,6 @@ export default function TeachersPage() {
     setEditStaffNo(t.staffNo);
     setEditEmail(t.email);
     setEditPhone(t.phone);
-    setEditQualification(t.qualification);
-    setEditSpecialization(t.specialization);
     setEditSelectedProgrammes(t.programmeIds ? [...t.programmeIds] : []);
     setEditSelectedClasses([...t.classesAssigned]);
   };
@@ -337,8 +329,6 @@ export default function TeachersPage() {
       staffNo: editStaffNo,
       email: editEmail,
       phone: editPhone,
-      qualification: editQualification,
-      specialization: editSpecialization,
       programmeIds: editSelectedProgrammes,
       classesAssigned: editSelectedClasses,
     });
@@ -374,7 +364,7 @@ export default function TeachersPage() {
     }
   };
 
-  const teacherCount = teachers.filter((t) => !t.staffNo.toLowerCase().includes('admin') && !t.specialization.toLowerCase().includes('accountant')).length;
+  const teacherCount = teachers.filter((t) => !t.staffNo.toLowerCase().includes('admin')).length;
   const adminCount = users.filter((u) => u.role === 'ADMIN' || (u.role as string) === 'SUPER_ADMIN').length;
   const activeCount = teachers.length;
 
@@ -528,7 +518,7 @@ export default function TeachersPage() {
                 <th className="py-3 px-4">STAFF ID</th>
                 <th className="py-3 px-4">NAME</th>
                 <th className="py-3 px-4">ROLE</th>
-                <th className="py-3 px-4">DEPARTMENT</th>
+                <th className="py-3 px-4">ASSIGNED CLASSES</th>
                 <th className="py-3 px-4 text-right">ACTIONS</th>
               </tr>
             </thead>
@@ -541,15 +531,12 @@ export default function TeachersPage() {
                   .join('')
                   .toUpperCase() || 'ST';
 
-                const isAccountant = teacher.specialization?.toLowerCase().includes('account') || teacher.fullName.toLowerCase().includes('accountant');
-                const isFormMaster = teacher.fullName.toLowerCase().includes('form master') || index === 6;
+                const isFormMaster = teacher.fullName.toLowerCase().includes('form master');
                 const isAdminRole = teacher.staffNo.toLowerCase().includes('admin') || teacher.fullName.toLowerCase().includes('admin');
 
-                const roleLabel = isAdminRole ? 'Admin' : isAccountant ? 'Accountant' : isFormMaster ? 'Form Master' : 'Teacher';
+                const roleLabel = isAdminRole ? 'Admin' : isFormMaster ? 'Form Master' : 'Teacher';
                 const roleBadgeClass = isAdminRole
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                  : isAccountant
-                  ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300'
                   : isFormMaster
                   ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
                   : 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300';
@@ -585,9 +572,9 @@ export default function TeachersPage() {
                       </span>
                     </td>
 
-                    {/* DEPARTMENT */}
+                    {/* ASSIGNED CLASSES */}
                     <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 font-medium">
-                      {teacher.specialization && !teacher.specialization.includes('Qur\'an') ? teacher.specialization : 'N/A'}
+                      {(teacher.classesAssigned || []).join(', ') || 'General'}
                     </td>
 
                     {/* ACTIONS */}
@@ -650,7 +637,6 @@ export default function TeachersPage() {
                       englishClassName="text-sm font-bold text-slate-900 dark:text-white mt-1 truncate"
                       arabicClassName="text-xs font-semibold text-amber-600 dark:text-amber-300 font-arabic truncate"
                     />
-                    <p className="text-[11px] text-slate-500 dark:text-emerald-400/80 font-medium mt-0.5 truncate">{teacher.specialization}</p>
                   </div>
                 </div>
 
@@ -683,10 +669,6 @@ export default function TeachersPage() {
               </div>
 
               <div className="mt-4 pt-3 border-t border-slate-100 dark:border-emerald-500/20 space-y-2 text-xs text-slate-600 dark:text-emerald-300/80">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Award className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="text-xs font-medium truncate">{teacher.qualification}</span>
-                </div>
                 <div className="flex items-center gap-2 min-w-0">
                   <Mail className="w-4 h-4 text-sky-500 shrink-0" />
                   <span className="text-xs font-mono truncate">{teacher.email}</span>
@@ -799,33 +781,7 @@ export default function TeachersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Qualification</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. B.A. Islamic Studies, Al-Azhar"
-                    value={qualification}
-                    onChange={(e) => setQualification(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Specialization</label>
-                  <select
-                    value={specialization}
-                    onChange={(e) => setSpecialization(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-semibold"
-                  >
-                    <option value="Qur'an & Tajweed">Qur'an & Tajweed</option>
-                    <option value="Fiqh & Hadith">Fiqh & Hadith</option>
-                    <option value="Arabic Language">Arabic Language</option>
-                    <option value="Mathematics & Science">Mathematics & Science</option>
-                    <option value="English Studies">English Studies</option>
-                  </select>
-                </div>
-              </div>
+
 
               {/* Programme Selection Cascade */}
               <div className="space-y-1">
@@ -1208,28 +1164,7 @@ export default function TeachersPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Qualification</label>
-                  <input
-                    type="text"
-                    required
-                    value={editQualification}
-                    onChange={(e) => setEditQualification(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Specialization</label>
-                  <input
-                    type="text"
-                    required
-                    value={editSpecialization}
-                    onChange={(e) => setEditSpecialization(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
+
 
               {/* Edit Programme Selection Cascade */}
               <div className="space-y-1">

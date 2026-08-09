@@ -66,18 +66,21 @@ export default function DownloadsPage() {
       return;
     }
 
+    const logoUrl = schoolLogo || '/logo.jpg';
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
         <head>
           <title>${title}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Inter:wght@400;600;800&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Inter:wght@400;600;800;900&display=swap');
             body { font-family: 'Inter', sans-serif; padding: 25px; color: #1e293b; background: #fff; }
             .header { text-align: center; border-bottom: 3px double #042f1e; pb: 15px; margin-bottom: 20px; }
-            .arabic { font-family: 'Amiri', serif; font-size: 20px; color: #d97706; font-weight: bold; margin-bottom: 4px; }
-            .title { font-size: 18px; font-weight: 900; color: #042f1e; text-transform: uppercase; letter-spacing: 0.5px; }
-            .subtitle { font-size: 12px; font-weight: 600; color: #475569; margin-top: 4px; }
+            .logo-img { width: 70px; height: 70px; object-fit: contain; margin: 0 auto 8px auto; display: block; border-radius: 50%; border: 2px solid #042f1e; }
+            .arabic { font-family: 'Amiri', serif; font-size: 22px; color: #b45309; font-weight: bold; margin-bottom: 4px; }
+            .title { font-size: 16px; font-weight: 900; color: #042f1e; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3; }
+            .subtitle { font-size: 12px; font-weight: 700; color: #166534; margin-top: 6px; text-transform: uppercase; }
             .meta { font-size: 10px; color: #64748b; margin-top: 8px; font-family: monospace; }
             table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 11px; }
             th { bg-color: #042f1e; background: #042f1e; color: white; padding: 8px 10px; text-align: left; font-weight: 800; font-size: 10px; text-transform: uppercase; }
@@ -92,8 +95,9 @@ export default function DownloadsPage() {
         </head>
         <body>
           <div class="header">
+            <img src="${logoUrl}" alt="School Logo" class="logo-img" onerror="this.style.display='none'" />
             <div class="arabic">مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج</div>
-            <div class="title">MARKAZU UMAR BN AL-KHATTAB CENTRE</div>
+            <div class="title">MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI</div>
             <div class="subtitle">${title} — ${subtitle}</div>
             <div class="meta">Generated on: ${new Date().toLocaleString()} | Official Record Export</div>
           </div>
@@ -120,7 +124,7 @@ export default function DownloadsPage() {
           </table>
 
           <div class="footer" style="margin-top:40px; display:flex; justify-content:space-between;">
-            <div>Issued by: Administrative Office, Markazu Umar</div>
+            <div>Issued by: Administrative Office, Markazu Umar bn Al-Khattab Centre</div>
             <div>Official Stamp & Signature: _______________________</div>
           </div>
 
@@ -143,6 +147,8 @@ export default function DownloadsPage() {
       return;
     }
 
+    const logoUrl = schoolLogo || '/logo.jpg';
+
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -152,10 +158,11 @@ export default function DownloadsPage() {
             @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@700&family=Inter:wght@400;600;700;900&display=swap');
             body { font-family: 'Inter', sans-serif; padding: 30px; color: #0f172a; line-height: 1.5; background: #fff; }
             .header-box { border: 2px solid #042f1e; padding: 15px; border-radius: 12px; text-align: center; position: relative; margin-bottom: 20px; background: #f0fdf4; }
+            .logo-img { width: 70px; height: 70px; object-fit: contain; margin: 0 auto 6px auto; display: block; border-radius: 50%; border: 2px solid #042f1e; }
             .arabic { font-family: 'Amiri', serif; font-size: 22px; color: #b45309; font-weight: bold; }
-            .title { font-size: 18px; font-weight: 900; color: #042f1e; letter-spacing: 0.5px; }
-            .subtitle { font-size: 12px; font-weight: 700; color: #166534; text-transform: uppercase; margin-top: 2px; }
-            .photo-box { position: absolute; right: 15px; top: 15px; width: 90px; h-110px; height: 110px; border: 2px dashed #042f1e; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #64748b; text-align: center; }
+            .title { font-size: 16px; font-weight: 900; color: #042f1e; letter-spacing: 0.5px; line-height: 1.3; }
+            .subtitle { font-size: 12px; font-weight: 700; color: #166534; text-transform: uppercase; margin-top: 4px; }
+            .photo-box { position: absolute; right: 15px; top: 15px; width: 90px; height: 110px; border: 2px dashed #042f1e; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #64748b; text-align: center; }
             .section-title { font-size: 12px; font-weight: 900; background: #042f1e; color: white; padding: 6px 12px; border-radius: 6px; margin-top: 15px; margin-bottom: 12px; text-transform: uppercase; }
             .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 11px; }
             .field-group { border-bottom: 1px dotted #cbd5e1; padding-bottom: 4px; }
@@ -164,7 +171,7 @@ export default function DownloadsPage() {
             .checkbox-group { display: flex; gap: 15px; margin-top: 4px; font-size: 11px; }
             .declaration { border: 1px solid #e2e8f0; padding: 12px; border-radius: 8px; font-size: 10px; color: #334155; margin-top: 20px; background: #f8fafc; }
             .signatures { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 30px; font-size: 10px; font-weight: 700; text-align: center; }
-            .sig-line { border-top: 1px solid #0f172a; margin-top: 40px; pt-4px; padding-top: 4px; }
+            .sig-line { border-top: 1px solid #0f172a; margin-top: 40px; padding-top: 4px; }
             @media print {
               body { padding: 0; }
             }
@@ -172,8 +179,9 @@ export default function DownloadsPage() {
         </head>
         <body>
           <div class="header-box">
+            <img src="${logoUrl}" alt="School Logo" class="logo-img" onerror="this.style.display='none'" />
             <div class="arabic">مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج</div>
-            <div class="title">MARKAZU UMAR BN AL-KHATTAB CENTRE</div>
+            <div class="title">MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI</div>
             <div class="subtitle">Official Student Admission Application Form (1447/1448 AH)</div>
             <div style="font-size:10px; color:#475569; margin-top:3px;">Daneji Quarters, Kano State, Nigeria | Contact: +234 803 123 4567</div>
             <div class="photo-box">Affix Passport<br>Photograph<br>Here</div>
@@ -269,28 +277,25 @@ export default function DownloadsPage() {
   };
 
   const handleExportTeachersExcel = () => {
-    const headers = ['Staff No', 'Full Name', 'Arabic Name', 'Email', 'Phone', 'Qualification', 'Specialization', 'Status'];
+    const headers = ['Staff No', 'Full Name', 'Arabic Name', 'Email', 'Phone', 'Status'];
     const rows = teachers.map((t) => [
       t.staffNo,
       t.fullName || t.full_name_english,
       t.full_name_arabic || '',
       t.email,
       t.phone,
-      t.qualification,
-      t.specialization,
       t.status,
     ]);
     triggerExcelDownload('Teachers_And_Staff_Directory', headers, rows);
   };
 
   const handleExportTeachersPDF = () => {
-    const headers = ['Staff No', 'Full Name', 'Email', 'Phone', 'Specialization', 'Status'];
+    const headers = ['Staff No', 'Full Name', 'Email', 'Phone', 'Status'];
     const rows = teachers.map((t) => [
       t.staffNo,
       t.fullName || t.full_name_english,
       t.email,
       t.phone,
-      t.specialization,
       t.status,
     ]);
     triggerPrintablePDF('Teachers & Academic Staff Directory', `Total Staff: ${teachers.length}`, headers, rows);
@@ -482,7 +487,7 @@ export default function DownloadsPage() {
               <div>
                 <h3 className="text-lg font-extrabold text-slate-900 dark:text-white">Teachers & Staff Records Export</h3>
                 <p className="text-xs text-slate-600 dark:text-emerald-200/80 mt-1 leading-relaxed">
-                  Export full directory records for all teaching and academic staff including staff numbers, contact details, qualifications, and specializations.
+                  Export full directory records for all teaching and academic staff including staff numbers, contact details, assigned classes, and subjects.
                 </p>
               </div>
             </div>

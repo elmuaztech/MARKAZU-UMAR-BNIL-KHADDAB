@@ -81,8 +81,8 @@ export interface Teacher {
   fullName: string; // Combined / fallback
   email: string;
   phone: string;
-  qualification: string;
-  specialization: string; // e.g. "Qur'an & Tajweed", "Fiqh & Hadith", "Mathematics"
+  qualification?: string;
+  specialization?: string;
   programmeIds?: string[]; // Multiple Programmes assigned by Admin
   classesAssigned: string[]; // Multiple Classes assigned by Admin
   subjectsAssigned: string[];
@@ -481,6 +481,24 @@ export const DEFAULT_REPORT_CARD_TEMPLATE: ReportCardTemplate = {
   signatureType: "CANVAS",
   signatureText: "SIGNATURE",
 };
+
+export interface NewsArticle {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  summary: string;
+  image?: string;
+  published: boolean;
+}
+
+export interface GalleryItem {
+  id: string;
+  title: string;
+  category: 'Teachers' | 'Students' | 'Classes' | 'School Officials' | 'Islamic Events' | 'General';
+  image: string;
+  createdAt?: string;
+}
 
 export * from './communication';
 

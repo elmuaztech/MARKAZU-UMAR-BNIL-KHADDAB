@@ -1197,7 +1197,7 @@ export default function ProgrammesPage() {
                     <option value="">-- Leave Unassigned (No Teacher) --</option>
                     {teachers.map((t) => (
                       <option key={t.id} value={t.id}>
-                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} - {t.specialization}
+                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} ({t.staffNo})
                       </option>
                     ))}
                   </select>
@@ -1310,7 +1310,7 @@ export default function ProgrammesPage() {
                     <option value="">-- Leave Unassigned (No Teacher) --</option>
                     {teachers.map((t) => (
                       <option key={t.id} value={t.id}>
-                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} - {t.specialization}
+                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} ({t.staffNo})
                       </option>
                     ))}
                   </select>
@@ -1374,7 +1374,7 @@ export default function ProgrammesPage() {
                     <option value="">-- Leave Unassigned (No Teacher) --</option>
                     {teachers.map((t) => (
                       <option key={t.id} value={t.id}>
-                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} - {t.specialization}
+                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} ({t.staffNo})
                       </option>
                     ))}
                   </select>

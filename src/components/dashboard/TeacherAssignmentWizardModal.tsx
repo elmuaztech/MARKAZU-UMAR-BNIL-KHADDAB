@@ -174,7 +174,7 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                         {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                       </div>
                       <p className="font-bold text-slate-900 dark:text-white">{t.fullName}</p>
-                      <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 truncate">{t.specialization}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 truncate">{t.email}</p>
                     </div>
                   );
                 })}
