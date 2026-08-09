@@ -127,7 +127,7 @@ export default function WebsiteCMSPage() {
     setEditNewsTitle(art.title);
     setEditNewsCategory(art.category);
     setEditNewsSummary(art.summary);
-    setEditNewsImage(art.image);
+    setEditNewsImage(art.image || '');
   };
 
   // Submit Edit News Article
