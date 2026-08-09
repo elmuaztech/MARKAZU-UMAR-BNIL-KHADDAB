@@ -16,8 +16,8 @@ export default function LoginPage() {
   const { users, setCurrentUser, updateUserPasswordByEmail, addAuditLog, schoolLogo, notify } = useApp();
 
   const [activeTab, setActiveTab] = useState<UserRole>('SUPER_ADMIN');
-  const [email, setEmail] = useState('markazuumarbnkhaddabdaneji@gmail.com');
-  const [password, setPassword] = useState('Absaj@2785');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -182,25 +182,8 @@ export default function LoginPage() {
   const handleTabChange = (role: UserRole) => {
     setActiveTab(role);
     setErrorMsg('');
-    if (role === 'SUPER_ADMIN') {
-      setEmail('markazuumarbnkhaddabdaneji@gmail.com');
-      setPassword('Absaj@2785');
-    } else if (role === 'ADMIN') {
-      setEmail('admin@markazuumar.edu.ng');
-      setPassword('admin123');
-    } else if (role === 'HEADMASTER') {
-      setEmail('hm.asbah@markazuumar.edu.ng');
-      setPassword('admin123');
-    } else if (role === 'TEACHER') {
-      setEmail('teacher@markazuumar.edu.ng');
-      setPassword('admin123');
-    } else if (role === 'STUDENT') {
-      setEmail('student@markazuumar.edu.ng');
-      setPassword('admin123');
-    } else if (role === 'PARENT') {
-      setEmail('parent@markazuumar.edu.ng');
-      setPassword('admin123');
-    }
+    setEmail('');
+    setPassword('');
   };
 
   const handleLoginSubmit = (e: React.FormEvent) => {

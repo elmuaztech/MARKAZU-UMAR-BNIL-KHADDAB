@@ -36,12 +36,12 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
     tableHeaderBgColor = "#064e3b",
     tableHeaderTextColor = "#ffffff",
     showLogo = true,
-    showTahfizSection = true,
+    showTahfizSection = false,
     showAkhlaqSection = true,
     showSummarySection = true,
     showGradeLegend = true,
-    teacherRemarkDefault = "Very good progress in memorization and academic performance.",
-    principalRemarkDefault = "Approved for promotion. Keep up the brilliant performance in Tahfiz and Adab.",
+    teacherRemarkDefault = "Very good academic progress and performance.",
+    principalRemarkDefault = "Approved for promotion. Keep up the brilliant performance in Adab and Academic studies.",
     principalName = "Malam Umar Faruq",
     principalTitle = "School Principal & Director of Studies",
     defaultSignatureUrl = "",
@@ -114,24 +114,19 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-emerald-50/80 p-3.5 rounded-xl border border-emerald-200 text-xs mb-5">
           <div>
             <span className="text-[10px] text-gray-500 uppercase font-bold block">Student Name</span>
-            <span className="font-extrabold text-emerald-950">{student.fullName}</span>
+            <span className="font-extrabold text-emerald-950 block truncate">{student.fullName}</span>
           </div>
           <div>
             <span className="text-[10px] text-gray-500 uppercase font-bold block">Admission Number</span>
-            <span className="font-mono font-bold text-emerald-900">{student.admissionNo}</span>
+            <span className="font-mono font-bold text-emerald-900 block">{student.admissionNo}</span>
           </div>
           <div>
-            <span className="text-[10px] text-gray-500 uppercase font-bold block">Class / Halqa</span>
-            <BilingualText
-              english={currentClass?.class_name_english || student.className}
-              arabic={currentClass?.class_name_arabic || student.classNameArabic}
-              englishClassName="font-bold text-emerald-900"
-              arabicClassName="text-[11px] font-semibold text-amber-700 font-arabic"
-            />
+            <span className="text-[10px] text-gray-500 uppercase font-bold block">Class Enrolled</span>
+            <span className="font-bold text-emerald-950 block truncate">{currentClass?.class_name_english || student.className}</span>
           </div>
           <div>
             <span className="text-[10px] text-gray-500 uppercase font-bold block">Guardian Name</span>
-            <span className="font-semibold text-gray-800">{student.guardianName}</span>
+            <span className="font-semibold text-gray-800 block truncate">{student.guardianName}</span>
           </div>
         </div>
 

@@ -14,7 +14,7 @@ import { Modal } from '@/components/ui/Modal';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 
 export default function ClassesPage() {
-  const { currentUser, classes, programmes, teachers, addClass, updateClass, deleteClass } = useApp();
+  const { currentUser, classes, programmes, teachers, students, addClass, updateClass, deleteClass } = useApp();
   const isAdmin = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN';
 
   const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>('ALL');
@@ -22,6 +22,7 @@ export default function ClassesPage() {
   // Modals state
   const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
+  const [viewingClass, setViewingClass] = useState<SchoolClass | null>(null);
   const [deletingClass, setDeletingClass] = useState<SchoolClass | null>(null);
   const [reassigningTeacherClass, setReassigningTeacherClass] = useState<SchoolClass | null>(null);
 
@@ -214,7 +215,7 @@ export default function ClassesPage() {
           <Button
             variant="primary"
             size="md"
-            className="bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold rounded-2xl shadow-lg shadow-indigo-500/25"
+            className="bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-900/20"
             leftIcon={<Plus className="w-4 h-4" />}
             onClick={handleOpenAdd}
           >
@@ -229,7 +230,7 @@ export default function ClassesPage() {
           onClick={() => setSelectedProgrammeFilter('ALL')}
           className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
             selectedProgrammeFilter === 'ALL'
-              ? 'bg-[#6366f1] text-white shadow-sm'
+              ? 'bg-emerald-700 text-white shadow-sm'
               : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
           }`}
         >
@@ -243,7 +244,7 @@ export default function ClassesPage() {
               onClick={() => setSelectedProgrammeFilter(prog.id)}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 selectedProgrammeFilter === prog.id
-                  ? 'bg-[#6366f1] text-white shadow-sm'
+                  ? 'bg-emerald-700 text-white shadow-sm'
                   : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
               }`}
             >
@@ -253,7 +254,7 @@ export default function ClassesPage() {
         })}
       </div>
 
-      {/* Grid of Class Cards (Exact match to Image 2) */}
+      {/* Grid of Class Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {filteredClasses.map((c) => {
           const teacherName = c.classTeacherName && c.classTeacherName !== 'Unassigned' ? c.classTeacherName : 'Not assigned';
@@ -263,18 +264,18 @@ export default function ClassesPage() {
               key={c.id}
               className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all"
             >
-              {/* Card Header with vibrant gradient (Blue/Purple from Image 2) */}
-              <div className="p-5 bg-gradient-to-r from-[#4f46e5] to-[#7c3aed] text-white flex items-start justify-between">
+              {/* Card Header with official Islamic Emerald Green gradient */}
+              <div className="p-5 bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white flex items-start justify-between">
                 <div>
                   <h3 className="text-xl font-black text-white tracking-tight">
                     {c.class_name_english || c.name}
                   </h3>
-                  <p className="text-xs text-indigo-100 font-semibold mt-0.5">
+                  <p className="text-xs text-emerald-100/90 font-semibold mt-0.5">
                     {c.section || 'Section A'}
                   </p>
                 </div>
 
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-white font-extrabold text-[10px] flex items-center gap-1 shadow-xs">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-extrabold text-[10px] flex items-center gap-1 shadow-xs">
                   ✓ Active
                 </span>
               </div>
@@ -283,8 +284,8 @@ export default function ClassesPage() {
               <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                 <div className="space-y-2.5">
                   {/* Box 1: Class Teacher */}
-                  <div className="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/30 space-y-0.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/40 border border-slate-200 dark:border-emerald-900/30 space-y-0.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                       CLASS TEACHER
                     </span>
                     <p className="text-xs font-bold text-slate-800 dark:text-white truncate">
@@ -293,24 +294,24 @@ export default function ClassesPage() {
                   </div>
 
                   {/* Box 2: Students Enrolled */}
-                  <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/30 space-y-0.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-purple-600 dark:text-purple-400">
+                  <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 space-y-0.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
                       STUDENTS ENROLLED
                     </span>
                     <p className="text-xs font-bold text-slate-800 dark:text-white">
-                      <span className="text-sm font-black text-slate-900 dark:text-white">{c.studentCount || 0}</span> / {c.capacity || 40}
+                      <span className="text-sm font-black text-emerald-700 dark:text-emerald-300">{c.studentCount || 0}</span> / {c.capacity || 40}
                     </p>
                   </div>
                 </div>
 
                 {/* Bottom Action Buttons: [👁 View] [✏️ Edit] */}
                 <div className="pt-2 flex items-center gap-2">
-                  <Link
-                    href={`/dashboard/students?classId=${c.id}`}
-                    className="flex-1 py-2.5 rounded-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all"
+                  <button
+                    onClick={() => setViewingClass(c)}
+                    className="flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all"
                   >
                     <span>👁 View</span>
-                  </Link>
+                  </button>
 
                   {isAdmin && (
                     <button
@@ -696,6 +697,106 @@ export default function ClassesPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* VIEW CLASS DETAILS & STUDENT ROSTER MODAL */}
+      <Modal
+        isOpen={!!viewingClass}
+        onClose={() => setViewingClass(null)}
+        title={`Class Details & Roster: ${viewingClass?.class_name_english || viewingClass?.name || ''}`}
+        titleArabic={viewingClass?.class_name_arabic}
+        maxWidth="2xl"
+      >
+        {viewingClass && (() => {
+          const classStudents = students.filter(
+            (s) => s.classId === viewingClass.id || s.className === viewingClass.class_name_english || s.className === viewingClass.name
+          );
+          const teacherName = viewingClass.classTeacherName && viewingClass.classTeacherName !== 'Unassigned' ? viewingClass.classTeacherName : 'Not assigned';
+
+          return (
+            <div className="space-y-5 text-xs text-slate-900 dark:text-slate-100 font-poppins">
+              {/* Header Badges */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase text-emerald-700 dark:text-emerald-400">Class Teacher</span>
+                  <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{teacherName}</p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/40 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase text-sky-700 dark:text-sky-400">Enrolled Enrollment</span>
+                  <p className="font-bold text-sm text-slate-900 dark:text-white">{classStudents.length} / {viewingClass.capacity || 40} Students</p>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase text-amber-700 dark:text-amber-400">Programme</span>
+                  <p className="font-bold text-sm text-slate-900 dark:text-white truncate">{viewingClass.programmeName || 'General Islamiyya'}</p>
+                </div>
+              </div>
+
+              {/* Students Roster List */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-black uppercase text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Users className="w-4 h-4 text-emerald-500" /> Enrolled Students ({classStudents.length})
+                  </h4>
+                  <Link
+                    href={`/dashboard/students?classId=${viewingClass.id}`}
+                    onClick={() => setViewingClass(null)}
+                    className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                  >
+                    Manage All Students →
+                  </Link>
+                </div>
+
+                {classStudents.length === 0 ? (
+                  <div className="p-6 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-dashed border-slate-300 dark:border-emerald-800/40 text-center text-slate-500 dark:text-emerald-300/70">
+                    No students currently enrolled in this class.
+                  </div>
+                ) : (
+                  <div className="max-h-60 overflow-y-auto rounded-2xl border border-slate-200 dark:border-emerald-800/40 divide-y divide-slate-100 dark:divide-emerald-900/30">
+                    {classStudents.map((st) => (
+                      <div key={st.id} className="p-3 bg-white dark:bg-[#042419] flex items-center justify-between gap-3 hover:bg-slate-50 dark:hover:bg-emerald-950/50">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-black flex items-center justify-center text-xs shrink-0">
+                            {st.fullName.charAt(0)}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-slate-900 dark:text-white truncate">{st.fullName}</p>
+                            <p className="text-[10px] text-slate-400 font-mono">{st.admissionNo} • Guardian: {st.guardianName}</p>
+                          </div>
+                        </div>
+
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 text-[10px] font-bold shrink-0">
+                          Active
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100 dark:border-emerald-800/40">
+                {isAdmin && (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    onClick={() => {
+                      const cls = viewingClass;
+                      setViewingClass(null);
+                      handleOpenEdit(cls);
+                    }}
+                    leftIcon={<Edit className="w-4 h-4" />}
+                  >
+                    Edit Class Details
+                  </Button>
+                )}
+                <Button variant="secondary" size="sm" onClick={() => setViewingClass(null)}>
+                  Close
+                </Button>
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
     </div>
   );
 }

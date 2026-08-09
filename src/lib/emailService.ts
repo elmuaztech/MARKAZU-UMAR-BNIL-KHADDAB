@@ -305,7 +305,7 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
     });
 
     await transporter.sendMail({
-      from: `"Markazu Umar School Management" <${smtpUser}>`,
+      from: `"MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI" <${smtpUser}>`,
       to: payload.to,
       subject: payload.subject,
       html: htmlContent,

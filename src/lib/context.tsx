@@ -384,17 +384,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       try {
         const savedUsers = localStorage.getItem('markazu_users');
         if (savedUsers !== null) {
-          const parsed: User[] = JSON.parse(savedUsers);
-          return parsed.map((u) => {
-            if (u.id === 'usr-superadmin-1' || u.role === 'SUPER_ADMIN') {
-              return {
-                ...u,
-                email: 'markazuumarbndaneji@gmail.com',
-                passwordHash: hashPassword('Absaj@2785'),
-              };
-            }
-            return u;
-          });
+          return JSON.parse(savedUsers);
         }
 
         const savedPass = localStorage.getItem('markazu_user_passwords');
@@ -412,7 +402,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
     return MOCK_USERS;
   });
-  const [currentUser, setCurrentUser] = useState<User>(MOCK_USERS[0]); // Default to Super Admin
+
+  const [currentUser, setCurrentUser] = useState<User>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('markazu_current_user');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return MOCK_USERS[0];
+  });
   const [auditLogs, setAuditLogs] = useState<AuditEntry[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -442,6 +441,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
   }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && users && users.length > 0) {
+      safeLocalStorageSet('markazu_users', users);
+    }
+  }, [users]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && currentUser) {
+      safeLocalStorageSet('markazu_current_user', currentUser);
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && currentUser?.id) {
