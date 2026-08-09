@@ -81,7 +81,7 @@ export default function CommunicationDashboardPage() {
               </Link>
               <Link
                 href="/dashboard/communication/new"
-                className="px-4 py-2 rounded-2xl bg-[#6366f1] hover:bg-[#4f46e5] text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-indigo-500/25 transition-all"
+                className="px-4 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-900/30 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 <span>+ New Message</span>
@@ -295,7 +295,7 @@ export default function CommunicationDashboardPage() {
                 ))
               )}
             </tbody>
-          </table>
+          </table>   
         </div>
       </div>
     </div>

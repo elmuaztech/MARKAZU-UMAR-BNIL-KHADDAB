@@ -334,7 +334,7 @@ export default function LoginPage() {
           </div>
 
           {/* Role Login Tabs */}
-          <div className="grid grid-cols-6 gap-1 p-1.5 rounded-2xl bg-slate-200/80 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/20 text-[9px] font-bold">
+          <div className="grid grid-cols-5 gap-1 p-1.5 rounded-2xl bg-slate-200/80 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/20 text-[9px] font-bold">
             <button
               type="button"
               onClick={() => handleTabChange('SUPER_ADMIN')}
@@ -354,16 +354,6 @@ export default function LoginPage() {
                 }`}
             >
               Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange('HEADMASTER')}
-              className={`py-2 rounded-xl transition-all ${activeTab === 'HEADMASTER'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
-                }`}
-            >
-              Headmaster
             </button>
             <button
               type="button"

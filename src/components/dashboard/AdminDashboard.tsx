@@ -162,18 +162,18 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white font-poppins">
-      {/* 1. Welcome Header Banner (Inspired by MyEcole) */}
+      {/* 1. Welcome Header Banner */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#6366f1] via-[#7c3aed] to-[#8b5cf6] p-6 sm:p-8 text-white shadow-xl"
+        className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] p-6 sm:p-8 text-white border border-emerald-500/40 shadow-xl"
       >
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
               Welcome back, {currentUser.name || 'Admin User'}! 👋
             </h1>
-            <p className="text-xs sm:text-sm text-indigo-100 font-medium">
+            <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
               Add/Track students, staff, parents and activities.
             </p>
           </div>

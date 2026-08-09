@@ -257,14 +257,14 @@ export interface DirectMessage {
   classId?: string;
   className?: string;
   messageType:
-    | 'GENERAL_NOTICE'
-    | 'HOMEWORK'
-    | 'ASSIGNMENT'
-    | 'REMINDER'
-    | 'BEHAVIOUR'
-    | 'EXAMINATION'
-    | 'TAHFIZ_REMINDER'
-    | 'CUSTOM';
+  | 'GENERAL_NOTICE'
+  | 'HOMEWORK'
+  | 'ASSIGNMENT'
+  | 'REMINDER'
+  | 'BEHAVIOUR'
+  | 'EXAMINATION'
+  | 'TAHFIZ_REMINDER'
+  | 'CUSTOM';
   subject: string;
   content: string;
   attachments?: DirectMessageAttachment[];
@@ -389,7 +389,7 @@ export type ApplicationStatus = 'PENDING_REVIEW' | 'APPROVED' | 'REJECTED' | 'CA
 export interface AdmissionApplication {
   id: string;
   applicationNo: string;
-  
+
   // Student Information
   studentFullName: string;
   studentGender: 'MALE' | 'FEMALE';
@@ -432,4 +432,55 @@ export interface AdmissionApplication {
   generatedParentId?: string;
 }
 
+export interface ReportCardTemplate {
+  titleEnglish: string;
+  titleArabic: string;
+  subTitleEnglish: string;
+  subTitleArabic: string;
+  headerBgColor: string;
+  headerTextColor: string;
+  accentColor: string;
+  tableHeaderBgColor: string;
+  tableHeaderTextColor: string;
+  showLogo: boolean;
+  showTahfizSection: boolean;
+  showAkhlaqSection: boolean;
+  showSummarySection: boolean;
+  showGradeLegend: boolean;
+  teacherRemarkDefault: string;
+  principalRemarkDefault: string;
+  principalName: string;
+  principalTitle: string;
+  defaultSignatureUrl?: string; // Base64 Canvas data URL or image path
+  signatureType: 'CANVAS' | 'IMAGE' | 'TEXT_STAMP';
+  signatureText?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export const DEFAULT_REPORT_CARD_TEMPLATE: ReportCardTemplate = {
+  titleEnglish: "MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI",
+  titleArabic: "مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج",
+  subTitleEnglish: "OFFICIAL TERMINAL ACADEMIC & TAHFIZ PROGRESS REPORT",
+  subTitleArabic: "تقرير التقدم الأكاديمي والتحفيظ الرسمي",
+  headerBgColor: "#042f1e",
+  headerTextColor: "#ffffff",
+  accentColor: "#f59e0b",
+  tableHeaderBgColor: "#064e3b",
+  tableHeaderTextColor: "#ffffff",
+  showLogo: true,
+  showTahfizSection: true,
+  showAkhlaqSection: true,
+  showSummarySection: true,
+  showGradeLegend: true,
+  teacherRemarkDefault: "Very good progress in memorization and academic performance.",
+  principalRemarkDefault: "Approved for promotion. Keep up the brilliant performance in Tahfiz and Adab.",
+  principalName: "Malam Umar Faruq",
+  principalTitle: "School Principal & Director of Studies",
+  defaultSignatureUrl: "",
+  signatureType: "CANVAS",
+  signatureText: "SIGNATURE",
+};
+
 export * from './communication';
+

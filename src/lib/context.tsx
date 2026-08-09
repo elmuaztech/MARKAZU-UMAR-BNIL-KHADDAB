@@ -31,6 +31,8 @@ import {
   TimetablePeriod,
   DirectMessage,
   AcademicEvent,
+  ReportCardTemplate,
+  DEFAULT_REPORT_CARD_TEMPLATE,
 } from '../types';
 import {
   MOCK_USERS,
@@ -210,6 +212,8 @@ interface AppContextType {
   currentSession: SchoolSession;
   assessmentConfig: AssessmentConfig;
   resultSubmissions: ResultApprovalSubmission[];
+  reportCardTemplate: ReportCardTemplate;
+  updateReportCardTemplate: (updated: Partial<ReportCardTemplate>) => void;
 
   saveAttendanceBatch: (records: AttendanceRecord[], isDraft?: boolean) => void;
   adminOverrideAttendance: (attendanceId: string, newStatus: AttendanceStatusType, reason: string) => void;
@@ -550,6 +554,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   });
   const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(DEFAULT_ASSESSMENT_CONFIG);
   const [resultSubmissions, setResultSubmissions] = useState<ResultApprovalSubmission[]>(MOCK_RESULT_SUBMISSIONS);
+  const [reportCardTemplate, setReportCardTemplateState] = useState<ReportCardTemplate>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('markazu_report_card_template');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return DEFAULT_REPORT_CARD_TEMPLATE;
+  });
+
+  const updateReportCardTemplate = (updated: Partial<ReportCardTemplate>) => {
+    setReportCardTemplateState((prev) => {
+      const next = { ...prev, ...updated, updatedAt: new Date().toISOString(), updatedBy: currentUser.name };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('markazu_report_card_template', JSON.stringify(next));
+        } catch (e) {
+          console.warn('[localStorage] Failed to save report sheet template:', e);
+        }
+      }
+      return next;
+    });
+    notify({
+      type: 'success',
+      title: 'Report Sheet Template Saved',
+      message: 'Default report card template & signature settings updated successfully across all student report cards.',
+    });
+  };
 
   // Safe LocalStorage Persistence Helper to prevent QuotaExceededError & Sensitive Data Leakage
   const safeLocalStorageSet = (key: string, data: any) => {
@@ -3003,6 +3035,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         currentSession,
         assessmentConfig,
         resultSubmissions,
+        reportCardTemplate,
+        updateReportCardTemplate,
         saveAttendanceBatch,
         adminOverrideAttendance,
         saveTahfizRecord,

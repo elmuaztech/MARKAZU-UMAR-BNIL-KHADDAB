@@ -4,9 +4,10 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/lib/context';
 import { ReportCard } from '@/components/results/ReportCard';
+import { ReportCardTemplateModal } from '@/components/results/ReportCardTemplateModal';
 import { PortalTheme } from '@/components/ui/PortalTheme';
 import { PortalHeroBanner } from '@/components/ui/PortalHeroBanner';
-import { Award, Users, PlusCircle, FileSpreadsheet, AlertCircle } from 'lucide-react';
+import { Award, Users, PlusCircle, FileSpreadsheet, AlertCircle, Palette, Sparkles } from 'lucide-react';
 import { filterStudentsForUser, filterGradesForUser } from '@/lib/rbac';
 
 export default function ResultsPage() {
@@ -16,6 +17,7 @@ export default function ResultsPage() {
   const userGrades = filterGradesForUser(currentUser, grades, userStudents);
 
   const [selectedStudentId, setSelectedStudentId] = useState(userStudents[0]?.id || '');
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
   const selectedStudent = userStudents.find((s) => s.id === selectedStudentId) || userStudents[0];
 
@@ -28,6 +30,8 @@ export default function ResultsPage() {
     (g) => g.studentId === selectedStudent?.id && g.status !== 'APPROVED'
   ).length;
 
+  const isAdminUser = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
+
   return (
     <PortalTheme>
       <PortalHeroBanner
@@ -36,15 +40,27 @@ export default function ResultsPage() {
         title="Terminal Report Card Generator"
         description="Official terminal report card generator for Markazu Umar School. Displays verified and administrator-approved assessment results for student academic transcripts."
         actions={
-          (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN' || currentUser.role === 'TEACHER') && (
-            <Link
-              href="/dashboard/assessment"
-              className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
-            >
-              <FileSpreadsheet className="w-4 h-4" />
-              <span>Assessment & Score Entry Engine</span>
-            </Link>
-          )
+          <div className="flex flex-wrap items-center gap-2.5">
+            {isAdminUser && (
+              <button
+                onClick={() => setIsTemplateModalOpen(true)}
+                className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
+              >
+                <Palette className="w-4 h-4" />
+                <span>Customize Template & Signature</span>
+              </button>
+            )}
+
+            {(isAdminUser || currentUser.role === 'TEACHER') && (
+              <Link
+                href="/dashboard/assessment"
+                className="px-5 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold text-xs flex items-center gap-2 shadow-lg transition-all hover:scale-105"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                <span>Assessment & Score Entry Engine</span>
+              </Link>
+            )}
+          </div>
         }
       />
 
@@ -87,6 +103,12 @@ export default function ResultsPage() {
           <h3 className="text-base font-bold text-slate-900 dark:text-white">No Student Record Selected</h3>
         </div>
       )}
+
+      {/* Admin Template Customization Modal */}
+      <ReportCardTemplateModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+      />
     </PortalTheme>
   );
 }
