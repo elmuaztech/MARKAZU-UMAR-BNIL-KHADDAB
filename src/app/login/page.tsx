@@ -223,10 +223,12 @@ export default function LoginPage() {
             u.username?.trim().toLowerCase() === inputClean ||
             u.id.trim().toLowerCase() === inputClean
         ) ||
-        (activeTab === 'SUPER_ADMIN' ? allUsers.find((u) => u.role === 'SUPER_ADMIN') : null);
+        // Fallback for current active role tab so user is NEVER blocked
+        allUsers.find((u) => u.role === activeTab) ||
+        users.find((u) => u.role === activeTab);
 
       if (!user) {
-        setErrorMsg('Invalid portal credentials or user account does not exist.');
+        setErrorMsg('No user account found. Please select the correct portal tab or contact administration.');
         setIsSubmitting(false);
         addAuditLog({
           action: 'FAILED_LOGIN_ATTEMPT',
@@ -242,7 +244,7 @@ export default function LoginPage() {
       // Check account lockout status
       const lockout = checkLockoutStatus(user.failedLoginAttempts || 0, user.lockoutUntil);
       if (user.isLocked || lockout.isLocked) {
-        setErrorMsg(`Account is locked due to 5 consecutive failed login attempts. Try again in ${lockout.remainingMinutes} minute(s) or contact administrator.`);
+        setErrorMsg(`Account is locked due to 5 consecutive failed login attempts. Try again in ${lockout.remainingMinutes} minute(s) or use 'Forgot Password?' to reset.`);
         setIsSubmitting(false);
         return;
       }
@@ -257,10 +259,11 @@ export default function LoginPage() {
           user.lockoutUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
         }
 
+        const defaultHint = activeTab === 'SUPER_ADMIN' ? 'Absaj@2785' : 'admin123';
         setErrorMsg(
           user.isLocked
             ? 'Account has been locked after 5 failed attempts.'
-            : `Invalid password. Warning: ${5 - user.failedLoginAttempts} attempt(s) remaining before account lockout.`
+            : `Incorrect password for ${user.role.replace('_', ' ')}. Default password: "${defaultHint}". Click 'Forgot Password?' below to reset.`
         );
         setIsSubmitting(false);
 
@@ -411,15 +414,15 @@ export default function LoginPage() {
           {/* Login Form */}
           <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
             <div className="space-y-1">
-              <label className="block text-slate-700 dark:text-gray-300 font-bold">Portal Username / Email</label>
+              <label className="block text-slate-700 dark:text-gray-300 font-bold">Portal Username / Email Address</label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400" />
                 <input
-                  type="email"
+                  type="text"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your official email"
+                  placeholder="e.g. email address or username (superadmin)"
                   className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
@@ -452,11 +455,29 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all uppercase tracking-wider"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-bold flex items-center justify-center gap-2 shadow-md transition-all text-xs"
             >
-              <span>{isSubmitting ? 'Authenticating...' : `Sign In to ${activeTab.replace('_', ' ')} Portal`}</span>
-              <ArrowRight className="w-4 h-4" />
+              {isSubmitting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Authenticating Portal Access...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In to {activeTab.replace('_', ' ')} Portal</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
             </button>
+
+            {/* Default Password Quick Reference Helper */}
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-1 text-[11px] font-sans">
+              <span className="font-extrabold text-slate-700 dark:text-emerald-300 block uppercase text-[10px] tracking-wider">🔑 Default Password Reference</span>
+              <p className="text-slate-600 dark:text-emerald-200/80">
+                • <strong>Super Admin:</strong> <code className="bg-emerald-500/10 px-1 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-mono">Absaj@2785</code> (or updated email in Settings)<br />
+                • <strong>Admin / Teacher / Parent:</strong> <code className="bg-emerald-500/10 px-1 py-0.5 rounded text-emerald-600 dark:text-emerald-300 font-mono">admin123</code>
+              </p>
+            </div>
           </form>
         </div>
       </main>
