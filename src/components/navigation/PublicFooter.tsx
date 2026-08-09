@@ -116,10 +116,10 @@ export function PublicFooter() {
               <div className="flex items-center gap-2 pt-1">
                 <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <a
-                  href="mailto:markazuumarbnkhaddabdaneji@gmail.com"
+                  href="mailto:markazuumarbndaneji@gmail.com"
                   className="hover:text-amber-300 truncate font-mono text-[11px] text-emerald-300"
                 >
-                  markazuumarbnkhaddabdaneji@gmail.com
+                  markazuumarbndaneji@gmail.com
                 </a>
               </div>
             </div>
@@ -153,15 +153,16 @@ export function PublicFooter() {
           </p>
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 text-xs">
             <span className="font-semibold text-emerald-200">
-              Powered by <span className="text-amber-300 font-bold">Elmuaz Technologies LTD</span>
+              Powered by <span className="text-amber-300 font-bold">Elmuaz Technologies Limited</span>
             </span>
             <span className="text-emerald-700">|</span>
             <a
-              href="mailto:markazuumarbnkhaddabdaneji@gmail.com"
+              href="mailto:nmastechnologieslimited@gmail.com"
               className="font-mono text-amber-400 hover:underline flex items-center gap-1 font-semibold"
+              title="Contact Developer"
             >
               <Mail className="w-3.5 h-3.5 text-amber-400" />
-              <span>markazuumarbnkhaddabdaneji@gmail.com</span>
+              <span>elmuaztechnologiesltd@gmail.com</span>
             </a>
           </div>
         </div>

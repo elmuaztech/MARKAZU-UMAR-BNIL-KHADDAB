@@ -55,7 +55,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
       portalUrl = configuredUrl.replace(/\/+$/, '');
     }
   }
-  const supportEmail = 'markazuumarislamiyyah@gmail.com';
+  const supportEmail = 'markazuumarbndaneji@gmail.com';
 
   const headerHtml = `
     <div style="background: linear-gradient(135deg, #022c1e 0%, #064e3b 100%); padding: 32px 24px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 4px solid #f59e0b;">

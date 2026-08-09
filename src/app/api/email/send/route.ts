@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     const info = await transporter.sendMail({
       from: `"MARKAZU UMAR ISLAMIYYAH" <${smtpUser}>`,
-      replyTo: 'markazuumarislamiyyah@gmail.com',
+      replyTo: 'markazuumarbndaneji@gmail.com',
       to: payload.to,
       subject: payload.subject,
       html: htmlContent,
