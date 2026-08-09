@@ -93,11 +93,26 @@ export function WhatsAppBatchModal({
     }
   };
 
+  React.useEffect(() => {
+    const handlePopState = () => {
+      onClose();
+    };
+
+    try {
+      window.history.pushState({ modalOpen: true }, '');
+    } catch {}
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto font-poppins">
-      <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl w-full max-w-4xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-poppins">
+      <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl w-full max-w-4xl shadow-2xl overflow-y-auto flex flex-col max-h-[85vh] sm:max-h-[88vh] scrollbar-thin scrollbar-thumb-emerald-600">
         {/* Header */}
-        <div className="p-6 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 text-white flex items-center justify-between">
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 text-white flex items-center justify-between sticky top-0 z-10">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center">
               <MessageSquare className="w-6 h-6 text-emerald-300" />

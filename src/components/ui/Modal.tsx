@@ -27,13 +27,23 @@ export function Modal({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
+
+    const handlePopState = () => {
+      onClose();
+    };
+
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
+      try {
+        window.history.pushState({ modalOpen: true }, '');
+      } catch {}
+      window.addEventListener('popstate', handlePopState);
     }
     return () => {
       document.body.style.overflow = 'auto';
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('popstate', handlePopState);
     };
   }, [isOpen, onClose]);
 
@@ -48,14 +58,14 @@ export function Modal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-poppins">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-md z-40"
+            className="fixed inset-0 bg-black/75 backdrop-blur-md z-40"
           />
 
           {/* Modal Content Box */}
@@ -63,21 +73,21 @@ export function Modal({
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className={`relative z-50 w-full ${maxWidthClasses[maxWidth]} max-h-[85vh] overflow-y-auto rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl font-sans space-y-4`}
+            className={`relative z-50 w-full ${maxWidthClasses[maxWidth]} max-h-[85vh] sm:max-h-[88vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl font-sans space-y-4 scrollbar-thin scrollbar-thumb-emerald-600`}
           >
             {/* Header */}
-            <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-emerald-500/20 flex items-center justify-between">
+            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#042419]/95 backdrop-blur-md p-4 sm:p-6 border-b border-slate-100 dark:border-emerald-500/20 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">{title}</h3>
+                <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">{title}</h3>
                 {titleArabic && <p className="font-arabic text-xs font-bold text-amber-500 mt-0.5">{titleArabic}</p>}
               </div>
 
               <button
                 onClick={onClose}
-                className="p-2 rounded-2xl bg-slate-100 dark:bg-emerald-950 text-slate-500 dark:text-emerald-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+                className="p-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-emerald-950 dark:hover:bg-emerald-900 text-slate-500 dark:text-emerald-300 hover:text-slate-900 dark:hover:text-white transition-all shadow-sm"
                 aria-label="Close dialog"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 

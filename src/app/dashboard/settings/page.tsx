@@ -4,21 +4,69 @@ import React, { useState } from 'react';
 import { useApp } from '../../../lib/context';
 import { INITIAL_AUDIT_LOGS, AuditEntry } from '../../../lib/audit';
 import { ThemeToggle } from '../../../components/navigation/ThemeToggle';
-import { Settings, School, Calendar, ShieldCheck, RotateCcw, Upload, Trash2, Image as ImageIcon, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Settings, School, Calendar, ShieldCheck, RotateCcw, Upload, Trash2, Image as ImageIcon, Sparkles, CheckCircle2, User, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 
 export default function SettingsPage() {
-  const { currentSession, schoolLogo, setSchoolLogo, schoolName, setSchoolName, currentUser, addAuditLog } = useApp();
+  const { currentSession, schoolLogo, setSchoolLogo, schoolName, setSchoolName, currentUser, setCurrentUser, updateUserAccount, updateUserAvatar, addAuditLog } = useApp();
 
   const [activeTerm, setActiveTerm] = useState<'Term 1' | 'Term 2' | 'Term 3'>(currentSession.activeTerm);
   const [auditLogs] = useState<AuditEntry[]>(INITIAL_AUDIT_LOGS);
   const [sessionSuccess, setSessionSuccess] = useState(false);
   const [logoNotice, setLogoNotice] = useState('');
+  const [profileNotice, setProfileNotice] = useState('');
   const [customLogoUrl, setCustomLogoUrl] = useState('');
   const [editableSchoolName, setEditableSchoolName] = useState(schoolName);
+
+  // Super Admin Personal Profile Form State
+  const [adminName, setAdminName] = useState(currentUser.name || '');
+  const [adminEmail, setAdminEmail] = useState(currentUser.email || '');
+  const [adminPhone, setAdminPhone] = useState(currentUser.phone || '');
+  const [adminAvatar, setAdminAvatar] = useState(currentUser.avatar || '');
+
+  const handleSavePersonalProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminName.trim()) return;
+
+    const updatedName = adminName.trim();
+    const updatedEmail = adminEmail.trim();
+    const updatedPhone = adminPhone.trim();
+
+    updateUserAccount(currentUser.id, {
+      name: updatedName,
+      email: updatedEmail,
+      phone: updatedPhone,
+      avatar: adminAvatar || currentUser.avatar,
+    });
+
+    setCurrentUser({
+      ...currentUser,
+      name: updatedName,
+      email: updatedEmail,
+      phone: updatedPhone,
+      avatar: adminAvatar || currentUser.avatar,
+    });
+
+    if (adminAvatar) {
+      updateUserAvatar(adminAvatar);
+    }
+
+    addAuditLog({
+      action: 'ADMIN_PROFILE_UPDATED',
+      performedBy: updatedName,
+      userRole: currentUser.role,
+      details: `Updated personal account profile details (Name: ${updatedName}, Email: ${updatedEmail})`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `User/${currentUser.id}`,
+      status: 'SUCCESS',
+    });
+
+    setProfileNotice('Your personal profile & display name updated successfully! Your updated name will now appear on your welcome banners, sidebar, and dashboards.');
+    setTimeout(() => setProfileNotice(''), 4000);
+  };
 
   const handleSaveSchoolName = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,12 +169,124 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {logoNotice && (
+      {profileNotice && (
         <div className="p-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-600 dark:text-emerald-300 text-xs font-bold flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-          <span>{logoNotice}</span>
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-500" />
+          <span>{profileNotice}</span>
         </div>
       )}
+
+      {/* Super Admin & Administrator Personal Profile Settings */}
+      <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-6">
+        <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-800/40 pb-3">
+          <div>
+            <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+              <User className="w-5 h-5 text-emerald-500" />
+              Administrator Personal Profile & Display Name
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-0.5">
+              Edit your personal display name, account email, phone number, and avatar photo as it appears on your dashboard welcome banner.
+            </p>
+          </div>
+          <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase">
+            {currentUser.role.replace('_', ' ')}
+          </span>
+        </div>
+
+        <form onSubmit={handleSavePersonalProfile} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-extrabold uppercase text-slate-700 dark:text-emerald-300 mb-1">
+                Your Full Name (Display Name)
+              </label>
+              <input
+                type="text"
+                value={adminName}
+                onChange={(e) => setAdminName(e.target.value)}
+                placeholder="e.g. Abdullahi Abubakar Sulaiman"
+                className="w-full bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-700/60 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 text-xs"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-extrabold uppercase text-slate-700 dark:text-emerald-300 mb-1">
+                Account Email Address
+              </label>
+              <input
+                type="email"
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                placeholder="e.g. admin@markazuumar.edu.ng"
+                className="w-full bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-700/60 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 text-xs"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-extrabold uppercase text-slate-700 dark:text-emerald-300 mb-1">
+                Phone Contact Number
+              </label>
+              <input
+                type="text"
+                value={adminPhone}
+                onChange={(e) => setAdminPhone(e.target.value)}
+                placeholder="e.g. +234 803 123 4567"
+                className="w-full bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-700/60 rounded-xl p-3 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 text-xs"
+              />
+            </div>
+          </div>
+
+          {/* Avatar Photo Upload & Preview */}
+          <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-sky-500 p-0.5 flex items-center justify-center shadow-md overflow-hidden shrink-0 border border-emerald-400">
+                {currentUser.avatar || adminAvatar ? (
+                  <img src={adminAvatar || currentUser.avatar} alt={adminName} className="w-full h-full object-cover rounded-xl" />
+                ) : (
+                  <User className="w-7 h-7 text-white" />
+                )}
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 dark:text-white">Profile Photo Avatar</p>
+                <p className="text-[11px] text-slate-500 dark:text-emerald-300/70">Upload a custom profile image from your phone or laptop.</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <label className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs cursor-pointer flex items-center gap-1.5 shadow-sm transition-all">
+                <Camera className="w-4 h-4" />
+                <span>Upload Avatar Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        const res = evt.target?.result as string;
+                        if (res) {
+                          setAdminAvatar(res);
+                          updateUserAvatar(res);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2">
+            <Button type="submit" variant="primary" size="md" className="font-extrabold shadow-lg">
+              Save Personal Profile & Name
+            </Button>
+          </div>
+        </form>
+      </div>
 
       {/* Grid: School Identity & Logo Manager */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -171,10 +171,10 @@ export function AdminDashboard() {
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
-              Welcome back, {currentUser.name || 'Admin User'}! 👋
+              Assalamu Alaikum, {currentUser.name || 'Admin User'}! 👋
             </h1>
             <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
-              Add/Track students, staff, parents and activities.
+              {currentUser.role === 'SUPER_ADMIN' ? 'Super Admin Portal & Institutional Control Center' : 'Administrative Control Center'}
             </p>
           </div>
 
@@ -186,13 +186,6 @@ export function AdminDashboard() {
               <UserCheck className="w-4 h-4" />
               <span>Assign Staff</span>
             </button>
-            <Link
-              href="/dashboard/tahfiz"
-              className="px-4 py-2.5 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>Tahfiz Tracker</span>
-            </Link>
           </div>
         </div>
 

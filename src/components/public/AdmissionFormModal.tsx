@@ -59,6 +59,24 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
   // Confirmation state
   const [submittedApp, setSubmittedApp] = useState<AdmissionApplication | null>(null);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handlePopState = () => {
+      resetForm();
+      onClose();
+    };
+
+    try {
+      window.history.pushState({ modalOpen: true }, '');
+    } catch {}
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const resetForm = () => {
@@ -110,15 +128,15 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-hidden">
-      <div className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl overflow-hidden text-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto font-poppins">
+      <div className="relative w-full max-w-2xl max-h-[85vh] sm:max-h-[88vh] bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/40 rounded-2xl sm:rounded-3xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl overflow-y-auto text-xs scrollbar-thin scrollbar-thumb-emerald-600 space-y-4">
         {/* Close Button */}
         <button
           onClick={() => {
             resetForm();
             onClose();
           }}
-          className="absolute top-5 right-5 p-2 text-slate-400 dark:text-emerald-400 hover:text-slate-900 dark:hover:text-white rounded-xl transition-colors z-10"
+          className="absolute top-5 right-5 p-2 bg-slate-100 dark:bg-emerald-950 text-slate-500 dark:text-emerald-300 hover:text-slate-900 dark:hover:text-white rounded-2xl transition-all z-10 shadow-sm"
         >
           <X className="w-5 h-5" />
         </button>
