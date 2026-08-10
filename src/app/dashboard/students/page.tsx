@@ -70,6 +70,7 @@ export default function StudentsPage() {
   const [editGuardianName, setEditGuardianName] = useState('');
   const [editGuardianPhone, setEditGuardianPhone] = useState('');
   const [editCompletedJuz, setEditCompletedJuz] = useState(0);
+  const [editStatus, setEditStatus] = useState<'ACTIVE' | 'GRADUATED' | 'SUSPENDED'>('ACTIVE');
   const isHeadmaster = currentUser.role === 'HEADMASTER';
   const canManageStudents = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN' || isHeadmaster;
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
