@@ -342,6 +342,59 @@ interface AppContextType {
   deleteAcademicEvent: (id: string) => void;
 }
 
+export interface DeletedIdentifiers {
+  ids: string[];
+  emails: string[];
+  usernames: string[];
+}
+
+export function getDeletedUserIdentifiers(): DeletedIdentifiers {
+  if (typeof window === 'undefined') return { ids: [], emails: [], usernames: [] };
+  try {
+    const saved = localStorage.getItem('markazu_deleted_users');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return {
+        ids: Array.isArray(parsed.ids) ? parsed.ids : [],
+        emails: Array.isArray(parsed.emails) ? parsed.emails.map((e: string) => e.toLowerCase().trim()) : [],
+        usernames: Array.isArray(parsed.usernames) ? parsed.usernames.map((u: string) => u.toLowerCase().trim()) : [],
+      };
+    }
+  } catch {}
+  return { ids: [], emails: [], usernames: [] };
+}
+
+export function recordDeletedUserIdentifier(id?: string, email?: string, username?: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getDeletedUserIdentifiers();
+    const newIds = new Set(current.ids);
+    const newEmails = new Set(current.emails);
+    const newUsernames = new Set(current.usernames);
+
+    if (id) newIds.add(id);
+    if (email) newEmails.add(email.toLowerCase().trim());
+    if (username) newUsernames.add(username.toLowerCase().trim());
+
+    localStorage.setItem(
+      'markazu_deleted_users',
+      JSON.stringify({
+        ids: Array.from(newIds),
+        emails: Array.from(newEmails),
+        usernames: Array.from(newUsernames),
+      })
+    );
+  } catch {}
+}
+
+export function isUserDeleted(id?: string, email?: string, username?: string): boolean {
+  const deleted = getDeletedUserIdentifiers();
+  if (id && deleted.ids.includes(id)) return true;
+  if (email && deleted.emails.includes(email.toLowerCase().trim())) return true;
+  if (username && deleted.usernames.includes(username.toLowerCase().trim())) return true;
+  return false;
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -382,10 +435,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<User[]>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const deleted = getDeletedUserIdentifiers();
         const savedUsers = localStorage.getItem('markazu_users');
         if (savedUsers !== null) {
           const parsed: User[] = JSON.parse(savedUsers);
-          const updatedParsed = parsed.map((u) => {
+          const filtered = parsed.filter(
+            (u) =>
+              !deleted.ids.includes(u.id) &&
+              !deleted.emails.includes(u.email.toLowerCase().trim()) &&
+              (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
+          );
+          const updatedParsed = filtered.map((u) => {
             if (u.id === 'usr-superadmin-1' || u.role === 'SUPER_ADMIN') {
               return {
                 ...u,
@@ -402,16 +462,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
 
         const savedPass = localStorage.getItem('markazu_user_passwords');
-        if (savedPass) {
-          const pMap: Record<string, string> = JSON.parse(savedPass);
-          return MOCK_USERS.map((u) => {
-            const h = pMap[u.email.toLowerCase()] || pMap[u.id];
-            if (h) {
-              return { ...u, passwordHash: h, failedLoginAttempts: 0, isLocked: false };
-            }
-            return u;
-          });
-        }
+        const pMap: Record<string, string> = savedPass ? JSON.parse(savedPass) : {};
+        return MOCK_USERS.filter(
+          (u) =>
+            !deleted.ids.includes(u.id) &&
+            !deleted.emails.includes(u.email.toLowerCase().trim()) &&
+            (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
+        ).map((u) => {
+          const h = pMap[u.email.toLowerCase()] || pMap[u.id] || u.passwordHash;
+          return { ...u, passwordHash: h, failedLoginAttempts: 0, isLocked: false };
+        });
       } catch {}
     }
     return MOCK_USERS;
@@ -531,29 +591,78 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [students, setStudents] = useState<Student[]>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const deleted = getDeletedUserIdentifiers();
         const saved = localStorage.getItem('markazu_students');
-        if (saved !== null) return JSON.parse(saved);
+        if (saved !== null) {
+          const parsed: Student[] = JSON.parse(saved);
+          return parsed.filter(
+            (s) =>
+              !deleted.ids.includes(s.id) &&
+              (!s.userId || !deleted.ids.includes(s.userId)) &&
+              (!s.email || !deleted.emails.includes(s.email.toLowerCase().trim())) &&
+              (!s.admissionNo || !deleted.usernames.includes(s.admissionNo.toLowerCase().trim()))
+          );
+        }
       } catch {}
     }
-    return MOCK_STUDENTS;
+    const deleted = getDeletedUserIdentifiers();
+    return MOCK_STUDENTS.filter(
+      (s) =>
+        !deleted.ids.includes(s.id) &&
+        (!s.userId || !deleted.ids.includes(s.userId)) &&
+        (!s.email || !deleted.emails.includes(s.email.toLowerCase().trim())) &&
+        (!s.admissionNo || !deleted.usernames.includes(s.admissionNo.toLowerCase().trim()))
+    );
   });
   const [teachers, setTeachers] = useState<Teacher[]>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const deleted = getDeletedUserIdentifiers();
         const saved = localStorage.getItem('markazu_teachers');
-        if (saved !== null) return JSON.parse(saved);
+        if (saved !== null) {
+          const parsed: Teacher[] = JSON.parse(saved);
+          return parsed.filter(
+            (t) =>
+              !deleted.ids.includes(t.id) &&
+              (!t.userId || !deleted.ids.includes(t.userId)) &&
+              (!t.email || !deleted.emails.includes(t.email.toLowerCase().trim())) &&
+              (!t.staffNo || !deleted.usernames.includes(t.staffNo.toLowerCase().trim()))
+          );
+        }
       } catch {}
     }
-    return MOCK_TEACHERS;
+    const deleted = getDeletedUserIdentifiers();
+    return MOCK_TEACHERS.filter(
+      (t) =>
+        !deleted.ids.includes(t.id) &&
+        (!t.userId || !deleted.ids.includes(t.userId)) &&
+        (!t.email || !deleted.emails.includes(t.email.toLowerCase().trim())) &&
+        (!t.staffNo || !deleted.usernames.includes(t.staffNo.toLowerCase().trim()))
+    );
   });
   const [parents, setParents] = useState<Parent[]>(() => {
     if (typeof window !== 'undefined') {
       try {
+        const deleted = getDeletedUserIdentifiers();
         const saved = localStorage.getItem('markazu_parents');
-        if (saved !== null) return JSON.parse(saved);
+        if (saved !== null) {
+          const parsed: Parent[] = JSON.parse(saved);
+          return parsed.filter(
+            (p) =>
+              !deleted.ids.includes(p.id) &&
+              (!p.userId || !deleted.ids.includes(p.userId)) &&
+              (!p.email || !deleted.emails.includes(p.email.toLowerCase().trim()))
+          );
+        }
       } catch {}
     }
-    return MOCK_PARENTS;
+    const deleted = getDeletedUserIdentifiers();
+    return MOCK_PARENTS.filter(
+      (p) =>
+        !deleted.ids.includes(p.id) &&
+        (!p.userId || !deleted.ids.includes(p.userId)) &&
+        (!p.email || !deleted.emails.includes(p.email.toLowerCase().trim()))
+    );
   });
   const [classes, setClasses] = useState<SchoolClass[]>(() => {
     if (typeof window !== 'undefined') {
@@ -822,23 +931,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  // Safe LocalStorage Persistence Helper to prevent QuotaExceededError & Sensitive Data Leakage
+  // Safe LocalStorage Persistence Helper to prevent QuotaExceededError
   const safeLocalStorageSet = (key: string, data: any) => {
     if (typeof window === 'undefined') return;
     try {
-      // Strip sensitive passwordHash field from client-side localStorage data
-      let targetData = data;
-      if (key === 'markazu_users' && Array.isArray(data)) {
-        targetData = data.map((u: any) => {
-          if (u && typeof u === 'object') {
-            const copy = { ...u };
-            delete copy.passwordHash;
-            return copy;
-          }
-          return u;
-        });
-      }
-      const serialized = JSON.stringify(targetData);
+      const serialized = JSON.stringify(data);
       localStorage.setItem(key, serialized);
     } catch (err: any) {
       console.warn(`[localStorage QUOTA EXCEEDED] Storage quota limit reached for key '${key}'. Cleaning up legacy cache...`);
@@ -855,7 +952,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           const sanitized = data.map((item: any) => {
             if (item && typeof item === 'object') {
               const copy = { ...item };
-              delete copy.passwordHash;
               if (typeof copy.avatar === 'string' && copy.avatar.length > 50000) delete copy.avatar;
               if (typeof copy.photoUrl === 'string' && copy.photoUrl.length > 50000) delete copy.photoUrl;
               return copy;
@@ -1775,6 +1871,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const targetId = userToDelete.id;
     const targetEmail = userToDelete.email.toLowerCase().trim();
+    const targetUsername = userToDelete.username?.toLowerCase().trim();
+
+    recordDeletedUserIdentifier(targetId, targetEmail, targetUsername);
+
+    if (typeof window !== 'undefined') {
+      try {
+        const savedPass = localStorage.getItem('markazu_user_passwords');
+        if (savedPass) {
+          const pMap = JSON.parse(savedPass);
+          delete pMap[targetEmail];
+          delete pMap[targetId];
+          if (targetUsername) delete pMap[targetUsername];
+          localStorage.setItem('markazu_user_passwords', JSON.stringify(pMap));
+        }
+      } catch {}
+    }
 
     // 1. Remove from users state & LocalStorage
     const updatedUsers = users.filter((u) => u.id !== targetId && u.email.toLowerCase().trim() !== targetEmail);
@@ -1783,43 +1895,47 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Remove permanently from MOCK_USERS in memory
     for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
-      if (MOCK_USERS[i].id === targetId || MOCK_USERS[i].email.toLowerCase().trim() === targetEmail) {
+      if (
+        MOCK_USERS[i].id === targetId ||
+        MOCK_USERS[i].email.toLowerCase().trim() === targetEmail ||
+        (targetUsername && MOCK_USERS[i].username?.toLowerCase().trim() === targetUsername)
+      ) {
         MOCK_USERS.splice(i, 1);
       }
     }
 
     // 2. Remove permanently from teachers/headmasters state & LocalStorage
     setTeachers((prev) => {
-      const updated = prev.filter((t) => t.id !== targetId && t.email.toLowerCase().trim() !== targetEmail);
+      const updated = prev.filter((t) => t.id !== targetId && t.userId !== targetId && t.email?.toLowerCase().trim() !== targetEmail);
       safeLocalStorageSet('markazu_teachers', updated);
       return updated;
     });
     for (let i = MOCK_TEACHERS.length - 1; i >= 0; i--) {
-      if (MOCK_TEACHERS[i].id === targetId || MOCK_TEACHERS[i].email.toLowerCase().trim() === targetEmail) {
+      if (MOCK_TEACHERS[i].id === targetId || MOCK_TEACHERS[i].userId === targetId || MOCK_TEACHERS[i].email?.toLowerCase().trim() === targetEmail) {
         MOCK_TEACHERS.splice(i, 1);
       }
     }
 
     // 3. Remove permanently from students state & LocalStorage
     setStudents((prev) => {
-      const updated = prev.filter((s) => s.id !== targetId && s.email?.toLowerCase().trim() !== targetEmail);
+      const updated = prev.filter((s) => s.id !== targetId && s.userId !== targetId && s.email?.toLowerCase().trim() !== targetEmail);
       safeLocalStorageSet('markazu_students', updated);
       return updated;
     });
     for (let i = MOCK_STUDENTS.length - 1; i >= 0; i--) {
-      if (MOCK_STUDENTS[i].id === targetId || MOCK_STUDENTS[i].email?.toLowerCase().trim() !== targetEmail) {
+      if (MOCK_STUDENTS[i].id === targetId || MOCK_STUDENTS[i].userId === targetId || MOCK_STUDENTS[i].email?.toLowerCase().trim() === targetEmail) {
         MOCK_STUDENTS.splice(i, 1);
       }
     }
 
     // 4. Remove permanently from parents state & LocalStorage
     setParents((prev) => {
-      const updated = prev.filter((p) => p.id !== targetId && p.email.toLowerCase().trim() !== targetEmail);
+      const updated = prev.filter((p) => p.id !== targetId && p.userId !== targetId && p.email?.toLowerCase().trim() !== targetEmail);
       safeLocalStorageSet('markazu_parents', updated);
       return updated;
     });
     for (let i = MOCK_PARENTS.length - 1; i >= 0; i--) {
-      if (MOCK_PARENTS[i].id === targetId || MOCK_PARENTS[i].email.toLowerCase().trim() === targetEmail) {
+      if (MOCK_PARENTS[i].id === targetId || MOCK_PARENTS[i].userId === targetId || MOCK_PARENTS[i].email?.toLowerCase().trim() === targetEmail) {
         MOCK_PARENTS.splice(i, 1);
       }
     }
@@ -2155,10 +2271,34 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const deleteStudent = (id: string) => {
     const targetStudent = students.find((s) => s.id === id);
-    setStudents((prev) => prev.filter((s) => s.id !== id));
-    if (targetStudent) {
-      setUsers((prev) => prev.filter((u) => u.id !== targetStudent.userId && u.username !== targetStudent.admissionNo));
+    const updatedStudents = students.filter((s) => s.id !== id);
+    setStudents(updatedStudents);
+    safeLocalStorageSet('markazu_students', updatedStudents);
+
+    for (let i = MOCK_STUDENTS.length - 1; i >= 0; i--) {
+      if (MOCK_STUDENTS[i].id === id) MOCK_STUDENTS.splice(i, 1);
     }
+
+    if (targetStudent) {
+      const targetUserId = targetStudent.userId || targetStudent.id;
+      const targetEmail = targetStudent.email?.toLowerCase().trim();
+      const targetAdmNo = targetStudent.admissionNo?.toLowerCase().trim();
+
+      recordDeletedUserIdentifier(id, targetEmail, targetAdmNo);
+      recordDeletedUserIdentifier(targetUserId, targetEmail, targetAdmNo);
+
+      const updatedUsers = users.filter(
+        (u) => u.id !== targetUserId && u.id !== id && (targetEmail ? u.email.toLowerCase().trim() !== targetEmail : true) && (targetAdmNo ? u.username?.toLowerCase().trim() !== targetAdmNo : true)
+      );
+      setUsers(updatedUsers);
+      safeLocalStorageSet('markazu_users', updatedUsers);
+      for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
+        if (MOCK_USERS[i].id === targetUserId || MOCK_USERS[i].id === id || (targetEmail && MOCK_USERS[i].email.toLowerCase().trim() === targetEmail)) {
+          MOCK_USERS.splice(i, 1);
+        }
+      }
+    }
+
     notify({
       type: 'warning',
       title: 'Student Account Deleted',
@@ -2323,11 +2463,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (targetTeacher) {
       const targetUserId = targetTeacher.userId || targetTeacher.id;
       const targetEmail = targetTeacher.email?.toLowerCase().trim();
-      const updatedUsers = users.filter((u) => u.id !== targetUserId && (targetEmail ? u.email.toLowerCase().trim() !== targetEmail : true));
+      const targetStaffNo = targetTeacher.staffNo?.toLowerCase().trim();
+
+      recordDeletedUserIdentifier(id, targetEmail, targetStaffNo);
+      recordDeletedUserIdentifier(targetUserId, targetEmail, targetStaffNo);
+
+      const updatedUsers = users.filter(
+        (u) => u.id !== targetUserId && u.id !== id && (targetEmail ? u.email.toLowerCase().trim() !== targetEmail : true) && (targetStaffNo ? u.username?.toLowerCase().trim() !== targetStaffNo : true)
+      );
       setUsers(updatedUsers);
       safeLocalStorageSet('markazu_users', updatedUsers);
       for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
-        if (MOCK_USERS[i].id === targetUserId || (targetEmail && MOCK_USERS[i].email.toLowerCase().trim() === targetEmail)) {
+        if (MOCK_USERS[i].id === targetUserId || MOCK_USERS[i].id === id || (targetEmail && MOCK_USERS[i].email.toLowerCase().trim() === targetEmail)) {
           MOCK_USERS.splice(i, 1);
         }
       }
@@ -2536,12 +2683,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (targetParent) {
       const targetUserId = targetParent.userId || targetParent.id;
       const targetEmail = targetParent.email.toLowerCase().trim();
-      const updatedUsers = users.filter((u) => u.id !== targetUserId && u.email.toLowerCase().trim() !== targetEmail);
+
+      recordDeletedUserIdentifier(id, targetEmail);
+      recordDeletedUserIdentifier(targetUserId, targetEmail);
+
+      const updatedUsers = users.filter((u) => u.id !== targetUserId && u.id !== id && u.email.toLowerCase().trim() !== targetEmail);
       setUsers(updatedUsers);
       safeLocalStorageSet('markazu_users', updatedUsers);
 
       for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
-        if (MOCK_USERS[i].id === targetUserId || MOCK_USERS[i].email.toLowerCase().trim() === targetEmail) {
+        if (MOCK_USERS[i].id === targetUserId || MOCK_USERS[i].id === id || MOCK_USERS[i].email.toLowerCase().trim() === targetEmail) {
           MOCK_USERS.splice(i, 1);
         }
       }

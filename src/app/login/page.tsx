@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useApp } from '../../lib/context';
+import { useApp, getDeletedUserIdentifiers } from '../../lib/context';
 import { MOCK_USERS } from '../../lib/mockData';
 import { UserRole, User } from '../../types';
 import { verifyPassword, checkLockoutStatus, generatePasswordResetToken, createNewSession, verifyResetToken, markResetTokenUsed, validatePasswordPolicy, isPasswordInHistory } from '../../lib/security';
@@ -54,20 +54,39 @@ export default function LoginPage() {
     setResetSuccessMsg('');
 
     const cleanInput = resetEmail.trim().toLowerCase();
+    const deleted = getDeletedUserIdentifiers();
 
-    // Search users in state, LocalStorage, MOCK_USERS, or fallback to Super Admin
-    let allUsers = users;
+    // Search active users in state, LocalStorage, MOCK_USERS (excluding deleted accounts)
+    let allUsers = users.filter(
+      (u) =>
+        !deleted.ids.includes(u.id) &&
+        !deleted.emails.includes(u.email.toLowerCase().trim()) &&
+        (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
+    );
+
     if (typeof window !== 'undefined') {
       try {
         const savedUsers = localStorage.getItem('markazu_users');
         if (savedUsers) {
           const parsed = JSON.parse(savedUsers);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            allUsers = parsed;
+            allUsers = parsed.filter(
+              (u: User) =>
+                !deleted.ids.includes(u.id) &&
+                !deleted.emails.includes(u.email.toLowerCase().trim()) &&
+                (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
+            );
           }
         }
       } catch {}
     }
+
+    const availableMockUsers = MOCK_USERS.filter(
+      (u) =>
+        !deleted.ids.includes(u.id) &&
+        !deleted.emails.includes(u.email.toLowerCase().trim()) &&
+        (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
+    );
 
     const userMatch =
       allUsers.find(
@@ -76,7 +95,7 @@ export default function LoginPage() {
           u.username?.trim().toLowerCase() === cleanInput ||
           u.id.trim().toLowerCase() === cleanInput
       ) ||
-      MOCK_USERS.find(
+      availableMockUsers.find(
         (u) =>
           u.email.trim().toLowerCase() === cleanInput ||
           u.username?.trim().toLowerCase() === cleanInput ||
@@ -84,7 +103,7 @@ export default function LoginPage() {
       ) ||
       // Fallback for Super Admin
       (cleanInput.includes('markazu') || cleanInput.includes('gmail') || cleanInput.includes('admin') || cleanInput === 'superadmin'
-        ? allUsers.find((u) => u.role === 'SUPER_ADMIN') || MOCK_USERS[0]
+        ? allUsers.find((u) => u.role === 'SUPER_ADMIN') || availableMockUsers.find((u) => u.role === 'SUPER_ADMIN')
         : null);
 
     if (!userMatch) {
@@ -221,22 +240,34 @@ export default function LoginPage() {
 
     setTimeout(() => {
       const inputClean = email.trim().toLowerCase();
+      const deleted = getDeletedUserIdentifiers();
 
-      // Read fresh users array directly from LocalStorage if available
-      let allUsers = users;
+      // Read fresh users array directly from LocalStorage (excluding deleted users)
+      let allUsers = users.filter(
+        (u) =>
+          !deleted.ids.includes(u.id) &&
+          !deleted.emails.includes(u.email.toLowerCase().trim()) &&
+          (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
+      );
+
       if (typeof window !== 'undefined') {
         try {
           const savedUsers = localStorage.getItem('markazu_users');
           if (savedUsers) {
             const parsed = JSON.parse(savedUsers);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              allUsers = parsed;
+              allUsers = parsed.filter(
+                (u: User) =>
+                  !deleted.ids.includes(u.id) &&
+                  !deleted.emails.includes(u.email.toLowerCase().trim()) &&
+                  (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
+              );
             }
           }
         } catch {}
       }
 
-      // Find matching user in database (by Email or Staff ID Username)
+      // Find matching user strictly by credentials
       const user =
         allUsers.find(
           (u) =>
@@ -250,23 +281,35 @@ export default function LoginPage() {
             u.email.trim().toLowerCase() === inputClean ||
             u.username?.trim().toLowerCase() === inputClean ||
             u.id.trim().toLowerCase() === inputClean
-        ) ||
-        // Fallback for current active role tab so user is NEVER blocked
-        allUsers.find((u) => u.role === activeTab) ||
-        users.find((u) => u.role === activeTab);
+        );
 
       if (!user) {
-        setErrorMsg('No user account found. Please select the correct portal tab or contact administration.');
+        setErrorMsg('No user account found. Please check your credentials or select the correct portal tab.');
         setIsSubmitting(false);
         addAuditLog({
           action: 'FAILED_LOGIN_ATTEMPT',
           performedBy: email,
           userRole: activeTab,
-          details: `Login attempt failed: User record not found for ${email}`,
+          details: `Login attempt failed: Account not found or deleted for ${email}`,
           ipAddress: '197.210.227.14',
           status: 'FAILURE',
         });
         return;
+      }
+
+      // Ensure password hash is present if missing from legacy storage
+      if (!user.passwordHash && typeof window !== 'undefined') {
+        try {
+          const savedPass = localStorage.getItem('markazu_user_passwords');
+          if (savedPass) {
+            const pMap = JSON.parse(savedPass);
+            user.passwordHash = pMap[user.email.toLowerCase()] || pMap[user.id] || (user.username ? pMap[user.username.toLowerCase()] : undefined);
+          }
+        } catch {}
+        if (!user.passwordHash) {
+          const mockMatch = MOCK_USERS.find((mu) => mu.id === user.id || mu.email.toLowerCase() === user.email.toLowerCase());
+          if (mockMatch) user.passwordHash = mockMatch.passwordHash;
+        }
       }
 
       // Check account lockout status
