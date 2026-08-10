@@ -8,10 +8,28 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
     const classId = searchParams.get('classId');
+    const programmeId = searchParams.get('programmeId');
+    const userRole = request.headers.get('x-user-role') || searchParams.get('role');
+    const userProgId = request.headers.get('x-user-programme-id') || searchParams.get('userProgrammeId');
+
+    // PBAC Check for Headmaster
+    if (userRole === 'HEADMASTER') {
+      if (programmeId && userProgId && programmeId !== userProgId) {
+        return NextResponse.json(
+          { success: false, error: 'Access Forbidden (HTTP 403): Headmaster cannot access attendance for another programme.' },
+          { status: 403 }
+        );
+      }
+    }
 
     const whereClause: any = {};
     if (date) whereClause.date = new Date(date);
     if (classId) whereClause.classId = classId;
+    if (userRole === 'HEADMASTER' && userProgId) {
+      whereClause.programmeId = userProgId;
+    } else if (programmeId) {
+      whereClause.programmeId = programmeId;
+    }
 
     const records = await prisma.attendanceRecord.findMany({
       where: whereClause,
@@ -32,9 +50,21 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { records, isDraft } = body;
+    const userRole = request.headers.get('x-user-role') || body.userRole;
+    const userProgId = request.headers.get('x-user-programme-id') || body.userProgrammeId;
 
     if (!Array.isArray(records) || records.length === 0) {
       return NextResponse.json({ success: false, error: 'Records array is required' }, { status: 400 });
+    }
+
+    if (userRole === 'HEADMASTER' && userProgId) {
+      const hasOtherProg = records.some((r) => r.programmeId && r.programmeId !== userProgId);
+      if (hasOtherProg) {
+        return NextResponse.json(
+          { success: false, error: 'Access Forbidden (HTTP 403): Headmaster cannot submit attendance for another programme.' },
+          { status: 403 }
+        );
+      }
     }
 
     const createdRecords = [];

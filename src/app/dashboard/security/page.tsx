@@ -579,7 +579,8 @@ export default function SecurityDashboardPage() {
                             onChange={(e) => setNewRole(e.target.value as UserRole)}
                             className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white"
                           >
-                            <option value="ADMIN">Normal School Admin (ADMIN)</option>
+                            <option value="SUPER_ADMIN">Super Administrator (SUPER_ADMIN)</option>
+                            <option value="ADMIN">School Administrator (ADMIN)</option>
                             <option value="HEADMASTER">Section Headmaster (HEADMASTER)</option>
                             <option value="TEACHER">Teacher (TEACHER)</option>
                             <option value="PARENT">Parent (PARENT)</option>

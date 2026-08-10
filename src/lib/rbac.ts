@@ -465,3 +465,48 @@ export function canTeacherMessageStudent(
     return assignment.classId === targetStudent.classId;
   });
 }
+
+/**
+ * Backend & Route Security: Enforce Headmaster Programme Access
+ * Checks if the user is authorized to access a given programme resource.
+ * - SUPER_ADMIN & ADMIN have global access across all programmes.
+ * - HEADMASTER can ONLY access their assigned programme/section.
+ * - Returns { authorized: boolean; reason?: string }
+ */
+export function verifyUserProgrammeAccess(
+  user: User | null | undefined,
+  targetProgrammeId?: string,
+  targetProgrammeName?: string
+): { authorized: boolean; reason?: string } {
+  if (!user) {
+    return { authorized: false, reason: 'Authentication required' };
+  }
+
+  if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN') {
+    return { authorized: true };
+  }
+
+  if (user.role === 'HEADMASTER') {
+    const userProgId = user.assignedProgrammeId;
+    const userProgName = user.assignedProgrammeName?.toLowerCase().trim();
+
+    if (!userProgId && !userProgName) {
+      return { authorized: false, reason: 'Headmaster account is not assigned to any school programme' };
+    }
+
+    if (targetProgrammeId && userProgId && targetProgrammeId === userProgId) {
+      return { authorized: true };
+    }
+
+    if (targetProgrammeName && userProgName && (targetProgrammeName.toLowerCase().trim().includes(userProgName) || userProgName.includes(targetProgrammeName.toLowerCase().trim()))) {
+      return { authorized: true };
+    }
+
+    return {
+      authorized: false,
+      reason: `Access Forbidden (HTTP 403): Headmaster is assigned to "${user.assignedProgrammeName || user.assignedProgrammeId}" and cannot access another programme.`,
+    };
+  }
+
+  return { authorized: true };
+}

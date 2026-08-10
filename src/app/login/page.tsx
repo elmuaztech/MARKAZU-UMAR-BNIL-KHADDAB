@@ -10,7 +10,7 @@ import { sendSystemEmail } from '../../lib/emailService';
 import { ThemeToggle } from '../../components/navigation/ThemeToggle';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
-import { Sparkles, ShieldCheck, UserCheck, GraduationCap, HeartHandshake, Lock, Mail, ArrowRight, AlertTriangle, KeyRound, CheckCircle2, X, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, ShieldCheck, Crown, UserCheck, GraduationCap, HeartHandshake, Lock, Mail, ArrowRight, AlertTriangle, KeyRound, CheckCircle2, X, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -405,8 +405,8 @@ export default function LoginPage() {
             </p>
           </div>
 
-          {/* Role Login Tabs */}
-          <div className="grid grid-cols-5 gap-1 p-1.5 rounded-2xl bg-slate-200/80 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/20 text-[9px] font-bold">
+          {/* Role Navigation Tabs */}
+          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 bg-slate-200/80 dark:bg-[#021810] p-1 rounded-2xl text-[11px] font-bold">
             <button
               type="button"
               onClick={() => handleTabChange('SUPER_ADMIN')}
@@ -426,6 +426,16 @@ export default function LoginPage() {
                 }`}
             >
               Admin
+            </button>
+            <button
+              type="button"
+              onClick={() => handleTabChange('HEADMASTER')}
+              className={`py-2 rounded-xl transition-all ${activeTab === 'HEADMASTER'
+                  ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                  : 'text-slate-600 dark:text-gray-400 hover:text-amber-500'
+                }`}
+            >
+              Headmaster
             </button>
             <button
               type="button"
@@ -464,6 +474,7 @@ export default function LoginPage() {
             <div className="flex items-center gap-2 font-semibold">
               {activeTab === 'SUPER_ADMIN' && <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
               {activeTab === 'ADMIN' && <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
+              {activeTab === 'HEADMASTER' && <Crown className="w-4 h-4 text-amber-500" />}
               {activeTab === 'TEACHER' && <UserCheck className="w-4 h-4 text-sky-500" />}
               {activeTab === 'STUDENT' && <GraduationCap className="w-4 h-4 text-purple-400" />}
               {activeTab === 'PARENT' && <HeartHandshake className="w-4 h-4 text-amber-400" />}
