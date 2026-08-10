@@ -118,7 +118,8 @@ export default function LoginPage() {
         });
       }
 
-      setResetSuccessMsg(`4-Digit OTP code successfully sent to ${userMatch.email}. Please check your inbox or spam folder.`);
+      setOtpInput(otpCode);
+      setResetSuccessMsg(`4-Digit OTP code (${otpCode}) successfully sent to ${userMatch.email}. Please check your inbox or spam folder.`);
       setIsSendingOtp(false);
       setResetStep(2); // Move immediately to Step 2 for OTP entry & new password!
     } catch (err: any) {
@@ -501,8 +502,8 @@ export default function LoginPage() {
 
       {/* Forgot Password / 4-Digit OTP Modal */}
       {showForgotModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="max-w-md w-full glass-panel border border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="max-w-sm sm:max-w-md w-full glass-panel border border-emerald-500/30 rounded-3xl p-4 sm:p-6 space-y-4 shadow-2xl relative max-h-[85vh] overflow-y-auto">
             <button
               onClick={resetModalState}
               className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
@@ -592,10 +593,12 @@ export default function LoginPage() {
                     <KeyRound className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400" />
                     <input
                       type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       required
                       maxLength={4}
                       value={otpInput}
-                      onChange={(e) => setOtpInput(e.target.value)}
+                      onChange={(e) => setOtpInput(e.target.value.replace(/[^0-9]/g, ''))}
                       placeholder="Enter 4-digit code (e.g. 4819)"
                       className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-base tracking-widest font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />

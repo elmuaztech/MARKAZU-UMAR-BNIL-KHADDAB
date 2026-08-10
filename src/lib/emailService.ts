@@ -55,13 +55,14 @@ export function generateEmailHtml(payload: EmailPayload): string {
       portalUrl = configuredUrl.replace(/\/+$/, '');
     }
   }
-  const supportEmail = 'markazuumarbndaneji@gmail.com';
+  const supportEmail = 'markazuumarbnkhaddabdaneji@gmail.com';
+  const logoUrl = `${portalUrl}/logo.png`;
 
   const headerHtml = `
     <div style="background: linear-gradient(135deg, #022c1e 0%, #064e3b 100%); padding: 32px 24px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 4px solid #f59e0b;">
       <!-- Official School Crest Logo -->
       <div style="text-align: center; margin-bottom: 14px;">
-        <img src="cid:school_logo_header" width="110" height="110" alt="Markazu Umaru Bnil Khattab Logo" style="display: block; margin: 0 auto; border-radius: 50%; border: 4px solid #f59e0b; background-color: #ffffff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);" />
+        <img src="${logoUrl}" width="110" height="110" alt="Markazu Umaru Bnil Khattab Logo" style="display: block; margin: 0 auto; border-radius: 50%; border: 4px solid #f59e0b; background-color: #ffffff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);" />
       </div>
 
       <!-- Full English School Title -->

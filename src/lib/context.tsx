@@ -1914,24 +1914,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const newHash = hashPassword(newPass);
     const cleanEmail = email.toLowerCase().trim();
 
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u.email.toLowerCase() === cleanEmail || u.username?.toLowerCase() === cleanEmail) {
-          return {
-            ...u,
-            passwordHash: newHash,
-            isFirstLogin: false,
-            mustChangePassword: false,
-            failedLoginAttempts: 0,
-            isLocked: false,
-          };
-        }
-        return u;
-      })
-    );
+    const updated = users.map((u) => {
+      if (
+        u.email.toLowerCase() === cleanEmail ||
+        u.username?.toLowerCase() === cleanEmail ||
+        (cleanEmail.includes('superadmin') && u.role === 'SUPER_ADMIN') ||
+        (cleanEmail.includes('markazu') && u.role === 'SUPER_ADMIN')
+      ) {
+        return {
+          ...u,
+          passwordHash: newHash,
+          isFirstLogin: false,
+          mustChangePassword: false,
+          failedLoginAttempts: 0,
+          isLocked: false,
+        };
+      }
+      return u;
+    });
+
+    setUsers(updated);
+    safeLocalStorageSet('markazu_users', updated);
 
     MOCK_USERS.forEach((u) => {
-      if (u.email.toLowerCase() === cleanEmail || u.username?.toLowerCase() === cleanEmail) {
+      if (
+        u.email.toLowerCase() === cleanEmail ||
+        u.username?.toLowerCase() === cleanEmail ||
+        (cleanEmail.includes('superadmin') && u.role === 'SUPER_ADMIN') ||
+        (cleanEmail.includes('markazu') && u.role === 'SUPER_ADMIN')
+      ) {
         u.passwordHash = newHash;
         u.isFirstLogin = false;
         u.mustChangePassword = false;
@@ -1940,7 +1951,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    if (currentUser && (currentUser.email.toLowerCase() === cleanEmail || currentUser.username?.toLowerCase() === cleanEmail)) {
+    if (
+      currentUser &&
+      (currentUser.email.toLowerCase() === cleanEmail ||
+        currentUser.username?.toLowerCase() === cleanEmail ||
+        (cleanEmail.includes('markazu') && currentUser.role === 'SUPER_ADMIN'))
+    ) {
       const updatedCurr = {
         ...currentUser,
         passwordHash: newHash,
@@ -1950,18 +1966,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         isLocked: false,
       };
       setCurrentUser(updatedCurr);
-      if (typeof window !== 'undefined') {
-        try {
-          const sanitizedCurr = { ...updatedCurr };
-          delete (sanitizedCurr as any).passwordHash;
-          if (typeof sanitizedCurr.avatar === 'string' && sanitizedCurr.avatar.length > 50000) {
-            delete (sanitizedCurr as any).avatar;
-          }
-          localStorage.setItem('markazu_current_user', JSON.stringify(sanitizedCurr));
-        } catch {
-          console.warn('[localStorage QUOTA EXCEEDED] Current user session maintained safely in memory state.');
-        }
-      }
+      safeLocalStorageSet('markazu_current_user', updatedCurr);
     }
 
     if (typeof window !== 'undefined') {

@@ -963,7 +963,7 @@ export function AdminDashboard() {
                   <Database className="w-4 h-4" />
                 </div>
                 <p className="text-3xl font-black text-slate-900 dark:text-white">10m ago</p>
-                <p className="text-[11px] text-slate-500 dark:text-amber-300/70">Hostinger VPS snapshot verified</p>
+                <p className="text-[11px] text-slate-500 dark:text-amber-300/70">Automated Cloud Backup Verified</p>
               </div>
             </div>
 

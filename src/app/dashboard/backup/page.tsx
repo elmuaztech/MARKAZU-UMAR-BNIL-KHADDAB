@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../../lib/context';
+import { sendSystemEmail } from '../../../lib/emailService';
 import {
   Database,
   HardDrive,
@@ -48,7 +49,7 @@ export default function BackupCenterPage() {
     notify,
   } = useApp();
 
-  const [destinationEmail, setDestinationEmail] = useState<string>('info@markazuumar.edu.ng');
+  const [destinationEmail, setDestinationEmail] = useState<string>('markazuumarbnkhaddabdaneji@gmail.com');
   const [backupMode, setBackupMode] = useState<'BOTH' | 'EMAIL_DRIVE' | 'LOCAL_ONLY'>('BOTH');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [notice, setNotice] = useState<string>('');
@@ -58,7 +59,7 @@ export default function BackupCenterPage() {
       id: 'bkp-1723180000',
       timestamp: new Date(Date.now() - 86400000).toLocaleString(),
       performedBy: currentUser.name || 'Admin',
-      destinationEmail: 'info@markazuumar.edu.ng',
+      destinationEmail: 'markazuumarbnkhaddabdaneji@gmail.com',
       fileSize: '3.8 MB',
       totalRecords:
         students.length + teachers.length + parents.length + programmes.length + classes.length + grades.length,
@@ -99,12 +100,8 @@ export default function BackupCenterPage() {
         parentsCount: parents.length,
         programmesCount: programmes.length,
         classesCount: classes.length,
-        subjectsCount: subjects.length,
-        tahfizRecordsCount: tahfizRecords.length,
-        attendanceCount: attendance.length,
+        tahfizCount: tahfizRecords.length,
         gradesCount: grades.length,
-        admissionsCount: admissionApplications.length,
-        auditLogsCount: auditLogs.length,
       },
       data: {
         students,

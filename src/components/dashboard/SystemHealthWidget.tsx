@@ -15,9 +15,9 @@ export function SystemHealthWidget() {
     },
     {
       id: 'server',
-      label: 'Hostinger VPS Server',
+      label: 'Cloud Server & Database',
       status: 'Healthy',
-      detail: 'KVM 1 Node • Uptime 99.99%',
+      detail: 'Secure Cloud Node • Uptime 99.99%',
       icon: Server,
       color: 'emerald',
     },
@@ -66,7 +66,7 @@ export function SystemHealthWidget() {
             </h3>
           </div>
           <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-0.5">
-            Real-time infrastructure performance, database connectivity, and automated backups on Hostinger VPS KVM 1.
+            Real-time infrastructure performance, database connectivity, and automated cloud backups.
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
