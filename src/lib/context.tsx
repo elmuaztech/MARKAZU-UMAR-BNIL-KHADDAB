@@ -555,7 +555,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentUser?.id]);
 
-  const updateUserAvatar = (avatarUrl: string) => {
+  const updateUserAvatar = async (avatarUrl: string) => {
     setCurrentUser((prev) => ({ ...prev, avatar: avatarUrl }));
     setUsers((prev) => prev.map((u) => (u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...u, avatar: avatarUrl } : u)));
     setTeachers((prev) => prev.map((t) => (t.id === currentUser.id || t.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...t, avatar: avatarUrl } : t)));
@@ -565,8 +565,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined' && currentUser?.id) {
       try {
         localStorage.setItem(`markazu_user_avatar_${currentUser.id}`, avatarUrl);
+        localStorage.setItem(`markazu_user_avatar_${currentUser.email.toLowerCase()}`, avatarUrl);
       } catch {}
     }
+
+    try {
+      await fetch(`/api/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ avatar: avatarUrl }),
+      });
+    } catch (e) {
+      console.warn('[updateUserAvatar] API sync warning:', e);
+    }
+
     notify({
       type: 'success',
       title: 'Profile Photo Updated',

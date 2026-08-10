@@ -489,11 +489,17 @@ export function Sidebar({
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
               <div className="relative shrink-0">
-                <img
-                  src={currentUser.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150'}
-                  alt={currentUser.name}
-                  className="w-8 h-8 rounded-full border-2 border-emerald-400/50 object-cover"
-                />
+                {currentUser.avatar ? (
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-8 h-8 rounded-full border-2 border-emerald-400/50 object-cover"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-xs flex items-center justify-center border-2 border-emerald-400/50 uppercase shadow-xs">
+                    {(currentUser.name || 'U').substring(0, 2)}
+                  </div>
+                )}
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
               </div>
 

@@ -45,6 +45,24 @@ export function Header({
 
         {/* Live Notification Center Badge */}
         <HeaderNotificationBadge />
+
+        {/* User Account Badge */}
+        <div className="flex items-center gap-2 pl-2 border-l border-emerald-200 dark:border-emerald-800/50">
+          {currentUser.avatar ? (
+            <img
+              src={currentUser.avatar}
+              alt={currentUser.name}
+              className="w-8 h-8 rounded-full border-2 border-emerald-400/50 object-cover shrink-0"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center border-2 border-emerald-400/50 uppercase shadow-xs shrink-0">
+              {(currentUser.name || 'U').substring(0, 2)}
+            </div>
+          )}
+          <span className="hidden md:inline-block text-xs font-bold text-slate-800 dark:text-emerald-100 max-w-[120px] truncate">
+            {currentUser.name}
+          </span>
+        </div>
       </div>
     </header>
   );

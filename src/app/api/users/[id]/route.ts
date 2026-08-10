@@ -9,11 +9,6 @@ export const dynamic = 'force-dynamic';
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await getAuthenticatedUser(req);
-    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN']);
-    if (!authCheck.authorized) {
-      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
-    }
-
     const userId = params.id;
     const body = await req.json();
 
@@ -25,14 +20,23 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'User record not found in database.' }, { status: 404 });
     }
 
+    const isSelfUpdate = authUser?.id === userId || authUser?.email.toLowerCase() === existingUser.email.toLowerCase();
+    if (!isSelfUpdate && authUser?.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Access Forbidden (HTTP 403): You can only update your own profile or must be a Super Admin.' }, { status: 403 });
+    }
+
     const updateData: any = {};
     if (body.name) updateData.name = body.name.trim();
-    if (body.email) updateData.email = body.email.trim().toLowerCase();
+    if (body.avatar !== undefined) updateData.avatar = body.avatar;
     if (body.phone !== undefined) updateData.phone = body.phone.trim();
-    if (body.role && body.role !== existingUser.role) updateData.role = body.role;
-    if (body.status) updateData.status = body.status;
-    if (body.assignedProgrammeId !== undefined) updateData.assignedProgrammeId = body.assignedProgrammeId;
-    if (body.assignedProgrammeName !== undefined) updateData.assignedProgrammeName = body.assignedProgrammeName;
+
+    if (authUser?.role === 'SUPER_ADMIN') {
+      if (body.email) updateData.email = body.email.trim().toLowerCase();
+      if (body.role && body.role !== existingUser.role) updateData.role = body.role;
+      if (body.status) updateData.status = body.status;
+      if (body.assignedProgrammeId !== undefined) updateData.assignedProgrammeId = body.assignedProgrammeId;
+      if (body.assignedProgrammeName !== undefined) updateData.assignedProgrammeName = body.assignedProgrammeName;
+    }
 
     // Reset password request
     let tempPassSent: string | undefined;

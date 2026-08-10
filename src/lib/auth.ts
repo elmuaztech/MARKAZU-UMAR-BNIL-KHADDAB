@@ -8,6 +8,7 @@ export interface AuthenticatedUser {
   email: string;
   username?: string | null;
   role: UserRole | string;
+  avatar?: string | null;
   assignedProgrammeId?: string | null;
   assignedProgrammeName?: string | null;
   status: string;
@@ -61,6 +62,7 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
         email: dbSession.user.email,
         username: (dbSession.user as any).username || null,
         role: dbSession.user.role,
+        avatar: dbSession.user.avatar || null,
         assignedProgrammeId: dbSession.user.assignedProgrammeId,
         assignedProgrammeName: dbSession.user.assignedProgrammeName,
         status: dbSession.user.status,
@@ -91,6 +93,7 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
           email: dbUser.email,
           username: dbUser.username || null,
           role: dbUser.role,
+          avatar: dbUser.avatar || null,
           assignedProgrammeId: dbUser.assignedProgrammeId,
           assignedProgrammeName: dbUser.assignedProgrammeName,
           status: dbUser.status,

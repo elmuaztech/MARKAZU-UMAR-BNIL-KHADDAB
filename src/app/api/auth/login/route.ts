@@ -145,6 +145,7 @@ export async function POST(req: NextRequest) {
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        avatar: updatedUser.avatar || null,
         assignedProgrammeId: updatedUser.assignedProgrammeId,
         assignedProgrammeName: updatedUser.assignedProgrammeName,
         isFirstLogin: updatedUser.isFirstLogin,
