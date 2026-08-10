@@ -4,6 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useApp } from '../../lib/context';
+import {
+  filterStudentsForUser,
+  filterTeachersForUser,
+  filterClassesForUser,
+  filterSubjectsForUser,
+  filterParentsForUser,
+  filterAttendanceForUser,
+  filterTahfizForUser,
+} from '../../lib/rbac';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { CommandCenterSearch } from './CommandCenterSearch';
 import { SystemHealthWidget } from './SystemHealthWidget';
@@ -108,19 +117,28 @@ export function AdminDashboard() {
     else setGreeting('Good Evening');
   }, []);
 
+  // RBAC Section Data Scoping
+  const displayStudents = filterStudentsForUser(currentUser, students, parents);
+  const displayTeachers = filterTeachersForUser(currentUser, teachers);
+  const displayClasses = filterClassesForUser(currentUser, classes);
+  const displaySubjects = filterSubjectsForUser(currentUser, subjects);
+  const displayParents = filterParentsForUser(currentUser, parents, displayStudents);
+  const displayAttendance = filterAttendanceForUser(currentUser, attendance, displayStudents);
+  const displayTahfiz = filterTahfizForUser(currentUser, tahfizRecords, displayStudents);
+
   // Summary Metrics
-  const totalStudents = students.length;
-  const totalTeachers = teachers.length;
-  const totalParents = parents.length;
-  const totalClasses = classes.length;
-  const totalJuzMemorized = students.reduce((acc, s) => acc + s.hifzProgress.juzCompleted, 0);
+  const totalStudents = displayStudents.length;
+  const totalTeachers = displayTeachers.length;
+  const totalParents = displayParents.length;
+  const totalClasses = displayClasses.length;
+  const totalJuzMemorized = displayStudents.reduce((acc, s) => acc + (s.hifzProgress?.juzCompleted || 0), 0);
 
   // Attendance Calculations
-  const presentCount = attendance.filter((a) => a.status === 'PRESENT').length;
-  const absentCount = attendance.filter((a) => a.status === 'ABSENT').length;
-  const lateCount = attendance.filter((a) => a.status === 'LATE').length;
-  const excusedCount = attendance.filter((a) => a.status === 'EXCUSED').length;
-  const totalAttendanceRecords = attendance.length || 1;
+  const presentCount = displayAttendance.filter((a) => a.status === 'PRESENT').length;
+  const absentCount = displayAttendance.filter((a) => a.status === 'ABSENT').length;
+  const lateCount = displayAttendance.filter((a) => a.status === 'LATE').length;
+  const excusedCount = displayAttendance.filter((a) => a.status === 'EXCUSED').length;
+  const totalAttendanceRecords = displayAttendance.length || 1;
   const attendanceRatePercentage = ((presentCount / totalAttendanceRecords) * 100).toFixed(1);
 
   // Chart Datasets
@@ -174,7 +192,11 @@ export function AdminDashboard() {
               Assalamu Alaikum, {currentUser.name || 'Admin User'}! 👋
             </h1>
             <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
-              {currentUser.role === 'SUPER_ADMIN' ? 'Super Admin Portal & Institutional Control Center' : 'Administrative Control Center'}
+              {currentUser.role === 'SUPER_ADMIN'
+                ? 'Super Admin Portal & Institutional Control Center'
+                : currentUser.role === 'HEADMASTER'
+                ? `Section Headmaster Portal — ${currentUser.assignedProgrammeName || 'Assigned Section'}`
+                : 'Administrative Control Center'}
             </p>
           </div>
 

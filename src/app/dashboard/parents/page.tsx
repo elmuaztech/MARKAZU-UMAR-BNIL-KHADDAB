@@ -20,6 +20,7 @@ import {
   Baby,
 } from 'lucide-react';
 import { Parent } from '../../../types';
+import { filterStudentsForUser, filterParentsForUser } from '../../../lib/rbac';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
@@ -28,7 +29,7 @@ import { Modal } from '@/components/ui/Modal';
 import { FormField, Input } from '@/components/ui/FormField';
 
 export default function ParentsPage() {
-  const { parents, students, currentUser, addParent, bulkImportParents, updateParent, deleteParent, showConfirm, notify } = useApp();
+  const { parents, students, teacherAssignments, currentUser, addParent, bulkImportParents, updateParent, deleteParent, showConfirm, notify } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
@@ -56,7 +57,10 @@ export default function ParentsPage() {
 
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
 
-  const filteredParents = parents.filter((p) => {
+  const scopedStudents = filterStudentsForUser(currentUser, students, parents, teacherAssignments);
+  const userParents = filterParentsForUser(currentUser, parents, scopedStudents);
+
+  const filteredParents = userParents.filter((p) => {
     const query = searchQuery.toLowerCase();
     return (
       p.fullName.toLowerCase().includes(query) ||

@@ -7,6 +7,7 @@ import { PortalHeroBanner } from '@/components/ui/PortalHeroBanner';
 import { EnterpriseTable, Column } from '@/components/ui/EnterpriseTable';
 import { Button, IconButton } from '@/components/ui/ButtonSystem';
 import { Subject } from '@/types';
+import { filterSubjectsForUser } from '@/lib/rbac';
 import {
   BookOpen,
   Plus,
@@ -88,31 +89,26 @@ export default function SubjectsPage() {
     // Duplicate Code Validation inside the same Programme/Class
     const isDuplicate = subjects.some(
       (s) =>
-        s.id !== editingSubject?.id &&
-        s.code.toLowerCase() === code.toLowerCase() &&
-        s.classId === classId
+        s.code.toLowerCase() === code.trim().toLowerCase() &&
+        s.programmeId === programmeId &&
+        s.id !== editingSubject?.id
     );
 
     if (isDuplicate) {
-      setErrorMessage(`Subject with code "${code}" already exists in the selected Class.`);
+      setErrorMessage(`Subject code '${code.toUpperCase()}' already exists in this programme.`);
       return;
     }
-
-    const selectedProg = programmes.find((p) => p.id === programmeId);
-    const selectedCls = classes.find((c) => c.id === classId);
 
     if (editingSubject) {
       updateSubject(editingSubject.id, {
         name: nameEnglish,
         nameEnglish,
         arabicName: nameArabic,
-        code,
+        code: code.toUpperCase(),
         category,
         description,
         programmeId,
-        programmeName: selectedProg?.programme_name || '',
         classId,
-        className: selectedCls?.name || '',
         displayOrder,
       });
     } else {
@@ -120,13 +116,11 @@ export default function SubjectsPage() {
         name: nameEnglish,
         nameEnglish,
         arabicName: nameArabic,
-        code,
+        code: code.toUpperCase(),
         category,
         description,
         programmeId,
-        programmeName: selectedProg?.programme_name || '',
         classId,
-        className: selectedCls?.name || '',
         status: 'ACTIVE',
         displayOrder,
       });
@@ -135,8 +129,10 @@ export default function SubjectsPage() {
     setIsModalOpen(false);
   };
 
+  const userSubjects = filterSubjectsForUser(currentUser, subjects);
+
   // Filtered Subject List for Table
-  const filteredSubjects = subjects.filter((s) => {
+  const filteredSubjects = userSubjects.filter((s) => {
     const matchesProgramme = selectedProgrammeFilter === 'ALL' || s.programmeId === selectedProgrammeFilter;
     const matchesClass = selectedClassFilter === 'ALL' || s.classId === selectedClassFilter;
     return matchesProgramme && matchesClass;

@@ -28,6 +28,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { AdmissionApplication, Programme, SchoolClass } from '../../../types';
+import { filterAdmissionsForUser } from '../../../lib/rbac';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
@@ -58,7 +59,9 @@ export default function AdmissionsPage() {
 
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
 
-  const filteredApps = admissionApplications.filter((app) => {
+  const userAdmissions = filterAdmissionsForUser(currentUser, admissionApplications);
+
+  const filteredApps = userAdmissions.filter((app) => {
     const query = searchQuery.toLowerCase();
     const matchesSearch =
       app.studentFullName.toLowerCase().includes(query) ||

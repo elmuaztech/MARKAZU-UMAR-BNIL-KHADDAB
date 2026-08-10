@@ -1,6 +1,6 @@
 'use client';
 
-import { UserRole, User, Student, Parent, AttendanceRecord, TahfizRecord, GradeRecord, TeacherAssignment } from '../types';
+import { UserRole, User, Student, Parent, Teacher, SchoolClass, Subject, AdmissionApplication, AttendanceRecord, TahfizRecord, GradeRecord, TeacherAssignment } from '../types';
 
 export type ExtendedRole = 'SUPER_ADMIN' | 'ADMIN' | 'HEADMASTER' | 'TEACHER' | 'STUDENT' | 'PARENT';
 
@@ -67,18 +67,18 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canManageClasses: true,
   },
   HEADMASTER: {
-    canViewAllStudents: true,
+    canViewAllStudents: false, // Scoped to assigned section
     canEditStudents: true,
-    canViewAllAttendance: true,
+    canViewAllAttendance: false, // Scoped to assigned section
     canMarkAttendance: true,
-    canViewAllTahfiz: true,
+    canViewAllTahfiz: false, // Scoped to assigned section
     canAddTahfizRecord: true,
-    canViewAllGrades: true,
+    canViewAllGrades: false, // Scoped to assigned section
     canEnterGrades: true,
     canManageAssessmentConfig: true,
-    canAccessSecurityDashboard: false, // Super Admin only
-    canManageUsers: false, // Super Admin only
-    canManageSettings: true,
+    canAccessSecurityDashboard: false, // Super Admin strictly
+    canManageUsers: false, // Super Admin strictly
+    canManageSettings: false, // Global Admin strictly
     canAccessCommunicationCenter: true,
     canAccessReportSheets: true,
     canAssignTeachers: true,
@@ -152,7 +152,7 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
 export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/admissions': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/programmes': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
+  '/dashboard/programmes': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/tahfiz': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/students': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'PARENT'],
   '/dashboard/teachers': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
@@ -171,15 +171,15 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/communication/queue': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
   '/dashboard/communication/failed': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
   '/dashboard/communication/scheduled': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/communication/settings': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/communication/settings': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/messages': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/sessions': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/backup': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard/sessions': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/backup': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/security': ['SUPER_ADMIN'],
-  '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/security': ['SUPER_ADMIN'], // Super Admin strictly
+  '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
 };
 
 export function hasPageAccess(role: UserRole | string, pathname: string): boolean {
@@ -209,10 +209,15 @@ export function filterStudentsForUser(
   }
 
   if (currentUser.role === 'HEADMASTER') {
-    if (currentUser.assignedProgrammeId) {
-      return allStudents.filter((s) => s.programmeId === currentUser.assignedProgrammeId);
-    }
-    return allStudents;
+    const progId = currentUser.assignedProgrammeId;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase();
+    if (!progId && !progName) return allStudents;
+
+    return allStudents.filter((s) => {
+      if (progId && s.programmeId === progId) return true;
+      if (progName && s.programmeName?.toLowerCase().includes(progName)) return true;
+      return false;
+    });
   }
 
   if (currentUser.role === 'TEACHER') {
@@ -245,6 +250,109 @@ export function filterStudentsForUser(
   }
 
   return [];
+}
+
+export function filterTeachersForUser(currentUser: User, allTeachers: Teacher[]): Teacher[] {
+  if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+    return allTeachers;
+  }
+
+  if (currentUser.role === 'HEADMASTER') {
+    const progId = currentUser.assignedProgrammeId;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase();
+    if (!progId && !progName) return allTeachers;
+
+    return allTeachers.filter((t) => {
+      if (progId && t.programmeIds?.includes(progId)) return true;
+      if (progName && t.qualification?.toLowerCase().includes(progName)) return true;
+      if (progName && t.specialization?.toLowerCase().includes(progName)) return true;
+      if (progName && t.programmeIds?.some((p) => p.toLowerCase().includes(progName))) return true;
+      return false;
+    });
+  }
+
+  return allTeachers;
+}
+
+export function filterClassesForUser(currentUser: User, allClasses: SchoolClass[]): SchoolClass[] {
+  if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+    return allClasses;
+  }
+
+  if (currentUser.role === 'HEADMASTER') {
+    const progId = currentUser.assignedProgrammeId;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase();
+    if (!progId && !progName) return allClasses;
+
+    return allClasses.filter((c) => {
+      if (progId && c.programmeId === progId) return true;
+      if (progName && c.programmeName?.toLowerCase().includes(progName)) return true;
+      return false;
+    });
+  }
+
+  return allClasses;
+}
+
+export function filterSubjectsForUser(currentUser: User, allSubjects: Subject[]): Subject[] {
+  if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+    return allSubjects;
+  }
+
+  if (currentUser.role === 'HEADMASTER') {
+    const progId = currentUser.assignedProgrammeId;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase();
+    if (!progId && !progName) return allSubjects;
+
+    return allSubjects.filter((s) => {
+      if (!s.programmeId && !s.programmeName) return true; // General shared subjects
+      if (progId && s.programmeId === progId) return true;
+      if (progName && s.programmeName?.toLowerCase().includes(progName)) return true;
+      return false;
+    });
+  }
+
+  return allSubjects;
+}
+
+export function filterParentsForUser(currentUser: User, allParents: Parent[], scopedStudents: Student[]): Parent[] {
+  if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+    return allParents;
+  }
+
+  if (currentUser.role === 'HEADMASTER') {
+    const scopedStudentIds = new Set(scopedStudents.map((s) => s.id));
+    const scopedGuardianIds = new Set(scopedStudents.map((s) => s.guardianId));
+
+    return allParents.filter((p) => {
+      if (scopedGuardianIds.has(p.id)) return true;
+      if (p.wardIds?.some((wId) => scopedStudentIds.has(wId))) return true;
+      if (p.linkedStudentIds?.some((sId) => scopedStudentIds.has(sId))) return true;
+      return false;
+    });
+  }
+
+  return allParents;
+}
+
+export function filterAdmissionsForUser(currentUser: User, allAdmissions: AdmissionApplication[]): AdmissionApplication[] {
+  if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+    return allAdmissions;
+  }
+
+  if (currentUser.role === 'HEADMASTER') {
+    const progId = currentUser.assignedProgrammeId;
+    if (!progId) return allAdmissions;
+
+    return allAdmissions.filter((a) => {
+      if (progId && a.assignedProgrammeIds && a.assignedProgrammeIds.length > 0) {
+        return a.assignedProgrammeIds.includes(progId);
+      }
+      return true;
+    });
+  }
+
+  return allAdmissions;
 }
 
 export function filterAttendanceForUser(currentUser: User, attendance: AttendanceRecord[], userStudents: Student[]): AttendanceRecord[] {

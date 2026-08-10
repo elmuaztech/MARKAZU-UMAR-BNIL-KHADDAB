@@ -21,6 +21,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { Teacher } from '../../../types';
+import { filterTeachersForUser } from '../../../lib/rbac';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -86,7 +87,9 @@ export default function TeachersPage() {
 
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
 
-  const filteredTeachers = teachers.filter((t) => {
+  const userTeachers = filterTeachersForUser(currentUser, teachers);
+
+  const filteredTeachers = userTeachers.filter((t) => {
     const query = searchQuery.toLowerCase();
     const matchesSearch =
       (t.full_name_english || t.fullName || '').toLowerCase().includes(query) ||
@@ -341,7 +344,7 @@ export default function TeachersPage() {
     const rows = filteredTeachers
       .map((t) => {
         const progNames = (t.programmeIds || [])
-          .map((pId) => programmes.find((p) => p.id === pId)?.programme_name_english || pId)
+          .map((pId: string) => programmes.find((p) => p.id === pId)?.programme_name_english || pId)
           .join('; ');
         const classNames = (t.classesAssigned || []).join('; ');
         const subjNames = (t.subjectsAssigned || []).join('; ');
@@ -526,7 +529,7 @@ export default function TeachersPage() {
               {filteredTeachers.map((teacher, index) => {
                 const initials = teacher.fullName
                   .split(' ')
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .slice(0, 2)
                   .join('')
                   .toUpperCase() || 'ST';
@@ -685,7 +688,7 @@ export default function TeachersPage() {
                 Assigned Classes / Halqas
               </span>
               <div className="flex flex-wrap gap-1">
-                {teacher.classesAssigned.map((c) => (
+                {(teacher.classesAssigned || []).map((c: string) => (
                   <span
                     key={c}
                     className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/30"

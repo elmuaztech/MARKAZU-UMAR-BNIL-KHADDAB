@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '../../../lib/context';
 import { SchoolClass } from '@/types';
+import { filterClassesForUser } from '../../../lib/rbac';
 import { School, Users, UserCheck, Plus, Edit, Trash2, UserX, RefreshCw } from 'lucide-react';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -43,7 +44,9 @@ export default function ClassesPage() {
   });
   const [formError, setFormError] = useState<string | null>(null);
 
-  const filteredClasses = classes.filter((c) => {
+  const userClasses = filterClassesForUser(currentUser, classes);
+
+  const filteredClasses = userClasses.filter((c) => {
     if (selectedProgrammeFilter === 'ALL') return true;
     return c.programmeId === selectedProgrammeFilter || c.programmeName === selectedProgrammeFilter;
   });
