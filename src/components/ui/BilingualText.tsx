@@ -14,27 +14,32 @@ export const BilingualText: React.FC<BilingualTextProps> = ({
   arabic,
   className = '',
   englishClassName = 'font-poppins font-bold text-slate-900 dark:text-white',
-  arabicClassName = 'font-poppins text-amber-600 dark:text-amber-300 text-xs font-semibold dir-rtl',
+  arabicClassName = 'font-arabic text-amber-600 dark:text-amber-300 text-xs font-semibold',
   inline = false,
 }) => {
-  if (!arabic) {
-    return <span className={englishClassName}>{english}</span>;
+  if (!arabic || !arabic.trim()) {
+    return <span className={`break-words ${englishClassName}`}>{english}</span>;
   }
 
   if (inline) {
     return (
-      <span className={`inline-flex items-center gap-1.5 ${className}`}>
-        <span className={englishClassName}>{english}</span>
-        <span className="text-slate-400 font-normal">•</span>
-        <span className={arabicClassName} dir="rtl">{arabic}</span>
+      <span className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
+        <span className={`break-words ${englishClassName}`}>{english}</span>
+        <span className="text-slate-400 font-normal select-none">•</span>
+        <span className={`break-words ${arabicClassName}`} dir="rtl">
+          {arabic}
+        </span>
       </span>
     );
   }
 
   return (
-    <div className={`space-y-0.5 ${className}`}>
-      <div className={englishClassName}>{english}</div>
-      <div className={arabicClassName} dir="rtl">{arabic}</div>
+    <div className={`space-y-0.5 min-w-0 ${className}`}>
+      <div className={`break-words ${englishClassName}`}>{english}</div>
+      <div className={`break-words leading-relaxed ${arabicClassName}`} dir="rtl">
+        {arabic}
+      </div>
     </div>
   );
 };
+

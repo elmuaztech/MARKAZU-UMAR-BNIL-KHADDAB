@@ -163,7 +163,7 @@ export default function ClassesPage() {
       });
 
       setEditingClass(null);
-      showToast(`Class "${classFormData.class_name_english.trim()}" updated successfully!`);
+      showToast('Class updated successfully.');
     } catch (err: any) {
       setFormError(err.message || 'Failed to update class.');
     }

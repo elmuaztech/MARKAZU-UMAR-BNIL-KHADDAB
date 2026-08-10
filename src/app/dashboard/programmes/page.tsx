@@ -446,7 +446,7 @@ export default function ProgrammesPage() {
       });
 
       setEditingClass(null);
-      showToast(`Class "${classFormData.class_name_english.trim()}" updated successfully!`);
+      showToast('Class updated successfully.');
     } catch (err: any) {
       setClassFormError(err.message || 'Failed to update class.');
     }
@@ -667,72 +667,97 @@ export default function ProgrammesPage() {
                   (s) => s.programmeId === prog.id || s.programmeName === prog.programme_name
                 );
                 const hms = getHeadmastersForProgramme(prog);
+                const headmasterNames = hms.map((h) => h.name).join(', ');
 
                 return (
                   <motion.div
                     key={prog.id}
-                    whileHover={{ y: -5, scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ y: -4, scale: 1.01 }}
+                    whileTap={{ scale: 0.99 }}
                     onClick={() => setViewingProgramme(prog)}
-                    className="p-5 rounded-3xl bg-gradient-to-b from-slate-50 to-slate-100 dark:from-[#021810] dark:to-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md hover:border-amber-500 hover:shadow-xl transition-all cursor-pointer space-y-3 group"
+                    className="p-5 rounded-3xl bg-gradient-to-b from-slate-50 to-slate-100 dark:from-[#021810] dark:to-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md hover:border-amber-500 hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between group min-w-0"
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/30">
-                        {prog.programme_code}
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <span
-                          className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full ${
-                            prog.hasSubcategories
-                              ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-400/30'
-                              : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                          }`}
-                        >
-                          {prog.hasSubcategories ? 'Subcategories: YES' : 'Subcategories: NO'}
+                    <div className="space-y-3.5 flex-1">
+                      {/* Top Row: Code and Status Badges */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs font-mono font-black px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-300 border border-amber-500/30 shrink-0">
+                          {prog.programme_code}
                         </span>
-                        <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
-                          {prog.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    <BilingualText
-                      english={prog.programme_name_english || prog.programme_name}
-                      arabic={prog.programme_name_arabic}
-                      englishClassName="font-poppins font-black text-base text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors"
-                      arabicClassName="font-arabic font-semibold text-xs text-amber-600 dark:text-amber-300"
-                    />
-
-                    {/* Subcategories Badges */}
-                    {prog.hasSubcategories && prog.subcategories && prog.subcategories.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5 pt-1">
-                        {prog.subcategories.map((sub, idx) => (
+                        <div className="flex flex-wrap items-center gap-1.5 justify-end">
                           <span
-                            key={idx}
-                            className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold flex items-center gap-1"
+                            className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${
+                              prog.hasSubcategories
+                                ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-400/30'
+                                : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                            }`}
                           >
-                            <Tag className="w-2.5 h-2.5 text-emerald-500" />
-                            {sub}
+                            {prog.hasSubcategories ? 'Subcategories: YES' : 'Direct Classes'}
                           </span>
-                        ))}
+                          <span
+                            className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${
+                              prog.status === 'Active'
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/20'
+                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20'
+                            }`}
+                          >
+                            {prog.status}
+                          </span>
+                        </div>
                       </div>
-                    )}
 
-                    {/* Headmaster Tag */}
-                    <div className="p-2.5 rounded-xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/20 text-xs">
-                      <div className="text-[10px] font-extrabold uppercase text-amber-600 dark:text-amber-400 flex items-center gap-1">
-                        <Crown className="w-3 h-3 text-amber-500" /> Headmaster:
+                      {/* Bilingual Programme Title */}
+                      <div className="min-h-[48px] flex flex-col justify-start">
+                        <BilingualText
+                          english={prog.programme_name_english || prog.programme_name}
+                          arabic={prog.programme_name_arabic}
+                          englishClassName="font-poppins font-black text-base text-slate-900 dark:text-white group-hover:text-amber-500 transition-colors leading-tight"
+                          arabicClassName="font-arabic font-semibold text-xs text-amber-600 dark:text-amber-300"
+                        />
                       </div>
-                      <p className="font-bold text-slate-800 dark:text-white text-xs truncate mt-0.5">
-                        {hms.length > 0
-                          ? hms.map((h) => h.name).join(', ')
-                          : 'Unassigned (Assign in Manage)'}
-                      </p>
+
+                      {/* Subcategories Badges */}
+                      {prog.hasSubcategories && prog.subcategories && prog.subcategories.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
+                          {prog.subcategories.map((sub, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold flex items-center gap-1 border border-emerald-500/20"
+                            >
+                              <Tag className="w-2.5 h-2.5 text-emerald-500 shrink-0" />
+                              <span className="truncate max-w-[120px]">{sub}</span>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Headmaster Tag */}
+                      <div className="p-2.5 rounded-xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/20 text-xs">
+                        <div className="text-[10px] font-extrabold uppercase text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                          <Crown className="w-3 h-3 text-amber-500 shrink-0" /> Headmaster:
+                        </div>
+                        <p
+                          className="font-bold text-slate-800 dark:text-white text-xs mt-0.5 truncate"
+                          title={headmasterNames || 'Unassigned'}
+                        >
+                          {headmasterNames ? (
+                            headmasterNames
+                          ) : (
+                            <span className="text-slate-400 italic font-normal">Unassigned</span>
+                          )}
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-200 dark:border-emerald-800/40 flex items-center justify-between text-xs font-bold font-poppins">
-                      <span className="text-purple-600 dark:text-purple-300">{progClasses.length} Classes</span>
-                      <span className="text-emerald-600 dark:text-emerald-400">{progStudents.length} Students</span>
+                    {/* Footer Stats Row */}
+                    <div className="mt-4 pt-3 border-t border-slate-200 dark:border-emerald-800/40 flex items-center justify-between text-xs font-bold font-poppins">
+                      <span className="text-purple-600 dark:text-purple-300 flex items-center gap-1">
+                        <School className="w-3.5 h-3.5" />
+                        {progClasses.length} {progClasses.length === 1 ? 'Class' : 'Classes'}
+                      </span>
+                      <span className="text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <Users className="w-3.5 h-3.5" />
+                        {progStudents.length} {progStudents.length === 1 ? 'Student' : 'Students'}
+                      </span>
                     </div>
                   </motion.div>
                 );
@@ -1922,6 +1947,224 @@ export default function ProgrammesPage() {
                   className="px-5 py-2 rounded-xl bg-emerald-600 text-white shadow"
                 >
                   Save Assignment
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* EDIT CLASS MODAL */}
+      <AnimatePresence>
+        {editingClass && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 p-6 sm:p-8 text-slate-900 dark:text-white shadow-2xl space-y-5 my-8 max-h-[90vh] overflow-y-auto"
+            >
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-emerald-500/20">
+                <h3 className="text-lg font-black font-poppins text-slate-900 dark:text-white flex items-center gap-2">
+                  <Edit className="w-5 h-5 text-amber-500" /> Edit Class Details
+                </h3>
+                <button
+                  onClick={() => setEditingClass(null)}
+                  className="text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {classFormError && (
+                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold">
+                  {classFormError}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveEditClass} className="space-y-3.5 text-xs font-poppins">
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                    Select Programme <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={classFormData.programmeId}
+                    onChange={(e) => {
+                      const pId = e.target.value;
+                      const prog = programmes.find((p) => p.id === pId);
+                      setClassFormData({
+                        ...classFormData,
+                        programmeId: pId,
+                        subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
+                      });
+                    }}
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                  >
+                    {programmes.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.programme_name_english || p.programme_name} ({p.programme_code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Subcategory Select if Programme Has Subcategories */}
+                {(() => {
+                  const selProg = programmes.find((p) => p.id === classFormData.programmeId);
+                  if (selProg && selProg.hasSubcategories && selProg.subcategories && selProg.subcategories.length > 0) {
+                    return (
+                      <div>
+                        <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                          Subcategory <span className="text-rose-500">*</span>
+                        </label>
+                        <select
+                          value={classFormData.subcategory}
+                          onChange={(e) => setClassFormData({ ...classFormData, subcategory: e.target.value })}
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                        >
+                          {selProg.subcategories.map((sub, idx) => (
+                            <option key={idx} value={sub}>
+                              {sub}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
+
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                    Class Name (English) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={classFormData.class_name_english}
+                    onChange={(e) => setClassFormData({ ...classFormData, class_name_english: e.target.value })}
+                    placeholder="e.g. Halqa 1, Class A, Rawda"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-medium"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                    Class Name (Arabic)
+                  </label>
+                  <input
+                    type="text"
+                    dir="rtl"
+                    value={classFormData.class_name_arabic}
+                    onChange={(e) => setClassFormData({ ...classFormData, class_name_arabic: e.target.value })}
+                    placeholder="مثال: حلقة 1"
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Section / Room
+                    </label>
+                    <input
+                      type="text"
+                      value={classFormData.section}
+                      onChange={(e) => setClassFormData({ ...classFormData, section: e.target.value })}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Capacity
+                    </label>
+                    <input
+                      type="number"
+                      value={classFormData.capacity}
+                      onChange={(e) => setClassFormData({ ...classFormData, capacity: Number(e.target.value) })}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                    Assign Class Teacher (Optional)
+                  </label>
+                  <select
+                    value={classFormData.classTeacherId}
+                    onChange={(e) => setClassFormData({ ...classFormData, classTeacherId: e.target.value })}
+                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-medium"
+                  >
+                    <option value="">-- Leave Unassigned (No Teacher) --</option>
+                    {teachers.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} ({t.staffNo})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-emerald-500/20 font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setEditingClass(null)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-md"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* DELETE CLASS CONFIRMATION MODAL */}
+      <AnimatePresence>
+        {deletingClass && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-rose-500/40 p-6 sm:p-8 text-slate-900 dark:text-white shadow-2xl space-y-6 text-center"
+            >
+              <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center mx-auto border border-rose-500/30">
+                <Trash2 className="w-7 h-7" />
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="text-xl font-black font-poppins text-slate-900 dark:text-white">
+                  Delete Class Permanently?
+                </h3>
+                <p className="text-xs text-slate-600 dark:text-emerald-200/80 font-poppins">
+                  Are you sure you want to delete{' '}
+                  <span className="font-bold text-rose-600 dark:text-rose-400">
+                    "{deletingClass.class_name_english || deletingClass.name}"
+                  </span>
+                  ? All teacher assignments linked to this class will also be unlinked.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center gap-3 pt-2 font-poppins font-bold text-xs">
+                <button
+                  onClick={() => setDeletingClass(null)}
+                  className="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmDeleteClass}
+                  className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/30"
+                >
+                  Confirm Delete Class
                 </button>
               </div>
             </motion.div>

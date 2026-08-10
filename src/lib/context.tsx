@@ -405,6 +405,15 @@ export function isUserDeleted(id?: string, email?: string, username?: string): b
   return false;
 }
 
+export function safeLocalStorageSet(key: string, value: any) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+  } catch (err) {
+    console.warn(`[safeLocalStorageSet] Failed to set ${key}:`, err);
+  }
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -3440,14 +3449,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const newProg: Programme = {
       ...progData,
-      id: `prog-${Date.now()}`,
+      id: `prog-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
       programme_name_english: englishName,
       programme_name_arabic: arabicName,
       programme_name: englishName,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
-    setProgrammes((prev) => [newProg, ...prev]);
+    setProgrammes((prev) => {
+      const next = [newProg, ...prev];
+      safeLocalStorageSet('markazu_programmes', next);
+      return next;
+    });
+    MOCK_PROGRAMMES.unshift(newProg);
+
     addAuditLog({
       action: 'PROGRAMME_CREATED',
       performedBy: currentUser.name,
@@ -3477,16 +3492,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         throw new Error(`A Programme with the code "${updated.programme_code}" already exists.`);
       }
     }
-    setProgrammes((prev) =>
-      prev.map((p) => (p.id === id ? { 
+    setProgrammes((prev) => {
+      const next = prev.map((p) => (p.id === id ? { 
         ...p, 
         ...updated, 
         programme_name_english: updated.programme_name_english || p.programme_name_english,
         programme_name_arabic: updated.programme_name_arabic !== undefined ? updated.programme_name_arabic : p.programme_name_arabic,
         programme_name: updated.programme_name_english || p.programme_name_english,
         updated_at: new Date().toISOString() 
-      } : p))
-    );
+      } : p));
+      safeLocalStorageSet('markazu_programmes', next);
+      return next;
+    });
+
+    MOCK_PROGRAMMES.forEach((mp, idx) => {
+      if (mp.id === id) {
+        MOCK_PROGRAMMES[idx] = {
+          ...mp,
+          ...updated,
+          programme_name_english: updated.programme_name_english || mp.programme_name_english,
+          programme_name_arabic: updated.programme_name_arabic !== undefined ? updated.programme_name_arabic : mp.programme_name_arabic,
+          programme_name: updated.programme_name_english || mp.programme_name_english,
+          updated_at: new Date().toISOString(),
+        };
+      }
+    });
+
     addAuditLog({
       action: 'PROGRAMME_UPDATED',
       performedBy: currentUser.name,
@@ -3499,13 +3530,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const toggleProgrammeStatus = (id: string) => {
-    setProgrammes((prev) =>
-      prev.map((p) =>
+    setProgrammes((prev) => {
+      const next: Programme[] = prev.map((p) =>
         p.id === id
-          ? { ...p, status: p.status === 'Active' ? 'Inactive' : 'Active', updated_at: new Date().toISOString() }
+          ? { ...p, status: (p.status === 'Active' ? 'Inactive' : 'Active') as 'Active' | 'Inactive', updated_at: new Date().toISOString() }
           : p
-      )
-    );
+      );
+      safeLocalStorageSet('markazu_programmes', next);
+      return next;
+    });
+
+    MOCK_PROGRAMMES.forEach((mp, idx) => {
+      if (mp.id === id) {
+        MOCK_PROGRAMMES[idx].status = mp.status === 'Active' ? 'Inactive' : 'Active';
+      }
+    });
+
     addAuditLog({
       action: 'PROGRAMME_STATUS_TOGGLED',
       performedBy: currentUser.name,
@@ -3523,11 +3563,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_programmes', next);
       return next;
     });
+
+    for (let i = MOCK_PROGRAMMES.length - 1; i >= 0; i--) {
+      if (MOCK_PROGRAMMES[i].id === id) {
+        MOCK_PROGRAMMES.splice(i, 1);
+      }
+    }
+
     setClasses((prev) => {
       const next = prev.filter((c) => c.programmeId !== id);
       safeLocalStorageSet('markazu_classes', next);
       return next;
     });
+
+    for (let i = MOCK_CLASSES.length - 1; i >= 0; i--) {
+      if (MOCK_CLASSES[i].programmeId === id) {
+        MOCK_CLASSES.splice(i, 1);
+      }
+    }
+
     addAuditLog({
       action: 'PROGRAMME_DELETED',
       performedBy: currentUser.name,
@@ -3705,12 +3759,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const newClass: SchoolClass = {
       ...newClassData,
-      id: `cls-${Date.now()}`,
+      id: `cls-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
       class_name_english: englishName,
       class_name_arabic: arabicName,
       name: englishName,
     };
-    setClasses((prev) => [...prev, newClass]);
+    setClasses((prev) => {
+      const next = [...prev, newClass];
+      safeLocalStorageSet('markazu_classes', next);
+      return next;
+    });
+    MOCK_CLASSES.push(newClass);
+
     addAuditLog({
       action: 'CLASS_CREATED',
       performedBy: currentUser.name,
@@ -3723,20 +3783,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateClass = (id: string, updated: Partial<SchoolClass>) => {
-    setClasses((prev) => prev.map((c) => {
-      if (c.id === id) {
-        const englishName = updated.class_name_english || updated.name || c.class_name_english || c.name;
-        const arabicName = updated.class_name_arabic !== undefined ? updated.class_name_arabic : c.class_name_arabic;
-        return {
-          ...c,
+    setClasses((prev) => {
+      const next = prev.map((c) => {
+        if (c.id === id) {
+          const englishName = updated.class_name_english || updated.name || c.class_name_english || c.name;
+          const arabicName = updated.class_name_arabic !== undefined ? updated.class_name_arabic : c.class_name_arabic;
+          return {
+            ...c,
+            ...updated,
+            class_name_english: englishName,
+            class_name_arabic: arabicName,
+            name: englishName,
+          };
+        }
+        return c;
+      });
+      safeLocalStorageSet('markazu_classes', next);
+      return next;
+    });
+
+    MOCK_CLASSES.forEach((mc, idx) => {
+      if (mc.id === id) {
+        const englishName = updated.class_name_english || updated.name || mc.class_name_english || mc.name;
+        const arabicName = updated.class_name_arabic !== undefined ? updated.class_name_arabic : mc.class_name_arabic;
+        MOCK_CLASSES[idx] = {
+          ...mc,
           ...updated,
           class_name_english: englishName,
           class_name_arabic: arabicName,
           name: englishName,
         };
       }
-      return c;
-    }));
+    });
+
     addAuditLog({
       action: 'CLASS_UPDATED',
       performedBy: currentUser.name,
@@ -3749,7 +3828,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteClass = (id: string) => {
-    setClasses((prev) => prev.filter((c) => c.id !== id));
+    setClasses((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      safeLocalStorageSet('markazu_classes', next);
+      return next;
+    });
+
+    for (let i = MOCK_CLASSES.length - 1; i >= 0; i--) {
+      if (MOCK_CLASSES[i].id === id) {
+        MOCK_CLASSES.splice(i, 1);
+      }
+    }
+
+    setTeacherAssignments((prev) => {
+      const next = prev.filter((ta) => ta.classId !== id);
+      safeLocalStorageSet('markazu_teacher_assignments', next);
+      return next;
+    });
+
     addAuditLog({
       action: 'CLASS_DELETED',
       performedBy: currentUser.name,
