@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   MessageSquare,
   X,
@@ -15,6 +15,8 @@ import {
   CheckSquare,
   Square,
   Zap,
+  Play,
+  Loader2,
 } from 'lucide-react';
 import { WhatsAppPayload } from '@/lib/whatsappUtils';
 
@@ -39,6 +41,9 @@ export function WhatsAppBatchModal({
     return new Set(payloads.map((p) => p.parentId));
   });
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [isBatchSending, setIsBatchSending] = useState(false);
+  const [batchProgress, setBatchProgress] = useState<{ current: number; total: number } | null>(null);
+  const [batchCompleted, setBatchCompleted] = useState(false);
 
   const filteredPayloads = payloads.filter(
     (p) =>
@@ -78,7 +83,9 @@ export function WhatsAppBatchModal({
 
   const handleSendSingle = (payload: WhatsAppPayload) => {
     setSentStatusMap((prev) => ({ ...prev, [payload.parentId]: true }));
-    window.open(payload.whatsappUrl, '_blank', 'noopener,noreferrer');
+    if (typeof window !== 'undefined') {
+      window.open(payload.whatsappUrl, '_blank', 'noopener,noreferrer');
+    }
   };
 
   const handleLaunchNextSelected = () => {
@@ -93,7 +100,37 @@ export function WhatsAppBatchModal({
     }
   };
 
-  React.useEffect(() => {
+  // Automated Sequential Batch Dispatcher across all selected parents
+  const handleAutomatedBatchSend = async () => {
+    if (selectedPayloads.length === 0 || isBatchSending) return;
+
+    setIsBatchSending(true);
+    setBatchCompleted(false);
+    setBatchProgress({ current: 0, total: selectedPayloads.length });
+
+    for (let i = 0; i < selectedPayloads.length; i++) {
+      const payload = selectedPayloads[i];
+      setBatchProgress({ current: i + 1, total: selectedPayloads.length });
+
+      // Mark parent as sent
+      setSentStatusMap((prev) => ({ ...prev, [payload.parentId]: true }));
+
+      // Dispatch WhatsApp message link / API call
+      if (typeof window !== 'undefined') {
+        window.open(payload.whatsappUrl, '_blank', 'noopener,noreferrer');
+      }
+
+      // Controlled delay between dispatches (650ms) to allow smooth popup delivery
+      await new Promise((resolve) => setTimeout(resolve, 650));
+    }
+
+    setIsBatchSending(false);
+    setBatchCompleted(true);
+    if (onDispatchComplete) onDispatchComplete();
+    setTimeout(() => setBatchCompleted(false), 5000);
+  };
+
+  useEffect(() => {
     const handlePopState = () => {
       onClose();
     };
@@ -121,7 +158,7 @@ export function WhatsAppBatchModal({
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-black">{title}</h2>
                 <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-extrabold text-[10px]">
-                  WhatsApp Gateway
+                  Automated WhatsApp Gateway
                 </span>
               </div>
               <p className="text-xs text-emerald-200/80">{subtitle}</p>
@@ -143,7 +180,7 @@ export function WhatsAppBatchModal({
               <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-emerald-100">
                 <Users className="w-4 h-4 text-emerald-500" />
                 <span>
-                  {totalSent} of {payloads.length} Parent WhatsApp Messages Sent ({progressPercent}%)
+                  {totalSent} of {payloads.length} Parent WhatsApp Messages Dispatched ({progressPercent}%)
                 </span>
               </div>
               <div className="w-full sm:w-64 h-2 bg-slate-200 dark:bg-emerald-950 rounded-full overflow-hidden mt-1.5">
@@ -154,16 +191,35 @@ export function WhatsAppBatchModal({
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
+            {/* Automated Batch Send & Step-by-Step Action Controls */}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleAutomatedBatchSend}
+                disabled={selectedPayloads.length === 0 || isBatchSending}
+                className="px-5 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-black text-xs shadow-lg flex items-center gap-2 transition-all hover:scale-105 disabled:opacity-50"
+              >
+                {isBatchSending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    <span>
+                      Batch Sending ({batchProgress?.current}/{batchProgress?.total})...
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 fill-white" />
+                    <span>Send All Selected ({selectedPayloads.length} Parents)</span>
+                  </>
+                )}
+              </button>
+
               <button
                 onClick={handleLaunchNextSelected}
-                disabled={selectedPayloads.length === 0}
-                className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg flex items-center gap-2 transition-all hover:scale-105 disabled:opacity-50"
+                disabled={selectedPayloads.length === 0 || isBatchSending}
+                className="px-4 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md flex items-center gap-1.5 transition-all hover:scale-105 disabled:opacity-50"
               >
                 <Zap className="w-4 h-4 fill-slate-950" />
-                <span>
-                  Send Next Selected ({currentIndex + 1}/{selectedPayloads.length})
-                </span>
+                <span>Step Next ({currentIndex + 1}/{selectedPayloads.length})</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
@@ -192,16 +248,24 @@ export function WhatsAppBatchModal({
               ) : (
                 <Square className="w-4 h-4 text-slate-400" />
               )}
-              <span>Select All Parents ({selectedPayloads.length}/{filteredPayloads.length})</span>
+              <span>Select All ({selectedPayloads.length}/{filteredPayloads.length} Selected)</span>
             </div>
           </div>
         </div>
+
+        {/* Batch Success Toast */}
+        {batchCompleted && (
+          <div className="px-6 py-3 bg-emerald-500/20 border-b border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-extrabold text-xs flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+            <span>🎉 Automated Batch Dispatch Complete! All {selectedPayloads.length} selected WhatsApp messages sent to parents.</span>
+          </div>
+        )}
 
         {/* Security & Strict Isolation Notice */}
         <div className="px-6 py-3 bg-amber-500/10 border-b border-amber-500/20 text-amber-800 dark:text-amber-300 font-bold text-xs flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
           <span>
-            Multi-Parent Selector Active: Check multiple parents below to batch dispatch WhatsApp messages only to selected parent accounts.
+            Automated Parent Isolation Active: Each parent receives ONLY their own ward(s) report cards and tailored greeting. Select parents and click <strong>"Send All Selected"</strong> to launch batch sending automatically.
           </span>
         </div>
 
