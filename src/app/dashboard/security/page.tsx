@@ -44,6 +44,7 @@ export default function SecurityDashboardPage() {
     createUserAccount,
     deleteUserAccount,
     notify,
+    showConfirm,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'audit' | 'sessions' | 'accounts'>('accounts');
@@ -493,7 +494,16 @@ export default function SecurityDashboardPage() {
 
                             {u.role !== 'SUPER_ADMIN' && (
                               <button
-                                onClick={() => deleteUserAccount(u.id)}
+                                onClick={() =>
+                                  showConfirm({
+                                    title: 'Confirm Permanent Account Deletion',
+                                    message: `Are you sure you want to permanently delete the account for "${u.name}" (${u.role})? This user account will be permanently removed and cannot be recovered!`,
+                                    confirmText: 'Yes, Delete Permanently',
+                                    cancelText: 'Cancel',
+                                    variant: 'danger',
+                                    onConfirm: () => deleteUserAccount(u.id),
+                                  })
+                                }
                                 className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 font-bold text-[10px] transition-all inline-flex items-center gap-1"
                                 title="Delete user account"
                               >

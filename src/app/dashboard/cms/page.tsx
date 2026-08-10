@@ -33,6 +33,7 @@ export default function WebsiteCMSPage() {
     deleteGalleryItem,
     addAuditLog,
     notify,
+    showConfirm,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<'news' | 'gallery'>('news');
@@ -342,7 +343,16 @@ export default function WebsiteCMSPage() {
                       <Edit className="w-3.5 h-3.5" /> Edit
                     </button>
                     <button
-                      onClick={() => deleteNewsArticle(art.id)}
+                      onClick={() =>
+                        showConfirm({
+                          title: 'Confirm Permanent Article Deletion',
+                          message: `Are you sure you want to permanently delete news article "${art.title}"?`,
+                          confirmText: 'Yes, Delete Permanently',
+                          cancelText: 'Cancel',
+                          variant: 'danger',
+                          onConfirm: () => deleteNewsArticle(art.id),
+                        })
+                      }
                       className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white transition-colors"
                       title="Delete News Article"
                     >
@@ -412,7 +422,16 @@ export default function WebsiteCMSPage() {
                         <Edit className="w-3.5 h-3.5" /> Edit
                       </button>
                       <button
-                        onClick={() => deleteGalleryItem(item.id)}
+                        onClick={() =>
+                          showConfirm({
+                            title: 'Confirm Permanent Photo Deletion',
+                            message: `Are you sure you want to permanently delete photo "${item.title}"?`,
+                            confirmText: 'Yes, Delete Permanently',
+                            cancelText: 'Cancel',
+                            variant: 'danger',
+                            onConfirm: () => deleteGalleryItem(item.id),
+                          })
+                        }
                         className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white transition-colors"
                         title="Delete Photo"
                       >

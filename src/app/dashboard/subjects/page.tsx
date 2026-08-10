@@ -23,7 +23,7 @@ import {
 import { motion } from 'framer-motion';
 
 export default function SubjectsPage() {
-  const { subjects, programmes, classes, addSubject, updateSubject, deleteSubject, currentUser } = useApp();
+  const { subjects, programmes, classes, addSubject, updateSubject, deleteSubject, currentUser, showConfirm } = useApp();
 
   const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>('ALL');
   const [selectedClassFilter, setSelectedClassFilter] = useState<string>('ALL');
@@ -205,7 +205,19 @@ export default function SubjectsPage() {
         (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN') ? (
           <div className="flex items-center justify-end gap-1">
             <IconButton icon={<Edit className="w-3.5 h-3.5" />} onClick={() => handleOpenEditModal(item)} />
-            <IconButton icon={<Trash2 className="w-3.5 h-3.5 text-rose-500" />} onClick={() => deleteSubject(item.id)} />
+            <IconButton
+              icon={<Trash2 className="w-3.5 h-3.5 text-rose-500" />}
+              onClick={() =>
+                showConfirm({
+                  title: 'Confirm Permanent Subject Deletion',
+                  message: `Are you sure you want to permanently delete subject "${item.name}" (${item.code})? It cannot be recovered!`,
+                  confirmText: 'Yes, Delete Permanently',
+                  cancelText: 'Cancel',
+                  variant: 'danger',
+                  onConfirm: () => deleteSubject(item.id),
+                })
+              }
+            />
           </div>
         ) : (
           <span className="text-[10px] text-slate-400 font-semibold uppercase">View Only</span>

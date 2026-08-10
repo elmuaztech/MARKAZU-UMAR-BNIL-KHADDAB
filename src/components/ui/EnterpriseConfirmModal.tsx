@@ -7,11 +7,15 @@ import { Button } from './Button';
 
 export interface ConfirmOptions {
   title: string;
-  description: string;
+  description?: string;
+  message?: string;
   confirmLabel?: string;
+  confirmText?: string;
   cancelLabel?: string;
+  cancelText?: string;
   onConfirm: () => void | Promise<void>;
   isDanger?: boolean;
+  variant?: 'danger' | 'warning' | 'info';
 }
 
 interface EnterpriseConfirmModalProps {
@@ -30,7 +34,10 @@ export function EnterpriseConfirmModal({ options, onClose }: EnterpriseConfirmMo
     }
   };
 
-  const isDanger = options.isDanger ?? true;
+  const isDanger = options.isDanger !== undefined ? options.isDanger : (options.variant ? options.variant === 'danger' : true);
+  const modalText = options.description || options.message || 'Are you sure you want to proceed?';
+  const cancelBtnText = options.cancelLabel || options.cancelText || 'Cancel';
+  const confirmBtnText = options.confirmLabel || options.confirmText || (isDanger ? 'Confirm Delete' : 'Confirm Action');
 
   return (
     <AnimatePresence>
@@ -68,19 +75,19 @@ export function EnterpriseConfirmModal({ options, onClose }: EnterpriseConfirmMo
           </div>
 
           <p className="text-xs text-slate-600 dark:text-emerald-100/80 font-medium leading-relaxed">
-            {options.description}
+            {modalText}
           </p>
 
           <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-emerald-500/20">
             <Button variant="secondary" size="md" onClick={onClose}>
-              {options.cancelLabel || 'Cancel'}
+              {cancelBtnText}
             </Button>
             <Button
               variant={isDanger ? 'danger' : 'primary'}
               size="md"
               onClick={handleConfirm}
             >
-              {options.confirmLabel || (isDanger ? 'Confirm Delete' : 'Confirm Action')}
+              {confirmBtnText}
             </Button>
           </div>
         </motion.div>

@@ -1762,7 +1762,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteUserAccount = (userId: string) => {
-    const userToDelete = users.find((u) => u.id === userId);
+    const userToDelete = users.find((u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase());
     if (!userToDelete) return;
     if (userToDelete.role === 'SUPER_ADMIN') {
       notify({
@@ -1772,23 +1772,71 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
       return;
     }
-    const updated = users.filter((u) => u.id !== userId);
-    setUsers(updated);
-    safeLocalStorageSet('markazu_users', updated);
+
+    const targetId = userToDelete.id;
+    const targetEmail = userToDelete.email.toLowerCase().trim();
+
+    // 1. Remove from users state & LocalStorage
+    const updatedUsers = users.filter((u) => u.id !== targetId && u.email.toLowerCase().trim() !== targetEmail);
+    setUsers(updatedUsers);
+    safeLocalStorageSet('markazu_users', updatedUsers);
+
+    // Remove permanently from MOCK_USERS in memory
+    for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
+      if (MOCK_USERS[i].id === targetId || MOCK_USERS[i].email.toLowerCase().trim() === targetEmail) {
+        MOCK_USERS.splice(i, 1);
+      }
+    }
+
+    // 2. Remove permanently from teachers/headmasters state & LocalStorage
+    setTeachers((prev) => {
+      const updated = prev.filter((t) => t.id !== targetId && t.email.toLowerCase().trim() !== targetEmail);
+      safeLocalStorageSet('markazu_teachers', updated);
+      return updated;
+    });
+    for (let i = MOCK_TEACHERS.length - 1; i >= 0; i--) {
+      if (MOCK_TEACHERS[i].id === targetId || MOCK_TEACHERS[i].email.toLowerCase().trim() === targetEmail) {
+        MOCK_TEACHERS.splice(i, 1);
+      }
+    }
+
+    // 3. Remove permanently from students state & LocalStorage
+    setStudents((prev) => {
+      const updated = prev.filter((s) => s.id !== targetId && s.email?.toLowerCase().trim() !== targetEmail);
+      safeLocalStorageSet('markazu_students', updated);
+      return updated;
+    });
+    for (let i = MOCK_STUDENTS.length - 1; i >= 0; i--) {
+      if (MOCK_STUDENTS[i].id === targetId || MOCK_STUDENTS[i].email?.toLowerCase().trim() !== targetEmail) {
+        MOCK_STUDENTS.splice(i, 1);
+      }
+    }
+
+    // 4. Remove permanently from parents state & LocalStorage
+    setParents((prev) => {
+      const updated = prev.filter((p) => p.id !== targetId && p.email.toLowerCase().trim() !== targetEmail);
+      safeLocalStorageSet('markazu_parents', updated);
+      return updated;
+    });
+    for (let i = MOCK_PARENTS.length - 1; i >= 0; i--) {
+      if (MOCK_PARENTS[i].id === targetId || MOCK_PARENTS[i].email.toLowerCase().trim() === targetEmail) {
+        MOCK_PARENTS.splice(i, 1);
+      }
+    }
 
     notify({
       type: 'success',
-      title: 'User Account Deleted',
-      message: `User account for ${userToDelete.name} has been deleted.`,
+      title: 'User Account Permanently Deleted',
+      message: `User account for ${userToDelete.name} (${userToDelete.role}) has been permanently deleted.`,
     });
 
     addAuditLog({
       action: 'USER_ACCOUNT_DELETED',
       performedBy: currentUser.name,
       userRole: currentUser.role,
-      details: `Deleted ${userToDelete.role} user account: ${userToDelete.name} (${userToDelete.email})`,
+      details: `Permanently deleted ${userToDelete.role} user account: ${userToDelete.name} (${userToDelete.email})`,
       ipAddress: '197.210.227.14',
-      affectedRecord: `User/${userId}`,
+      affectedRecord: `User/${targetId}`,
       status: 'SUCCESS',
     });
   };
@@ -2264,20 +2312,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const deleteTeacher = (id: string) => {
     const targetTeacher = teachers.find((t) => t.id === id);
-    setTeachers((prev) => prev.filter((t) => t.id !== id));
-    if (targetTeacher) {
-      setUsers((prev) => prev.filter((u) => u.id !== targetTeacher.userId && u.email !== targetTeacher.email));
+    const updatedTeachers = teachers.filter((t) => t.id !== id);
+    setTeachers(updatedTeachers);
+    safeLocalStorageSet('markazu_teachers', updatedTeachers);
+
+    for (let i = MOCK_TEACHERS.length - 1; i >= 0; i--) {
+      if (MOCK_TEACHERS[i].id === id) MOCK_TEACHERS.splice(i, 1);
     }
+
+    if (targetTeacher) {
+      const targetUserId = targetTeacher.userId || targetTeacher.id;
+      const targetEmail = targetTeacher.email?.toLowerCase().trim();
+      const updatedUsers = users.filter((u) => u.id !== targetUserId && (targetEmail ? u.email.toLowerCase().trim() !== targetEmail : true));
+      setUsers(updatedUsers);
+      safeLocalStorageSet('markazu_users', updatedUsers);
+      for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
+        if (MOCK_USERS[i].id === targetUserId || (targetEmail && MOCK_USERS[i].email.toLowerCase().trim() === targetEmail)) {
+          MOCK_USERS.splice(i, 1);
+        }
+      }
+    }
+
     notify({
       type: 'warning',
-      title: 'Teacher Profile Deleted',
-      message: `Teacher profile and login credentials for ${targetTeacher?.fullName || id} have been deleted.`,
+      title: 'Teacher Profile Deleted Permanently',
+      message: `Teacher profile and login credentials for ${targetTeacher?.fullName || id} have been permanently deleted.`,
     });
     addAuditLog({
       action: 'TEACHER_DELETED',
       performedBy: currentUser.name,
       userRole: currentUser.role,
-      details: `Removed teacher record & login account ID: ${id}`,
+      details: `Permanently deleted teacher record & login account ID: ${id}`,
       ipAddress: '197.210.227.14',
       affectedRecord: `Teacher/${id}`,
       status: 'WARNING',
@@ -2460,20 +2525,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const deleteParent = (id: string) => {
     const targetParent = parents.find((p) => p.id === id);
-    setParents((prev) => prev.filter((p) => p.id !== id));
-    if (targetParent) {
-      setUsers((prev) => prev.filter((u) => u.id !== targetParent.userId && u.email !== targetParent.email));
+    const updatedParents = parents.filter((p) => p.id !== id);
+    setParents(updatedParents);
+    safeLocalStorageSet('markazu_parents', updatedParents);
+
+    for (let i = MOCK_PARENTS.length - 1; i >= 0; i--) {
+      if (MOCK_PARENTS[i].id === id) MOCK_PARENTS.splice(i, 1);
     }
+
+    if (targetParent) {
+      const targetUserId = targetParent.userId || targetParent.id;
+      const targetEmail = targetParent.email.toLowerCase().trim();
+      const updatedUsers = users.filter((u) => u.id !== targetUserId && u.email.toLowerCase().trim() !== targetEmail);
+      setUsers(updatedUsers);
+      safeLocalStorageSet('markazu_users', updatedUsers);
+
+      for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
+        if (MOCK_USERS[i].id === targetUserId || MOCK_USERS[i].email.toLowerCase().trim() === targetEmail) {
+          MOCK_USERS.splice(i, 1);
+        }
+      }
+    }
+
     notify({
       type: 'warning',
-      title: 'Parent/Guardian Profile Deleted',
-      message: `Parent profile and login credentials for ${targetParent?.fullName || id} have been deleted.`,
+      title: 'Parent/Guardian Profile Deleted Permanently',
+      message: `Parent profile and login credentials for ${targetParent?.fullName || id} have been permanently deleted.`,
     });
     addAuditLog({
       action: 'PARENT_DELETED',
       performedBy: currentUser.name,
       userRole: currentUser.role,
-      details: `Deleted parent/guardian profile & login account ID: ${id}`,
+      details: `Permanently deleted parent profile & login account ID: ${id}`,
       ipAddress: '197.210.227.14',
       affectedRecord: `Parent/${id}`,
       status: 'WARNING',
