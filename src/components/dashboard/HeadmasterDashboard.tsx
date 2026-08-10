@@ -290,11 +290,11 @@ export function HeadmasterDashboard() {
           </Link>
 
           <Link
-            href="/dashboard/communication"
+            href="/dashboard/subjects"
             className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/50 border border-teal-200 dark:border-teal-500/30 text-teal-800 dark:text-teal-200 flex flex-col items-center justify-center text-center gap-2 transition-all shadow-sm group"
           >
-            <MessageSquare className="w-6 h-6 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" />
-            <span>Send Notice</span>
+            <BookOpen className="w-6 h-6 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" />
+            <span>Section Subjects</span>
           </Link>
         </div>
       </div>

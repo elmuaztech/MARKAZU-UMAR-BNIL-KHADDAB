@@ -67,24 +67,24 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canManageClasses: true,
   },
   HEADMASTER: {
-    canViewAllStudents: false, // Scoped to assigned section
+    canViewAllStudents: false, // Scoped strictly to assigned section
     canEditStudents: true,
-    canViewAllAttendance: false, // Scoped to assigned section
+    canViewAllAttendance: false, // Scoped strictly to assigned section
     canMarkAttendance: true,
-    canViewAllTahfiz: false, // Scoped to assigned section
+    canViewAllTahfiz: false, // Scoped strictly to assigned section
     canAddTahfizRecord: true,
-    canViewAllGrades: false, // Scoped to assigned section
+    canViewAllGrades: false, // Scoped strictly to assigned section
     canEnterGrades: true,
-    canManageAssessmentConfig: true,
+    canManageAssessmentConfig: false, // Admin/Super Admin only
     canAccessSecurityDashboard: false, // Super Admin strictly
     canManageUsers: false, // Super Admin strictly
     canManageSettings: false, // Global Admin strictly
-    canAccessCommunicationCenter: true,
-    canAccessReportSheets: true,
+    canAccessCommunicationCenter: false, // Super Admin / Admin strictly
+    canAccessReportSheets: true, // Scoped strictly to assigned section report sheets
     canAssignTeachers: true,
-    canManageSubjects: true,
-    canManageProgrammes: false,
-    canManageClasses: true,
+    canManageSubjects: true, // Scoped to assigned section subjects
+    canManageProgrammes: false, // Admin/Super Admin only
+    canManageClasses: true, // Scoped to assigned section classes
   },
   TEACHER: {
     canViewAllStudents: false, // Scoped ONLY to assigned classes
@@ -151,33 +151,33 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
 // Route & Page Authorization Mapping
 export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/admissions': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/admissions': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/programmes': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/tahfiz': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/students': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'PARENT'],
   '/dashboard/teachers': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/parents': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/parents': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/classes': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/subjects': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT'],
   '/dashboard/attendance': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/assessment': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/results': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'STUDENT', 'PARENT'],
-  '/dashboard/communication': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/communication/notifications': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/communication/history': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
-  '/dashboard/communication/new': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
-  '/dashboard/communication/templates': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
-  '/dashboard/communication/report-sheet-delivery': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/communication/queue': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/communication/failed': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/communication/scheduled': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/communication': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/communication/notifications': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/communication/history': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/communication/new': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/communication/templates': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/communication/report-sheet-delivery': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/communication/queue': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/communication/failed': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
+  '/dashboard/communication/scheduled': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/communication/settings': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
-  '/dashboard/messages': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
+  '/dashboard/messages': ['SUPER_ADMIN', 'ADMIN', 'TEACHER', 'STUDENT', 'PARENT'], // Restricted for Headmasters
   '/dashboard/sessions': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/backup': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
-  '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'], // Scoped strictly to section report sheets
   '/dashboard/security': ['SUPER_ADMIN'], // Super Admin strictly
   '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
 };

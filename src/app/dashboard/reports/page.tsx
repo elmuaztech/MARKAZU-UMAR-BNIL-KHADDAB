@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useApp } from '../../../lib/context';
-import { BarChart3, TrendingUp, Download, Sparkles, Award, Users } from 'lucide-react';
+import { BarChart3, TrendingUp, Sparkles } from 'lucide-react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -14,14 +14,43 @@ import {
 } from 'recharts';
 
 export default function ReportsPage() {
-  const { students, programmes, classes } = useApp();
+  const { students, programmes, classes, currentUser } = useApp();
 
-  const classPerformanceData = [
-    { class: 'Tahfiz Halqa 1', avgScore: 89, hifzRate: 94 },
-    { class: 'Tahfiz Halqa 2', avgScore: 84, hifzRate: 88 },
-    { class: 'Primary 4', avgScore: 82, hifzRate: 79 },
-    { class: 'Secondary 2', avgScore: 86, hifzRate: 85 },
-  ];
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
+
+  const visibleProgrammes = isHeadmaster
+    ? programmes.filter(
+        (p) =>
+          p.id === currentUser.assignedProgrammeId ||
+          (p.programme_name_english &&
+            currentUser.assignedProgrammeName &&
+            p.programme_name_english.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase()) ||
+          (p.programme_name &&
+            currentUser.assignedProgrammeName &&
+            p.programme_name.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
+      )
+    : programmes;
+
+  const visibleClasses = isHeadmaster
+    ? classes.filter(
+        (c) =>
+          c.programmeId === currentUser.assignedProgrammeId ||
+          (c.programmeName &&
+            currentUser.assignedProgrammeName &&
+            c.programmeName.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
+      )
+    : classes;
+
+  const classPerformanceData = visibleClasses.length > 0
+    ? visibleClasses.slice(0, 6).map((c, i) => ({
+        class: c.name,
+        avgScore: 82 + ((i * 3) % 15),
+        hifzRate: 85 + ((i * 2) % 12),
+      }))
+    : [
+        { class: 'Tahfiz Halqa 1', avgScore: 89, hifzRate: 94 },
+        { class: 'Tahfiz Halqa 2', avgScore: 84, hifzRate: 88 },
+      ];
 
   return (
     <div className="space-y-6 font-sans">
@@ -29,11 +58,16 @@ export default function ReportsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white border border-emerald-500/40 shadow-xl font-poppins">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-widest">
-            <BarChart3 className="w-4 h-4 text-amber-400" /> School Analytics & Master Reporting
+            <BarChart3 className="w-4 h-4 text-amber-400" />{' '}
+            {isHeadmaster ? `Section Reports (${currentUser.assignedProgrammeName || 'My Section'})` : 'School Analytics & Master Reporting'}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">Executive Reports & Programme Metrics</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
+            {isHeadmaster ? 'Section Academic & Hifz Metrics' : 'Executive Reports & Programme Metrics'}
+          </h1>
           <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 font-medium">
-            Comparative performance, Tahfiz completion rates, and enrollment grouped by Programme.
+            {isHeadmaster
+              ? `Performance analytics and Hifz completion records for ${currentUser.assignedProgrammeName || 'your assigned section'}.`
+              : 'Comparative performance, Tahfiz completion rates, and enrollment grouped by Programme.'}
           </p>
         </div>
       </div>
@@ -41,10 +75,11 @@ export default function ReportsPage() {
       {/* Programme Performance Overview Cards */}
       <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-4 font-poppins">
         <h3 className="text-sm font-black uppercase text-slate-900 dark:text-white flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-500" /> Programme Performance Summary
+          <Sparkles className="w-4 h-4 text-amber-500" />{' '}
+          {isHeadmaster ? 'Assigned Section Metrics' : 'Programme Performance Summary'}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          {programmes.map((p) => {
+          {visibleProgrammes.map((p) => {
             const pClasses = classes.filter((c) => c.programmeId === p.id || c.programmeName === p.programme_name);
             const pStudents = students.filter((s) => s.programmeId === p.id || s.programmeName === p.programme_name);
 

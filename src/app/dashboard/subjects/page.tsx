@@ -26,7 +26,25 @@ import { motion } from 'framer-motion';
 export default function SubjectsPage() {
   const { subjects, programmes, classes, addSubject, updateSubject, deleteSubject, currentUser, showConfirm } = useApp();
 
-  const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>('ALL');
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const canManage = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN' || currentUser.role === 'HEADMASTER';
+
+  const userProgrammes = isHeadmaster
+    ? programmes.filter(
+        (p) =>
+          p.id === currentUser.assignedProgrammeId ||
+          (p.programme_name_english &&
+            currentUser.assignedProgrammeName &&
+            p.programme_name_english.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase()) ||
+          (p.programme_name &&
+            currentUser.assignedProgrammeName &&
+            p.programme_name.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
+      )
+    : programmes;
+
+  const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>(
+    isHeadmaster && userProgrammes[0]?.id ? userProgrammes[0].id : 'ALL'
+  );
   const [selectedClassFilter, setSelectedClassFilter] = useState<string>('ALL');
 
   // Modal State
@@ -39,7 +57,7 @@ export default function SubjectsPage() {
   const [code, setCode] = useState('');
   const [category, setCategory] = useState<'TAHFIZ' | 'ISLAMIC' | 'GENERAL'>('ISLAMIC');
   const [description, setDescription] = useState('');
-  const [programmeId, setProgrammeId] = useState('');
+  const [programmeId, setProgrammeId] = useState(isHeadmaster && userProgrammes[0]?.id ? userProgrammes[0].id : '');
   const [classId, setClassId] = useState('');
   const [displayOrder, setDisplayOrder] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
@@ -56,7 +74,7 @@ export default function SubjectsPage() {
     setCode('');
     setCategory('ISLAMIC');
     setDescription('');
-    setProgrammeId('');
+    setProgrammeId(isHeadmaster && userProgrammes[0]?.id ? userProgrammes[0].id : '');
     setClassId('');
     setDisplayOrder(1);
     setErrorMessage('');
@@ -70,7 +88,7 @@ export default function SubjectsPage() {
     setCode(subject.code);
     setCategory(subject.category);
     setDescription(subject.description);
-    setProgrammeId(subject.programmeId || '');
+    setProgrammeId(subject.programmeId || (isHeadmaster && userProgrammes[0]?.id ? userProgrammes[0].id : ''));
     setClassId(subject.classId || '');
     setDisplayOrder(subject.displayOrder || 1);
     setErrorMessage('');
@@ -144,39 +162,49 @@ export default function SubjectsPage() {
       cell: (item) => (
         <div className="space-y-0.5">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-[10px] font-black px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+            <span className="font-bold text-slate-900 dark:text-white font-poppins">{item.nameEnglish || item.name}</span>
+            <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-bold">
               {item.code}
             </span>
-            <span className="font-bold text-slate-900 dark:text-white">{item.name}</span>
           </div>
           {item.arabicName && (
-            <p className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] font-semibold">{item.arabicName}</p>
+            <p className="text-xs text-amber-600 dark:text-amber-400 font-arabic font-semibold">{item.arabicName}</p>
           )}
         </div>
       ),
     },
     {
-      header: 'Category',
-      cell: (item) => (
-        <span
-          className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase ${
-            item.category === 'TAHFIZ'
-              ? 'bg-purple-500/15 text-purple-600 dark:text-purple-300'
-              : item.category === 'ISLAMIC'
-              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300'
-              : 'bg-sky-500/15 text-sky-600 dark:text-sky-300'
-          }`}
-        >
-          {item.category}
-        </span>
-      ),
+      header: 'Programme & Class',
+      cell: (item) => {
+        const prog = programmes.find((p) => p.id === item.programmeId);
+        const cls = classes.find((c) => c.id === item.classId);
+        return (
+          <div className="space-y-0.5 text-xs">
+            <p className="font-semibold text-slate-700 dark:text-emerald-200">
+              {prog ? prog.programme_name_english || prog.programme_name : 'All Programmes'}
+            </p>
+            <p className="text-[11px] text-slate-500 dark:text-emerald-400/80">
+              {cls ? cls.name : 'All Class Streams'}
+            </p>
+          </div>
+        );
+      },
     },
     {
-      header: 'Programme & Class',
+      header: 'Category',
       cell: (item) => (
-        <div className="text-xs">
-          <p className="font-bold text-slate-800 dark:text-emerald-200">{item.programmeName || 'All Programmes'}</p>
-          <p className="text-[10px] text-slate-500 dark:text-emerald-300/70">{item.className || 'General Subject'}</p>
+        <div className="flex items-center gap-1">
+          <span
+            className={`px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase ${
+              item.category === 'TAHFIZ'
+                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                : item.category === 'ISLAMIC'
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                : 'bg-sky-500/10 text-sky-600 dark:text-sky-400'
+            }`}
+          >
+            {item.category}
+          </span>
         </div>
       ),
     },
@@ -198,7 +226,7 @@ export default function SubjectsPage() {
       header: 'Actions',
       align: 'right',
       cell: (item) => (
-        (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN') ? (
+        canManage ? (
           <div className="flex items-center justify-end gap-1">
             <IconButton icon={<Edit className="w-3.5 h-3.5" />} onClick={() => handleOpenEditModal(item)} />
             <IconButton
@@ -225,12 +253,16 @@ export default function SubjectsPage() {
   return (
     <PortalTheme>
       <PortalHeroBanner
-        badgeText="Curriculum & Academic Subjects"
-        title="Enterprise Subject Management"
+        badgeText={isHeadmaster ? `Section Curriculum (${currentUser.assignedProgrammeName || 'My Section'})` : "Curriculum & Academic Subjects"}
+        title={isHeadmaster ? "Section Subject Management" : "Enterprise Subject Management"}
         titleArabic="إدارة المواد الدراسية"
-        description="Hierarchical subject catalog organized by Programme & Class streams. Prevents duplicates and maintains standardized curriculum ordering."
+        description={
+          isHeadmaster
+            ? `Standardized subject catalog and curriculum structure for ${currentUser.assignedProgrammeName || 'your assigned section'}.`
+            : "Hierarchical subject catalog organized by Programme & Class streams. Prevents duplicates and maintains standardized curriculum ordering."
+        }
         actions={
-          (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN') && (
+          canManage && (
             <Button variant="primary" icon={<Plus className="w-4 h-4" />} onClick={handleOpenAddModal}>
               Create Subject
             </Button>
@@ -246,21 +278,23 @@ export default function SubjectsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-          <select
-            value={selectedProgrammeFilter}
-            onChange={(e) => {
-              setSelectedProgrammeFilter(e.target.value);
-              setSelectedClassFilter('ALL');
-            }}
-            className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-          >
-            <option value="ALL">All Programmes</option>
-            {programmes.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.programme_name_english || p.programme_name} ({p.programme_code})
-              </option>
-            ))}
-          </select>
+          {!isHeadmaster && (
+            <select
+              value={selectedProgrammeFilter}
+              onChange={(e) => {
+                setSelectedProgrammeFilter(e.target.value);
+                setSelectedClassFilter('ALL');
+              }}
+              className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+            >
+              <option value="ALL">All Programmes</option>
+              {userProgrammes.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.programme_name_english || p.programme_name} ({p.programme_code})
+                </option>
+              ))}
+            </select>
+          )}
 
           <select
             value={selectedClassFilter}
@@ -299,14 +333,14 @@ export default function SubjectsPage() {
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-500/20 pb-3">
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-emerald-500" />
-                {editingSubject ? 'Edit Subject' : 'Add New Subject'}
+                {editingSubject ? 'Edit Subject Details' : 'Create New Academic Subject'}
               </h3>
               <IconButton icon={<X className="w-4 h-4" />} onClick={() => setIsModalOpen(false)} />
             </div>
 
             {errorMessage && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
+              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
                 <span>{errorMessage}</span>
               </div>
             )}
@@ -326,7 +360,7 @@ export default function SubjectsPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-slate-600 dark:text-emerald-300">Arabic Name</label>
+                  <label className="text-slate-600 dark:text-emerald-300">Arabic Name (Optional)</label>
                   <input
                     type="text"
                     value={nameArabic}
@@ -375,8 +409,8 @@ export default function SubjectsPage() {
                     }}
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
                   >
-                    <option value="">-- Optional Programme --</option>
-                    {programmes.map((p) => (
+                    {!isHeadmaster && <option value="">-- Optional Programme --</option>}
+                    {userProgrammes.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.programme_name_english || p.programme_name}
                       </option>
@@ -391,7 +425,7 @@ export default function SubjectsPage() {
                     onChange={(e) => setClassId(e.target.value)}
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
                   >
-                    <option value="">-- Optional Class --</option>
+                    <option value="">-- Optional Specific Class --</option>
                     {modalClasses.map((c) => (
                       <option key={c.id} value={c.id}>
                         {c.name}
@@ -407,17 +441,17 @@ export default function SubjectsPage() {
                   rows={2}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Summary of syllabus topics..."
+                  placeholder="Curriculum summary and learning objectives..."
                   className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
                 />
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-emerald-500/20">
-                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+                <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button type="submit" variant="primary" icon={<CheckCircle2 className="w-4 h-4" />}>
-                  {editingSubject ? 'Save Changes' : 'Create Subject'}
+                <Button variant="primary" type="submit">
+                  {editingSubject ? 'Update Subject' : 'Create Subject'}
                 </Button>
               </div>
             </form>

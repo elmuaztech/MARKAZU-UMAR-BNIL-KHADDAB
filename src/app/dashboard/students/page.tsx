@@ -70,9 +70,22 @@ export default function StudentsPage() {
   const [editGuardianName, setEditGuardianName] = useState('');
   const [editGuardianPhone, setEditGuardianPhone] = useState('');
   const [editCompletedJuz, setEditCompletedJuz] = useState(0);
-  const [editStatus, setEditStatus] = useState<'ACTIVE' | 'GRADUATED' | 'SUSPENDED'>('ACTIVE');
-
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const canManageStudents = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN' || isHeadmaster;
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
+
+  const availableProgrammes = isHeadmaster
+    ? programmes.filter(
+        (p) =>
+          p.id === currentUser.assignedProgrammeId ||
+          (p.programme_name_english &&
+            currentUser.assignedProgrammeName &&
+            p.programme_name_english.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase()) ||
+          (p.programme_name &&
+            currentUser.assignedProgrammeName &&
+            p.programme_name.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
+      )
+    : programmes;
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -345,7 +358,7 @@ export default function StudentsPage() {
           <Button variant="ghost" size="sm" onClick={() => setSelectedStudent(student)}>
             <Eye className="w-3.5 h-3.5 text-emerald-500" />
           </Button>
-          {isAdmin && (
+          {canManageStudents && (
             <>
               <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(student)}>
                 <Edit className="w-3.5 h-3.5 text-sky-500" />
@@ -374,11 +387,13 @@ export default function StudentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064e3b] to-[#0284c7] text-white border border-emerald-500/30 shadow-xl">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 uppercase tracking-widest mb-1">
-            <Baby className="w-4 h-4 text-emerald-400" /> Student & Child Management
+            <Baby className="w-4 h-4 text-emerald-400" /> {isHeadmaster ? `Section Students (${currentUser.assignedProgrammeName || 'My Section'})` : 'Student & Child Management'}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Children & Students Directory</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{isHeadmaster ? 'Section Children & Students Directory' : 'Children & Students Directory'}</h1>
           <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 max-w-2xl">
-            Managing student records, class allocations, Hifz progress, and parent/guardian linkages.
+            {isHeadmaster
+              ? `Managing student records, class allocations, and Hifz progress for ${currentUser.assignedProgrammeName || 'your assigned section'}.`
+              : 'Managing student records, class allocations, Hifz progress, and parent/guardian linkages.'}
           </p>
         </div>
 
@@ -387,16 +402,18 @@ export default function StudentsPage() {
             Export CSV
           </Button>
 
-          {isAdmin && (
+          {canManageStudents && (
             <>
-              <Button
-                variant="outline"
-                size="md"
-                className="bg-emerald-500/20 text-white hover:bg-emerald-500/30 border-emerald-400/40"
-                onClick={() => setShowBulkModal(true)}
-              >
-                Upload CSV
-              </Button>
+              {isAdmin && (
+                <Button
+                  variant="outline"
+                  size="md"
+                  className="bg-emerald-500/20 text-white hover:bg-emerald-500/30 border-emerald-400/40"
+                  onClick={() => setShowBulkModal(true)}
+                >
+                  Upload CSV
+                </Button>
+              )}
               <Button
                 variant="primary"
                 size="md"
@@ -550,7 +567,7 @@ export default function StudentsPage() {
                     }}
                     className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
                   >
-                    {programmes.map((p) => (
+                    {availableProgrammes.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.programme_name} ({p.programme_code})
                       </option>
@@ -693,7 +710,7 @@ export default function StudentsPage() {
                     }}
                     className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
                   >
-                    {programmes.map((p) => (
+                    {availableProgrammes.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.programme_name} ({p.programme_code})
                       </option>

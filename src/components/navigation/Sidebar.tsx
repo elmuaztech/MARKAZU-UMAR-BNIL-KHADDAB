@@ -215,7 +215,7 @@ export function Sidebar({
   const allNavItems: NavItem[] = [
     // MAIN WORKSPACE
     { id: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, group: 'MAIN' },
-    { id: 'reports', label: 'Analytics', href: '/dashboard/reports', icon: BarChart3, group: 'MAIN' },
+    { id: 'reports', label: currentUser.role === 'HEADMASTER' ? 'Section Reports' : 'Analytics', href: '/dashboard/reports', icon: BarChart3, group: 'MAIN' },
 
     // ADMISSIONS & ONBOARDING
     {
@@ -237,14 +237,14 @@ export function Sidebar({
     },
     {
       id: 'classes',
-      label: currentUser.role === 'TEACHER' ? 'My Classes' : 'Classes',
+      label: currentUser.role === 'HEADMASTER' ? 'Section Classes' : currentUser.role === 'TEACHER' ? 'My Classes' : 'Classes',
       href: '/dashboard/classes',
       icon: School,
       group: 'ACADEMICS',
     },
     {
       id: 'subjects',
-      label: currentUser.role === 'TEACHER' ? 'My Subjects' : currentUser.role === 'STUDENT' ? 'My Subjects' : 'Subjects',
+      label: currentUser.role === 'HEADMASTER' ? 'Section Subjects' : currentUser.role === 'TEACHER' ? 'My Subjects' : currentUser.role === 'STUDENT' ? 'My Subjects' : 'Subjects',
       href: '/dashboard/subjects',
       icon: BookMarked,
       group: 'ACADEMICS',
@@ -261,12 +261,12 @@ export function Sidebar({
     // USERS & DIRECTORY
     {
       id: 'students',
-      label: currentUser.role === 'TEACHER' ? 'My Students' : currentUser.role === 'PARENT' ? 'My Children' : 'Students',
+      label: currentUser.role === 'HEADMASTER' ? 'Section Students' : currentUser.role === 'TEACHER' ? 'My Students' : currentUser.role === 'PARENT' ? 'My Children' : 'Students',
       href: '/dashboard/students',
       icon: Users,
       group: 'PEOPLE',
     },
-    { id: 'teachers', label: 'Staff', href: '/dashboard/teachers', icon: UserCheck, group: 'PEOPLE' },
+    { id: 'teachers', label: currentUser.role === 'HEADMASTER' ? 'Section Teachers' : 'Staff', href: '/dashboard/teachers', icon: UserCheck, group: 'PEOPLE' },
     { id: 'parents', label: 'Parents', href: '/dashboard/parents', icon: HeartHandshake, group: 'PEOPLE' },
 
     // COMMUNICATION
@@ -283,7 +283,7 @@ export function Sidebar({
     // REPORTS & SESSIONS
     {
       id: 'results',
-      label: 'Report Cards',
+      label: currentUser.role === 'HEADMASTER' ? 'Section Report Cards' : 'Report Cards',
       href: '/dashboard/results',
       icon: Award,
       group: 'REPORTS & SETUP',
