@@ -28,6 +28,8 @@ export interface Programme {
   programme_name: string; // Combined / fallback display
   programme_code: string; // e.g. "ASM", "SPM", "ISM", "MTA"
   description: string;
+  hasSubcategories?: boolean; // Whether this programme has subcategories (e.g. Asuba, Maghrib, Tahfiz)
+  subcategories?: string[]; // Dynamic list of subcategory names
   status: 'Active' | 'Inactive';
   created_at: string;
   updated_at: string;

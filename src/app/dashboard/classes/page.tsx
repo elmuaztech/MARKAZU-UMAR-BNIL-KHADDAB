@@ -40,6 +40,7 @@ export default function ClassesPage() {
     class_name_english: '',
     class_name_arabic: '',
     programmeId: programmes[0]?.id || '',
+    subcategory: '',
     section: 'Section A',
     capacity: 30,
     classTeacherId: '',
@@ -77,10 +78,13 @@ export default function ClassesPage() {
   };
 
   const handleOpenAdd = () => {
+    const defaultProgId = selectedProgrammeFilter !== 'ALL' ? selectedProgrammeFilter : programmes[0]?.id || '';
+    const targetProg = programmes.find((p) => p.id === defaultProgId);
     setClassFormData({
       class_name_english: '',
       class_name_arabic: '',
-      programmeId: selectedProgrammeFilter !== 'ALL' ? selectedProgrammeFilter : programmes[0]?.id || '',
+      programmeId: defaultProgId,
+      subcategory: (targetProg?.subcategories && targetProg.subcategories[0]) || '',
       section: 'Section A',
       capacity: 30,
       classTeacherId: '',
@@ -104,7 +108,8 @@ export default function ClassesPage() {
         class_name_arabic: classFormData.class_name_arabic.trim(),
         name: classFormData.class_name_english.trim(),
         category: 'TAHFIZ',
-        section: classFormData.section,
+        section: classFormData.subcategory || classFormData.section,
+        subcategory: classFormData.subcategory || undefined,
         capacity: Number(classFormData.capacity) || 30,
         studentCount: 0,
         programmeId: prog.id,
@@ -126,6 +131,7 @@ export default function ClassesPage() {
       class_name_english: c.class_name_english || c.name,
       class_name_arabic: c.class_name_arabic || '',
       programmeId: c.programmeId,
+      subcategory: c.subcategory || '',
       section: c.section,
       capacity: c.capacity,
       classTeacherId: c.classTeacherId || '',
@@ -147,7 +153,8 @@ export default function ClassesPage() {
         class_name_english: classFormData.class_name_english.trim(),
         class_name_arabic: classFormData.class_name_arabic.trim(),
         name: classFormData.class_name_english.trim(),
-        section: classFormData.section,
+        section: classFormData.subcategory || classFormData.section,
+        subcategory: classFormData.subcategory || undefined,
         capacity: Number(classFormData.capacity) || 30,
         programmeId: prog.id,
         programmeName: prog.programme_name_english || prog.programme_name,
@@ -378,7 +385,15 @@ export default function ClassesPage() {
                   </label>
                   <select
                     value={classFormData.programmeId}
-                    onChange={(e) => setClassFormData({ ...classFormData, programmeId: e.target.value })}
+                    onChange={(e) => {
+                      const pId = e.target.value;
+                      const prog = programmes.find((p) => p.id === pId);
+                      setClassFormData({
+                        ...classFormData,
+                        programmeId: pId,
+                        subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
+                      });
+                    }}
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
                   >
                     {programmes.map((p) => (
@@ -388,6 +403,31 @@ export default function ClassesPage() {
                     ))}
                   </select>
                 </div>
+
+                {(() => {
+                  const selProg = programmes.find((p) => p.id === classFormData.programmeId);
+                  if (selProg && selProg.hasSubcategories && selProg.subcategories && selProg.subcategories.length > 0) {
+                    return (
+                      <div>
+                        <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                          Subcategory <span className="text-rose-500">*</span>
+                        </label>
+                        <select
+                          value={classFormData.subcategory}
+                          onChange={(e) => setClassFormData({ ...classFormData, subcategory: e.target.value })}
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                        >
+                          {selProg.subcategories.map((sub, idx) => (
+                            <option key={idx} value={sub}>
+                              {sub}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
 
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
@@ -510,7 +550,15 @@ export default function ClassesPage() {
                   </label>
                   <select
                     value={classFormData.programmeId}
-                    onChange={(e) => setClassFormData({ ...classFormData, programmeId: e.target.value })}
+                    onChange={(e) => {
+                      const pId = e.target.value;
+                      const prog = programmes.find((p) => p.id === pId);
+                      setClassFormData({
+                        ...classFormData,
+                        programmeId: pId,
+                        subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
+                      });
+                    }}
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
                   >
                     {programmes.map((p) => (
@@ -520,6 +568,31 @@ export default function ClassesPage() {
                     ))}
                   </select>
                 </div>
+
+                {(() => {
+                  const selProg = programmes.find((p) => p.id === classFormData.programmeId);
+                  if (selProg && selProg.hasSubcategories && selProg.subcategories && selProg.subcategories.length > 0) {
+                    return (
+                      <div>
+                        <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                          Subcategory <span className="text-rose-500">*</span>
+                        </label>
+                        <select
+                          value={classFormData.subcategory}
+                          onChange={(e) => setClassFormData({ ...classFormData, subcategory: e.target.value })}
+                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                        >
+                          {selProg.subcategories.map((sub, idx) => (
+                            <option key={idx} value={sub}>
+                              {sub}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
 
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">

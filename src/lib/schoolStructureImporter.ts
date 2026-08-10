@@ -177,14 +177,17 @@ export function validateSchoolStructureRows(
       messages.push(`Programme "${row.programme}" will be linked/created.`);
     }
 
-    // 3. Subcategory Hierarchy Validation for "Asuba & Maghrib"
-    if (row.programme.toLowerCase().includes('asuba')) {
-      const allowedSubs = ['asuba', 'maghrib', 'tahfiz'];
-      if (row.subcategory && !allowedSubs.includes(row.subcategory.toLowerCase())) {
-        status = 'WARNING';
-        messages.push(
-          `Subcategory "${row.subcategory}" under Asuba & Maghrib should be Asuba, Maghrib, or Tahfiz.`
+    // 3. Subcategory Hierarchy Validation (Dynamic for any programme)
+    if (row.subcategory) {
+      if (matchedProg && matchedProg.subcategories && matchedProg.subcategories.length > 0) {
+        const subExists = matchedProg.subcategories.some(
+          (s) => s.toLowerCase() === row.subcategory!.toLowerCase()
         );
+        if (!subExists) {
+          messages.push(`New subcategory "${row.subcategory}" will be created under ${matchedProg.programme_name_english || matchedProg.programme_name}.`);
+        }
+      } else {
+        messages.push(`Subcategory "${row.subcategory}" will be added to ${row.programme}.`);
       }
     }
 

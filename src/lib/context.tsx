@@ -298,6 +298,10 @@ interface AppContextType {
   updateProgramme: (id: string, updated: Partial<Programme>) => void;
   toggleProgrammeStatus: (id: string) => void;
   deleteProgramme: (id: string) => void;
+  addSubcategory: (programmeId: string, subcategoryName: string) => void;
+  updateSubcategory: (programmeId: string, oldName: string, newName: string) => void;
+  deleteSubcategory: (programmeId: string, subcategoryName: string) => void;
+  assignHeadmasterProgramme: (headmasterUserId: string, programmeId: string, programmeName: string) => void;
 
   addClass: (newClass: Omit<SchoolClass, 'id'>) => void;
   updateClass: (id: string, updated: Partial<SchoolClass>) => void;
@@ -3514,7 +3518,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteProgramme = (id: string) => {
-    setProgrammes((prev) => prev.filter((p) => p.id !== id));
+    setProgrammes((prev) => {
+      const next = prev.filter((p) => p.id !== id);
+      safeLocalStorageSet('markazu_programmes', next);
+      return next;
+    });
+    setClasses((prev) => {
+      const next = prev.filter((c) => c.programmeId !== id);
+      safeLocalStorageSet('markazu_classes', next);
+      return next;
+    });
     addAuditLog({
       action: 'PROGRAMME_DELETED',
       performedBy: currentUser.name,
@@ -3522,6 +3535,166 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       details: `Deleted Programme ID: ${id}`,
       ipAddress: '197.210.227.14',
       affectedRecord: `Programme/${id}`,
+      status: 'SUCCESS',
+    });
+  };
+
+  const addSubcategory = (programmeId: string, subcategoryName: string) => {
+    const trimmed = subcategoryName.trim();
+    if (!trimmed) throw new Error('Subcategory name cannot be empty.');
+
+    const prog = programmes.find((p) => p.id === programmeId);
+    if (!prog) throw new Error('Programme not found.');
+
+    const currentSubcategories = prog.subcategories || [];
+    if (currentSubcategories.some((s) => s.toLowerCase() === trimmed.toLowerCase())) {
+      throw new Error(`Subcategory "${trimmed}" already exists under ${prog.programme_name_english || prog.programme_name}.`);
+    }
+
+    const updatedSubcategories = [...currentSubcategories, trimmed];
+    setProgrammes((prev) => {
+      const next = prev.map((p) =>
+        p.id === programmeId
+          ? {
+              ...p,
+              hasSubcategories: true,
+              subcategories: updatedSubcategories,
+              updated_at: new Date().toISOString(),
+            }
+          : p
+      );
+      safeLocalStorageSet('markazu_programmes', next);
+      return next;
+    });
+
+    addAuditLog({
+      action: 'SUBCATEGORY_ADDED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Added subcategory "${trimmed}" to Programme "${prog.programme_name}"`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `Programme/${programmeId}`,
+      status: 'SUCCESS',
+    });
+  };
+
+  const updateSubcategory = (programmeId: string, oldName: string, newName: string) => {
+    const trimmedNew = newName.trim();
+    if (!trimmedNew) throw new Error('Subcategory name cannot be empty.');
+
+    const prog = programmes.find((p) => p.id === programmeId);
+    if (!prog) throw new Error('Programme not found.');
+
+    const currentSubcategories = prog.subcategories || [];
+    if (
+      trimmedNew.toLowerCase() !== oldName.toLowerCase() &&
+      currentSubcategories.some((s) => s.toLowerCase() === trimmedNew.toLowerCase())
+    ) {
+      throw new Error(`Subcategory "${trimmedNew}" already exists under ${prog.programme_name_english || prog.programme_name}.`);
+    }
+
+    const updatedSubcategories = currentSubcategories.map((s) => (s === oldName ? trimmedNew : s));
+
+    setProgrammes((prev) => {
+      const next = prev.map((p) =>
+        p.id === programmeId
+          ? {
+              ...p,
+              subcategories: updatedSubcategories,
+              updated_at: new Date().toISOString(),
+            }
+          : p
+      );
+      safeLocalStorageSet('markazu_programmes', next);
+      return next;
+    });
+
+    setClasses((prev) => {
+      const next = prev.map((c) =>
+        c.programmeId === programmeId && c.subcategory === oldName
+          ? { ...c, subcategory: trimmedNew }
+          : c
+      );
+      safeLocalStorageSet('markazu_classes', next);
+      return next;
+    });
+
+    addAuditLog({
+      action: 'SUBCATEGORY_UPDATED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Updated subcategory "${oldName}" to "${trimmedNew}" in Programme "${prog.programme_name}"`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `Programme/${programmeId}`,
+      status: 'SUCCESS',
+    });
+  };
+
+  const deleteSubcategory = (programmeId: string, subcategoryName: string) => {
+    const prog = programmes.find((p) => p.id === programmeId);
+    if (!prog) throw new Error('Programme not found.');
+
+    const updatedSubcategories = (prog.subcategories || []).filter((s) => s !== subcategoryName);
+    const hasSubcats = updatedSubcategories.length > 0;
+
+    setProgrammes((prev) => {
+      const next = prev.map((p) =>
+        p.id === programmeId
+          ? {
+              ...p,
+              hasSubcategories: hasSubcats,
+              subcategories: updatedSubcategories,
+              updated_at: new Date().toISOString(),
+            }
+          : p
+      );
+      safeLocalStorageSet('markazu_programmes', next);
+      return next;
+    });
+
+    setClasses((prev) => {
+      const next = prev.map((c) =>
+        c.programmeId === programmeId && c.subcategory === subcategoryName
+          ? { ...c, subcategory: undefined }
+          : c
+      );
+      safeLocalStorageSet('markazu_classes', next);
+      return next;
+    });
+
+    addAuditLog({
+      action: 'SUBCATEGORY_DELETED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Deleted subcategory "${subcategoryName}" from Programme "${prog.programme_name}"`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `Programme/${programmeId}`,
+      status: 'SUCCESS',
+    });
+  };
+
+  const assignHeadmasterProgramme = (headmasterUserId: string, programmeId: string, programmeName: string) => {
+    setUsers((prev) => {
+      const next = prev.map((u) =>
+        u.id === headmasterUserId
+          ? {
+              ...u,
+              assignedProgrammeId: programmeId || undefined,
+              assignedProgrammeName: programmeName || undefined,
+            }
+          : u
+      );
+      safeLocalStorageSet('markazu_users', next);
+      return next;
+    });
+
+    addAuditLog({
+      action: 'HEADMASTER_PROGRAMME_ASSIGNED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Assigned Headmaster user ID ${headmasterUserId} to Programme "${programmeName}"`,
+      ipAddress: '197.210.227.14',
+      affectedRecord: `User/${headmasterUserId}`,
       status: 'SUCCESS',
     });
   };
@@ -3698,6 +3871,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       if (row.subcategory) {
         subcategoriesCount++;
+        targetProg.hasSubcategories = true;
+        const currentSubs = targetProg.subcategories || [];
+        if (!currentSubs.some((s) => s.toLowerCase() === row.subcategory!.toLowerCase())) {
+          targetProg.subcategories = [...currentSubs, row.subcategory];
+        }
+        // Update in nextProgrammes list
+        nextProgrammes = nextProgrammes.map((p) => (p.id === targetProg!.id ? targetProg! : p));
       }
 
       // 2. Parse Teacher Assignments
@@ -3953,6 +4133,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         updateProgramme,
         toggleProgrammeStatus,
         deleteProgramme,
+        addSubcategory,
+        updateSubcategory,
+        deleteSubcategory,
+        assignHeadmasterProgramme,
         addClass,
         updateClass,
         deleteClass,

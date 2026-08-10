@@ -101,7 +101,7 @@ export default function SecurityDashboardPage() {
         phone: newPhone.trim(),
         role: newRole,
         assignedProgrammeId: newRole === 'HEADMASTER' ? newProgrammeId : undefined,
-        assignedProgrammeName: newRole === 'HEADMASTER' ? selectedProg?.programme_name_english : undefined,
+        assignedProgrammeName: newRole === 'HEADMASTER' ? (selectedProg?.programme_name_english || selectedProg?.programme_name) : undefined,
       });
 
       setShowCreateModal(false);
@@ -109,7 +109,7 @@ export default function SecurityDashboardPage() {
       setNewEmail('');
       setNewPhone('');
       setNewRole('ADMIN');
-      setNewProgrammeId('prog-01');
+      setNewProgrammeId(programmes[0]?.id || 'prog-01');
     } catch (err: any) {
       // Error handled by createUserAccount toast
     } finally {
