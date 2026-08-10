@@ -113,15 +113,19 @@ export interface Parent {
 export interface SchoolClass {
   id: string;
   class_name_english: string;
-  class_name_arabic: string;
+  class_name_arabic?: string;
   name: string; // Combined / fallback
   category: 'TAHFIZ' | 'ISLAMIYYA_PRIMARY' | 'ISLAMIYYA_SECONDARY';
   section: string; // e.g. "Section A", "Halqa 1"
+  subcategory?: string; // e.g. "Asuba", "Maghrib", "Tahfiz"
   capacity: number;
   studentCount: number;
-  classTeacherId: string;
-  classTeacherName: string;
+  classTeacherId?: string;
+  classTeacherName?: string;
   classTeacherNameArabic?: string;
+  assignedTeacherIds?: string[];
+  assignedTeacherNames?: string[];
+  subjects?: string[];
   programmeId: string; // Relationship: Programme -> Class
   programmeName: string;
   programmeNameArabic?: string;
@@ -501,6 +505,48 @@ export interface GalleryItem {
   category: 'Teachers' | 'Students' | 'Classes' | 'School Officials' | 'Islamic Events' | 'General';
   image: string;
   createdAt?: string;
+}
+
+export interface RawExcelSchoolStructureRow {
+  programme: string;
+  subcategory?: string;
+  className: string;
+  rawTeachers: string;
+  rawSubjects?: string;
+  notes?: string;
+  rowIndex: number;
+}
+
+export interface ParsedImportTeacherItem {
+  rawName: string;
+  matchedTeacherId?: string;
+  matchedTeacherName?: string;
+  isNotFound: boolean;
+}
+
+export interface ValidatedImportRow {
+  rowIndex: number;
+  programmeName: string;
+  programmeId?: string;
+  subcategory?: string;
+  className: string;
+  rawTeachers: string;
+  parsedTeachers: ParsedImportTeacherItem[];
+  rawSubjects?: string;
+  parsedSubjects: string[];
+  status: 'VALID' | 'WARNING' | 'ERROR';
+  statusMessage: string;
+  isEmptyRow: boolean;
+}
+
+export interface ImportSchoolStructureSummary {
+  programmesVerified: number;
+  subcategoriesCount: number;
+  classesImported: number;
+  teacherAssignmentsCreated: number;
+  subjectsCreated: number;
+  emptyRowsSkipped: number;
+  errorsCount: number;
 }
 
 export * from './communication';

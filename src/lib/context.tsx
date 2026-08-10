@@ -35,6 +35,8 @@ import {
   DEFAULT_REPORT_CARD_TEMPLATE,
   NewsArticle,
   GalleryItem,
+  ValidatedImportRow,
+  ImportSchoolStructureSummary,
 } from '../types';
 import {
   MOCK_USERS,
@@ -307,6 +309,10 @@ interface AppContextType {
 
   assignTeacher: (assignment: Omit<TeacherAssignment, 'id'>) => void;
   removeTeacherAssignment: (id: string) => void;
+
+  importSchoolStructureBatch: (
+    validatedRows: ValidatedImportRow[]
+  ) => Promise<ImportSchoolStructureSummary>;
 
   addStudent: (student: Omit<Student, 'id'>, customPassword?: string) => void;
   updateStudent: (id: string, updated: Partial<Student>) => void;
@@ -3643,6 +3649,206 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const importSchoolStructureBatch = async (
+    validatedRows: ValidatedImportRow[]
+  ): Promise<ImportSchoolStructureSummary> => {
+    let programmesVerified = 0;
+    let subcategoriesCount = 0;
+    let classesImported = 0;
+    let teacherAssignmentsCreated = 0;
+    let subjectsCreated = 0;
+    let emptyRowsSkipped = 0;
+    let errorsCount = 0;
+
+    const rowsToImport = validatedRows.filter((r) => !r.isEmptyRow && r.className);
+    emptyRowsSkipped = validatedRows.length - rowsToImport.length;
+
+    let nextClasses = [...classes];
+    let nextProgrammes = [...programmes];
+    let nextTeachers = [...teachers];
+    let nextSubjects = [...subjects];
+    let nextAssignments = [...teacherAssignments];
+
+    rowsToImport.forEach((row) => {
+      // 1. Match or Create Programme
+      let targetProg = nextProgrammes.find((p) => {
+        const pName = (p.programme_name_english || p.programme_name).toLowerCase();
+        const rName = row.programmeName.toLowerCase();
+        return pName.includes(rName) || rName.includes(pName);
+      });
+
+      if (!targetProg) {
+        const progCode = row.programmeName.substring(0, 3).toUpperCase();
+        targetProg = {
+          id: `prog-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+          programme_name_english: row.programmeName,
+          programme_name_arabic: row.programmeName,
+          programme_name: row.programmeName,
+          programme_code: progCode,
+          description: `${row.programmeName} Stream`,
+          status: 'Active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+        nextProgrammes.push(targetProg);
+        programmesVerified++;
+      } else {
+        programmesVerified++;
+      }
+
+      if (row.subcategory) {
+        subcategoriesCount++;
+      }
+
+      // 2. Parse Teacher Assignments
+      const matchedTeacherIds: string[] = [];
+      const matchedTeacherNames: string[] = [];
+      row.parsedTeachers.forEach((t) => {
+        if (t.matchedTeacherId && t.matchedTeacherName) {
+          matchedTeacherIds.push(t.matchedTeacherId);
+          matchedTeacherNames.push(t.matchedTeacherName);
+        }
+      });
+
+      // 3. Match or Create Class
+      let targetClassIdx = nextClasses.findIndex(
+        (c) =>
+          c.name.toLowerCase() === row.className.toLowerCase() &&
+          c.programmeId === targetProg!.id
+      );
+
+      if (targetClassIdx >= 0) {
+        const existing = nextClasses[targetClassIdx];
+        const updatedCls: SchoolClass = {
+          ...existing,
+          subcategory: row.subcategory || existing.subcategory,
+          classTeacherId: matchedTeacherIds[0] || existing.classTeacherId,
+          classTeacherName: matchedTeacherNames[0] || existing.classTeacherName,
+          assignedTeacherIds: matchedTeacherIds.length > 0 ? matchedTeacherIds : existing.assignedTeacherIds,
+          assignedTeacherNames: matchedTeacherNames.length > 0 ? matchedTeacherNames : existing.assignedTeacherNames,
+          subjects: row.parsedSubjects.length > 0 ? row.parsedSubjects : existing.subjects,
+        };
+        nextClasses[targetClassIdx] = updatedCls;
+        classesImported++;
+      } else {
+        const newClassId = `cls-imp-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+        const newClass: SchoolClass = {
+          id: newClassId,
+          class_name_english: row.className,
+          class_name_arabic: row.className,
+          name: row.className,
+          category: 'TAHFIZ',
+          section: row.subcategory || 'General',
+          subcategory: row.subcategory,
+          capacity: 30,
+          studentCount: 0,
+          classTeacherId: matchedTeacherIds[0] || '',
+          classTeacherName: matchedTeacherNames[0] || 'Unassigned',
+          assignedTeacherIds: matchedTeacherIds,
+          assignedTeacherNames: matchedTeacherNames,
+          subjects: row.parsedSubjects,
+          programmeId: targetProg.id,
+          programmeName: targetProg.programme_name_english || targetProg.programme_name,
+        };
+        nextClasses.push(newClass);
+        classesImported++;
+      }
+
+      // 4. Update Teacher Assignments and Teacher Models
+      const currentClassObj = nextClasses.find(
+        (c) => c.name.toLowerCase() === row.className.toLowerCase() && c.programmeId === targetProg!.id
+      );
+
+      if (currentClassObj) {
+        matchedTeacherIds.forEach((tId) => {
+          const existsTa = nextAssignments.some(
+            (ta) => ta.teacherId === tId && ta.classId === currentClassObj.id
+          );
+          if (!existsTa) {
+            nextAssignments.push({
+              id: `ta-imp-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              teacherId: tId,
+              programmeId: targetProg!.id,
+              classId: currentClassObj.id,
+              subjectIds: [],
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            });
+            teacherAssignmentsCreated++;
+          }
+
+          nextTeachers = nextTeachers.map((t) => {
+            if (t.id === tId) {
+              const assignedCls = t.classesAssigned || [];
+              const assignedProgs = t.programmeIds || [];
+              return {
+                ...t,
+                classesAssigned: assignedCls.includes(currentClassObj.id) ? assignedCls : [...assignedCls, currentClassObj.id],
+                programmeIds: assignedProgs.includes(targetProg!.id) ? assignedProgs : [...assignedProgs, targetProg!.id],
+              };
+            }
+            return t;
+          });
+        });
+
+        // 5. Subjects Linking & Creation
+        row.parsedSubjects.forEach((subName) => {
+          const subCode = subName.substring(0, 4).toUpperCase();
+          const existsSub = nextSubjects.some(
+            (s) => s.name.toLowerCase() === subName.toLowerCase() && s.classId === currentClassObj.id
+          );
+          if (!existsSub) {
+            nextSubjects.push({
+              id: `sub-imp-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+              name: subName,
+              nameEnglish: subName,
+              code: subCode,
+              category: 'ISLAMIC',
+              description: `${subName} Curriculum`,
+              programmeId: targetProg!.id,
+              programmeName: targetProg!.programme_name,
+              classId: currentClassObj.id,
+              className: currentClassObj.name,
+              status: 'ACTIVE',
+            });
+            subjectsCreated++;
+          }
+        });
+      }
+    });
+
+    setClasses(nextClasses);
+    setProgrammes(nextProgrammes);
+    setTeachers(nextTeachers);
+    setSubjects(nextSubjects);
+    setTeacherAssignments(nextAssignments);
+
+    safeLocalStorageSet('markazu_classes', nextClasses);
+    safeLocalStorageSet('markazu_programmes', nextProgrammes);
+    safeLocalStorageSet('markazu_teachers', nextTeachers);
+    safeLocalStorageSet('markazu_subjects', nextSubjects);
+    safeLocalStorageSet('markazu_teacher_assignments', nextAssignments);
+
+    addAuditLog({
+      action: 'SCHOOL_STRUCTURE_IMPORTED',
+      performedBy: currentUser.name,
+      userRole: currentUser.role,
+      details: `Imported school structure via Excel: ${classesImported} classes, ${subcategoriesCount} subcategories, ${teacherAssignmentsCreated} teacher assignments.`,
+      ipAddress: '197.210.227.14',
+      status: 'SUCCESS',
+    });
+
+    return {
+      programmesVerified,
+      subcategoriesCount,
+      classesImported,
+      teacherAssignmentsCreated,
+      subjectsCreated,
+      emptyRowsSkipped,
+      errorsCount,
+    };
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -3755,6 +3961,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         deleteSubject,
         assignTeacher,
         removeTeacherAssignment,
+        importSchoolStructureBatch,
         addStudent,
         updateStudent,
         deleteStudent,

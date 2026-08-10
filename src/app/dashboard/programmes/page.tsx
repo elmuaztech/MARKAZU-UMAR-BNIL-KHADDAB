@@ -24,7 +24,9 @@ import {
   UserPlus,
   RefreshCw,
   X,
+  FileSpreadsheet,
 } from 'lucide-react';
+import { ImportSchoolStructureModal } from '@/components/classes/ImportSchoolStructureModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { Button } from '@/components/ui/Button';
@@ -55,6 +57,7 @@ export default function ProgrammesPage() {
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'Active' | 'Inactive'>('ALL');
 
   // Modals state for Programme
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProgramme, setEditingProgramme] = useState<Programme | null>(null);
   const [viewingProgramme, setViewingProgramme] = useState<Programme | null>(null);
@@ -370,6 +373,15 @@ export default function ProgrammesPage() {
 
         {isAdmin && (
           <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="secondary"
+              size="md"
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl shadow-lg flex items-center gap-2"
+              leftIcon={<FileSpreadsheet className="w-4 h-4" />}
+              onClick={() => setIsImportModalOpen(true)}
+            >
+              Import Structure (Excel)
+            </Button>
             <Button
               variant="success"
               size="md"
@@ -997,7 +1009,7 @@ export default function ProgrammesPage() {
 
                             {c.classTeacherId ? (
                               <BilingualText
-                                english={c.classTeacherName}
+                                english={c.classTeacherName || 'Unassigned'}
                                 arabic={c.classTeacherNameArabic}
                                 englishClassName="font-bold text-xs text-slate-900 dark:text-emerald-200"
                                 arabicClassName="text-[11px] font-semibold text-amber-600 dark:text-amber-400 font-arabic"
@@ -1443,6 +1455,15 @@ export default function ProgrammesPage() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* School Structure Excel Import Modal */}
+      <ImportSchoolStructureModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          showToast('School structure successfully imported from Excel file!');
+        }}
+      />
     </div>
   );
 }

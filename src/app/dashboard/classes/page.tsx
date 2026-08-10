@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useApp } from '../../../lib/context';
 import { SchoolClass } from '@/types';
 import { filterClassesForUser } from '../../../lib/rbac';
-import { School, Users, UserCheck, Plus, Edit, Trash2, UserX, RefreshCw } from 'lucide-react';
+import { School, Users, UserCheck, Plus, Edit, Trash2, UserX, RefreshCw, FileSpreadsheet } from 'lucide-react';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +13,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { FormField, Input, Select } from '@/components/ui/FormField';
+import { ImportSchoolStructureModal } from '@/components/classes/ImportSchoolStructureModal';
 
 export default function ClassesPage() {
   const { currentUser, classes, programmes, teachers, students, addClass, updateClass, deleteClass } = useApp();
@@ -21,6 +22,7 @@ export default function ClassesPage() {
   const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>('ALL');
 
   // Modals state
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isAddClassModalOpen, setIsAddClassModalOpen] = useState(false);
   const [editingClass, setEditingClass] = useState<SchoolClass | null>(null);
   const [viewingClass, setViewingClass] = useState<SchoolClass | null>(null);
@@ -215,15 +217,27 @@ export default function ClassesPage() {
         </div>
 
         {isAdmin && (
-          <Button
-            variant="primary"
-            size="md"
-            className="bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-900/20"
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={handleOpenAdd}
-          >
-            + Add New Class
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              size="md"
+              className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl shadow-lg flex items-center gap-2"
+              leftIcon={<FileSpreadsheet className="w-4 h-4" />}
+              onClick={() => setIsImportModalOpen(true)}
+            >
+              Import Classes & Teachers (Excel)
+            </Button>
+
+            <Button
+              variant="primary"
+              size="md"
+              className="bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-2xl shadow-lg shadow-emerald-900/20"
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={handleOpenAdd}
+            >
+              + Add New Class
+            </Button>
+          </div>
         )}
       </div>
 
@@ -800,6 +814,15 @@ export default function ClassesPage() {
           );
         })()}
       </Modal>
+
+      {/* School Structure Excel Import Modal */}
+      <ImportSchoolStructureModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          showToast('School structure successfully imported from Excel file!');
+        }}
+      />
     </div>
   );
 }
