@@ -449,8 +449,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (u.id === 'usr-superadmin-1' || u.role === 'SUPER_ADMIN') {
               return {
                 ...u,
-                email: 'markazuumarbnkhaddabdaneji@gmail.com',
-                passwordHash: hashPassword('@Aa123456789'),
+                passwordHash: u.passwordHash || hashPassword('@Aa123456789'),
                 isLocked: false,
                 failedLoginAttempts: 0,
               };
@@ -1817,6 +1816,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const updatedUsers = [newUser, ...users];
     setUsers(updatedUsers);
     safeLocalStorageSet('markazu_users', updatedUsers);
+    MOCK_USERS.unshift(newUser);
+
+    if (userData.role === 'HEADMASTER' || userData.role === 'TEACHER') {
+      const newTeacherObj: Teacher = {
+        id: newUser.id,
+        userId: newUser.id,
+        fullName: userData.name,
+        full_name_english: userData.name,
+        full_name_arabic: '',
+        email: cleanEmail,
+        staffNo: generatedUsername,
+        phone: userData.phone || '',
+        qualification: userData.role === 'HEADMASTER' ? 'B.A. Islamic Studies / Section Headmaster' : 'B.A. Arabic & Islamic Studies',
+        specialization: 'Quranic Memorization & Islamic Studies',
+        programmeIds: userData.assignedProgrammeId ? [userData.assignedProgrammeId] : ['prog-01'],
+        classesAssigned: ['cls-tahfiz-1'],
+        subjectsAssigned: ['subj-01'],
+        dateJoined: new Date().toISOString().split('T')[0],
+        status: 'ACTIVE',
+      };
+      setTeachers((prev) => {
+        const updated = [newTeacherObj, ...prev];
+        safeLocalStorageSet('markazu_teachers', updated);
+        return updated;
+      });
+      MOCK_TEACHERS.unshift(newTeacherObj);
+    }
 
     try {
       const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
@@ -1958,27 +1984,83 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUserAccount = (userId: string, updates: Partial<User>) => {
-    const updated = users.map((u) => (u.id === userId ? { ...u, ...updates } : u));
+    const targetUser = users.find((u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase() || (u.username && u.username.toLowerCase() === userId.toLowerCase()));
+    const realTargetId = targetUser ? targetUser.id : userId;
+    const realTargetEmail = targetUser ? targetUser.email.toLowerCase() : userId.toLowerCase();
+
+    const updated = users.map((u) => (u.id === realTargetId || u.email.toLowerCase() === realTargetEmail ? { ...u, ...updates } : u));
     setUsers(updated);
     safeLocalStorageSet('markazu_users', updated);
 
     // Update MOCK_USERS in memory as well
     MOCK_USERS.forEach((mu, idx) => {
-      if (mu.id === userId || (updates.role && mu.role === updates.role)) {
+      if (mu.id === realTargetId || mu.email.toLowerCase() === realTargetEmail) {
         MOCK_USERS[idx] = { ...mu, ...updates };
       }
     });
 
-    if (currentUser && (currentUser.id === userId || (updates.role && currentUser.role === updates.role))) {
+    if (currentUser && (currentUser.id === realTargetId || currentUser.email.toLowerCase() === realTargetEmail || (currentUser.role === 'SUPER_ADMIN' && targetUser?.role === 'SUPER_ADMIN'))) {
       const updatedCurr = { ...currentUser, ...updates };
       setCurrentUser(updatedCurr);
       safeLocalStorageSet('markazu_current_user', updatedCurr);
     }
 
+    // Also update corresponding Teacher / Student / Parent if applicable
+    if (updates.name || updates.email || updates.avatar || updates.phone) {
+      setTeachers((prev) => {
+        const next = prev.map((t) => {
+          if (t.id === realTargetId || t.userId === realTargetId || (t.email && t.email.toLowerCase() === realTargetEmail)) {
+            return {
+              ...t,
+              fullName: updates.name || t.fullName,
+              full_name_english: updates.name || t.full_name_english,
+              email: updates.email || t.email,
+              phone: updates.phone || t.phone,
+              avatar: updates.avatar !== undefined ? updates.avatar : t.avatar,
+            };
+          }
+          return t;
+        });
+        safeLocalStorageSet('markazu_teachers', next);
+        return next;
+      });
+      setStudents((prev) => {
+        const next = prev.map((s) => {
+          if (s.id === realTargetId || s.userId === realTargetId || (s.email && s.email.toLowerCase() === realTargetEmail)) {
+            return {
+              ...s,
+              fullName: updates.name || s.fullName,
+              email: updates.email || s.email,
+              avatar: updates.avatar !== undefined ? updates.avatar : s.avatar,
+            };
+          }
+          return s;
+        });
+        safeLocalStorageSet('markazu_students', next);
+        return next;
+      });
+      setParents((prev) => {
+        const next = prev.map((p) => {
+          if (p.id === realTargetId || p.userId === realTargetId || (p.email && p.email.toLowerCase() === realTargetEmail)) {
+            return {
+              ...p,
+              fullName: updates.name || p.fullName,
+              email: updates.email || p.email,
+              phone: updates.phone || p.phone,
+              avatar: updates.avatar !== undefined ? updates.avatar : p.avatar,
+            };
+          }
+          return p;
+        });
+        safeLocalStorageSet('markazu_parents', next);
+        return next;
+      });
+    }
+
     notify({
       type: 'success',
-      title: 'Account Credentials Updated',
-      message: `User account details updated successfully. You can now log in using your updated email address.`,
+      title: 'Account Profile Updated',
+      message: `User account details updated successfully. Changes are saved permanently.`,
     });
   };
 
@@ -2048,9 +2130,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const resetUserPassword = (userId: string, newPass: string) => {
     const targetUser = users.find((u) => u.id === userId);
     const newHash = hashPassword(newPass);
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, passwordHash: newHash, isFirstLogin: true, mustChangePassword: true } : u))
-    );
+    setUsers((prev) => {
+      const updated = prev.map((u) => (u.id === userId ? { ...u, passwordHash: newHash, isFirstLogin: true, mustChangePassword: true } : u));
+      safeLocalStorageSet('markazu_users', updated);
+      return updated;
+    });
     if (targetUser) {
       sendSystemEmail({
         to: targetUser.email,
