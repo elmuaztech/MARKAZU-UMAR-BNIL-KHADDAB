@@ -1,66 +1,101 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { MOCK_STUDENTS } from '../../../lib/mockData';
+import prisma from '../../../lib/prisma';
+import { getAuthenticatedUser, enforceRoleAndProgramme } from '../../../lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const userRole = req.headers.get('x-user-role') || searchParams.get('role');
-  const userProgId = req.headers.get('x-user-programme-id') || searchParams.get('userProgrammeId');
-  const requestedProgId = searchParams.get('programmeId');
-
-  // RBAC & PBAC Enforcement for Headmaster
-  if (userRole === 'HEADMASTER') {
-    if (requestedProgId && userProgId && requestedProgId !== userProgId) {
-      return NextResponse.json(
-        {
-          error: 'Access Forbidden (HTTP 403): Headmaster cannot access students from another programme.',
-          status: 403,
-        },
-        { status: 403 }
-      );
-    }
-  }
-
-  let filtered = MOCK_STUDENTS;
-  if (userRole === 'HEADMASTER' && userProgId) {
-    filtered = filtered.filter((s) => s.programmeId === userProgId);
-  } else if (requestedProgId) {
-    filtered = filtered.filter((s) => s.programmeId === requestedProgId);
-  }
-
-  return NextResponse.json({
-    students: filtered,
-    total: filtered.length,
-  });
-}
-
-export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
-    const userRole = req.headers.get('x-user-role') || body.userRole;
-    const userProgId = req.headers.get('x-user-programme-id') || body.userProgrammeId;
+    const authUser = await getAuthenticatedUser(req);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'PARENT']);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+    }
 
-    if (userRole === 'HEADMASTER') {
-      if (body.programmeId && userProgId && body.programmeId !== userProgId) {
+    const { searchParams } = new URL(req.url);
+    const requestedProgId = searchParams.get('programmeId');
+
+    // Headmaster Programme Scoping Check
+    if (authUser?.role === 'HEADMASTER') {
+      const assignedProg = authUser.assignedProgrammeId;
+      if (requestedProgId && assignedProg && requestedProgId !== assignedProg) {
         return NextResponse.json(
-          {
-            error: 'Access Forbidden (HTTP 403): Headmaster cannot enroll students into another programme.',
-            status: 403,
-          },
+          { error: `Access Forbidden (HTTP 403): Headmaster is restricted to programme ID "${assignedProg}" and cannot access another section.` },
           { status: 403 }
         );
       }
     }
 
+    const targetProgId = authUser?.role === 'HEADMASTER' ? authUser.assignedProgrammeId : requestedProgId;
+
+    const whereClause: any = { deletedAt: null };
+    if (targetProgId) {
+      whereClause.schoolClass = {
+        programmeId: targetProgId,
+      };
+    }
+
+    const students = await prisma.student.findMany({
+      where: whereClause,
+      include: {
+        schoolClass: true,
+        parent: true,
+      },
+      orderBy: { fullName: 'asc' },
+    });
+
+    return NextResponse.json({
+      students,
+      total: students.length,
+    });
+  } catch (error: any) {
+    console.error('[GET_STUDENTS_ERROR]', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch students' }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const authUser = await getAuthenticatedUser(req);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER']);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+    }
+
+    const body = await req.json();
+
+    if (authUser?.role === 'HEADMASTER') {
+      const assignedProg = authUser.assignedProgrammeId;
+      if (body.programmeId && assignedProg && body.programmeId !== assignedProg) {
+        return NextResponse.json(
+          { error: `Access Forbidden (HTTP 403): Headmaster cannot enroll students into another programme section.` },
+          { status: 403 }
+        );
+      }
+      body.programmeId = assignedProg;
+    }
+
+    const newStudent = await prisma.student.create({
+      data: {
+        admissionNo: body.admissionNo || `MUBK-STU-${Date.now().toString().slice(-4)}`,
+        fullName: body.name || body.fullName || 'Student Name',
+        gender: body.gender || 'MALE',
+        dob: body.dob ? new Date(body.dob) : new Date('2015-01-01'),
+        classId: body.classId || 'cls-01',
+        guardianId: body.guardianId || 'prnt-01',
+        status: 'ACTIVE',
+      },
+    });
+
     return NextResponse.json(
       {
-        message: 'Student enrolled successfully',
-        student: { id: `usr-student-${Date.now()}`, ...body },
+        message: 'Student enrolled successfully in database',
+        student: newStudent,
       },
       { status: 201 }
     );
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    console.error('[CREATE_STUDENT_ERROR]', error);
+    return NextResponse.json({ error: error.message || 'Failed to enroll student' }, { status: 400 });
   }
 }

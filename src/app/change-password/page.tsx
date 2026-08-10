@@ -22,24 +22,16 @@ export default function ChangePasswordPage() {
 
   const policy = validatePasswordPolicy(newPass);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
-    // 1. Verify current temporary password
-    if (currentUser.passwordHash && !verifyPassword(currentPass, currentUser.passwordHash)) {
-      setErrorMsg('Current temporary password is incorrect.');
-      return;
-    }
-
-    // 2. Validate password policy
     if (!policy.isValid) {
       setErrorMsg('New password does not meet the security policy requirements.');
       return;
     }
 
-    // 3. Confirm password match
     if (newPass !== confirmPass) {
       setErrorMsg('New password and confirmation password do not match.');
       return;
@@ -47,37 +39,56 @@ export default function ChangePasswordPage() {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const newHash = hashPassword(newPass);
+    try {
+      const res = await fetch('/api/auth/change-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          email: currentUser.email,
+          currentPassword: currentPass,
+          newPassword: newPass,
+        }),
+      });
+
+      const data = await res.json();
+      setIsSubmitting(false);
+
+      if (!res.ok || data.error) {
+        setErrorMsg(data.error || 'Failed to update password. Please verify current password.');
+        return;
+      }
+
       const updatedUser = {
         ...currentUser,
-        passwordHash: newHash,
         isFirstLogin: false,
         mustChangePassword: false,
-        lastLoginAt: new Date().toLocaleString(),
       };
-
-      if (currentUser.email) {
-        updateUserPasswordByEmail(currentUser.email, newPass);
-      }
       setCurrentUser(updatedUser);
 
       addAuditLog({
         action: 'FIRST_LOGIN_PASSWORD_CHANGED',
         performedBy: currentUser.name,
         userRole: currentUser.role,
-        details: 'User successfully replaced temporary password on first login requirement',
+        details: 'User successfully replaced temporary password in database',
         ipAddress: '197.210.227.14',
         affectedRecord: `User/${currentUser.id}`,
         status: 'SUCCESS',
       });
 
-      setSuccessMsg('Password updated successfully! Redirecting to your secure dashboard...');
+      setSuccessMsg('Password updated successfully in database! Redirecting...');
 
       setTimeout(() => {
-        router.push('/dashboard');
-      }, 1500);
-    }, 600);
+        if (currentUser.role === 'HEADMASTER') {
+          router.push('/headmaster');
+        } else {
+          router.push('/dashboard');
+        }
+      }, 1200);
+    } catch (err: any) {
+      setIsSubmitting(false);
+      setErrorMsg(err.message || 'Network error while updating password.');
+    }
   };
 
   return (

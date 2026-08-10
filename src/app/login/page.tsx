@@ -54,100 +54,38 @@ export default function LoginPage() {
     setResetSuccessMsg('');
 
     const cleanInput = resetEmail.trim().toLowerCase();
-    const deleted = getDeletedUserIdentifiers();
-
-    // Search active users in state, LocalStorage, MOCK_USERS (excluding deleted accounts)
-    let allUsers = users.filter(
-      (u) =>
-        !deleted.ids.includes(u.id) &&
-        !deleted.emails.includes(u.email.toLowerCase().trim()) &&
-        (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
-    );
-
-    if (typeof window !== 'undefined') {
-      try {
-        const savedUsers = localStorage.getItem('markazu_users');
-        if (savedUsers) {
-          const parsed = JSON.parse(savedUsers);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            allUsers = parsed.filter(
-              (u: User) =>
-                !deleted.ids.includes(u.id) &&
-                !deleted.emails.includes(u.email.toLowerCase().trim()) &&
-                (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
-            );
-          }
-        }
-      } catch {}
-    }
-
-    const availableMockUsers = MOCK_USERS.filter(
-      (u) =>
-        !deleted.ids.includes(u.id) &&
-        !deleted.emails.includes(u.email.toLowerCase().trim()) &&
-        (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
-    );
-
-    const userMatch =
-      allUsers.find(
-        (u) =>
-          u.email.trim().toLowerCase() === cleanInput ||
-          u.username?.trim().toLowerCase() === cleanInput ||
-          u.id.trim().toLowerCase() === cleanInput
-      ) ||
-      availableMockUsers.find(
-        (u) =>
-          u.email.trim().toLowerCase() === cleanInput ||
-          u.username?.trim().toLowerCase() === cleanInput ||
-          u.id.trim().toLowerCase() === cleanInput
-      ) ||
-      // Fallback for Super Admin
-      (cleanInput.includes('markazu') || cleanInput.includes('gmail') || cleanInput.includes('admin') || cleanInput === 'superadmin'
-        ? allUsers.find((u) => u.role === 'SUPER_ADMIN') || availableMockUsers.find((u) => u.role === 'SUPER_ADMIN')
-        : null);
-
-    if (!userMatch) {
-      setResetErrorMsg('No registered account found with this email or Username/ID. Please verify and try again.');
+    if (!cleanInput) {
+      setResetErrorMsg('Please enter your registered email address or Username/ID.');
       return;
     }
 
     setIsSendingOtp(true);
-    setTargetUserObj(userMatch);
-
-    const otpCode = generatePasswordResetToken(userMatch.email, userMatch.id);
 
     try {
-      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : undefined;
-      await sendSystemEmail({
-        to: userMatch.email,
-        recipientName: userMatch.name,
-        subject: 'MARKAZU UMARU BNIL KHATTAB DANEJI - Password Reset 4-Digit OTP',
-        template: 'PASSWORD_RESET_REQUEST',
-        metadata: {
-          resetToken: otpCode,
-          portalUrl: currentOrigin,
-        },
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanInput, username: cleanInput }),
       });
 
-      if (notify) {
-        notify({
-          type: 'success',
-          title: '4-Digit OTP Code Dispatched',
-          message: `4-Digit OTP code sent to ${userMatch.email}. Valid for 10 minutes.`,
-        });
+      const data = await res.json();
+      setIsSendingOtp(false);
+
+      if (!res.ok || data.error) {
+        setResetErrorMsg(data.error || 'Failed to dispatch OTP email. Please try again.');
+        return;
       }
 
-      setOtpInput(otpCode);
-      setResetSuccessMsg(`4-Digit OTP code (${otpCode}) successfully sent to ${userMatch.email}. Please check your inbox or spam folder.`);
-      setIsSendingOtp(false);
-      setResetStep(2); // Move immediately to Step 2 for OTP entry & new password!
+      setResetSuccessMsg(data.message || `4-Digit OTP code successfully sent to ${data.email || cleanInput}.`);
+      if (data.otp) setOtpInput(data.otp);
+      setResetStep(2);
     } catch (err: any) {
       setIsSendingOtp(false);
       setResetErrorMsg(err.message || 'Failed to dispatch OTP email. Please try again.');
     }
   };
 
-  const handleVerifyOtpAndResetPasswordSubmit = (e: React.FormEvent) => {
+  const handleVerifyOtpAndResetPasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setResetErrorMsg('');
 
@@ -168,61 +106,61 @@ export default function LoginPage() {
       return;
     }
 
-    const tokenVerification = verifyResetToken(cleanOtp);
-    if (!tokenVerification.isValid) {
-      setResetErrorMsg(tokenVerification.error || 'Invalid or expired 4-digit OTP code.');
-      return;
-    }
-
-    const user = targetUserObj || users.find((u) => u.email.toLowerCase() === (tokenVerification.email || '').toLowerCase());
-    if (!user) {
-      setResetErrorMsg('Associated user account record was not found.');
-      return;
-    }
-
-    if (isPasswordInHistory(user.id, newResetPassword)) {
-      setResetErrorMsg('You cannot reuse one of your last 5 passwords. Please enter a new password.');
-      return;
-    }
-
-    updateUserPasswordByEmail(user.email, newResetPassword);
-    markResetTokenUsed(cleanOtp);
-
-    user.failedLoginAttempts = 0;
-    user.isLocked = false;
-    user.isFirstLogin = false;
-    user.mustChangePassword = false;
-
-    if (notify) {
-      notify({
-        type: 'success',
-        title: 'Password Successfully Reset',
-        message: `Password updated for ${user.name}. Logging into portal...`,
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: cleanOtp, otp: cleanOtp, newPassword: newResetPassword }),
       });
-    }
 
-    addAuditLog({
-      action: 'PASSWORD_RESET_COMPLETED',
-      performedBy: user.name,
-      userRole: user.role,
-      details: 'Successfully reset password via 4-Digit OTP modal',
-      ipAddress: '197.210.227.14',
-      affectedRecord: `User/${user.id}`,
-      status: 'SUCCESS',
-    });
+      const data = await res.json();
 
-    createNewSession(user.id, user.name, user.role);
-    setCurrentUser(user);
-    resetModalState();
+      if (!res.ok || data.error) {
+        setResetErrorMsg(data.error || 'Password reset failed. Please check your OTP code.');
+        return;
+      }
 
-    if (user.role === 'SUPER_ADMIN' || user.role === 'ADMIN' || user.role === 'HEADMASTER') {
-      router.push('/dashboard');
-    } else if (user.role === 'TEACHER') {
-      router.push('/dashboard/teacher');
-    } else if (user.role === 'STUDENT') {
-      router.push('/dashboard/student');
-    } else {
-      router.push('/dashboard/parent');
+      if (notify) {
+        notify({
+          type: 'success',
+          title: 'Password Successfully Reset',
+          message: 'Password updated successfully. Logging into portal...',
+        });
+      }
+
+      const resUser = data.user;
+      if (resUser) {
+        const fullUser: User = {
+          id: resUser.id,
+          name: resUser.name,
+          email: resUser.email,
+          username: resUser.username,
+          role: resUser.role,
+          status: 'ACTIVE',
+          isFirstLogin: false,
+          mustChangePassword: false,
+          isLocked: false,
+          failedLoginAttempts: 0,
+          lastLoginAt: new Date().toLocaleString(),
+        };
+
+        createNewSession(fullUser.id, fullUser.name, fullUser.role);
+        setCurrentUser(fullUser);
+        resetModalState();
+
+        if (fullUser.role === 'HEADMASTER') {
+          router.push('/headmaster');
+        } else if (fullUser.role === 'SUPER_ADMIN' || fullUser.role === 'ADMIN') {
+          router.push('/dashboard');
+        } else {
+          router.push('/dashboard');
+        }
+      } else {
+        resetModalState();
+        setErrorMsg('Password reset successfully. Please sign in with your new password.');
+      }
+    } catch (err: any) {
+      setResetErrorMsg(err.message || 'Password reset failed.');
     }
   };
 
@@ -233,149 +171,85 @@ export default function LoginPage() {
     setPassword('');
   };
 
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const inputClean = email.trim().toLowerCase();
-      const deleted = getDeletedUserIdentifiers();
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: email.trim(),
+          email: email.trim(),
+          password,
+        }),
+      });
 
-      // Read fresh users array directly from LocalStorage (excluding deleted users)
-      let allUsers = users.filter(
-        (u) =>
-          !deleted.ids.includes(u.id) &&
-          !deleted.emails.includes(u.email.toLowerCase().trim()) &&
-          (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
-      );
+      const data = await res.json();
 
-      if (typeof window !== 'undefined') {
-        try {
-          const savedUsers = localStorage.getItem('markazu_users');
-          if (savedUsers) {
-            const parsed = JSON.parse(savedUsers);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-              allUsers = parsed.filter(
-                (u: User) =>
-                  !deleted.ids.includes(u.id) &&
-                  !deleted.emails.includes(u.email.toLowerCase().trim()) &&
-                  (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
-              );
-            }
-          }
-        } catch {}
-      }
-
-      // Find matching user strictly by credentials
-      const user =
-        allUsers.find(
-          (u) =>
-            (u.email.trim().toLowerCase() === inputClean ||
-              u.username?.trim().toLowerCase() === inputClean ||
-              u.id.trim().toLowerCase() === inputClean) &&
-            u.role === activeTab
-        ) ||
-        allUsers.find(
-          (u) =>
-            u.email.trim().toLowerCase() === inputClean ||
-            u.username?.trim().toLowerCase() === inputClean ||
-            u.id.trim().toLowerCase() === inputClean
-        );
-
-      if (!user) {
-        setErrorMsg('No user account found. Please check your credentials or select the correct portal tab.');
+      if (!res.ok || data.error) {
+        setErrorMsg(data.error || 'Authentication failed. Please check your credentials.');
         setIsSubmitting(false);
         addAuditLog({
           action: 'FAILED_LOGIN_ATTEMPT',
           performedBy: email,
           userRole: activeTab,
-          details: `Login attempt failed: Account not found or deleted for ${email}`,
+          details: `Login failed: ${data.error || 'Invalid credentials'}`,
           ipAddress: '197.210.227.14',
           status: 'FAILURE',
         });
         return;
       }
 
-      // Ensure password hash is present if missing from legacy storage
-      if (!user.passwordHash && typeof window !== 'undefined') {
-        try {
-          const savedPass = localStorage.getItem('markazu_user_passwords');
-          if (savedPass) {
-            const pMap = JSON.parse(savedPass);
-            user.passwordHash = pMap[user.email.toLowerCase()] || pMap[user.id] || (user.username ? pMap[user.username.toLowerCase()] : undefined);
-          }
-        } catch {}
-        if (!user.passwordHash) {
-          const mockMatch = MOCK_USERS.find((mu) => mu.id === user.id || mu.email.toLowerCase() === user.email.toLowerCase());
-          if (mockMatch) user.passwordHash = mockMatch.passwordHash;
-        }
+      const authUser = data.user;
+
+      if (typeof window !== 'undefined' && data.token) {
+        localStorage.setItem('markazu_session_token', data.token);
       }
 
-      // Check account lockout status
-      const lockout = checkLockoutStatus(user.failedLoginAttempts || 0, user.lockoutUntil);
-      if (user.isLocked || lockout.isLocked) {
-        setErrorMsg(`Account is locked due to 5 consecutive failed login attempts. Try again in ${lockout.remainingMinutes} minute(s) or use 'Forgot Password?' to reset.`);
-        setIsSubmitting(false);
-        return;
-      }
+      const fullUserRecord: User = {
+        id: authUser.id,
+        name: authUser.name,
+        email: authUser.email,
+        username: authUser.username,
+        role: authUser.role,
+        assignedProgrammeId: authUser.assignedProgrammeId,
+        assignedProgrammeName: authUser.assignedProgrammeName,
+        status: 'ACTIVE',
+        isFirstLogin: authUser.isFirstLogin || authUser.mustChangePassword,
+        mustChangePassword: authUser.mustChangePassword,
+        isLocked: false,
+        failedLoginAttempts: 0,
+        lastLoginAt: new Date().toLocaleString(),
+      };
 
-      // Verify password hash
-      const isValid = verifyPassword(password, user.passwordHash || '');
-
-      if (!isValid) {
-        user.failedLoginAttempts = (user.failedLoginAttempts || 0) + 1;
-        if (user.failedLoginAttempts >= 5) {
-          user.isLocked = true;
-          user.lockoutUntil = new Date(Date.now() + 15 * 60 * 1000).toISOString();
-        }
-
-        setErrorMsg(
-          user.isLocked
-            ? 'Account has been locked after 5 failed attempts.'
-            : `Incorrect password for ${user.role.replace('_', ' ')}. Please re-enter your password or click 'Forgot Password?' below to reset.`
-        );
-        setIsSubmitting(false);
-
-        addAuditLog({
-          action: 'FAILED_LOGIN_ATTEMPT',
-          performedBy: user.name,
-          userRole: user.role,
-          details: `Invalid password attempt for ${user.email}`,
-          ipAddress: '197.210.227.14',
-          affectedRecord: `User/${user.id}`,
-          status: 'FAILURE',
-        });
-        return;
-      }
-
-      // Success: Reset failed attempts & update last login
-      user.failedLoginAttempts = 0;
-      user.isLocked = false;
-      user.lastLoginAt = new Date().toLocaleString();
-
-      // Create Session
-      createNewSession(user.id, user.name, user.role);
-
-      setCurrentUser(user);
+      setCurrentUser(fullUserRecord);
+      createNewSession(fullUserRecord.id, fullUserRecord.name, fullUserRecord.role);
 
       addAuditLog({
         action: 'AUTHENTICATION_SUCCESS',
-        performedBy: user.name,
-        userRole: user.role,
-        details: `Successfully logged in via ${user.role} Portal`,
+        performedBy: fullUserRecord.name,
+        userRole: fullUserRecord.role,
+        details: `Successfully authenticated via ${fullUserRecord.role} portal`,
         ipAddress: '197.210.227.14',
-        affectedRecord: `User/${user.id}`,
+        affectedRecord: `User/${fullUserRecord.id}`,
         status: 'SUCCESS',
       });
 
-      // Check First Login Requirement
-      if (user.isFirstLogin) {
+      // Handle Role-Based Routing
+      if (fullUserRecord.isFirstLogin || fullUserRecord.mustChangePassword) {
         router.push('/change-password');
+      } else if (fullUserRecord.role === 'HEADMASTER') {
+        router.push('/headmaster');
       } else {
         router.push('/dashboard');
       }
-    }, 500);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Login failed due to a network connection issue.');
+      setIsSubmitting(false);
+    }
   };
 
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
 import path from 'path';
 import fs from 'fs';
-import { generateEmailHtml, EmailPayload } from '@/lib/emailService';
+import { generateEmailHtml, EmailPayload, SYSTEM_EMAIL_FROM } from '@/lib/emailService';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
     const logoExists = fs.existsSync(logoPath);
 
     const info = await transporter.sendMail({
-      from: `"MARKAZU UMAR ISLAMIYYAH" <${smtpUser}>`,
-      replyTo: 'markazuumarbndaneji@gmail.com',
+      from: SYSTEM_EMAIL_FROM,
+      replyTo: 'markazuumarbnkhaddabdaneji@gmail.com',
       to: payload.to,
       subject: payload.subject,
       html: htmlContent,

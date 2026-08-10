@@ -151,6 +151,7 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
 // Route & Page Authorization Mapping
 export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
+  '/headmaster': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
   '/dashboard/admissions': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/programmes': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/tahfiz': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],

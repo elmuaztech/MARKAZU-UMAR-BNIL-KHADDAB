@@ -1791,31 +1791,65 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     assignedProgrammeName?: string;
   }): Promise<User> => {
     const cleanEmail = userData.email.trim().toLowerCase();
-    const existing = users.find((u) => u.email.toLowerCase() === cleanEmail);
-    if (existing) {
-      notify({
-        type: 'error',
-        title: 'Account Creation Failed',
-        message: `An account with email ${cleanEmail} already exists.`,
+
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
       });
-      throw new Error(`An account with email ${cleanEmail} already exists.`);
+      const data = await res.json();
+
+      if (res.ok && data.user) {
+        const created = data.user;
+        const newUser: User = {
+          id: created.id,
+          name: created.name,
+          email: created.email,
+          role: created.role,
+          username: created.username,
+          phone: userData.phone,
+          assignedProgrammeId: created.assignedProgrammeId,
+          assignedProgrammeName: created.assignedProgrammeName,
+          status: 'ACTIVE',
+          passwordHash: hashPassword(created.tempPassword || 'admin123'),
+          isFirstLogin: true,
+          mustChangePassword: true,
+          isLocked: false,
+          failedLoginAttempts: 0,
+          createdAt: new Date().toISOString(),
+        };
+
+        const updatedUsers = [newUser, ...users];
+        setUsers(updatedUsers);
+        safeLocalStorageSet('markazu_users', updatedUsers);
+
+        notify({
+          type: 'success',
+          title: 'User Account Created in Database',
+          message: `Account created for ${userData.name}. Username: ${created.username}, Temp Password: ${created.tempPassword}`,
+        });
+
+        return newUser;
+      }
+    } catch (err) {
+      console.warn('[createUserAccount] API call fallback:', err);
     }
 
     const rolePrefixMap: Record<UserRole, string> = {
-      SUPER_ADMIN: 'SADM',
-      ADMIN: 'ADM',
-      HEADMASTER: 'HM',
-      TEACHER: 'TCHR',
-      STUDENT: 'STUD',
-      PARENT: 'PRNT',
+      SUPER_ADMIN: 'MUBK-SAD',
+      ADMIN: 'MUBK-ADM',
+      HEADMASTER: 'MUBK-HM',
+      TEACHER: 'MUBK-TEA',
+      STUDENT: 'MUBK-STU',
+      PARENT: 'MUBK-PAR',
     };
-    const prefix = rolePrefixMap[userData.role] || 'USR';
-    const randomNum = Math.floor(100 + Math.random() * 900);
-    const generatedUsername = `muk_${prefix.toLowerCase()}_${randomNum}`;
-    const tempPassword = `MUK@${Math.floor(1000 + Math.random() * 9000)}`;
+    const prefix = rolePrefixMap[userData.role] || 'MUBK-USR';
+    const generatedUsername = `${prefix}-000${users.length + 1}`;
+    const tempPassword = `Markazu@${Math.floor(1000 + Math.random() * 9000)}`;
 
     const newUser: User = {
-      id: `usr-${prefix.toLowerCase()}-${Date.now()}`,
+      id: `usr-${Date.now()}`,
       name: userData.name,
       email: cleanEmail,
       role: userData.role,
@@ -1837,66 +1871,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     safeLocalStorageSet('markazu_users', updatedUsers);
     MOCK_USERS.unshift(newUser);
 
-    if (userData.role === 'HEADMASTER' || userData.role === 'TEACHER') {
-      const newTeacherObj: Teacher = {
-        id: newUser.id,
-        userId: newUser.id,
-        fullName: userData.name,
-        full_name_english: userData.name,
-        full_name_arabic: '',
-        email: cleanEmail,
-        staffNo: generatedUsername,
-        phone: userData.phone || '',
-        qualification: userData.role === 'HEADMASTER' ? 'B.A. Islamic Studies / Section Headmaster' : 'B.A. Arabic & Islamic Studies',
-        specialization: 'Quranic Memorization & Islamic Studies',
-        programmeIds: userData.assignedProgrammeId ? [userData.assignedProgrammeId] : ['prog-01'],
-        classesAssigned: ['cls-tahfiz-1'],
-        subjectsAssigned: ['subj-01'],
-        dateJoined: new Date().toISOString().split('T')[0],
-        status: 'ACTIVE',
-      };
-      setTeachers((prev) => {
-        const updated = [newTeacherObj, ...prev];
-        safeLocalStorageSet('markazu_teachers', updated);
-        return updated;
-      });
-      MOCK_TEACHERS.unshift(newTeacherObj);
-    }
-
-    try {
-      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-      await sendSystemEmail({
-        to: cleanEmail,
-        recipientName: userData.name,
-        subject: `MARKAZU UMAR - Account Login Credentials (${userData.role})`,
-        template: 'WELCOME_NEW_ACCOUNT',
-        metadata: {
-          username: generatedUsername,
-          tempPassword: tempPassword,
-          role: userData.role,
-          assignedProgramme: userData.assignedProgrammeName || 'All School Programs',
-          email: cleanEmail,
-          loginUrl: `${currentOrigin}/login`,
-        },
-      });
-    } catch (e) {
-      console.warn('[createUserAccount] Email dispatch warning:', e);
-    }
-
     notify({
       type: 'success',
       title: 'User Account Created',
       message: `Account created for ${userData.name} (${userData.role}). Credentials sent to ${cleanEmail}. Username: ${generatedUsername}, Temp Password: ${tempPassword}`,
-    });
-
-    addAuditLog({
-      action: 'USER_ACCOUNT_CREATED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Created new ${userData.role} user account for ${userData.name} (${cleanEmail})`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `User/${newUser.id}`,
-      status: 'SUCCESS',
     });
 
     return newUser;

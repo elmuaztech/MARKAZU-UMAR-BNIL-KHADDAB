@@ -253,6 +253,11 @@ export function generateEmailHtml(payload: EmailPayload): string {
   `;
 }
 
+export const SYSTEM_EMAIL_FROM =
+  process.env.SYSTEM_EMAIL_FROM ||
+  process.env.SMTP_FROM ||
+  `"MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI" <${process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'markazuumarbnkhaddabdaneji@gmail.com'}>`;
+
 export async function sendSystemEmail(payload: EmailPayload): Promise<{ success: boolean; messageId: string; error?: string }> {
   const messageId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
@@ -306,7 +311,7 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
     });
 
     await transporter.sendMail({
-      from: `"MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI" <${smtpUser}>`,
+      from: SYSTEM_EMAIL_FROM,
       to: payload.to,
       subject: payload.subject,
       html: htmlContent,
