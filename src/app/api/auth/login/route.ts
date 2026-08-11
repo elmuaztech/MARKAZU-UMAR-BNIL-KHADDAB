@@ -80,7 +80,13 @@ export async function POST(req: NextRequest) {
           u.username?.trim().toLowerCase() === identifier ||
           u.id.trim().toLowerCase() === identifier ||
           (identifier.includes('superadmin') && u.role === 'SUPER_ADMIN') ||
-          (identifier.includes('markazuumar') && u.role === 'SUPER_ADMIN')
+          (identifier.includes('markazuumar') && u.role === 'SUPER_ADMIN') ||
+          (identifier === 'admin' && u.role === 'ADMIN') ||
+          (identifier === 'schooladmin' && u.role === 'ADMIN') ||
+          (identifier === 'teacher' && u.role === 'TEACHER') ||
+          (identifier === 'headmaster' && u.role === 'HEADMASTER') ||
+          (identifier === 'student' && u.role === 'STUDENT') ||
+          (identifier === 'parent' && u.role === 'PARENT')
       );
 
       if (mockMatch) {

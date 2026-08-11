@@ -1805,9 +1805,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const cleanEmail = userData.email.trim().toLowerCase();
 
     try {
+      const sessionToken = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
       const res = await fetch('/api/users', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`,
+          'x-session-token': sessionToken,
+        },
         body: JSON.stringify(userData),
       });
       const data = await res.json();
@@ -1835,11 +1840,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const updatedUsers = [newUser, ...users];
         setUsers(updatedUsers);
         safeLocalStorageSet('markazu_users', updatedUsers);
+        MOCK_USERS.unshift(newUser);
+
+        // Also ensure client-side email dispatch if needed
+        sendSystemEmail({
+          to: cleanEmail,
+          recipientName: userData.name,
+          subject: `Welcome to Markazu Umar Portal - Your Account Credentials (${created.username})`,
+          template: 'WELCOME_NEW_ACCOUNT',
+          metadata: {
+            username: created.username,
+            tempPassword: created.tempPassword || 'admin123',
+            role: created.role,
+            email: cleanEmail,
+          },
+        }).catch((e) => console.warn('[EMAIL DISPATCH]', e));
 
         notify({
           type: 'success',
           title: 'User Account Created in Database',
-          message: `Account created for ${userData.name}. Username: ${created.username}, Temp Password: ${created.tempPassword}`,
+          message: `Account created for ${userData.name}. Username: ${created.username}, Temp Password: ${created.tempPassword}. Welcome email dispatched to ${cleanEmail}.`,
         });
 
         return newUser;
@@ -1883,10 +1903,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     safeLocalStorageSet('markazu_users', updatedUsers);
     MOCK_USERS.unshift(newUser);
 
+    // Dispatch real welcome email with temporary password & username
+    sendSystemEmail({
+      to: cleanEmail,
+      recipientName: userData.name,
+      subject: `Welcome to Markazu Umar Portal - Your Account Credentials (${generatedUsername})`,
+      template: 'WELCOME_NEW_ACCOUNT',
+      metadata: {
+        username: generatedUsername,
+        tempPassword: tempPassword,
+        role: userData.role,
+        email: cleanEmail,
+      },
+    }).catch((e) => console.warn('[EMAIL DISPATCH]', e));
+
     notify({
       type: 'success',
       title: 'User Account Created',
-      message: `Account created for ${userData.name} (${userData.role}). Credentials sent to ${cleanEmail}. Username: ${generatedUsername}, Temp Password: ${tempPassword}`,
+      message: `Account created for ${userData.name} (${userData.role}). Login credentials emailed to ${cleanEmail}. Username: ${generatedUsername}, Temp Password: ${tempPassword}`,
     });
 
     return newUser;

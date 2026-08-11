@@ -358,67 +358,86 @@ export default function LoginPage() {
           </div>
 
           {/* Role Navigation Tabs */}
-          <div className="grid grid-cols-3 sm:grid-cols-6 gap-1 bg-slate-200/80 dark:bg-[#021810] p-1 rounded-2xl text-[11px] font-bold">
-            <button
-              type="button"
-              onClick={() => handleTabChange('SUPER_ADMIN')}
-              className={`py-2 rounded-xl transition-all ${activeTab === 'SUPER_ADMIN'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
+          <div className="bg-slate-100 dark:bg-[#021810] p-1.5 rounded-2xl border border-slate-200 dark:border-emerald-500/20 shadow-inner">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                onClick={() => handleTabChange('SUPER_ADMIN')}
+                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'SUPER_ADMIN'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
+                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
                 }`}
-            >
-              Super
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange('ADMIN')}
-              className={`py-2 rounded-xl transition-all ${activeTab === 'ADMIN'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
+              >
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Super Admin</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('ADMIN')}
+                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'ADMIN'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
+                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
                 }`}
-            >
-              Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange('HEADMASTER')}
-              className={`py-2 rounded-xl transition-all ${activeTab === 'HEADMASTER'
-                  ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-amber-500'
+              >
+                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Admin</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('HEADMASTER')}
+                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'HEADMASTER'
+                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-900/30 font-black'
+                    : 'text-slate-600 dark:text-gray-300 hover:text-amber-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
                 }`}
-            >
-              Headmaster
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange('TEACHER')}
-              className={`py-2 rounded-xl transition-all ${activeTab === 'TEACHER'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
+              >
+                <Crown className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                <span className="truncate">Headmaster</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('TEACHER')}
+                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'TEACHER'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
+                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
                 }`}
-            >
-              Teacher
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange('STUDENT')}
-              className={`py-2 rounded-xl transition-all ${activeTab === 'STUDENT'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
+              >
+                <UserCheck className="w-3.5 h-3.5 shrink-0 text-sky-400" />
+                <span className="truncate">Teacher</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('STUDENT')}
+                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'STUDENT'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
+                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
                 }`}
-            >
-              Student
-            </button>
-            <button
-              type="button"
-              onClick={() => handleTabChange('PARENT')}
-              className={`py-2 rounded-xl transition-all ${activeTab === 'PARENT'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
+              >
+                <GraduationCap className="w-3.5 h-3.5 shrink-0 text-purple-400" />
+                <span className="truncate">Student</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleTabChange('PARENT')}
+                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
+                  activeTab === 'PARENT'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
+                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
                 }`}
-            >
-              Parent
-            </button>
+              >
+                <HeartHandshake className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                <span className="truncate">Parent</span>
+              </button>
+            </div>
           </div>
 
           {/* Role Header Info */}

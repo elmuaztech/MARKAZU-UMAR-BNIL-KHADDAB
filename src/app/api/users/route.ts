@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const authUser = await getAuthenticatedUser(req);
-    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN']);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN']);
     if (!authCheck.authorized) {
       return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
     }
