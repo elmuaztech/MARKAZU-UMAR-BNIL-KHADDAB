@@ -12,6 +12,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const identifier = (body.username || body.email || '').trim().toLowerCase();
     const password = body.password || '';
+    const portalRole = (body.portalRole || body.role || '').trim().toUpperCase();
 
     if (!identifier || !password) {
       return NextResponse.json({ error: 'Please provide your Username/Email and Password.' }, { status: 400 });
@@ -110,6 +111,47 @@ export async function POST(req: NextRequest) {
     // Distinguish "Account disabled / suspended"
     if (user.status !== 'ACTIVE') {
       return NextResponse.json({ error: 'Account disabled. Please contact the school administrator.' }, { status: 403 });
+    }
+
+    // Portal-Role Specific Access Guard
+    if (portalRole) {
+      const userRole = (user.role || '').toUpperCase();
+      if (portalRole === 'SUPER_ADMIN' && userRole !== 'SUPER_ADMIN') {
+        return NextResponse.json(
+          { error: `Access Denied: This account is registered as ${userRole.replace('_', ' ')}. Please select the ${userRole === 'ADMIN' ? 'Admin' : userRole === 'HEADMASTER' ? 'Headmaster' : userRole === 'TEACHER' ? 'Teacher' : userRole === 'STUDENT' ? 'Student' : 'Parent'} portal tab to sign in.` },
+          { status: 403 }
+        );
+      }
+      if (portalRole === 'ADMIN' && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+        return NextResponse.json(
+          { error: `Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not an Administrator. Please select the correct portal tab.` },
+          { status: 403 }
+        );
+      }
+      if (portalRole === 'HEADMASTER' && userRole !== 'HEADMASTER') {
+        return NextResponse.json(
+          { error: `Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Headmaster. Please select the correct portal tab.` },
+          { status: 403 }
+        );
+      }
+      if (portalRole === 'TEACHER' && userRole !== 'TEACHER') {
+        return NextResponse.json(
+          { error: `Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Teacher. Please select the correct portal tab.` },
+          { status: 403 }
+        );
+      }
+      if (portalRole === 'STUDENT' && userRole !== 'STUDENT') {
+        return NextResponse.json(
+          { error: `Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Student. Please select the correct portal tab.` },
+          { status: 403 }
+        );
+      }
+      if (portalRole === 'PARENT' && userRole !== 'PARENT') {
+        return NextResponse.json(
+          { error: `Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Parent. Please select the correct portal tab.` },
+          { status: 403 }
+        );
+      }
     }
 
     // 2. Account Lockout Check

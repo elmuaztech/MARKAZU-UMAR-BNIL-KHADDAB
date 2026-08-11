@@ -1,14 +1,30 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React from 'react';
+import { PortalTheme } from '@/components/ui/PortalTheme';
+import { PortalHeroBanner } from '@/components/ui/PortalHeroBanner';
+import { TahfizTracker } from '@/components/tahfiz/TahfizTracker';
+import { TahfizAnalyticsCharts } from '@/components/tahfiz/TahfizAnalyticsCharts';
+import { BookOpen, Sparkles, Award } from 'lucide-react';
 
 export default function TahfizPage() {
-  const router = useRouter();
+  return (
+    <PortalTheme>
+      <div className="space-y-6 font-poppins">
+        <PortalHeroBanner
+          title="Qur'an Memorization & Tahfiz Command Center"
+          titleArabic="مركز متابعة حفظ القرآن الكريم والمراجعة"
+          description="Faculty Tahfiz Engine: Log daily new memorization (Hifz), recent revision (Sabki), and long-term consolidation (Manzil) with automated parent progress updates."
+          badgeText="Qur'an Memorization"
+          badgeIcon={BookOpen}
+        />
 
-  useEffect(() => {
-    router.replace('/dashboard');
-  }, [router]);
+        {/* Tahfiz Daily Tracker & Memorization Entry Engine */}
+        <TahfizTracker />
 
-  return null;
+        {/* School-wide & Class-wide Tahfiz Analytics & Retention Charts */}
+        <TahfizAnalyticsCharts />
+      </div>
+    </PortalTheme>
+  );
 }

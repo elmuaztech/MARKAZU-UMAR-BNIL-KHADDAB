@@ -164,6 +164,44 @@ export default function LoginPage() {
     }
   };
 
+  const getPortalPlaceholder = (role: UserRole) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+        return 'e.g. email address or username (superadmin)';
+      case 'ADMIN':
+        return 'e.g. email address or username (admin)';
+      case 'HEADMASTER':
+        return 'e.g. email address or username (headmaster)';
+      case 'TEACHER':
+        return 'e.g. email address or username (teacher)';
+      case 'STUDENT':
+        return 'e.g. email address or username (student)';
+      case 'PARENT':
+        return 'e.g. email address or username (parent)';
+      default:
+        return 'e.g. email address or username';
+    }
+  };
+
+  const getPortalHint = (role: UserRole) => {
+    switch (role) {
+      case 'SUPER_ADMIN':
+        return 'Super Admin credentials (e.g. username superadmin or root email)';
+      case 'ADMIN':
+        return 'School Admin credentials (e.g. username admin or administrator email)';
+      case 'HEADMASTER':
+        return 'Headmaster Staff ID (e.g. MUBK-HM-0001) or registered email';
+      case 'TEACHER':
+        return 'Faculty Staff ID (e.g. TCH-101 / MUBK-TEA-0001) or teacher email';
+      case 'STUDENT':
+        return 'Student Admission No (e.g. MUBK/2026/001) or student email';
+      case 'PARENT':
+        return 'Parent Phone / ID (e.g. MUBK-PAR-0001) or registered email';
+      default:
+        return 'Enter registered email or username';
+    }
+  };
+
   const handleTabChange = (role: UserRole) => {
     setActiveTab(role);
     setErrorMsg('');
@@ -184,6 +222,7 @@ export default function LoginPage() {
           username: email.trim(),
           email: email.trim(),
           password,
+          portalRole: activeTab,
         }),
       });
 
@@ -204,6 +243,39 @@ export default function LoginPage() {
       }
 
       const authUser = data.user;
+
+      // Client-side Strict Role Portal Verification
+      const userRole = (authUser.role || '').toUpperCase();
+      if (activeTab === 'SUPER_ADMIN' && userRole !== 'SUPER_ADMIN') {
+        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}. Please select the ${userRole === 'ADMIN' ? 'Admin' : userRole === 'HEADMASTER' ? 'Headmaster' : userRole === 'TEACHER' ? 'Teacher' : userRole === 'STUDENT' ? 'Student' : 'Parent'} portal tab.`);
+        setIsSubmitting(false);
+        return;
+      }
+      if (activeTab === 'ADMIN' && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not an Administrator. Please select the correct portal tab.`);
+        setIsSubmitting(false);
+        return;
+      }
+      if (activeTab === 'HEADMASTER' && userRole !== 'HEADMASTER') {
+        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Headmaster. Please select the correct portal tab.`);
+        setIsSubmitting(false);
+        return;
+      }
+      if (activeTab === 'TEACHER' && userRole !== 'TEACHER') {
+        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Teacher. Please select the correct portal tab.`);
+        setIsSubmitting(false);
+        return;
+      }
+      if (activeTab === 'STUDENT' && userRole !== 'STUDENT') {
+        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Student. Please select the correct portal tab.`);
+        setIsSubmitting(false);
+        return;
+      }
+      if (activeTab === 'PARENT' && userRole !== 'PARENT') {
+        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Parent. Please select the correct portal tab.`);
+        setIsSubmitting(false);
+        return;
+      }
 
       if (typeof window !== 'undefined' && data.token) {
         localStorage.setItem('markazu_session_token', data.token);
@@ -243,6 +315,12 @@ export default function LoginPage() {
         router.push('/change-password');
       } else if (fullUserRecord.role === 'HEADMASTER') {
         router.push('/headmaster');
+      } else if (fullUserRecord.role === 'TEACHER') {
+        router.push('/dashboard');
+      } else if (fullUserRecord.role === 'STUDENT') {
+        router.push('/dashboard');
+      } else if (fullUserRecord.role === 'PARENT') {
+        router.push('/dashboard');
       } else {
         router.push('/dashboard');
       }
@@ -377,10 +455,13 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="e.g. email address or username (superadmin)"
-                  className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder={getPortalPlaceholder(activeTab)}
+                  className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-slate-400 dark:placeholder:text-emerald-300/40"
                 />
               </div>
+              <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 font-medium">
+                💡 {getPortalHint(activeTab)}
+              </p>
             </div>
 
             <div className="space-y-1">

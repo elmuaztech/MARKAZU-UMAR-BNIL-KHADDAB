@@ -35,16 +35,52 @@ export function TeacherDashboard() {
 
   const currentTeacher =
     teachers.find(
-      (t) => t.email.toLowerCase() === currentUser.email.toLowerCase() || t.fullName.toLowerCase() === currentUser.name.toLowerCase()
-    ) || teachers[0];
+      (t) =>
+        t.id === currentUser.id ||
+        (t.email && currentUser.email && t.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (t.staffNo && currentUser.username && t.staffNo.toLowerCase() === currentUser.username.toLowerCase()) ||
+        (t.fullName && currentUser.name && t.fullName.toLowerCase() === currentUser.name.toLowerCase()) ||
+        (t.full_name_english && currentUser.name && t.full_name_english.toLowerCase() === currentUser.name.toLowerCase())
+    ) || {
+      id: currentUser.id,
+      staffNo: currentUser.username || 'TCH-001',
+      fullName: currentUser.name,
+      full_name_english: currentUser.name,
+      full_name_arabic: '',
+      email: currentUser.email,
+      phone: '',
+      programmeIds: currentUser.assignedProgrammeId ? [currentUser.assignedProgrammeId] : ['prog-02'],
+      classesAssigned: ['cls-tahfiz-1'],
+      subjectsAssigned: ["Qur'an & Tajweed"],
+      dateJoined: new Date().toISOString().split('T')[0],
+      status: 'ACTIVE' as const,
+    };
 
   // Scoped assignments for the logged in Teacher
-  const myAssignments = teacherAssignments.filter((ta) => ta.teacherId === currentTeacher.id);
-  const assignedProgrammeIds = Array.from(new Set(myAssignments.map((ta) => ta.programmeId)));
-  const assignedClassIds = Array.from(new Set(myAssignments.map((ta) => ta.classId)));
+  const myAssignments = teacherAssignments.filter(
+    (ta) =>
+      ta.teacherId === currentTeacher.id ||
+      ta.teacherId === currentUser.id ||
+      (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
+      (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase())
+  );
 
-  const myProgrammes = programmes.filter((p) => assignedProgrammeIds.includes(p.id));
-  const myClasses = classes.filter((c) => assignedClassIds.includes(c.id));
+  const directProgrammeIds = currentTeacher.programmeIds || [];
+  const directClassIds = currentTeacher.classesAssigned || [];
+
+  const assignedProgrammeIds = Array.from(
+    new Set([...myAssignments.map((ta) => ta.programmeId), ...directProgrammeIds])
+  );
+  const assignedClassIds = Array.from(
+    new Set([...myAssignments.map((ta) => ta.classId), ...directClassIds])
+  );
+
+  const myProgrammes = programmes.filter(
+    (p) => assignedProgrammeIds.length === 0 || assignedProgrammeIds.includes(p.id)
+  );
+  const myClasses = classes.filter(
+    (c) => assignedClassIds.length === 0 || assignedClassIds.includes(c.id)
+  );
 
   const [selectedProgId, setSelectedProgId] = useState<string>(myProgrammes[0]?.id || 'ALL');
   const [selectedClassId, setSelectedClassId] = useState<string>(myClasses[0]?.id || 'ALL');
