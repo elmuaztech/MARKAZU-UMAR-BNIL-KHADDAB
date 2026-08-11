@@ -291,9 +291,18 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
   const htmlContent = generateEmailHtml(payload);
   const smtpHost = process.env.SMTP_HOST || process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com';
   const smtpPort = Number(process.env.SMTP_PORT || process.env.EMAIL_SERVER_PORT || 587);
-  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'markazuumarbnkhaddabdaneji@gmail.com';
+  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'elmuaztechnologiesltd@gmail.com';
   const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD || '';
   const smtpPass = rawPass.replace(/\s+/g, '');
+
+  const emailMode = (process.env.EMAIL_MODE || 'development').toLowerCase();
+  let targetRecipient = payload.to;
+
+  if (emailMode === 'development') {
+    const devRecipient = process.env.DEVELOPMENT_EMAIL_RECIPIENT || process.env.SMTP_USER || 'elmuazdesignservices@gmail.com';
+    console.log(`[DEV EMAIL MODE ACTIVE] Original recipient: ${payload.to} -> Redirected to dev test address: ${devRecipient}`);
+    targetRecipient = devRecipient;
+  }
 
   try {
     const nodemailer = eval('require')('nodemailer');
@@ -312,12 +321,12 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
 
     await transporter.sendMail({
       from: SYSTEM_EMAIL_FROM,
-      to: payload.to,
-      subject: payload.subject,
+      to: targetRecipient,
+      subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
       html: htmlContent,
     });
 
-    console.log(`[REAL EMAIL DISPATCH SUCCESS] -> Delivered to ${payload.to} via SMTP ${smtpHost}`);
+    console.log(`[REAL EMAIL DISPATCH SUCCESS] -> Delivered to ${targetRecipient} (Original: ${payload.to}) via SMTP ${smtpHost}`);
     return { success: true, messageId };
   } catch (err: any) {
     console.error(`[SMTP EMAIL DISPATCH FAILED] -> ${err.message}`);
