@@ -200,6 +200,7 @@ export default function ParentsPage() {
   };
 
   const handleExportCSV = () => {
+    if (!isAdmin) return;
     const headers = 'Parent ID,Full Name (English),Phone Number,Email Address,Linked Children\n';
     const rows = filteredParents
       .map((p) => {
@@ -233,12 +234,11 @@ export default function ParentsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          <Button variant="secondary" size="md" onClick={handleExportCSV} leftIcon={<Download className="w-4 h-4" />}>
-            Export CSV
-          </Button>
-
           {isAdmin && (
             <>
+              <Button variant="secondary" size="md" onClick={handleExportCSV} leftIcon={<Download className="w-4 h-4" />}>
+                Export CSV
+              </Button>
               <Button
                 variant="outline"
                 size="md"

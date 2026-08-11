@@ -374,6 +374,7 @@ export default function TeachersPage() {
   };
 
   const handleExportCSV = () => {
+    if (!isAdmin) return;
     const headers = 'Staff ID,Full Name (English),Phone Number,Email Address,Assigned Programmes,Assigned Classes,Assigned Subjects\n';
     const rows = filteredTeachers
       .map((t) => {
@@ -422,12 +423,11 @@ export default function TeachersPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button variant="secondary" size="md" onClick={handleExportCSV} leftIcon={<Download className="w-4 h-4" />}>
-            Export
-          </Button>
-
           {isAdmin && (
             <>
+              <Button variant="secondary" size="md" onClick={handleExportCSV} leftIcon={<Download className="w-4 h-4" />}>
+                Export
+              </Button>
               <Button
                 variant="outline"
                 size="md"

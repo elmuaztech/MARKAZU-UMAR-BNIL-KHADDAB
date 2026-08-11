@@ -176,7 +176,7 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/messages': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/sessions': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
+  '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/backup': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/security': ['SUPER_ADMIN', 'ADMIN'],

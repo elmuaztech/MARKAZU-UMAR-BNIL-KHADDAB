@@ -308,6 +308,7 @@ export default function StudentsPage() {
   });
 
   const handleExportCSV = () => {
+    if (!canManageStudents || currentUser.role === 'PARENT' || currentUser.role === 'STUDENT') return;
     const headers = 'Student ID,Full Name (English),Assigned Programme,Assigned Class\n';
     const rows = filteredStudents
       .map(
@@ -423,9 +424,11 @@ export default function StudentsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-          <Button variant="secondary" size="md" onClick={handleExportCSV} leftIcon={<Download className="w-4 h-4" />}>
-            Export CSV
-          </Button>
+          {canManageStudents && (
+            <Button variant="secondary" size="md" onClick={handleExportCSV} leftIcon={<Download className="w-4 h-4" />}>
+              Export CSV
+            </Button>
+          )}
 
           {canManageStudents && (
             <>
