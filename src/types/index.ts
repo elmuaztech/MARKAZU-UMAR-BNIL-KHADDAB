@@ -60,6 +60,7 @@ export interface Student {
   programmeId?: string;
   programmeName?: string;
   programmeNameArabic?: string;
+  subcategory?: string;
   classId: string;
   className: string;
   classNameArabic?: string;
