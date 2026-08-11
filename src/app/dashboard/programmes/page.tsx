@@ -125,6 +125,17 @@ export default function ProgrammesPage() {
   const [classFormError, setClassFormError] = useState<string | null>(null);
 
   const filteredProgrammes = programmes.filter((p) => {
+    // If Headmaster, STRICTLY isolate to their assigned section only
+    if (currentUser.role === 'HEADMASTER') {
+      const assignedId = currentUser.assignedProgrammeId;
+      const assignedName = currentUser.assignedProgrammeName?.toLowerCase() || '';
+      const matchesProgramme =
+        (assignedId && p.id === assignedId) ||
+        (assignedName && (p.programme_name_english || p.programme_name || '').toLowerCase().includes(assignedName)) ||
+        (assignedName && assignedName.includes((p.programme_name_english || p.programme_name || '').toLowerCase()));
+      if (!matchesProgramme) return false;
+    }
+
     const matchesSearch =
       (p.programme_name_english || p.programme_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.programme_name_arabic || '').toLowerCase().includes(searchQuery.toLowerCase()) ||

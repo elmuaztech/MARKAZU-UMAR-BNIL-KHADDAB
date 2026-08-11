@@ -13,6 +13,7 @@ import { FormField, Input, Select } from '@/components/ui/FormField';
 export default function SettingsPage() {
   const { currentSession, schoolLogo, setSchoolLogo, schoolName, setSchoolName, currentUser, setCurrentUser, updateUserAccount, updateUserAvatar, addAuditLog } = useApp();
 
+  const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
   const [activeTerm, setActiveTerm] = useState<'Term 1' | 'Term 2' | 'Term 3'>(currentSession.activeTerm);
   const [auditLogs] = useState<AuditEntry[]>(INITIAL_AUDIT_LOGS);
   const [sessionSuccess, setSessionSuccess] = useState(false);
@@ -292,27 +293,49 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* School Identity */}
         <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-emerald-800/40 pb-2 uppercase tracking-tight">
-            <School className="w-4 h-4 text-emerald-500" />
-            Official School Profile Info
-          </h3>
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-800/40 pb-2">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-tight">
+              <School className="w-4 h-4 text-emerald-500" />
+              Official School Profile Info
+            </h3>
+            {!isSuperAdmin && (
+              <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                🔒 Super Admin Only
+              </span>
+            )}
+          </div>
 
           <div className="space-y-3 text-xs">
-            <form onSubmit={handleSaveSchoolName} className="space-y-2">
-              <label className="block text-slate-700 dark:text-emerald-300 font-bold">Official School Name (Editable by Admin)</label>
-              <div className="flex gap-2">
+            {isSuperAdmin ? (
+              <form onSubmit={handleSaveSchoolName} className="space-y-2">
+                <label className="block text-slate-700 dark:text-emerald-300 font-bold">Official School Name (Editable by Super Admin)</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editableSchoolName}
+                    onChange={(e) => setEditableSchoolName(e.target.value)}
+                    className="flex-1 bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-700/60 rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 text-xs"
+                    placeholder="Enter official school name"
+                  />
+                  <Button type="submit" variant="primary" size="sm" className="whitespace-nowrap font-bold">
+                    Save Name
+                  </Button>
+                </div>
+              </form>
+            ) : (
+              <div className="space-y-1">
+                <label className="block text-slate-700 dark:text-emerald-300 font-bold">Official School Name</label>
                 <input
                   type="text"
-                  value={editableSchoolName}
-                  onChange={(e) => setEditableSchoolName(e.target.value)}
-                  className="flex-1 bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-700/60 rounded-xl p-2.5 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-emerald-500 text-xs"
-                  placeholder="Enter official school name"
+                  readOnly
+                  value={schoolName}
+                  className="w-full bg-slate-100 dark:bg-[#021810]/70 border border-slate-200 dark:border-emerald-800/40 rounded-xl p-2.5 text-slate-700 dark:text-gray-300 font-bold text-xs cursor-not-allowed"
                 />
-                <Button type="submit" variant="primary" size="sm" className="whitespace-nowrap font-bold">
-                  Save Name
-                </Button>
+                <p className="text-[10px] text-slate-500 dark:text-emerald-400/80 italic">
+                  Institutional identity and school naming are managed exclusively by the Super Admin.
+                </p>
               </div>
-            </form>
+            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -339,10 +362,17 @@ export default function SettingsPage() {
 
         {/* Academic Session Controls */}
         <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-emerald-800/40 pb-2 uppercase tracking-tight">
-            <Calendar className="w-4 h-4 text-emerald-500" />
-            Academic Session & Term Controls
-          </h3>
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-800/40 pb-2">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-tight">
+              <Calendar className="w-4 h-4 text-emerald-500" />
+              Academic Session & Term Controls
+            </h3>
+            {!isSuperAdmin && (
+              <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
+                🔒 Super Admin Only
+              </span>
+            )}
+          </div>
 
           <div className="space-y-3 text-xs">
             <div>
@@ -356,34 +386,56 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">Active Term Selection</label>
-              <select
-                value={activeTerm}
-                onChange={(e) => setActiveTerm(e.target.value as any)}
-                className="w-full bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-emerald-600 dark:text-amber-300 font-bold focus:outline-none"
-              >
-                <option value="Term 1">Term 1 (Autumn)</option>
-                <option value="Term 2">Term 2 (Spring - Active)</option>
-                <option value="Term 3">Term 3 (Summer)</option>
-              </select>
+              <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">Active Term</label>
+              {isSuperAdmin ? (
+                <select
+                  value={activeTerm}
+                  onChange={(e) => setActiveTerm(e.target.value as any)}
+                  className="w-full bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-emerald-600 dark:text-amber-300 font-bold focus:outline-none"
+                >
+                  <option value="Term 1">Term 1 (Autumn)</option>
+                  <option value="Term 2">Term 2 (Spring - Active)</option>
+                  <option value="Term 3">Term 3 (Summer)</option>
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  readOnly
+                  value={`${currentSession.activeTerm} (Active)`}
+                  className="w-full bg-slate-100 dark:bg-[#021810]/70 border border-slate-200 dark:border-emerald-800/40 rounded-xl p-2.5 text-slate-700 dark:text-gray-300 font-bold cursor-not-allowed"
+                />
+              )}
             </div>
 
-            <button
-              onClick={handleTermTransition}
-              className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>Advance Academic Term</span>
-            </button>
+            {isSuperAdmin && (
+              <button
+                onClick={handleTermTransition}
+                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Advance Academic Term</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* School Logo Asset Manager */}
         <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-5 md:col-span-2">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-100 dark:border-emerald-800/40 pb-2 uppercase tracking-tight">
-            <ImageIcon className="w-4 h-4 text-emerald-500" />
-            School Logo & Crest Customizer
-          </h3>
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-800/40 pb-2">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2 uppercase tracking-tight">
+              <ImageIcon className="w-4 h-4 text-emerald-500" />
+              School Logo & Official Crest
+            </h3>
+            {!isSuperAdmin ? (
+              <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20 flex items-center gap-1">
+                🔒 Super Admin Authority Required
+              </span>
+            ) : (
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
+                ✨ Live Global Broadcast
+              </span>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
             {/* Logo Preview Box */}
@@ -398,55 +450,74 @@ export default function SettingsPage() {
                   />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-white">
-                    <Sparkles className="w-10 h-10" />
+                    <School className="w-10 h-10" />
                   </div>
                 )}
               </div>
-              <span className="text-xs font-bold text-slate-700 dark:text-emerald-300">
-                {schoolLogo ? 'Custom School Logo Active' : 'Default Crest Icon Active'}
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">
+                {schoolLogo ? 'Custom Logo Active' : 'Default Emblem Active'}
               </span>
             </div>
 
-            {/* Logo Controls */}
+            {/* Logo Upload & Actions */}
             <div className="md:col-span-2 space-y-4 text-xs">
-              <div className="space-y-2">
-                <label className="font-bold text-slate-700 dark:text-gray-200 block">Upload Logo File (PNG, JPG, SVG)</label>
-                <div className="flex items-center gap-3">
-                  <label className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold cursor-pointer flex items-center gap-2 shadow-md transition-all">
-                    <Upload className="w-4 h-4" /> Choose Logo Image
-                    <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-                  </label>
+              {isSuperAdmin ? (
+                <>
+                  <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 space-y-3">
+                    <p className="text-slate-700 dark:text-emerald-200 font-semibold leading-relaxed">
+                      Upload an official school badge or crest image (PNG, JPG, SVG). It will automatically update on all dashboards, login screens, student ID badges, and terminal report card transcripts.
+                    </p>
 
-                  {schoolLogo && (
-                    <button
-                      onClick={handleRemoveLogo}
-                      className="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold border border-rose-500/30 flex items-center gap-2 transition-all"
-                    >
-                      <Trash2 className="w-4 h-4" /> Remove Logo
-                    </button>
-                  )}
-                </div>
-              </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <label className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold cursor-pointer flex items-center gap-2 shadow-md transition-all">
+                        <Upload className="w-4 h-4" />
+                        <span>Upload Logo File</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                        />
+                      </label>
 
-              {/* URL Import */}
-              <form onSubmit={handleUrlSubmit} className="space-y-2 pt-2 border-t border-slate-100 dark:border-emerald-500/20">
-                <label className="font-bold text-slate-700 dark:text-gray-200 block">Or Provide Direct Logo Image URL</label>
-                <div className="flex gap-2">
-                  <input
-                    type="url"
-                    value={customLogoUrl}
-                    onChange={(e) => setCustomLogoUrl(e.target.value)}
-                    placeholder="https://example.com/logo.png"
-                    className="flex-1 px-4 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold shadow-md transition-all"
-                  >
-                    Save URL
-                  </button>
+                      {schoolLogo && (
+                        <button
+                          onClick={handleRemoveLogo}
+                          className="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold flex items-center gap-2 shadow-md transition-all"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                          <span>Reset to Default Logo</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  <form onSubmit={handleUrlSubmit} className="space-y-2">
+                    <label className="block text-slate-700 dark:text-emerald-300 font-bold">Or specify Logo Asset Web URL</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={customLogoUrl}
+                        onChange={(e) => setCustomLogoUrl(e.target.value)}
+                        placeholder="https://example.com/school-logo.png"
+                        className="flex-1 bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-700/60 rounded-xl p-2.5 text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-emerald-500 text-xs"
+                      />
+                      <Button type="submit" variant="outline" size="sm" className="whitespace-nowrap font-bold">
+                        Apply URL
+                      </Button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                <div className="p-4 rounded-2xl bg-slate-100 dark:bg-[#021810]/70 border border-slate-200 dark:border-emerald-800/30 space-y-2">
+                  <p className="text-slate-700 dark:text-gray-300 font-medium">
+                    The official school logo and badge branding are managed exclusively by the Super Administrator.
+                  </p>
+                  <p className="text-slate-500 dark:text-emerald-400/80 text-[11px]">
+                    To request changes to the institutional crest or school naming, please submit a request to the Super Admin office.
+                  </p>
                 </div>
-              </form>
+              )}
             </div>
           </div>
         </div>

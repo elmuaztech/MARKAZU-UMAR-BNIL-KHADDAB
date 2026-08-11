@@ -73,6 +73,11 @@ export function HeadmasterDashboard() {
   const attendanceRate =
     todayAttendance.length > 0 ? Math.round((presentCount / todayAttendance.length) * 100) : 100;
 
+  const totalSectionStudents =
+    scopedStudents.length > 0
+      ? scopedStudents.length
+      : scopedClasses.reduce((sum, c) => sum + (c.studentCount || 0), 0);
+
   return (
     <div className="space-y-6 font-sans">
       {/* Headmaster Programme Master Banner */}
@@ -98,16 +103,17 @@ export function HeadmasterDashboard() {
             </h1>
 
             {assignedProg ? (
-              <div className="pt-1">
+              <div className="pt-1 space-y-1">
                 <p className="text-xs text-emerald-200/80 font-medium">Assigned Academic Section:</p>
-                <div className="text-xl sm:text-2xl font-black text-amber-400 font-poppins flex items-center gap-2">
-                  <BilingualText
-                    english={assignedProg.programme_name_english || assignedProg.programme_name}
-                    arabic={assignedProg.programme_name_arabic}
-                    inline
-                    englishClassName="text-xl sm:text-2xl font-black text-white"
-                    arabicClassName="text-lg text-amber-300 font-arabic font-bold ml-2"
-                  />
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xl sm:text-2xl font-black text-white font-poppins">
+                    {assignedProg.programme_name_english || assignedProg.programme_name}
+                  </span>
+                  {assignedProg.programme_name_arabic && (
+                    <span className="text-lg text-amber-300 font-arabic font-bold">
+                      • {assignedProg.programme_name_arabic}
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-emerald-100/80 mt-1 max-w-xl font-medium">
                   {assignedProg.description || 'Academic section governance, class streams, student tracking, and results management.'}
@@ -127,7 +133,7 @@ export function HeadmasterDashboard() {
                 Section Governance
               </span>
               <div className="text-2xl font-black text-amber-400 font-poppins">
-                {scopedStudents.length} Students
+                {totalSectionStudents} Students
               </div>
               <p className="text-[11px] text-emerald-200/80 font-medium">
                 across {scopedClasses.length} class streams
@@ -181,7 +187,7 @@ export function HeadmasterDashboard() {
               <Users className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl font-black text-slate-900 dark:text-white">{scopedStudents.length}</p>
+          <p className="text-3xl font-black text-slate-900 dark:text-white">{totalSectionStudents}</p>
           <p className="text-[11px] text-slate-500 dark:text-emerald-300/70 font-medium">
             Enrolled in {assignedProg?.programme_name || 'Section'}
           </p>

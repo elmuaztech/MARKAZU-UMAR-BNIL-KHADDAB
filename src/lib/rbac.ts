@@ -151,7 +151,7 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
 // Route & Page Authorization Mapping
 export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/headmaster': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
+  '/headmaster': ['SUPER_ADMIN', 'HEADMASTER'],
   '/dashboard/admissions': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters & Teachers
   '/dashboard/programmes': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/tahfiz': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
@@ -178,8 +178,8 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/backup': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
-  '/dashboard/security': ['SUPER_ADMIN'],
+  '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
+  '/dashboard/security': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'],
 };
 
@@ -211,12 +211,19 @@ export function filterStudentsForUser(
 
   if (currentUser.role === 'HEADMASTER') {
     const progId = currentUser.assignedProgrammeId;
-    const progName = currentUser.assignedProgrammeName?.toLowerCase();
-    if (!progId && !progName) return allStudents;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase() || '';
 
     return allStudents.filter((s) => {
       if (progId && s.programmeId === progId) return true;
       if (progName && s.programmeName?.toLowerCase().includes(progName)) return true;
+      if (progName && progName.includes(s.programmeName?.toLowerCase() || '')) return true;
+
+      // Class-based linking
+      if ((progId === 'prog-01' || progName.includes('asubah')) && (s.classId?.startsWith('cls-asm') || s.programmeId === 'prog-01')) return true;
+      if ((progId === 'prog-02' || progName.includes('super')) && (s.classId?.startsWith('cls-sm') || s.programmeId === 'prog-02')) return true;
+      if ((progId === 'prog-03' || progName.includes('islam')) && (s.classId?.startsWith('cls-is') || s.programmeId === 'prog-03')) return true;
+      if ((progId === 'prog-04' || progName.includes('matan')) && (s.classId?.startsWith('cls-ma') || s.programmeId === 'prog-04')) return true;
+
       return false;
     });
   }

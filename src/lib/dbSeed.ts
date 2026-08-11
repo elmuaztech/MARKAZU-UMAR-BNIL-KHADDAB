@@ -37,7 +37,7 @@ export async function ensureDefaultDatabaseUsers() {
       },
       {
         id: 'usr-hm-1',
-        username: 'MUBK-HM-0001',
+        username: 'hm_asbah',
         name: 'Malam Idris Usman (Headmaster Asubah & Magrib)',
         email: 'hm.asbah@markazuumar.edu.ng',
         role: 'HEADMASTER' as const,
@@ -51,7 +51,7 @@ export async function ensureDefaultDatabaseUsers() {
       },
       {
         id: 'usr-hm-2',
-        username: 'MUBK-HM-0002',
+        username: 'hm_supermarkaz',
         name: 'Dr. Ahmad Sulaiman (Headmaster Super Markaz)',
         email: 'hm.supermarkaz@markazuumar.edu.ng',
         role: 'HEADMASTER' as const,
@@ -65,7 +65,7 @@ export async function ensureDefaultDatabaseUsers() {
       },
       {
         id: 'usr-hm-3',
-        username: 'MUBK-HM-0003',
+        username: 'hm_islamiyyah',
         name: 'Ustaz Aliyu Garba (Headmaster Islamiyyah)',
         email: 'hm.islamiyyah@markazuumar.edu.ng',
         role: 'HEADMASTER' as const,
@@ -79,7 +79,7 @@ export async function ensureDefaultDatabaseUsers() {
       },
       {
         id: 'usr-hm-4',
-        username: 'MUBK-HM-0004',
+        username: 'hm_matanaure',
         name: 'Malama Ruqayya Kabir (Headmaster Matan Aure)',
         email: 'hm.matanaure@markazuumar.edu.ng',
         role: 'HEADMASTER' as const,

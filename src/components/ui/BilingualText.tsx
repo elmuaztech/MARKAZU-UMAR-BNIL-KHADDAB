@@ -34,9 +34,9 @@ export const BilingualText: React.FC<BilingualTextProps> = ({
   }
 
   return (
-    <div className={`space-y-0.5 min-w-0 ${className}`}>
-      <div className={`break-words ${englishClassName}`}>{english}</div>
-      <div className={`break-words leading-relaxed ${arabicClassName}`} dir="rtl">
+    <div className={`space-y-0.5 min-w-0 flex flex-col items-start text-left ${className}`}>
+      <div className={`break-words text-left ${englishClassName}`}>{english}</div>
+      <div className={`break-words leading-relaxed text-left ${arabicClassName}`}>
         {arabic}
       </div>
     </div>
