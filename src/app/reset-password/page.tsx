@@ -13,21 +13,13 @@ function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const { users, updateUserPasswordByEmail, addAuditLog, schoolLogo } = useApp();
 
-  const initialToken = searchParams.get('token') || '';
-  const [token, setToken] = useState(initialToken);
+  const [token, setToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    const t = searchParams.get('token');
-    if (t) {
-      setToken(t);
-    }
-  }, [searchParams]);
 
   const policy = validatePasswordPolicy(newPassword);
 

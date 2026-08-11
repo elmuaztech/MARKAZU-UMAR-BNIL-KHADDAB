@@ -104,8 +104,22 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
           };
         }
       }
+
+      // Check if user was explicitly deleted in database
+      const deletedUser = await prisma.user.findFirst({
+        where: {
+          OR: [{ id: cleanSessionId }, { username: cleanSessionId }],
+          NOT: { deletedAt: null },
+        },
+      });
+      if (deletedUser) {
+        return null;
+      }
+
+      // If database query succeeded but no active session or user found, return null
+      return null;
     } catch (dbErr) {
-      console.warn('[AUTH_DB_WARNING] Session query failed, falling back to memory records:', dbErr);
+      console.warn('[AUTH_DB_WARNING] Session query failed due to DB connection:', dbErr);
     }
 
     // Fallback lookup from MOCK_USERS if DB is unreachable or session ID is user format

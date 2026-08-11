@@ -49,10 +49,19 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      if (!user && (identifier === 'superadmin' || identifier === 'markazuumarbnkhaddabdaneji@gmail.com' || identifier.includes('superadmin'))) {
-        user = await prisma.user.findFirst({
-          where: { role: 'SUPER_ADMIN', deletedAt: null },
-        });
+      const deletedUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: identifier },
+            { username: identifier },
+            { id: identifier },
+          ],
+          NOT: { deletedAt: null },
+        },
+      });
+
+      if (deletedUser) {
+        return NextResponse.json({ error: 'Account has been deactivated. Please contact the school administrator.' }, { status: 403 });
       }
 
       if (user) {

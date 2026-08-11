@@ -35,20 +35,7 @@ export async function POST(req: NextRequest) {
 
     let targetUser = tokenRecord?.user;
 
-    // Fallback for valid numeric 4-digit OTP during test execution
-    if (!targetUser && /^\d{4}$/.test(otp)) {
-      const recentUnused = await prisma.passwordResetToken.findFirst({
-        where: {
-          used: false,
-          expiresAt: { gt: new Date() },
-        },
-        include: { user: true },
-        orderBy: { createdAt: 'desc' },
-      });
-      targetUser = recentUnused?.user || (await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN', deletedAt: null } })) || undefined;
-    }
-
-    if (!targetUser) {
+    if (!targetUser || !tokenRecord) {
       return NextResponse.json({ error: 'Invalid or expired 4-digit OTP code. Please request a new OTP.' }, { status: 400 });
     }
 

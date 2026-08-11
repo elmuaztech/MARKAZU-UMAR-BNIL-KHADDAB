@@ -77,7 +77,7 @@ export default function LoginPage() {
       }
 
       setResetSuccessMsg(data.message || `4-Digit OTP code successfully sent to ${data.email || cleanInput}.`);
-      if (data.otp) setOtpInput(data.otp);
+      setOtpInput('');
       setResetStep(2);
     } catch (err: any) {
       setIsSendingOtp(false);

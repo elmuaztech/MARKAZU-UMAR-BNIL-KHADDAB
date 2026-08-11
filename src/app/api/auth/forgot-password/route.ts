@@ -69,7 +69,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message: `4-Digit OTP dispatched to ${user.email}. Valid for 10 minutes.`,
       email: user.email,
-      otp: otpCode, // For testing convenience
     });
   } catch (error: any) {
     console.error('[FORGOT_PASSWORD_ERROR]', error);
