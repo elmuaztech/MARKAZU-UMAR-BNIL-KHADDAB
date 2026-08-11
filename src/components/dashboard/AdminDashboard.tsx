@@ -187,16 +187,23 @@ export function AdminDashboard() {
         className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] p-6 sm:p-8 text-white border border-emerald-500/40 shadow-xl"
       >
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1.5">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
-              Assalamu Alaikum, {currentUser.name || 'Admin User'}! 👋
-            </h1>
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
+                Assalamu Alaikum, {currentUser.name || 'Admin User'}! 👋
+              </h1>
+              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md ${
+                currentUser.role === 'SUPER_ADMIN'
+                  ? 'bg-amber-400 text-slate-950'
+                  : 'bg-teal-300 text-slate-950'
+              }`}>
+                {currentUser.role === 'SUPER_ADMIN' ? '👑 Super Admin Portal' : '🛡️ School Admin Portal'}
+              </span>
+            </div>
             <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
               {currentUser.role === 'SUPER_ADMIN'
-                ? 'Super Admin Portal & Institutional Control Center'
-                : currentUser.role === 'HEADMASTER'
-                ? `Section Headmaster Portal — ${currentUser.assignedProgrammeName || 'Assigned Section'}`
-                : 'Administrative Control Center'}
+                ? 'Super Admin Institutional Command Center — Full System, Accounts & Security Management'
+                : 'School Administration Dashboard — Daily Operations, Admissions & Faculty Coordination'}
             </p>
           </div>
 

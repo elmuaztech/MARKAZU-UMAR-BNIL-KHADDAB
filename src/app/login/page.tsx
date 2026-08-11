@@ -277,10 +277,6 @@ export default function LoginPage() {
         return;
       }
 
-      if (typeof window !== 'undefined' && data.token) {
-        localStorage.setItem('markazu_session_token', data.token);
-      }
-
       const fullUserRecord: User = {
         id: authUser.id,
         name: authUser.name,
@@ -297,6 +293,13 @@ export default function LoginPage() {
         lastLoginAt: new Date().toLocaleString(),
       };
 
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('markazu_current_user', JSON.stringify(fullUserRecord));
+        if (data.token) {
+          localStorage.setItem('markazu_session_token', data.token);
+        }
+      }
+
       setCurrentUser(fullUserRecord);
       createNewSession(fullUserRecord.id, fullUserRecord.name, fullUserRecord.role);
 
@@ -310,20 +313,15 @@ export default function LoginPage() {
         status: 'SUCCESS',
       });
 
-      // Handle Role-Based Routing
-      if (fullUserRecord.isFirstLogin || fullUserRecord.mustChangePassword) {
-        router.push('/change-password');
-      } else if (fullUserRecord.role === 'HEADMASTER') {
-        router.push('/headmaster');
-      } else if (fullUserRecord.role === 'TEACHER') {
-        router.push('/dashboard');
-      } else if (fullUserRecord.role === 'STUDENT') {
-        router.push('/dashboard');
-      } else if (fullUserRecord.role === 'PARENT') {
-        router.push('/dashboard');
-      } else {
-        router.push('/dashboard');
-      }
+      // Handle Guaranteed Role-Based Routing
+      const targetUrl =
+        fullUserRecord.isFirstLogin || fullUserRecord.mustChangePassword
+          ? '/change-password'
+          : fullUserRecord.role === 'HEADMASTER'
+          ? '/headmaster'
+          : '/dashboard';
+
+      window.location.href = targetUrl;
     } catch (err: any) {
       setErrorMsg(err.message || 'Login failed due to a network connection issue.');
       setIsSubmitting(false);

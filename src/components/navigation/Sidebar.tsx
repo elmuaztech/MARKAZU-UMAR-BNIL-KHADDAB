@@ -537,14 +537,20 @@ export function Sidebar({
                 <span>My Profile</span>
               </Link>
 
-              <Link
-                href="/login"
-                onClick={() => setProfileMenuOpen(false)}
+              <button
+                onClick={() => {
+                  setProfileMenuOpen(false);
+                  if (typeof window !== 'undefined') {
+                    localStorage.removeItem('markazu_current_user');
+                    localStorage.removeItem('markazu_session_token');
+                    window.location.href = '/login';
+                  }
+                }}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold border-t border-slate-100 dark:border-emerald-800/40 pt-2"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Log Out</span>
-              </Link>
+              </button>
             </div>
           )}
         </div>
