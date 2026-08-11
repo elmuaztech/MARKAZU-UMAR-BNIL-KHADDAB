@@ -135,8 +135,8 @@ export default function TeachersPage() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = "Staff ID,Full Name (English),Phone Number,Email Address,Assigned Programmes,Assigned Classes,Assigned Subjects\n";
-    const sample = "MU-2026-001,Ustaz Abubakar Al-Kanawi,+2348031234567,abubakar@markazuumar.edu.ng,prog-02;prog-01,cls-tahfiz-1;Tahfiz Halqa 1,Qur'an;Hadith\n";
+    const headers = "Full Name,Phone Number,Email Address,Assigned Programmes,Assigned Classes,Assigned Subjects,Staff ID (Optional)\n";
+    const sample = "Ustaz Abubakar Al-Kanawi,+2348031234567,abubakar@markazuumar.edu.ng,Asubah & Maghrib,Tahfiz Halqa 1,Qur'an & Tajweed,\n";
     const blob = new Blob([headers + sample], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -162,54 +162,88 @@ export default function TeachersPage() {
 
       const parsed: Omit<Teacher, 'id'>[] = [];
       const errors: { rowNumber: number; staffId: string; name: string; email: string; errors: string[] }[] = [];
-      const seenStaffNos = new Set<string>();
       const seenEmails = new Set<string>();
+      const seenStaffNos = new Set<string>();
+
+      let generatedCounter = teachers.length + 1;
 
       for (let i = 1; i < lines.length; i++) {
         const row = lines[i].split(',').map((col) => col.trim().replace(/^["']|["']$/g, ''));
         const rowNum = i + 1;
         const rowErrors: string[] = [];
 
-        const staffId = row[0] || '';
-        const fullName = row[1] || '';
-        const phoneNo = row[2] || '+234 800 000 0000';
-        const emailAddr = row[3] ? row[3].toLowerCase() : '';
-        const progStr = row[4] || '';
-        const classStr = row[5] || '';
-        const subjStr = row[6] || '';
+        // Flexible header handling:
+        // Standard: Full Name (col 0), Phone (col 1), Email (col 2), Programme (col 3), Class (col 4), Subject (col 5), Staff ID (col 6, optional)
+        // If col 0 looks like Staff ID (starts with MU or MUBK), shift columns accordingly
+        let staffId = '';
+        let fullName = '';
+        let phoneNo = '';
+        let emailAddr = '';
+        let progStr = '';
+        let classStr = '';
+        let subjStr = '';
 
-        if (!staffId) rowErrors.push('Missing Staff ID');
+        if (row[0] && (row[0].toUpperCase().startsWith('MUBK') || row[0].toUpperCase().startsWith('MU-'))) {
+          staffId = row[0];
+          fullName = row[1] || '';
+          phoneNo = row[2] || '';
+          emailAddr = row[3] ? row[3].toLowerCase() : '';
+          progStr = row[4] || '';
+          classStr = row[5] || '';
+          subjStr = row[6] || '';
+        } else {
+          fullName = row[0] || '';
+          phoneNo = row[1] || '';
+          emailAddr = row[2] ? row[2].toLowerCase() : '';
+          progStr = row[3] || '';
+          classStr = row[4] || '';
+          subjStr = row[5] || '';
+          staffId = row[6] || '';
+        }
+
+        // Auto-generate Staff ID if omitted
+        if (!staffId) {
+          staffId = `MUBK-TEA-${(generatedCounter++).toString().padStart(4, '0')}`;
+        }
+
         if (!fullName) rowErrors.push('Missing Full Name');
-        if (!emailAddr) rowErrors.push('Missing Email Address');
+        if (!emailAddr) {
+          rowErrors.push('Missing Email Address');
+        } else {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(emailAddr)) {
+            rowErrors.push(`Invalid email address format "${emailAddr}"`);
+          }
+        }
 
         // Check Duplicate Staff ID
         if (
           staffId &&
-          (seenStaffNos.has(staffId.toLowerCase()) || teachers.some((t) => t.staffNo.toLowerCase() === staffId.toLowerCase()))
+          (seenStaffNos.has(staffId.toLowerCase()) || teachers.some((t) => t.staffNo && t.staffNo.toLowerCase() === staffId.toLowerCase()))
         ) {
-          rowErrors.push(`Duplicate Staff ID "${staffId}" (Already exists in database or file)`);
+          rowErrors.push(`Duplicate Staff ID "${staffId}" (Already assigned in database or file)`);
         }
         if (staffId) seenStaffNos.add(staffId.toLowerCase());
 
         // Check Duplicate Email
         if (
           emailAddr &&
-          (seenEmails.has(emailAddr) || users.some((u) => u.email.toLowerCase() === emailAddr))
+          (seenEmails.has(emailAddr) || users.some((u) => u.email.toLowerCase() === emailAddr) || teachers.some((t) => t.email && t.email.toLowerCase() === emailAddr))
         ) {
-          rowErrors.push(`Duplicate Email "${emailAddr}" (Already registered)`);
+          rowErrors.push(`Duplicate Email "${emailAddr}" (An account with this email already exists)`);
         }
         if (emailAddr) seenEmails.add(emailAddr);
 
         // Validate Programmes
-        const progList = progStr ? progStr.split(';').map((s) => s.trim()) : ['prog-02'];
+        const progList = progStr ? progStr.split(';').map((s) => s.trim()) : ['prog-01'];
         const validProgs: string[] = [];
         progList.forEach((pItem) => {
           const match = programmes.find(
             (p) =>
               p.id === pItem ||
-              p.programme_code.toLowerCase() === pItem.toLowerCase() ||
-              p.programme_name_english.toLowerCase() === pItem.toLowerCase() ||
-              p.programme_name.toLowerCase() === pItem.toLowerCase()
+              p.programme_code?.toLowerCase() === pItem.toLowerCase() ||
+              p.programme_name_english?.toLowerCase() === pItem.toLowerCase() ||
+              p.programme_name?.toLowerCase() === pItem.toLowerCase()
           );
           if (match) {
             validProgs.push(match.id);
@@ -231,14 +265,14 @@ export default function TeachersPage() {
         });
 
         // Validate Subjects
-        const subjList = subjStr ? subjStr.split(';').map((s) => s.trim()) : ["Qur'an"];
+        const subjList = subjStr ? subjStr.split(';').map((s) => s.trim()) : ["Qur'an & Tajweed"];
         const validSubjs: string[] = [];
         subjList.forEach((sItem) => {
           const match = subjects.find((s) => s.id === sItem || s.name.toLowerCase() === sItem.toLowerCase());
           if (match) {
             validSubjs.push(match.name);
           } else {
-            rowErrors.push(`Invalid Assigned Subject "${sItem}"`);
+            validSubjs.push(sItem); // Fallback to provided subject string
           }
         });
 
@@ -257,12 +291,12 @@ export default function TeachersPage() {
             full_name_arabic: '',
             fullName: fullName,
             email: emailAddr,
-            phone: phoneNo,
+            phone: phoneNo || '+234 800 000 0000',
             qualification: 'Faculty Member',
             specialization: validSubjs[0] || "Qur'an & Tajweed",
-            programmeIds: validProgs.length ? validProgs : ['prog-02'],
+            programmeIds: validProgs.length ? validProgs : ['prog-01'],
             classesAssigned: validClasses.length ? validClasses : ['Tahfiz Halqa 1'],
-            subjectsAssigned: validSubjs.length ? validSubjs : ["Qur'an"],
+            subjectsAssigned: validSubjs.length ? validSubjs : ["Qur'an & Tajweed"],
             dateJoined: new Date().toISOString().split('T')[0],
             status: 'ACTIVE',
           });

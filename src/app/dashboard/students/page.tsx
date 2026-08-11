@@ -138,8 +138,8 @@ export default function StudentsPage() {
   };
 
   const handleDownloadTemplate = () => {
-    const headers = "Student ID,Full Name (English),Assigned Programme,Assigned Class\n";
-    const sample = "MU-2026-0901,Zaid Ibrahim,Tahfiz & Tajweed (Asubah & Magrib),Tahfiz Halqa 1\n";
+    const headers = "Full Name,Gender,Assigned Programme,Assigned Class,Guardian Phone,Student ID (Optional)\n";
+    const sample = "Zaid Ibrahim,MALE,Asubah & Maghrib,Tahfiz Halqa 1,+2348031234567,\n";
     const blob = new Blob([headers + sample], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -164,21 +164,45 @@ export default function StudentsPage() {
       }
 
       const parsed: Omit<Student, 'id'>[] = [];
+      let studentCounter = students.length + 1;
+
       for (let i = 1; i < lines.length; i++) {
         const row = lines[i].split(',').map((col) => col.trim().replace(/^["']|["']$/g, ''));
-        if (row.length < 2 || !row[1]) continue;
+        if (row.length < 1 || !row[0]) continue;
 
-        const admNo = row[0] || `MU-${new Date().getFullYear()}-0${Math.floor(100 + Math.random() * 900)}`;
-        const studentName = row[1];
-        const progStr = row[2] || 'prog-01';
-        const classStr = row[3] || 'Tahfiz Halqa 1';
+        let admNo = '';
+        let studentName = '';
+        let genderStr = 'MALE';
+        let progStr = 'prog-01';
+        let classStr = 'Tahfiz Halqa 1';
+        let guardianPhone = '+234 803 000 0000';
+
+        if (row[0] && (row[0].toUpperCase().startsWith('MUBK') || row[0].toUpperCase().startsWith('MU-'))) {
+          admNo = row[0];
+          studentName = row[1] || '';
+          genderStr = (row[2] || 'MALE').toUpperCase();
+          progStr = row[3] || 'prog-01';
+          classStr = row[4] || 'Tahfiz Halqa 1';
+          guardianPhone = row[5] || '+234 803 000 0000';
+        } else {
+          studentName = row[0] || '';
+          genderStr = (row[1] || 'MALE').toUpperCase();
+          progStr = row[2] || 'prog-01';
+          classStr = row[3] || 'Tahfiz Halqa 1';
+          guardianPhone = row[4] || '+234 803 000 0000';
+          admNo = row[5] || '';
+        }
+
+        if (!admNo) {
+          admNo = `MUBK-STU-${(studentCounter++).toString().padStart(4, '0')}`;
+        }
 
         const matchedProg = programmes.find(
           (p) =>
             p.id === progStr ||
-            p.programme_code.toLowerCase() === progStr.toLowerCase() ||
-            p.programme_name_english.toLowerCase() === progStr.toLowerCase() ||
-            p.programme_name.toLowerCase() === progStr.toLowerCase()
+            p.programme_code?.toLowerCase() === progStr.toLowerCase() ||
+            p.programme_name_english?.toLowerCase() === progStr.toLowerCase() ||
+            p.programme_name?.toLowerCase() === progStr.toLowerCase()
         );
 
         const matchedClass = classes.find(
@@ -188,17 +212,17 @@ export default function StudentsPage() {
         parsed.push({
           admissionNo: admNo,
           fullName: studentName,
-          gender: 'MALE',
+          gender: genderStr.startsWith('F') ? 'FEMALE' : 'MALE',
           email: `${admNo.toLowerCase()}@markazuumar.edu.ng`,
           dob: '2014-06-15',
           dateEnrolled: new Date().toISOString().split('T')[0],
           programmeId: matchedProg ? matchedProg.id : 'prog-01',
-          programmeName: matchedProg ? matchedProg.programme_name_english : progStr,
+          programmeName: matchedProg ? (matchedProg.programme_name_english || matchedProg.programme_name) : progStr,
           classId: matchedClass ? matchedClass.id : 'cls-tahfiz-1',
           className: matchedClass ? matchedClass.name : classStr,
           guardianId: `usr-parent-${Date.now()}`,
           guardianName: 'Guardian Parent',
-          guardianPhone: '+234 803 000 0000',
+          guardianPhone: guardianPhone,
           status: 'ACTIVE',
           hifzProgress: {
             currentJuz: 1,

@@ -164,6 +164,8 @@ model Student {
   gender       Gender
   dob          DateTime
   dateEnrolled DateTime      @default(now())
+  programmeId  String?
+  subcategory  String?
   classId      String
   schoolClass  SchoolClass   @relation(fields: [classId], references: [id])
   guardianId   String
@@ -252,6 +254,8 @@ model Programme {
   nameEnglish String
   nameArabic  String?
   description String?
+  hasSubcategories Boolean     @default(false)
+  subcategories    String?     // Stored as JSON array string
   status      ProgrammeStatus @default(ACTIVE)
   displayOrder Int            @default(1)
   createdAt   DateTime        @default(now())
@@ -269,6 +273,7 @@ model SchoolClass {
   name           String
   category       ClassCategory
   section        String
+  subcategory    String?
   capacity       Int           @default(30)
   programmeId    String?
   programme      Programme?    @relation(fields: [programmeId], references: [id])

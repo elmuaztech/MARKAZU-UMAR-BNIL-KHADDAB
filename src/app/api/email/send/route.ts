@@ -36,7 +36,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'SMTP credentials missing from environment configuration.' }, { status: 500 });
     }
 
-    console.log(`[EMAIL API] Attempting SMTP dispatch to ${payload.to} via ${smtpHost}:${smtpPort} as ${smtpUser}...`);
+    const emailMode = (process.env.EMAIL_MODE || 'development').toLowerCase();
+    let targetRecipient = payload.to;
+
+    if (emailMode === 'development') {
+      const devRecipient = process.env.DEVELOPMENT_EMAIL_RECIPIENT || process.env.SMTP_USER || 'elmuazdesignservices@gmail.com';
+      console.log(`[DEV EMAIL MODE ACTIVE] Original intended recipient: ${payload.to} -> Safely redirected to dev test recipient: ${devRecipient}`);
+      targetRecipient = devRecipient;
+    }
+
+    console.log(`[EMAIL API] Attempting SMTP dispatch to ${targetRecipient} (Original: ${payload.to}) via ${smtpHost}:${smtpPort}...`);
 
     const transporter = nodemailer.createTransport({
       host: smtpHost,
@@ -57,8 +66,8 @@ export async function POST(req: NextRequest) {
     const info = await transporter.sendMail({
       from: SYSTEM_EMAIL_FROM,
       replyTo: 'markazuumarbnkhaddabdaneji@gmail.com',
-      to: payload.to,
-      subject: payload.subject,
+      to: targetRecipient,
+      subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
       html: htmlContent,
       attachments: logoExists
         ? [
