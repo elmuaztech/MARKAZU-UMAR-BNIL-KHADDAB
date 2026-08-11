@@ -239,8 +239,8 @@ export function AdminDashboard() {
               <Users className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
-            {totalStudents || 71}
+          <p suppressHydrationWarning className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
+            {totalStudents}
           </p>
         </Link>
 
@@ -257,8 +257,8 @@ export function AdminDashboard() {
               <BookOpen className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
-            {totalTeachers || 8}
+          <p suppressHydrationWarning className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
+            {totalTeachers}
           </p>
         </Link>
 
@@ -275,8 +275,8 @@ export function AdminDashboard() {
               <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
-            {Math.max(1, activeSessions.length) || 1}
+          <p suppressHydrationWarning className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
+            {Math.max(1, activeSessions.length)}
           </p>
         </Link>
 
@@ -290,8 +290,8 @@ export function AdminDashboard() {
               <CheckCircle2 className="w-5 h-5" />
             </div>
           </div>
-          <p className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
-            {totalStudents + totalTeachers + totalParents || 40}
+          <p suppressHydrationWarning className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
+            {totalStudents + totalTeachers + totalParents}
           </p>
         </div>
       </div>

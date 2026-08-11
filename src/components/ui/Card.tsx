@@ -90,8 +90,8 @@ export function StatCard({ title, value, subtitle, icon, trend, variant = 'emera
       </div>
 
       <div>
-        <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{value}</p>
-        {subtitle && <p className="text-xs font-semibold text-slate-500 dark:text-emerald-300/70 mt-1">{subtitle}</p>}
+        <p suppressHydrationWarning className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">{value}</p>
+        {subtitle && <p suppressHydrationWarning className="text-xs font-semibold text-slate-500 dark:text-emerald-300/70 mt-1">{subtitle}</p>}
       </div>
 
       {trend && (
