@@ -531,6 +531,26 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (savedName) {
         setSchoolNameState(savedName);
       }
+
+      // Sync latest persisted users from backend serverDb
+      fetch('/api/users')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.users) && data.users.length > 0) {
+            const deleted = getDeletedUserIdentifiers();
+            const validUsers = data.users.filter(
+              (u: any) =>
+                !deleted.ids.includes(u.id) &&
+                !deleted.emails.includes(u.email.toLowerCase().trim()) &&
+                (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
+            );
+            if (validUsers.length > 0) {
+              setUsers(validUsers);
+              safeLocalStorageSet('markazu_users', validUsers);
+            }
+          }
+        })
+        .catch(() => {});
     }
   }, []);
 

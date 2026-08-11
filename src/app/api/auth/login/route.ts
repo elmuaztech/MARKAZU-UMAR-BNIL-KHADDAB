@@ -4,6 +4,7 @@ import { verifyPassword, checkLockoutStatus, getLockoutExpiryTime, hashPassword 
 import { sendSystemEmail } from '../../../../lib/emailService';
 import { ensureDefaultDatabaseUsers } from '../../../../lib/dbSeed';
 import { MOCK_USERS } from '../../../../lib/mockData';
+import { findServerUser } from '../../../../lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,7 +26,7 @@ export async function POST(req: NextRequest) {
       console.warn('[LOGIN_API] DB seed skipped due to DB connection state');
     }
 
-    // 1. Query user from PostgreSQL database by Email OR Username/ID with fallback to MOCK_USERS
+    // 1. Query user from PostgreSQL database or persistent serverDb
     let user: any = null;
     let isDbConnected = false;
 
@@ -69,42 +70,29 @@ export async function POST(req: NextRequest) {
         isDbConnected = true;
       }
     } catch (dbErr) {
-      console.warn('[LOGIN_API_WARNING] Database query failed, falling back to memory records:', dbErr);
+      // Database not connected or offline, proceed to persistent serverDb
     }
 
-    // Memory Fallback if DB is not reachable
+    // Persistent serverDb Query (Persisted on disk across reboots, logins, and logouts)
     if (!user) {
-      const mockMatch = MOCK_USERS.find(
-        (u) =>
-          u.email.trim().toLowerCase() === identifier ||
-          u.username?.trim().toLowerCase() === identifier ||
-          u.id.trim().toLowerCase() === identifier ||
-          (identifier.includes('superadmin') && u.role === 'SUPER_ADMIN') ||
-          (identifier.includes('markazuumar') && u.role === 'SUPER_ADMIN') ||
-          (identifier === 'admin' && u.role === 'ADMIN') ||
-          (identifier === 'schooladmin' && u.role === 'ADMIN') ||
-          (identifier === 'teacher' && u.role === 'TEACHER') ||
-          (identifier === 'headmaster' && u.role === 'HEADMASTER') ||
-          (identifier === 'student' && u.role === 'STUDENT') ||
-          (identifier === 'parent' && u.role === 'PARENT')
-      );
-
-      if (mockMatch) {
+      const serverUser = findServerUser(identifier);
+      if (serverUser) {
         user = {
-          id: mockMatch.id,
-          username: mockMatch.username || mockMatch.id,
-          name: mockMatch.name,
-          email: mockMatch.email,
-          password: mockMatch.passwordHash || hashPassword('@Aa123456789'),
-          role: mockMatch.role,
-          assignedProgrammeId: mockMatch.assignedProgrammeId || null,
-          assignedProgrammeName: mockMatch.assignedProgrammeName || null,
-          status: mockMatch.status || 'ACTIVE',
-          isFirstLogin: mockMatch.isFirstLogin ?? false,
-          mustChangePassword: mockMatch.mustChangePassword ?? false,
-          isLocked: mockMatch.isLocked ?? false,
-          failedLoginAttempts: mockMatch.failedLoginAttempts || 0,
-          avatar: mockMatch.avatar || null,
+          id: serverUser.id,
+          username: serverUser.username || serverUser.id,
+          name: serverUser.name,
+          email: serverUser.email,
+          phone: serverUser.phone,
+          password: serverUser.password || hashPassword('@Aa123456789'),
+          role: serverUser.role,
+          assignedProgrammeId: serverUser.assignedProgrammeId || null,
+          assignedProgrammeName: serverUser.assignedProgrammeName || null,
+          status: serverUser.status || 'ACTIVE',
+          isFirstLogin: serverUser.isFirstLogin ?? false,
+          mustChangePassword: serverUser.mustChangePassword ?? false,
+          isLocked: serverUser.isLocked ?? false,
+          failedLoginAttempts: serverUser.failedLoginAttempts || 0,
+          avatar: serverUser.avatar || (serverUser.role === 'SUPER_ADMIN' ? '/avatars/superadmin.jpg' : null),
         };
       }
     }
