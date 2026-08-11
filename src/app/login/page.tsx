@@ -277,10 +277,28 @@ export default function LoginPage() {
         return;
       }
 
+      let savedCustomProfile: any = {};
+      if (typeof window !== 'undefined') {
+        try {
+          const profileById = localStorage.getItem(`markazu_user_profile_${authUser.id}`);
+          const profileByEmail = localStorage.getItem(`markazu_user_profile_${authUser.email.toLowerCase()}`);
+          if (profileById) savedCustomProfile = JSON.parse(profileById);
+          else if (profileByEmail) savedCustomProfile = JSON.parse(profileByEmail);
+        } catch {}
+      }
+
+      const savedCustomAvatar =
+        typeof window !== 'undefined'
+          ? localStorage.getItem(`markazu_user_avatar_${authUser.id}`) ||
+            localStorage.getItem(`markazu_user_avatar_${authUser.email.toLowerCase()}`)
+          : null;
+
       const fullUserRecord: User = {
         id: authUser.id,
-        name: authUser.name,
-        email: authUser.email,
+        name: savedCustomProfile.name || authUser.name,
+        email: savedCustomProfile.email || authUser.email,
+        phone: savedCustomProfile.phone || authUser.phone,
+        avatar: savedCustomAvatar || savedCustomProfile.avatar || authUser.avatar || (authUser.role === 'SUPER_ADMIN' ? '/avatars/superadmin.jpg' : undefined),
         username: authUser.username,
         role: authUser.role,
         assignedProgrammeId: authUser.assignedProgrammeId,

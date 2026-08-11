@@ -295,12 +295,12 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
   const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD || '';
   const smtpPass = rawPass.replace(/\s+/g, '');
 
-  const emailMode = (process.env.EMAIL_MODE || 'development').toLowerCase();
-  let targetRecipient = payload.to;
+  let targetRecipient = payload.to.trim().toLowerCase();
+  const emailMode = (process.env.EMAIL_MODE || 'production').toLowerCase();
 
-  if (emailMode === 'development') {
+  if (emailMode === 'development' && (targetRecipient.endsWith('@example.com') || targetRecipient.endsWith('@test.com'))) {
     const devRecipient = process.env.DEVELOPMENT_EMAIL_RECIPIENT || process.env.SMTP_USER || 'elmuazdesignservices@gmail.com';
-    console.log(`[DEV EMAIL MODE ACTIVE] Original recipient: ${payload.to} -> Redirected to dev test address: ${devRecipient}`);
+    console.log(`[DEV TEST MODE] Dummy recipient: ${payload.to} -> Redirected to dev test address: ${devRecipient}`);
     targetRecipient = devRecipient;
   }
 

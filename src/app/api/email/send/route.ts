@@ -36,16 +36,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'SMTP credentials missing from environment configuration.' }, { status: 500 });
     }
 
-    const emailMode = (process.env.EMAIL_MODE || 'development').toLowerCase();
-    let targetRecipient = payload.to;
+    let targetRecipient = payload.to.trim().toLowerCase();
+    const emailMode = (process.env.EMAIL_MODE || 'production').toLowerCase();
 
-    if (emailMode === 'development') {
+    if (emailMode === 'development' && (targetRecipient.endsWith('@example.com') || targetRecipient.endsWith('@test.com'))) {
       const devRecipient = process.env.DEVELOPMENT_EMAIL_RECIPIENT || process.env.SMTP_USER || 'elmuazdesignservices@gmail.com';
-      console.log(`[DEV EMAIL MODE ACTIVE] Original intended recipient: ${payload.to} -> Safely redirected to dev test recipient: ${devRecipient}`);
+      console.log(`[DEV TEST MODE] Dummy recipient ${targetRecipient} redirected to dev recipient: ${devRecipient}`);
       targetRecipient = devRecipient;
     }
 
-    console.log(`[EMAIL API] Attempting SMTP dispatch to ${targetRecipient} (Original: ${payload.to}) via ${smtpHost}:${smtpPort}...`);
+    console.log(`[EMAIL API] Dispatching real email to ${targetRecipient} via SMTP ${smtpHost}:${smtpPort}...`);
 
     const transporter = nodemailer.createTransport({
       host: smtpHost,

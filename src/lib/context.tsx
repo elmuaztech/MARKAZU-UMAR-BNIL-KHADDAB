@@ -548,9 +548,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && currentUser?.id) {
-      const savedAvatar = localStorage.getItem(`markazu_user_avatar_${currentUser.id}`);
+      const savedAvatar =
+        localStorage.getItem(`markazu_user_avatar_${currentUser.id}`) ||
+        localStorage.getItem(`markazu_user_avatar_${currentUser.email.toLowerCase()}`);
       if (savedAvatar && savedAvatar !== currentUser.avatar) {
         setCurrentUser((prev) => ({ ...prev, avatar: savedAvatar }));
+      }
+
+      const savedProfileStr =
+        localStorage.getItem(`markazu_user_profile_${currentUser.id}`) ||
+        localStorage.getItem(`markazu_user_profile_${currentUser.email.toLowerCase()}`);
+      if (savedProfileStr) {
+        try {
+          const profile = JSON.parse(savedProfileStr);
+          setCurrentUser((prev) => ({
+            ...prev,
+            name: profile.name || prev.name,
+            email: profile.email || prev.email,
+            phone: profile.phone !== undefined ? profile.phone : prev.phone,
+            avatar: savedAvatar || profile.avatar || prev.avatar,
+          }));
+        } catch {}
       }
     }
   }, [currentUser?.id]);
@@ -1926,8 +1944,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return newUser;
   };
 
-  const deleteUserAccount = (userId: string) => {
-    const userToDelete = users.find((u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase());
+  const deleteUserAccount = async (userId: string) => {
+    const userToDelete = users.find(
+      (u) =>
+        u.id === userId ||
+        u.email.toLowerCase() === userId.toLowerCase() ||
+        (u.username && u.username.toLowerCase() === userId.toLowerCase())
+    );
     if (!userToDelete) return;
     if (userToDelete.role === 'SUPER_ADMIN') {
       notify({
@@ -1944,6 +1967,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     recordDeletedUserIdentifier(targetId, targetEmail, targetUsername);
 
+    // Call backend API to delete from database
+    try {
+      await fetch(`/api/users/${encodeURIComponent(targetId)}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      console.warn('[deleteUserAccount] API delete warning:', e);
+    }
+
     if (typeof window !== 'undefined') {
       try {
         const savedPass = localStorage.getItem('markazu_user_passwords');
@@ -1954,11 +1986,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           if (targetUsername) delete pMap[targetUsername];
           localStorage.setItem('markazu_user_passwords', JSON.stringify(pMap));
         }
+        localStorage.removeItem(`markazu_user_profile_${targetId}`);
+        localStorage.removeItem(`markazu_user_profile_${targetEmail}`);
+        localStorage.removeItem(`markazu_user_avatar_${targetId}`);
+        localStorage.removeItem(`markazu_user_avatar_${targetEmail}`);
       } catch {}
     }
 
     // 1. Remove from users state & LocalStorage
-    const updatedUsers = users.filter((u) => u.id !== targetId && u.email.toLowerCase().trim() !== targetEmail);
+    const updatedUsers = users.filter(
+      (u) =>
+        u.id !== targetId &&
+        u.email.toLowerCase().trim() !== targetEmail &&
+        (!targetUsername || u.username?.toLowerCase().trim() !== targetUsername)
+    );
     setUsers(updatedUsers);
     safeLocalStorageSet('markazu_users', updatedUsers);
 
@@ -1975,36 +2016,54 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // 2. Remove permanently from teachers/headmasters state & LocalStorage
     setTeachers((prev) => {
-      const updated = prev.filter((t) => t.id !== targetId && t.userId !== targetId && t.email?.toLowerCase().trim() !== targetEmail);
+      const updated = prev.filter(
+        (t) => t.id !== targetId && t.userId !== targetId && t.email?.toLowerCase().trim() !== targetEmail
+      );
       safeLocalStorageSet('markazu_teachers', updated);
       return updated;
     });
     for (let i = MOCK_TEACHERS.length - 1; i >= 0; i--) {
-      if (MOCK_TEACHERS[i].id === targetId || MOCK_TEACHERS[i].userId === targetId || MOCK_TEACHERS[i].email?.toLowerCase().trim() === targetEmail) {
+      if (
+        MOCK_TEACHERS[i].id === targetId ||
+        MOCK_TEACHERS[i].userId === targetId ||
+        MOCK_TEACHERS[i].email?.toLowerCase().trim() === targetEmail
+      ) {
         MOCK_TEACHERS.splice(i, 1);
       }
     }
 
     // 3. Remove permanently from students state & LocalStorage
     setStudents((prev) => {
-      const updated = prev.filter((s) => s.id !== targetId && s.userId !== targetId && s.email?.toLowerCase().trim() !== targetEmail);
+      const updated = prev.filter(
+        (s) => s.id !== targetId && s.userId !== targetId && s.email?.toLowerCase().trim() !== targetEmail
+      );
       safeLocalStorageSet('markazu_students', updated);
       return updated;
     });
     for (let i = MOCK_STUDENTS.length - 1; i >= 0; i--) {
-      if (MOCK_STUDENTS[i].id === targetId || MOCK_STUDENTS[i].userId === targetId || MOCK_STUDENTS[i].email?.toLowerCase().trim() === targetEmail) {
+      if (
+        MOCK_STUDENTS[i].id === targetId ||
+        MOCK_STUDENTS[i].userId === targetId ||
+        MOCK_STUDENTS[i].email?.toLowerCase().trim() === targetEmail
+      ) {
         MOCK_STUDENTS.splice(i, 1);
       }
     }
 
     // 4. Remove permanently from parents state & LocalStorage
     setParents((prev) => {
-      const updated = prev.filter((p) => p.id !== targetId && p.userId !== targetId && p.email?.toLowerCase().trim() !== targetEmail);
+      const updated = prev.filter(
+        (p) => p.id !== targetId && p.userId !== targetId && p.email?.toLowerCase().trim() !== targetEmail
+      );
       safeLocalStorageSet('markazu_parents', updated);
       return updated;
     });
     for (let i = MOCK_PARENTS.length - 1; i >= 0; i--) {
-      if (MOCK_PARENTS[i].id === targetId || MOCK_PARENTS[i].userId === targetId || MOCK_PARENTS[i].email?.toLowerCase().trim() === targetEmail) {
+      if (
+        MOCK_PARENTS[i].id === targetId ||
+        MOCK_PARENTS[i].userId === targetId ||
+        MOCK_PARENTS[i].email?.toLowerCase().trim() === targetEmail
+      ) {
         MOCK_PARENTS.splice(i, 1);
       }
     }
@@ -2026,14 +2085,51 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateUserAccount = (userId: string, updates: Partial<User>) => {
-    const targetUser = users.find((u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase() || (u.username && u.username.toLowerCase() === userId.toLowerCase()));
+  const updateUserAccount = async (userId: string, updates: Partial<User>) => {
+    const targetUser = users.find(
+      (u) =>
+        u.id === userId ||
+        u.email.toLowerCase() === userId.toLowerCase() ||
+        (u.username && u.username.toLowerCase() === userId.toLowerCase())
+    );
     const realTargetId = targetUser ? targetUser.id : userId;
     const realTargetEmail = targetUser ? targetUser.email.toLowerCase() : userId.toLowerCase();
 
-    const updated = users.map((u) => (u.id === realTargetId || u.email.toLowerCase() === realTargetEmail ? { ...u, ...updates } : u));
+    const updated = users.map((u) =>
+      u.id === realTargetId || u.email.toLowerCase() === realTargetEmail ? { ...u, ...updates } : u
+    );
     setUsers(updated);
     safeLocalStorageSet('markazu_users', updated);
+
+    // Save individual profile updates so they persist across logins and sessions
+    if (typeof window !== 'undefined') {
+      try {
+        const existingProfileStr = localStorage.getItem(`markazu_user_profile_${realTargetId}`);
+        const existingProfile = existingProfileStr ? JSON.parse(existingProfileStr) : {};
+        const mergedProfile = { ...existingProfile, ...updates };
+        localStorage.setItem(`markazu_user_profile_${realTargetId}`, JSON.stringify(mergedProfile));
+        if (realTargetEmail) {
+          localStorage.setItem(`markazu_user_profile_${realTargetEmail}`, JSON.stringify(mergedProfile));
+        }
+        if (updates.avatar) {
+          localStorage.setItem(`markazu_user_avatar_${realTargetId}`, updates.avatar);
+          if (realTargetEmail) {
+            localStorage.setItem(`markazu_user_avatar_${realTargetEmail}`, updates.avatar);
+          }
+        }
+      } catch {}
+    }
+
+    // Call backend API to persist in database
+    try {
+      await fetch(`/api/users/${encodeURIComponent(realTargetId)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+    } catch (e) {
+      console.warn('[updateUserAccount] API update warning:', e);
+    }
 
     // Update MOCK_USERS in memory as well
     MOCK_USERS.forEach((mu, idx) => {
@@ -2042,7 +2138,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    if (currentUser && (currentUser.id === realTargetId || currentUser.email.toLowerCase() === realTargetEmail || (currentUser.role === 'SUPER_ADMIN' && targetUser?.role === 'SUPER_ADMIN'))) {
+    if (
+      currentUser &&
+      (currentUser.id === realTargetId ||
+        currentUser.email.toLowerCase() === realTargetEmail ||
+        (currentUser.role === 'SUPER_ADMIN' && targetUser?.role === 'SUPER_ADMIN'))
+    ) {
       const updatedCurr = { ...currentUser, ...updates };
       setCurrentUser(updatedCurr);
       safeLocalStorageSet('markazu_current_user', updatedCurr);
