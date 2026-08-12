@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     let users: any[] = [];
+    let querySuccess = false;
 
     // 1. Try PostgreSQL Prisma if connected
     try {
@@ -33,11 +34,12 @@ export async function GET(req: NextRequest) {
           createdAt: true,
         },
       });
+      querySuccess = true;
     } catch (dbErr) {
-      // Postgres offline, fallback to serverDb
+      console.warn('[GET_USERS] Postgres query failed, falling back to serverDb:', dbErr);
     }
 
-    if (!users || users.length === 0) {
+    if (!querySuccess) {
       users = getAllServerUsers();
     }
 

@@ -1,0 +1,43 @@
+﻿PROJECT BRIEFMarkazu Umar School Management System (MSSMS)
+Project Owner
+Elmuaz Technologies LTD
+Client
+Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies SchoolKano, Nigeria.
+Project Goal
+Develop a modern enterprise-grade School Management System specifically for Markazu Umar School.This is NOT a clone of MyEcole, but MyEcole will serve as the primary workflow and UI reference.The system should be faster, more secure, more scalable, easier to maintain, tailored for an Islamiyya/Tahfiz school, and commercial quality.
+Important
+This project is NOT multi-tenant. It is designed for one school only, but should use a clean, modular architecture.
+Expected Users
+Students: 2,000+Teachers: 70+Parents: 3,000+Administrators: 10+Concurrent users expected to grow over time.
+Technology Stack
+Frontend: Next.js (App Router), TypeScript, Tailwind CSS, shadcn/ui, React Hook Form, Zod, TanStack QueryBackend: NestJS, TypeScript, Prisma ORMDatabase: PostgreSQLAuthentication: JWT, Refresh Tokens, RBACDeployment: Hostinger VPS (KVM 1 initially), Ubuntu LTS, Nginx, Let's Encrypt SSL
+Development Principles
+Clean ArchitectureSOLID PrinciplesFeature-based structureReusable componentsScalable, maintainable codeEnterprise coding standardsProper documentation
+Reference Software
+MyEcole School Management System is the reference for workflow and UI. Preserve familiar navigation while improving architecture, security, performance, and UI quality.
+School Characteristics
+Islamiyya school requiring modules for Qur'an Memorization, Hifz, Sabki, Manzil, Tajweed, Arabic, Fiqh, Hadith, Aqeedah, Seerah, and Islamic Behaviour.
+Payment Module
+Version 1 will NOT include Finance, Student Wallet, Payments, Invoices, or Revenue because the school is free. The architecture should still support adding Finance later.
+Version 1 Modules
+AuthenticationDashboardUser ManagementStudentsTeachersParentsClassesSubjectsAcademic SessionsAttendanceResultsAnnouncementsQur'an MemorizationIslamic SubjectsReportsSettingsWebsite
+Future Modules
+FinancePayrollTransportHostelLibraryInventoryCBTClinicVisitor ManagementAPIMobile App
+Security Requirements
+Password HashingJWTRefresh TokensRBACAudit LogsValidationRate LimitingHTTPSSecure Headers
+Database
+PostgreSQL with Prisma ORM, UUID primary keys, soft deletes, audit columns, optimized indexing.
+UI Requirements
+Keep MyEcole workflow while improving typography, spacing, responsiveness, accessibility, and performance. Use the school's colors: Green, Dark Green, Sky Blue, and Purple.
+Hosting
+Hostinger VPS (KVM 1 initially, upgrade to KVM 2 later when required).
+Development Workflow
+Build in small sprints:1. Requirements2. Design3. Implementation4. Testing5. Bug Fixes6. Review7. Merge
+Quality Standards
+No TypeScript errorsNo ESLint errorsNo build errorsResponsive UIProper validationProper authorizationUpdated documentation
+Project Owner Role
+Business decisions, testing, requirements gathering, and project coordination.
+ChatGPT Role
+Lead Software Architect, System Analyst, Database Architect, UI/UX Architect, Technical Project Manager, Code Reviewer, and Security Consultant.
+Success Criteria
+Enterprise-grade, production-ready, secure, scalable, fast, well-documented, deployable on Hostinger VPS, and a flagship product for Elmuaz Technologies LTD.

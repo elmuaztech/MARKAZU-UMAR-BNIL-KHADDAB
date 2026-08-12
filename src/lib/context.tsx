@@ -451,49 +451,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setProgressOptions(null);
   };
 
-  const [users, setUsers] = useState<User[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const deleted = getDeletedUserIdentifiers();
-        const savedUsers = localStorage.getItem('markazu_users');
-        if (savedUsers !== null) {
-          const parsed: User[] = JSON.parse(savedUsers);
-          const filtered = parsed.filter(
-            (u) =>
-              !deleted.ids.includes(u.id) &&
-              !deleted.emails.includes(u.email.toLowerCase().trim()) &&
-              (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
-          );
-          const updatedParsed = filtered.map((u) => {
-            if (u.id === 'usr-superadmin-1' || u.role === 'SUPER_ADMIN') {
-              return {
-                ...u,
-                passwordHash: u.passwordHash || hashPassword('@Aa123456789'),
-                isLocked: false,
-                failedLoginAttempts: 0,
-              };
-            }
-            return u;
-          });
-          safeLocalStorageSet('markazu_users', updatedParsed);
-          return updatedParsed;
-        }
-
-        const savedPass = localStorage.getItem('markazu_user_passwords');
-        const pMap: Record<string, string> = savedPass ? JSON.parse(savedPass) : {};
-        return MOCK_USERS.filter(
-          (u) =>
-            !deleted.ids.includes(u.id) &&
-            !deleted.emails.includes(u.email.toLowerCase().trim()) &&
-            (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
-        ).map((u) => {
-          const h = pMap[u.email.toLowerCase()] || pMap[u.id] || u.passwordHash;
-          return { ...u, passwordHash: h, failedLoginAttempts: 0, isLocked: false };
-        });
-      } catch {}
-    }
-    return MOCK_USERS;
-  });
+  const [users, setUsers] = useState<User[]>([]);
 
   const [currentUser, setCurrentUser] = useState<User>(() => {
     if (typeof window !== 'undefined') {
@@ -551,6 +509,207 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         })
         .catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // 1. Fetch Students
+      fetch('/api/students')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.students)) {
+            const deleted = getDeletedUserIdentifiers();
+            const mappedStudents = data.students
+              .filter((s: any) => !deleted.ids.includes(s.id))
+              .map((s: any) => ({
+                id: s.id,
+                userId: s.userId || null,
+                admissionNo: s.admissionNo,
+                fullName: s.fullName,
+                gender: s.gender,
+                dob: s.dob,
+                dateEnrolled: s.dateEnrolled,
+                programmeId: s.programmeId || s.schoolClass?.programmeId || null,
+                classId: s.classId,
+                className: s.schoolClass?.name || 'Class',
+                guardianId: s.guardianId,
+                guardianName: s.parent?.fullName || 'Parent',
+                guardianPhone: s.parent?.phone || '',
+                status: s.status,
+                hifzProgress: {
+                  currentJuz: s.currentJuz || 1,
+                  juzCompleted: s.juzCompleted || 0,
+                  currentSurah: s.currentSurah || 'Surah Al-Fatihah',
+                  currentAyah: s.currentAyah || 1,
+                  completedSurahsCount: s.completedSurahsCount || 0,
+                  tajweedRating: s.tajweedRating || 5,
+                  sabkiRating: s.sabkiRating || 5,
+                  manzilRating: s.manzilRating || 5,
+                },
+                akhlaqRating: s.akhlaqRating || 'EXCELLENT',
+                avatar: s.avatar || undefined,
+              }));
+            if (mappedStudents.length > 0) {
+              setStudents(mappedStudents);
+              safeLocalStorageSet('markazu_students', mappedStudents);
+            }
+          }
+        })
+        .catch((e) => console.warn('[syncStudents] error:', e));
+
+      // 2. Fetch Teachers
+      fetch('/api/teachers')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.teachers)) {
+            const deleted = getDeletedUserIdentifiers();
+            const mappedTeachers = data.teachers
+              .filter((t: any) => !deleted.ids.includes(t.id))
+              .map((t: any) => {
+                const programmeIds = t.teacherAssignments?.map((a: any) => a.programmeId) || [];
+                const classesAssigned = t.teacherAssignments?.map((a: any) => a.classId) || [];
+                const subjectsAssigned = t.teacherAssignments?.flatMap((a: any) => a.assignedSubjects?.map((s: any) => s.subjectId) || []) || [];
+                return {
+                  id: t.id,
+                  userId: t.userId || null,
+                  staffNo: t.staffNo,
+                  fullName: t.fullName,
+                  email: t.email,
+                  phone: t.phone,
+                  qualification: t.qualification || '',
+                  specialization: t.specialization || '',
+                  programmeIds,
+                  classesAssigned,
+                  subjectsAssigned,
+                  dateJoined: t.dateJoined,
+                  status: t.status,
+                  avatar: t.avatar || undefined,
+                };
+              });
+            if (mappedTeachers.length > 0) {
+              setTeachers(mappedTeachers);
+              safeLocalStorageSet('markazu_teachers', mappedTeachers);
+            }
+          }
+        })
+        .catch((e) => console.warn('[syncTeachers] error:', e));
+
+      // 3. Fetch Classes
+      fetch('/api/classes')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.classes)) {
+            const mappedClasses = data.classes.map((c: any) => ({
+              id: c.id,
+              name: c.name,
+              category: c.category,
+              section: c.section,
+              subcategory: c.subcategory || undefined,
+              capacity: c.capacity,
+              studentCount: c._count?.students || 0,
+              classTeacherId: c.classTeacherId || undefined,
+              classTeacherName: c.classTeacher?.fullName || undefined,
+              programmeId: c.programmeId || '',
+              programmeName: c.programme?.nameEnglish || 'Programme',
+            }));
+            if (mappedClasses.length > 0) {
+              setClasses(mappedClasses);
+              safeLocalStorageSet('markazu_classes', mappedClasses);
+            }
+          }
+        })
+        .catch((e) => console.warn('[syncClasses] error:', e));
+
+      // 4. Fetch Subjects
+      fetch('/api/subjects')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.subjects)) {
+            const mappedSubjects = data.subjects.map((s: any) => ({
+              id: s.id,
+              name: s.name,
+              arabicName: s.arabicName || undefined,
+              code: s.code,
+              category: s.category,
+              description: s.description || '',
+              programmeId: s.programmeId || undefined,
+              programmeName: s.programme?.nameEnglish || undefined,
+              classId: s.classId || undefined,
+              className: s.schoolClass?.name || undefined,
+              status: s.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
+              displayOrder: s.displayOrder || 1,
+            }));
+            if (mappedSubjects.length > 0) {
+              setSubjects(mappedSubjects);
+              safeLocalStorageSet('markazu_subjects', mappedSubjects);
+            }
+          }
+        })
+        .catch((e) => console.warn('[syncSubjects] error:', e));
+
+      // 5. Fetch Attendance
+      fetch('/api/attendance')
+        .then((res) => res.json())
+        .then((resData) => {
+          if (resData && resData.success && Array.isArray(resData.data)) {
+            const mappedAttendance = resData.data.map((a: any) => ({
+              id: a.id,
+              date: a.date,
+              studentId: a.studentId,
+              studentName: a.student?.fullName || 'Student',
+              programmeId: a.programmeId || undefined,
+              classId: a.classId,
+              className: a.schoolClass?.name || 'Class',
+              teacherId: a.teacherId || undefined,
+              status: a.statusEnum || a.status,
+              remarks: a.remarks || undefined,
+              isDraft: a.isDraft,
+            }));
+            if (mappedAttendance.length > 0) {
+              setAttendance(mappedAttendance);
+              safeLocalStorageSet('markazu_attendance', mappedAttendance);
+            }
+          }
+        })
+        .catch((e) => console.warn('[syncAttendance] error:', e));
+
+      // 6. Fetch Tahfiz Progress
+      fetch('/api/tahfiz')
+        .then((res) => res.json())
+        .then((resData) => {
+          if (resData && resData.success && Array.isArray(resData.data)) {
+            const mappedTahfiz = resData.data.map((t: any) => ({
+              id: t.id,
+              date: t.date,
+              studentId: t.studentId,
+              studentName: t.student?.fullName || 'Student',
+              programmeId: t.programmeId || undefined,
+              classId: t.classId,
+              className: t.schoolClass?.name || 'Class',
+              teacherId: t.teacherId,
+              teacherName: t.teacher?.fullName || 'Teacher',
+              hifzSurah: t.hifzSurah,
+              hifzFromAyah: t.hifzFromAyah,
+              hifzToAyah: t.hifzToAyah,
+              hifzPages: t.hifzPages,
+              currentJuz: t.currentJuz,
+              sabkiSurah: t.sabkiSurah,
+              sabkiRating: t.sabkiRating,
+              manzilJuz: t.manzilJuz,
+              manzilRating: t.manzilRating,
+              teacherNotes: t.teacherNotes,
+              studentBehaviour: t.studentBehaviour,
+              completionPercentage: t.completionPercentage,
+              teacherComment: t.teacherComment || undefined,
+            }));
+            if (mappedTahfiz.length > 0) {
+              setTahfizRecords(mappedTahfiz);
+              safeLocalStorageSet('markazu_tahfiz_records', mappedTahfiz);
+            }
+          }
+        })
+        .catch((e) => console.warn('[syncTahfiz] error:', e));
     }
   }, []);
 
@@ -647,136 +806,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const [programmes, setProgrammes] = useState<Programme[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_programmes');
-        if (saved !== null) return JSON.parse(saved);
-      } catch {}
-    }
-    return MOCK_PROGRAMMES;
-  });
-  const [students, setStudents] = useState<Student[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const deleted = getDeletedUserIdentifiers();
-        const saved = localStorage.getItem('markazu_students');
-        if (saved !== null) {
-          const parsed: Student[] = JSON.parse(saved);
-          return parsed.filter(
-            (s) =>
-              !deleted.ids.includes(s.id) &&
-              (!s.userId || !deleted.ids.includes(s.userId)) &&
-              (!s.email || !deleted.emails.includes(s.email.toLowerCase().trim())) &&
-              (!s.admissionNo || !deleted.usernames.includes(s.admissionNo.toLowerCase().trim()))
-          );
-        }
-      } catch {}
-    }
-    const deleted = getDeletedUserIdentifiers();
-    return MOCK_STUDENTS.filter(
-      (s) =>
-        !deleted.ids.includes(s.id) &&
-        (!s.userId || !deleted.ids.includes(s.userId)) &&
-        (!s.email || !deleted.emails.includes(s.email.toLowerCase().trim())) &&
-        (!s.admissionNo || !deleted.usernames.includes(s.admissionNo.toLowerCase().trim()))
-    );
-  });
-  const [teachers, setTeachers] = useState<Teacher[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const deleted = getDeletedUserIdentifiers();
-        const saved = localStorage.getItem('markazu_teachers');
-        if (saved !== null) {
-          const parsed: Teacher[] = JSON.parse(saved);
-          return parsed.filter(
-            (t) =>
-              !deleted.ids.includes(t.id) &&
-              (!t.userId || !deleted.ids.includes(t.userId)) &&
-              (!t.email || !deleted.emails.includes(t.email.toLowerCase().trim())) &&
-              (!t.staffNo || !deleted.usernames.includes(t.staffNo.toLowerCase().trim()))
-          );
-        }
-      } catch {}
-    }
-    const deleted = getDeletedUserIdentifiers();
-    return MOCK_TEACHERS.filter(
-      (t) =>
-        !deleted.ids.includes(t.id) &&
-        (!t.userId || !deleted.ids.includes(t.userId)) &&
-        (!t.email || !deleted.emails.includes(t.email.toLowerCase().trim())) &&
-        (!t.staffNo || !deleted.usernames.includes(t.staffNo.toLowerCase().trim()))
-    );
-  });
-  const [parents, setParents] = useState<Parent[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const deleted = getDeletedUserIdentifiers();
-        const saved = localStorage.getItem('markazu_parents');
-        if (saved !== null) {
-          const parsed: Parent[] = JSON.parse(saved);
-          return parsed.filter(
-            (p) =>
-              !deleted.ids.includes(p.id) &&
-              (!p.userId || !deleted.ids.includes(p.userId)) &&
-              (!p.email || !deleted.emails.includes(p.email.toLowerCase().trim()))
-          );
-        }
-      } catch {}
-    }
-    const deleted = getDeletedUserIdentifiers();
-    return MOCK_PARENTS.filter(
-      (p) =>
-        !deleted.ids.includes(p.id) &&
-        (!p.userId || !deleted.ids.includes(p.userId)) &&
-        (!p.email || !deleted.emails.includes(p.email.toLowerCase().trim()))
-    );
-  });
-  const [classes, setClasses] = useState<SchoolClass[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_classes');
-        if (saved !== null) return JSON.parse(saved);
-      } catch {}
-    }
-    return MOCK_CLASSES;
-  });
-  const [subjects, setSubjects] = useState<Subject[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_subjects');
-        if (saved !== null) return JSON.parse(saved);
-      } catch {}
-    }
-    return MOCK_SUBJECTS;
-  });
-  const [teacherAssignments, setTeacherAssignments] = useState<TeacherAssignment[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_teacher_assignments');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return MOCK_TEACHER_ASSIGNMENTS;
-  });
-  const [attendance, setAttendance] = useState<AttendanceRecord[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_attendance');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return MOCK_ATTENDANCE;
-  });
-  const [tahfizRecords, setTahfizRecords] = useState<TahfizRecord[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_tahfiz_records');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return MOCK_TAHFIZ_RECORDS;
-  });
+  const [programmes, setProgrammes] = useState<Programme[]>(MOCK_PROGRAMMES);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [parents, setParents] = useState<Parent[]>([]);
+  const [classes, setClasses] = useState<SchoolClass[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [teacherAssignments, setTeacherAssignments] = useState<TeacherAssignment[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
+  const [tahfizRecords, setTahfizRecords] = useState<TahfizRecord[]>([]);
   const [timetablePeriods, setTimetablePeriods] = useState<TimetablePeriod[]>(MOCK_TIMETABLE);
   const [directMessages, setDirectMessages] = useState<DirectMessage[]>(MOCK_DIRECT_MESSAGES);
   const [grades, setGrades] = useState<GradeRecord[]>(() => {
@@ -2418,14 +2456,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'SUCCESS',
     });
   };
-  const addStudent = (studentData: Omit<Student, 'id'>, customPassword?: string) => {
+  const addStudent = async (studentData: Omit<Student, 'id'>, customPassword?: string) => {
     const studentId = `usr-student-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const newStudent: Student = {
       ...studentData,
       id: studentId,
     };
 
-    setStudents((prev) => [newStudent, ...prev]);
+    setStudents((prev) => {
+      const next = [newStudent, ...prev];
+      safeLocalStorageSet('markazu_students', next);
+      return next;
+    });
 
     // Create User account credentials with mandatory first login flag
     const tempPass = customPassword || generateTemporaryPassword();
@@ -2444,8 +2486,45 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
     };
 
-    setUsers((prev) => [newUser, ...prev]);
+    setUsers((prev) => {
+      const next = [newUser, ...prev];
+      safeLocalStorageSet('markazu_users', next);
+      return next;
+    });
     MOCK_USERS.unshift(newUser);
+
+    // Sync to backend database
+    try {
+      // 1. Create Student record in DB
+      await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          admissionNo: studentData.admissionNo,
+          name: studentData.fullName,
+          gender: studentData.gender,
+          dob: studentData.dob,
+          classId: studentData.classId,
+          guardianId: studentData.guardianId,
+          programmeId: studentData.programmeId,
+        }),
+      });
+
+      // 2. Create corresponding User Credentials in DB
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: studentData.admissionNo,
+          name: studentData.fullName,
+          email: newUser.email,
+          role: 'STUDENT',
+          tempPassword: tempPass,
+        }),
+      });
+    } catch (e) {
+      console.warn('[addStudent] backend sync error:', e);
+    }
 
     // Send Welcome Email
     sendSystemEmail({
@@ -2470,16 +2549,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateStudent = (id: string, updated: Partial<Student>) => {
-    setStudents((prev) =>
-      prev.map((s) => {
+  const updateStudent = async (id: string, updated: Partial<Student>) => {
+    setStudents((prev) => {
+      const next = prev.map((s) => {
         if (s.id === id) {
           const newName = updated.fullName || s.fullName;
           const newEmail = updated.email || s.email;
           const newAvatar = updated.avatar !== undefined ? updated.avatar : s.avatar;
 
-          setUsers((uPrev) =>
-            uPrev.map((u) => {
+          setUsers((uPrev) => {
+            const uNext = uPrev.map((u) => {
               if (u.id === id || u.id === s.userId || (s.admissionNo && u.username === s.admissionNo)) {
                 return {
                   ...u,
@@ -2489,23 +2568,59 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 };
               }
               return u;
-            })
-          );
+            });
+            safeLocalStorageSet('markazu_users', uNext);
+            return uNext;
+          });
 
           if (currentUser && (currentUser.id === id || currentUser.id === s.userId || (s.admissionNo && currentUser.username === s.admissionNo))) {
-            setCurrentUser((cPrev) => ({
-              ...cPrev,
+            const updatedCurr = {
+              ...currentUser,
               name: newName,
-              email: newEmail || cPrev.email,
+              email: newEmail || currentUser.email,
               avatar: newAvatar,
-            }));
+            };
+            setCurrentUser(updatedCurr);
+            safeLocalStorageSet('markazu_current_user', updatedCurr);
           }
 
           return { ...s, ...updated, avatar: newAvatar };
         }
         return s;
-      })
-    );
+      });
+      safeLocalStorageSet('markazu_students', next);
+      return next;
+    });
+
+    // Sync to backend database
+    try {
+      await fetch(`/api/students/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: updated.fullName,
+          admissionNo: updated.admissionNo,
+          gender: updated.gender,
+          dob: updated.dob,
+          classId: updated.classId,
+          guardianId: updated.guardianId,
+          status: updated.status,
+          // Sync Hifz Progress if updated
+          currentJuz: updated.hifzProgress?.currentJuz,
+          juzCompleted: updated.hifzProgress?.juzCompleted,
+          currentSurah: updated.hifzProgress?.currentSurah,
+          currentAyah: updated.hifzProgress?.currentAyah,
+          completedSurahsCount: updated.hifzProgress?.completedSurahsCount,
+          tajweedRating: updated.hifzProgress?.tajweedRating,
+          sabkiRating: updated.hifzProgress?.sabkiRating,
+          manzilRating: updated.hifzProgress?.manzilRating,
+          akhlaqRating: updated.akhlaqRating,
+        }),
+      });
+    } catch (e) {
+      console.warn('[updateStudent] backend sync error:', e);
+    }
+
     addAuditLog({
       action: 'STUDENT_UPDATED',
       performedBy: currentUser.name,
@@ -2517,7 +2632,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const deleteStudent = (id: string) => {
+  const deleteStudent = async (id: string) => {
     const targetStudent = students.find((s) => s.id === id);
     const updatedStudents = students.filter((s) => s.id !== id);
     setStudents(updatedStudents);
@@ -2547,6 +2662,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Sync to backend database
+    try {
+      await fetch(`/api/students/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      console.warn('[deleteStudent] backend sync error:', e);
+    }
+
     notify({
       type: 'warning',
       title: 'Student Account Deleted',
@@ -2563,7 +2687,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const addTeacher = (teacherData: Omit<Teacher, 'id'>, customPassword?: string) => {
+  const addTeacher = async (teacherData: Omit<Teacher, 'id'>, customPassword?: string) => {
     const englishName = teacherData.full_name_english || teacherData.fullName;
     const arabicName = teacherData.full_name_arabic || '';
     const teacherId = `usr-teacher-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
@@ -2576,7 +2700,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       fullName: englishName,
     };
 
-    setTeachers((prev) => [newTeacher, ...prev]);
+    setTeachers((prev) => {
+      const next = [newTeacher, ...prev];
+      safeLocalStorageSet('markazu_teachers', next);
+      return next;
+    });
 
     // Create User account credentials with Staff ID as username
     const tempPass = customPassword || generateTemporaryPassword();
@@ -2596,7 +2724,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
     };
 
-    setUsers((prev) => [newUser, ...prev]);
+    setUsers((prev) => {
+      const next = [newUser, ...prev];
+      safeLocalStorageSet('markazu_users', next);
+      return next;
+    });
     MOCK_USERS.unshift(newUser);
 
     // Auto-create TeacherAssignment records for relational dashboard queries
@@ -2616,8 +2748,47 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
       });
       if (createdAssignments.length > 0) {
-        setTeacherAssignments((prev) => [...createdAssignments, ...prev]);
+        setTeacherAssignments((prev) => {
+          const next = [...createdAssignments, ...prev];
+          safeLocalStorageSet('markazu_teacher_assignments', next);
+          return next;
+        });
       }
+    }
+
+    // Sync to backend database
+    try {
+      // 1. Create Teacher record in DB
+      await fetch('/api/teachers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          staffNo: teacherData.staffNo,
+          fullName: englishName,
+          email: teacherData.email,
+          phone: teacherData.phone,
+          qualification: teacherData.qualification,
+          specialization: teacherData.specialization,
+          status: teacherData.status,
+          dateJoined: teacherData.dateJoined,
+          userId: teacherId,
+        }),
+      });
+
+      // 2. Create corresponding User Credentials in DB
+      await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: teacherData.staffNo,
+          name: englishName,
+          email: teacherData.email,
+          role: 'TEACHER',
+          tempPassword: tempPass,
+        }),
+      });
+    } catch (e) {
+      console.warn('[addTeacher] backend sync error:', e);
     }
 
     // Send Welcome Email
@@ -2643,17 +2814,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateTeacher = (id: string, updated: Partial<Teacher>) => {
-    setTeachers((prev) =>
-      prev.map((t) => {
+  const updateTeacher = async (id: string, updated: Partial<Teacher>) => {
+    setTeachers((prev) => {
+      const next = prev.map((t) => {
         if (t.id === id) {
           const englishName = updated.full_name_english || updated.fullName || t.full_name_english || t.fullName;
           const arabicName = updated.full_name_arabic !== undefined ? updated.full_name_arabic : t.full_name_arabic;
           const newAvatar = updated.avatar !== undefined ? updated.avatar : t.avatar;
           const newEmail = updated.email !== undefined ? updated.email : t.email;
 
-          setUsers((uPrev) =>
-            uPrev.map((u) => {
+          setUsers((uPrev) => {
+            const uNext = uPrev.map((u) => {
               if (u.id === id || (t.email && u.email.toLowerCase() === t.email.toLowerCase()) || (t.staffNo && u.username === t.staffNo)) {
                 return {
                   ...u,
@@ -2663,16 +2834,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 };
               }
               return u;
-            })
-          );
+            });
+            safeLocalStorageSet('markazu_users', uNext);
+            return uNext;
+          });
 
           if (currentUser && (currentUser.id === id || (t.email && currentUser.email.toLowerCase() === t.email.toLowerCase()) || (t.staffNo && currentUser.username === t.staffNo))) {
-            setCurrentUser((cPrev) => ({
-              ...cPrev,
+            const updatedCurr = {
+              ...currentUser,
               name: englishName,
               email: newEmail,
               avatar: newAvatar,
-            }));
+            };
+            setCurrentUser(updatedCurr);
+            safeLocalStorageSet('markazu_current_user', updatedCurr);
           }
 
           return {
@@ -2685,8 +2860,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           };
         }
         return t;
-      })
-    );
+      });
+      safeLocalStorageSet('markazu_teachers', next);
+      return next;
+    });
+
+    // Sync to backend database
+    try {
+      await fetch(`/api/teachers/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: updated.fullName || updated.full_name_english,
+          staffNo: updated.staffNo,
+          email: updated.email,
+          phone: updated.phone,
+          qualification: updated.qualification,
+          specialization: updated.specialization,
+          status: updated.status,
+          dateJoined: updated.dateJoined,
+        }),
+      });
+    } catch (e) {
+      console.warn('[updateTeacher] backend sync error:', e);
+    }
+
     addAuditLog({
       action: 'TEACHER_UPDATED',
       performedBy: currentUser.name,
@@ -2698,7 +2896,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const deleteTeacher = (id: string) => {
+  const deleteTeacher = async (id: string) => {
     const targetTeacher = teachers.find((t) => t.id === id);
     const updatedTeachers = teachers.filter((t) => t.id !== id);
     setTeachers(updatedTeachers);
@@ -2728,6 +2926,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
+    // Sync to backend database
+    try {
+      await fetch(`/api/teachers/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      console.warn('[deleteTeacher] backend sync error:', e);
+    }
+
     notify({
       type: 'warning',
       title: 'Teacher Profile Deleted Permanently',
@@ -2744,12 +2951,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const addSubject = (subjectData: Omit<Subject, 'id'>) => {
+  const addSubject = async (subjectData: Omit<Subject, 'id'>) => {
     const newSubject: Subject = {
       ...subjectData,
       id: `subj-${Date.now()}`,
     };
-    setSubjects((prev) => [...prev, newSubject]);
+    setSubjects((prev) => {
+      const next = [...prev, newSubject];
+      safeLocalStorageSet('markazu_subjects', next);
+      return next;
+    });
+
+    // Sync to backend database
+    try {
+      await fetch('/api/subjects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: subjectData.name,
+          arabicName: subjectData.arabicName,
+          code: subjectData.code,
+          category: subjectData.category,
+          description: subjectData.description,
+          programmeId: subjectData.programmeId,
+          classId: subjectData.classId,
+          status: subjectData.status,
+          displayOrder: subjectData.displayOrder,
+        }),
+      });
+    } catch (e) {
+      console.warn('[addSubject] backend sync error:', e);
+    }
+
     addAuditLog({
       action: 'SUBJECT_ADDED',
       performedBy: currentUser.name,
@@ -2761,8 +2994,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateSubject = (id: string, updated: Partial<Subject>) => {
-    setSubjects((prev) => prev.map((s) => (s.id === id ? { ...s, ...updated } : s)));
+  const updateSubject = async (id: string, updated: Partial<Subject>) => {
+    setSubjects((prev) => {
+      const next = prev.map((s) => (s.id === id ? { ...s, ...updated } : s));
+      safeLocalStorageSet('markazu_subjects', next);
+      return next;
+    });
+
+    // Sync to backend database
+    try {
+      await fetch(`/api/subjects/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updated),
+      });
+    } catch (e) {
+      console.warn('[updateSubject] backend sync error:', e);
+    }
+
     addAuditLog({
       action: 'SUBJECT_ADDED',
       performedBy: currentUser.name,
@@ -2774,8 +3023,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const deleteSubject = (id: string) => {
-    setSubjects((prev) => prev.filter((s) => s.id !== id));
+  const deleteSubject = async (id: string) => {
+    setSubjects((prev) => {
+      const next = prev.filter((s) => s.id !== id);
+      safeLocalStorageSet('markazu_subjects', next);
+      return next;
+    });
+
+    // Sync to backend database
+    try {
+      await fetch(`/api/subjects/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      console.warn('[deleteSubject] backend sync error:', e);
+    }
+
     addAuditLog({
       action: 'SUBJECT_REMOVED',
       performedBy: currentUser.name,
@@ -3898,7 +4161,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const addClass = (newClassData: Omit<SchoolClass, 'id'>) => {
+  const addClass = async (newClassData: Omit<SchoolClass, 'id'>) => {
     const englishName = newClassData.class_name_english || newClassData.name;
     const arabicName = newClassData.class_name_arabic || '';
 
@@ -3916,6 +4179,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
     MOCK_CLASSES.push(newClass);
 
+    // Sync to backend database
+    try {
+      await fetch('/api/classes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: englishName,
+          category: newClassData.category,
+          section: newClassData.section,
+          subcategory: newClassData.subcategory,
+          capacity: newClassData.capacity,
+          programmeId: newClassData.programmeId,
+          classTeacherId: newClassData.classTeacherId,
+        }),
+      });
+    } catch (e) {
+      console.warn('[addClass] backend sync error:', e);
+    }
+
     addAuditLog({
       action: 'CLASS_CREATED',
       performedBy: currentUser.name,
@@ -3927,7 +4209,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateClass = (id: string, updated: Partial<SchoolClass>) => {
+  const updateClass = async (id: string, updated: Partial<SchoolClass>) => {
     setClasses((prev) => {
       const next = prev.map((c) => {
         if (c.id === id) {
@@ -3961,6 +4243,25 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
+    // Sync to backend database
+    try {
+      await fetch(`/api/classes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: updated.name || updated.class_name_english,
+          category: updated.category,
+          section: updated.section,
+          subcategory: updated.subcategory,
+          capacity: updated.capacity,
+          programmeId: updated.programmeId,
+          classTeacherId: updated.classTeacherId,
+        }),
+      });
+    } catch (e) {
+      console.warn('[updateClass] backend sync error:', e);
+    }
+
     addAuditLog({
       action: 'CLASS_UPDATED',
       performedBy: currentUser.name,
@@ -3972,7 +4273,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const deleteClass = (id: string) => {
+  const deleteClass = async (id: string) => {
     setClasses((prev) => {
       const next = prev.filter((c) => c.id !== id);
       safeLocalStorageSet('markazu_classes', next);
@@ -3990,6 +4291,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_teacher_assignments', next);
       return next;
     });
+
+    // Sync to backend database
+    try {
+      await fetch(`/api/classes/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (e) {
+      console.warn('[deleteClass] backend sync error:', e);
+    }
 
     addAuditLog({
       action: 'CLASS_DELETED',

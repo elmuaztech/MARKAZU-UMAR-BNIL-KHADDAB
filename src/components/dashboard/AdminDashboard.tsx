@@ -162,10 +162,10 @@ export function AdminDashboard() {
   ];
 
   const attendancePie = [
-    { name: 'Present', value: presentCount || 92, color: '#10b981' },
-    { name: 'Absent', value: absentCount || 3, color: '#f43f5e' },
-    { name: 'Late', value: lateCount || 4, color: '#f59e0b' },
-    { name: 'Excused', value: excusedCount || 1, color: '#0ea5e9' },
+    { name: 'Present', value: presentCount, color: '#10b981' },
+    { name: 'Absent', value: absentCount, color: '#f43f5e' },
+    { name: 'Late', value: lateCount, color: '#f59e0b' },
+    { name: 'Excused', value: excusedCount, color: '#0ea5e9' },
   ];
 
   // Filtered Audit Logs
@@ -483,7 +483,7 @@ export function AdminDashboard() {
           <div className="grid grid-cols-3 gap-2 text-center text-xs">
             <div className="p-3 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40">
               <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">
-                {presentCount || 68}
+                {presentCount}
               </p>
               <p className="text-[10px] font-bold text-slate-600 dark:text-emerald-300 uppercase">
                 Present
@@ -491,7 +491,7 @@ export function AdminDashboard() {
             </div>
             <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/60 dark:border-rose-800/40">
               <p className="text-xl font-black text-rose-600 dark:text-rose-400">
-                {absentCount || 2}
+                {absentCount}
               </p>
               <p className="text-[10px] font-bold text-slate-600 dark:text-rose-300 uppercase">
                 Absent
@@ -499,7 +499,7 @@ export function AdminDashboard() {
             </div>
             <div className="p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-800/40">
               <p className="text-xl font-black text-amber-600 dark:text-amber-400">
-                {lateCount || 1}
+                {lateCount}
               </p>
               <p className="text-[10px] font-bold text-slate-600 dark:text-amber-300 uppercase">
                 Late
@@ -973,7 +973,7 @@ export function AdminDashboard() {
                   <span>Active Device Sessions</span>
                   <Activity className="w-4 h-4" />
                 </div>
-                <p className="text-3xl font-black text-slate-900 dark:text-white">{activeSessions.length || 14}</p>
+                <p className="text-3xl font-black text-slate-900 dark:text-white">{activeSessions.length}</p>
                 <p className="text-[11px] text-slate-500 dark:text-sky-300/70">Encrypted JWT tokens issued</p>
               </div>
 

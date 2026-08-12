@@ -10,6 +10,19 @@ import { ParentDashboard } from '../../components/dashboard/ParentDashboard';
 
 export default function DashboardPage() {
   const { currentUser } = useApp();
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
 
   switch (currentUser.role) {
     case 'SUPER_ADMIN':

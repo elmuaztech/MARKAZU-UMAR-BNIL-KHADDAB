@@ -32,6 +32,11 @@ import { FormField, Input, Select } from '@/components/ui/FormField';
 export default function TeachersPage() {
   const { teachers, users, classes, programmes, subjects, addTeacher, bulkImportTeachers, updateTeacher, deleteTeacher, currentUser, showConfirm, notify } = useApp();
 
+  const [mounted, setMounted] = useState(false);
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [specializationFilter, setSpecializationFilter] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
@@ -406,6 +411,14 @@ export default function TeachersPage() {
   const adminCount = users.filter((u) => u.role === 'ADMIN' || (u.role as string) === 'SUPER_ADMIN').length;
   const activeCount = teachers.length;
 
+  if (!mounted) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6 text-slate-900 dark:text-slate-100 selection:bg-emerald-500 selection:text-white font-poppins">
       {/* Header (Inspired by Image 1 from MyEcole) */}
@@ -462,7 +475,7 @@ export default function TeachersPage() {
               TOTAL STAFF
             </span>
             <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-              {teachers.length || 9}
+              {teachers.length}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-md">
@@ -477,7 +490,7 @@ export default function TeachersPage() {
               TEACHERS
             </span>
             <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-              {teacherCount || 5}
+              {teacherCount}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
@@ -492,7 +505,7 @@ export default function TeachersPage() {
               ADMINS
             </span>
             <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-              {adminCount || 1}
+              {adminCount}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-md">
@@ -507,7 +520,7 @@ export default function TeachersPage() {
               ACTIVE
             </span>
             <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-              {activeCount || 9}
+              {activeCount}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-amber-500 text-white flex items-center justify-center shadow-md">

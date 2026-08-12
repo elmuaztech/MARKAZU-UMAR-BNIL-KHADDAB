@@ -23,6 +23,11 @@ docker-compose down
 docker-compose build --no-cache
 docker-compose up -d
 
+# 4. Synchronize Database Schema (Prisma Db Push) & Seed Defaults
+echo "Synchronizing PostgreSQL database schema & seeding records..."
+docker-compose exec -T app npx prisma db push --accept-data-loss
+docker-compose exec -T app npx prisma db seed
+
 echo "=========================================================="
 echo " MSSMS Successfully Deployed on Hostinger VPS! "
 echo "=========================================================="
