@@ -24,18 +24,6 @@ export async function ensureDefaultDatabaseUsers() {
         mustChangePassword: false,
       },
       {
-        id: 'usr-admin-1',
-        username: 'schooladmin',
-        name: 'Malam Umar Faruq (School Admin)',
-        email: 'admin@markazuumar.edu.ng',
-        role: 'ADMIN' as const,
-        password: hashPassword('admin123'),
-        phone: '+234 803 123 4567',
-        status: 'ACTIVE',
-        isFirstLogin: false,
-        mustChangePassword: false,
-      },
-      {
         id: 'usr-hm-1',
         username: 'hm_asbah',
         name: 'Malam Idris Usman (Headmaster Asubah & Magrib)',

@@ -151,9 +151,9 @@ export async function POST(req: NextRequest) {
           { status: 403 }
         );
       }
-      if (portalRole === 'ADMIN' && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
+      if (portalRole === 'ADMIN' && userRole !== 'ADMIN') {
         return NextResponse.json(
-          { error: `Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not an Administrator. Please select the correct portal tab.` },
+          { error: userRole === 'SUPER_ADMIN' ? 'Access Denied: Super Admin accounts cannot log in to the Admin portal tab. Please select the Super Admin portal tab.' : `Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not an Administrator. Please select the correct portal tab.` },
           { status: 403 }
         );
       }
