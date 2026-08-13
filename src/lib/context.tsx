@@ -3022,10 +3022,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Sync to backend database
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
       await fetch('/api/subjects', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
         body: JSON.stringify({
+          id: newSubject.id,
           name: subjectData.name,
           arabicName: subjectData.arabicName,
           code: subjectData.code,
@@ -3061,9 +3067,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Sync to backend database
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
       await fetch(`/api/subjects/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
         body: JSON.stringify(updated),
       });
     } catch (e) {
@@ -3090,8 +3101,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Sync to backend database
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
       await fetch(`/api/subjects/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
       });
     } catch (e) {
       console.warn('[deleteSubject] backend sync error:', e);
@@ -3940,6 +3956,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
     MOCK_PROGRAMMES.unshift(newProg);
 
+    // Sync to backend database
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
+      fetch('/api/programmes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
+        body: JSON.stringify(newProg),
+      }).catch(() => {});
+    } catch (e) {}
+
     addAuditLog({
       action: 'PROGRAMME_CREATED',
       performedBy: currentUser.name,
@@ -3994,6 +4024,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
       }
     });
+
+    // Sync to backend database
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
+      fetch(`/api/programmes/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
+        body: JSON.stringify(updated),
+      }).catch(() => {});
+    } catch (e) {}
 
     addAuditLog({
       action: 'PROGRAMME_UPDATED',
@@ -4058,6 +4102,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         MOCK_CLASSES.splice(i, 1);
       }
     }
+
+    // Sync to backend database
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
+      fetch(`/api/programmes/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
+      }).catch(() => {});
+    } catch (e) {}
 
     addAuditLog({
       action: 'PROGRAMME_DELETED',
@@ -4250,10 +4306,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Sync to backend database
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
       await fetch('/api/classes', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
         body: JSON.stringify({
+          id: newClass.id,
           name: englishName,
           category: newClassData.category,
           section: newClassData.section,
@@ -4314,9 +4376,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Sync to backend database
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
       await fetch(`/api/classes/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
         body: JSON.stringify({
           name: updated.name || updated.class_name_english,
           category: updated.category,
@@ -4363,8 +4430,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     // Sync to backend database
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
       await fetch(`/api/classes/${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'x-session-token': token,
+        },
       });
     } catch (e) {
       console.warn('[deleteClass] backend sync error:', e);

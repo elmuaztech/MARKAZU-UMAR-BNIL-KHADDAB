@@ -36,6 +36,7 @@ export interface ServerDatabase {
     createdAt?: string;
     updatedAt?: string;
   }>;
+  programmes: Array<any>;
   classes: Array<any>;
   subjects: Array<any>;
   attendance: Array<any>;
@@ -83,6 +84,7 @@ function getInitialDatabase(): ServerDatabase {
 
   return {
     users: initialUsers,
+    programmes: MOCK_PROGRAMMES || [],
     classes: MOCK_CLASSES || [],
     subjects: MOCK_SUBJECTS || [],
     attendance: MOCK_ATTENDANCE || [],
@@ -120,6 +122,7 @@ export function readServerDatabase(): ServerDatabase {
 
     // Ensure all top-level keys exist
     if (!Array.isArray(parsed.users)) parsed.users = [];
+    if (!Array.isArray(parsed.programmes)) parsed.programmes = MOCK_PROGRAMMES || [];
     if (!Array.isArray(parsed.classes)) parsed.classes = MOCK_CLASSES || [];
     if (!Array.isArray(parsed.subjects)) parsed.subjects = MOCK_SUBJECTS || [];
     if (!Array.isArray(parsed.attendance)) parsed.attendance = MOCK_ATTENDANCE || [];
@@ -602,6 +605,60 @@ export function deleteServerAnnouncement(id: string) {
   const idx = (db.announcements || []).findIndex((a) => a.id === id);
   if (idx === -1) return false;
   db.announcements.splice(idx, 1);
+  writeServerDatabase(db);
+  return true;
+}
+
+// ------------------------------------
+// Programme / Section CRUD Helpers
+// ------------------------------------
+export function getAllServerProgrammes() {
+  const db = readServerDatabase();
+  return db.programmes || [];
+}
+
+export function createServerProgramme(progData: any) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.programmes)) db.programmes = [];
+  const newProg = {
+    id: progData.id || `prog-${Date.now()}`,
+    programme_code: progData.programme_code || progData.code,
+    programme_name_english: progData.programme_name_english || progData.nameEnglish || progData.name,
+    programme_name_arabic: progData.programme_name_arabic || progData.nameArabic || '',
+    programme_name: progData.programme_name || progData.nameEnglish || progData.name,
+    hasSubcategories: !!progData.hasSubcategories,
+    subcategories: Array.isArray(progData.subcategories) ? progData.subcategories : [],
+    status: progData.status || 'Active',
+    display_order: Number(progData.display_order || 1),
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+  db.programmes = [newProg, ...db.programmes];
+  writeServerDatabase(db);
+  return newProg;
+}
+
+export function updateServerProgramme(progId: string, updates: any) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.programmes)) db.programmes = [];
+  const idx = db.programmes.findIndex((p) => p.id === progId);
+  if (idx === -1) return null;
+  const updated = {
+    ...db.programmes[idx],
+    ...updates,
+    updated_at: new Date().toISOString(),
+  };
+  db.programmes[idx] = updated;
+  writeServerDatabase(db);
+  return updated;
+}
+
+export function deleteServerProgramme(progId: string) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.programmes)) db.programmes = [];
+  const idx = db.programmes.findIndex((p) => p.id === progId);
+  if (idx === -1) return false;
+  db.programmes.splice(idx, 1);
   writeServerDatabase(db);
   return true;
 }

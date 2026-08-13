@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import prisma from './prisma';
 import { UserRole } from '@prisma/client';
 import { MOCK_USERS } from './mockData';
+import { findServerUser } from './serverDb';
 
 export interface AuthenticatedUser {
   id: string;
@@ -122,8 +123,9 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
       console.warn('[AUTH_DB_WARNING] Session query failed due to DB connection:', dbErr);
     }
 
-    // Fallback lookup from MOCK_USERS if DB is unreachable or session ID is user format
-    const mockUser = MOCK_USERS.find(
+    // Fallback lookup from serverDb or MOCK_USERS if DB is unreachable or session ID is user format
+    const serverUser = findServerUser(cleanSessionId) || findServerUser(cleanLower);
+    const mockUser = serverUser || MOCK_USERS.find(
       (u) =>
         u.id.toLowerCase() === cleanLower ||
         u.email.toLowerCase() === cleanLower ||
