@@ -2578,10 +2578,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     sendSystemEmail({
       to: newUser.email,
       recipientName: newUser.name,
-      subject: 'Welcome to Markazu Umar Portal - Student Account Created',
+      subject: `Welcome to Markazu Umar Portal - Student Account Created (${studentData.admissionNo || newUser.email})`,
       template: 'WELCOME_NEW_ACCOUNT',
       metadata: {
-        username: newUser.email,
+        username: studentData.admissionNo || newUser.email,
         tempPassword: tempPass,
       },
     });

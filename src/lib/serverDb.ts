@@ -164,22 +164,16 @@ export function writeServerDatabase(data: ServerDatabase): boolean {
   }
 }
 
-// User CRUD Helpers for APIs
-
 export function findServerUser(identifier: string) {
   const db = readServerDatabase();
   const cleanId = identifier.trim().toLowerCase();
-  const deleted = db.deletedIdentifiers || { ids: [], emails: [], usernames: [] };
 
   return db.users.find((u) => {
     if (u.deletedAt) return false;
-    if (deleted.ids.includes(u.id)) return false;
-    if (deleted.emails.includes(u.email.toLowerCase())) return false;
-    if (u.username && deleted.usernames.includes(u.username.toLowerCase())) return false;
 
     return (
       u.email.toLowerCase() === cleanId ||
-      u.username?.toLowerCase() === cleanId ||
+      (u.username && u.username.toLowerCase() === cleanId) ||
       u.id.toLowerCase() === cleanId ||
       (cleanId === 'superadmin' && u.role === 'SUPER_ADMIN') ||
       (cleanId.includes('superadmin') && u.role === 'SUPER_ADMIN') ||
@@ -191,15 +185,8 @@ export function findServerUser(identifier: string) {
 
 export function getAllServerUsers() {
   const db = readServerDatabase();
-  const deleted = db.deletedIdentifiers || { ids: [], emails: [], usernames: [] };
 
-  return db.users.filter((u) => {
-    if (u.deletedAt) return false;
-    if (deleted.ids.includes(u.id)) return false;
-    if (deleted.emails.includes(u.email.toLowerCase())) return false;
-    if (u.username && deleted.usernames.includes(u.username.toLowerCase())) return false;
-    return true;
-  });
+  return db.users.filter((u) => !u.deletedAt);
 }
 
 export function createServerUser(userData: {
@@ -220,12 +207,9 @@ export function createServerUser(userData: {
   const db = readServerDatabase();
   const cleanEmail = userData.email.trim().toLowerCase();
 
-  const existing = db.users.find(
-    (u) => !u.deletedAt && (u.email.toLowerCase() === cleanEmail || (userData.username && u.username?.toLowerCase() === userData.username.toLowerCase()))
+  const existingIndex = db.users.findIndex(
+    (u) => u.email.toLowerCase() === cleanEmail || (userData.username && u.username?.toLowerCase() === userData.username.toLowerCase())
   );
-  if (existing) {
-    return existing;
-  }
 
   const rolePrefixMap: Record<string, string> = {
     SUPER_ADMIN: 'MUBK-SAD',
@@ -268,7 +252,24 @@ export function createServerUser(userData: {
     updatedAt: new Date().toISOString(),
   };
 
-  db.users.unshift(newUser);
+  if (existingIndex !== -1) {
+    db.users[existingIndex] = {
+      ...db.users[existingIndex],
+      ...newUser,
+    };
+  } else {
+    db.users.unshift(newUser);
+  }
+
+  // Remove from deletedIdentifiers if present
+  if (db.deletedIdentifiers) {
+    db.deletedIdentifiers.ids = (db.deletedIdentifiers.ids || []).filter((i) => i !== userId);
+    db.deletedIdentifiers.emails = (db.deletedIdentifiers.emails || []).filter((e) => e !== cleanEmail);
+    if (autoUsername) {
+      db.deletedIdentifiers.usernames = (db.deletedIdentifiers.usernames || []).filter((u) => u !== autoUsername.toLowerCase());
+    }
+  }
+
   writeServerDatabase(db);
   return newUser;
 }
