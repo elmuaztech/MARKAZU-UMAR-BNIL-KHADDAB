@@ -202,6 +202,72 @@ export function getAllServerUsers() {
   });
 }
 
+export function createServerUser(userData: {
+  id?: string;
+  username?: string;
+  name: string;
+  email: string;
+  password?: string;
+  role: string;
+  phone?: string;
+  avatar?: string;
+  assignedProgrammeId?: string;
+  assignedProgrammeName?: string;
+  status?: string;
+  isFirstLogin?: boolean;
+  mustChangePassword?: boolean;
+}) {
+  const db = readServerDatabase();
+  const cleanEmail = userData.email.trim().toLowerCase();
+
+  const existing = db.users.find(
+    (u) => !u.deletedAt && (u.email.toLowerCase() === cleanEmail || (userData.username && u.username?.toLowerCase() === userData.username.toLowerCase()))
+  );
+  if (existing) {
+    return existing;
+  }
+
+  const rolePrefixMap: Record<string, string> = {
+    SUPER_ADMIN: 'MUBK-SAD',
+    ADMIN: 'MUBK-ADM',
+    HEADMASTER: 'MUBK-HM',
+    TEACHER: 'MUBK-TEA',
+    STUDENT: 'MUBK-STU',
+    PARENT: 'MUBK-PAR',
+  };
+
+  const roleCount = db.users.filter((u) => u.role === userData.role && !u.deletedAt).length;
+  const rolePrefix = rolePrefixMap[userData.role] || 'MUBK-USR';
+  const autoUsername = userData.username || `${rolePrefix}-${(roleCount + 1).toString().padStart(4, '0')}`;
+  const userId = userData.id || autoUsername;
+
+  const newUser = {
+    id: userId,
+    username: autoUsername,
+    name: userData.name.trim(),
+    email: cleanEmail,
+    password: userData.password || hashPassword('@Aa123456789'),
+    role: userData.role,
+    phone: userData.phone || '',
+    avatar: userData.avatar || '',
+    assignedProgrammeId: userData.assignedProgrammeId || null,
+    assignedProgrammeName: userData.assignedProgrammeName || null,
+    status: userData.status || 'ACTIVE',
+    isFirstLogin: userData.isFirstLogin ?? true,
+    mustChangePassword: userData.mustChangePassword ?? true,
+    isLocked: false,
+    failedLoginAttempts: 0,
+    lastLoginAt: null,
+    deletedAt: null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  db.users.unshift(newUser);
+  writeServerDatabase(db);
+  return newUser;
+}
+
 export function updateServerUser(userId: string, updates: Record<string, any>) {
   const db = readServerDatabase();
   const cleanId = userId.trim().toLowerCase();
@@ -303,64 +369,6 @@ export function deleteServerUser(userId: string) {
   db.users.splice(targetIndex, 1);
   writeServerDatabase(db);
   return true;
-}
-
-export function createServerUser(user: any) {
-  const db = readServerDatabase();
-  const existing = db.users.find(
-    (u) =>
-      u.email.toLowerCase() === user.email.toLowerCase() ||
-      (user.username && u.username?.toLowerCase() === user.username.toLowerCase())
-  );
-
-  if (existing) {
-    if (existing.deletedAt) {
-      // Reactivate
-      Object.assign(existing, {
-        ...user,
-        deletedAt: null,
-        status: 'ACTIVE',
-        updatedAt: new Date().toISOString(),
-      });
-      // Remove from deletedIdentifiers
-      db.deletedIdentifiers.ids = db.deletedIdentifiers.ids.filter((id) => id !== existing.id);
-      db.deletedIdentifiers.emails = db.deletedIdentifiers.emails.filter((em) => em !== existing.email.toLowerCase());
-      if (existing.username) {
-        db.deletedIdentifiers.usernames = db.deletedIdentifiers.usernames.filter(
-          (un) => un !== existing.username!.toLowerCase()
-        );
-      }
-      writeServerDatabase(db);
-      return existing;
-    }
-    return null; // Already exists
-  }
-
-  const newUser = {
-    id: user.id || `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-    username: user.username || user.email.split('@')[0],
-    name: user.name,
-    email: user.email.toLowerCase().trim(),
-    password: user.password || hashPassword('admin123'),
-    role: user.role,
-    phone: user.phone || null,
-    avatar: user.avatar || null,
-    assignedProgrammeId: user.assignedProgrammeId || null,
-    assignedProgrammeName: user.assignedProgrammeName || null,
-    status: user.status || 'ACTIVE',
-    isFirstLogin: user.isFirstLogin ?? true,
-    mustChangePassword: user.mustChangePassword ?? false,
-    isLocked: false,
-    failedLoginAttempts: 0,
-    lastLoginAt: null,
-    deletedAt: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  db.users.push(newUser);
-  writeServerDatabase(db);
-  return newUser;
 }
 
 // ------------------------------------
