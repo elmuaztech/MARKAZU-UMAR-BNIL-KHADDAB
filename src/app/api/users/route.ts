@@ -3,7 +3,7 @@ import prisma from '../../../lib/prisma';
 import { getAuthenticatedUser, enforceRoleAndProgramme } from '../../../lib/auth';
 import { hashPassword, generateTemporaryPassword } from '../../../lib/security';
 import { sendSystemEmail } from '../../../lib/emailService';
-import { getAllServerUsers, createServerUser, readServerDatabase } from '../../../lib/serverDb';
+import { getAllServerUsers, createServerUser, readServerDatabase, findServerUser } from '../../../lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,6 +63,28 @@ export async function POST(req: NextRequest) {
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Full Name and Email address are required.' }, { status: 400 });
+    }
+
+    // Duplicate Email Prevention: Reject creation if email already exists in system
+    let existingUser: any = null;
+    try {
+      existingUser = await prisma.user.findFirst({
+        where: {
+          email: { equals: email, mode: 'insensitive' },
+          deletedAt: null,
+        },
+      });
+    } catch (e) {}
+
+    if (!existingUser) {
+      existingUser = findServerUser(email);
+    }
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: `An account with the email address "${email}" already exists in the system. Duplicate email addresses are not allowed.` },
+        { status: 400 }
+      );
     }
 
     // Auto-generate Unique User ID / Username (e.g., MUBK-HM-0001, MUBK-TEA-0001)

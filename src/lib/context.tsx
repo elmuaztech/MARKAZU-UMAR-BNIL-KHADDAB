@@ -1987,8 +1987,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
 
         return newUser;
+      } else if (data && data.error) {
+        notify({
+          type: 'error',
+          title: 'User Creation Failed',
+          message: data.error,
+        });
+        throw new Error(data.error);
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err.message && err.message.includes('already exists')) {
+        throw err;
+      }
       console.warn('[createUserAccount] API call fallback:', err);
     }
 

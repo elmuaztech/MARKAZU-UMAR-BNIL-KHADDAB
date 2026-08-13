@@ -126,7 +126,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
           </p>
 
           <div style="text-align: center; margin: 28px 0;">
-            <a href="${portalUrl}" style="background-color: #059669; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block;">
+            <a href="${portalUrl.endsWith('/login') ? portalUrl : `${portalUrl}/login`}" style="background-color: #059669; color: #ffffff; padding: 12px 24px; border-radius: 8px; font-weight: bold; text-decoration: none; display: inline-block;">
               Access Portal Now
             </a>
           </div>

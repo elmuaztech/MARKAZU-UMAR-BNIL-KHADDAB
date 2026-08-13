@@ -55,36 +55,9 @@
     }
   ],
   "deletedIdentifiers": {
-    "ids": [
-      "usr-hm-4",
-      "usr-hm-3",
-      "usr-hm-2",
-      "usr-hm-1",
-      "usr-teacher-1",
-      "usr-admin-1",
-      "usr-student-1",
-      "usr-parent-1"
-    ],
-    "emails": [
-      "hm.matanaure@markazuumar.edu.ng",
-      "hm.islamiyyah@markazuumar.edu.ng",
-      "hm.supermarkaz@markazuumar.edu.ng",
-      "hm.asbah@markazuumar.edu.ng",
-      "teacher@markazuumar.edu.ng",
-      "admin@markazuumar.edu.ng",
-      "student@markazuumar.edu.ng",
-      "parent@markazuumar.edu.ng"
-    ],
-    "usernames": [
-      "hm_matanaure",
-      "hm_islamiyyah",
-      "hm_supermarkaz",
-      "hm_asbah",
-      "teacher1",
-      "schooladmin",
-      "student1",
-      "parent1"
-    ]
+    "ids": [],
+    "emails": [],
+    "usernames": []
   },
   "schoolSettings": {
     "name": "MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI",
