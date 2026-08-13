@@ -75,7 +75,42 @@ export async function POST(req: NextRequest) {
 
     // Persistent serverDb Query (Persisted on disk across reboots, logins, and logouts)
     if (!user) {
-      const serverUser = findServerUser(identifier);
+      let serverUser = findServerUser(identifier);
+
+      // If not in serverDb yet, check MOCK_USERS or auto-register fallback
+      if (!serverUser) {
+        const mockMatch = MOCK_USERS.find(
+          (m) =>
+            m.email.toLowerCase() === identifier ||
+            (m.username && m.username.toLowerCase() === identifier) ||
+            m.id.toLowerCase() === identifier
+        );
+
+        if (mockMatch) {
+          serverUser = {
+            id: mockMatch.id,
+            username: mockMatch.username || mockMatch.id,
+            name: mockMatch.name,
+            email: mockMatch.email,
+            password: mockMatch.passwordHash || hashPassword('@Aa123456789'),
+            role: mockMatch.role,
+            phone: mockMatch.phone || '',
+            avatar: mockMatch.avatar || '',
+            assignedProgrammeId: mockMatch.assignedProgrammeId || null,
+            assignedProgrammeName: mockMatch.assignedProgrammeName || null,
+            status: mockMatch.status || 'ACTIVE',
+            isFirstLogin: mockMatch.isFirstLogin ?? false,
+            mustChangePassword: mockMatch.mustChangePassword ?? false,
+            isLocked: false,
+            failedLoginAttempts: 0,
+            lastLoginAt: null,
+            deletedAt: null,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+        }
+      }
+
       if (serverUser) {
         user = {
           id: serverUser.id,

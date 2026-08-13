@@ -503,8 +503,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
             );
             if (validUsers.length > 0) {
-              setUsers(validUsers);
-              safeLocalStorageSet('markazu_users', validUsers);
+              setUsers((prevUsers) => {
+                const merged = [...validUsers];
+                (prevUsers || []).forEach((pu) => {
+                  if (pu && pu.email && !merged.some((m) => m.email.toLowerCase().trim() === pu.email.toLowerCase().trim())) {
+                    merged.push(pu);
+                    fetch('/api/users', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(pu),
+                    }).catch(() => {});
+                  }
+                });
+                safeLocalStorageSet('markazu_users', merged);
+                return merged;
+              });
             }
           }
         })

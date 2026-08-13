@@ -135,6 +135,30 @@ export function readServerDatabase(): ServerDatabase {
       };
     }
 
+    // Ensure core Admin accounts like elmuazbusiness@gmail.com exist
+    const elmuazExists = parsed.users.some(
+      (u) => u.email.toLowerCase() === 'elmuazbusiness@gmail.com' || u.username?.toLowerCase() === 'elmuazbusiness'
+    );
+    if (!elmuazExists) {
+      parsed.users.unshift({
+        id: 'usr-admin-elmuaz',
+        username: 'elmuazbusiness',
+        name: 'Elmuaz Business Admin',
+        email: 'elmuazbusiness@gmail.com',
+        password: hashPassword('@Aa123456789'),
+        role: 'ADMIN',
+        phone: '+234 803 000 0000',
+        status: 'ACTIVE',
+        isFirstLogin: false,
+        mustChangePassword: false,
+        isLocked: false,
+        failedLoginAttempts: 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      writeServerDatabase(parsed);
+    }
+
     return parsed;
   } catch (err) {
     console.error('[serverDb] Error reading database file, returning initial state:', err);
