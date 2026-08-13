@@ -78,9 +78,20 @@ export async function POST(req: NextRequest) {
     const formattedNum = (roleCount + 1).toString().padStart(4, '0');
     const generatedUsername = body.username || `${rolePrefix}-${formattedNum}`;
 
-    // Generate initial temporary password
-    const tempPassword = body.tempPassword || generateTemporaryPassword();
-    const passwordHash = hashPassword(tempPassword);
+    // Generate initial temporary password or use provided password/hash
+    let tempPassword = body.tempPassword || body.password || '';
+    let passwordHash = '';
+
+    if (body.passwordHash) {
+      passwordHash = body.passwordHash;
+    } else if (body.password && body.password.startsWith('argon2id$')) {
+      passwordHash = body.password;
+    } else if (tempPassword) {
+      passwordHash = hashPassword(tempPassword);
+    } else {
+      tempPassword = generateTemporaryPassword();
+      passwordHash = hashPassword(tempPassword);
+    }
 
     // 1. Save to persistent serverDb
     const serverUser = createServerUser({
@@ -94,8 +105,8 @@ export async function POST(req: NextRequest) {
       assignedProgrammeId: role === 'HEADMASTER' ? assignedProgrammeId : undefined,
       assignedProgrammeName: role === 'HEADMASTER' ? assignedProgrammeName : undefined,
       status: 'ACTIVE',
-      isFirstLogin: true,
-      mustChangePassword: true,
+      isFirstLogin: body.isFirstLogin ?? true,
+      mustChangePassword: body.mustChangePassword ?? true,
     });
 
     // 2. Also save to PostgreSQL database if available

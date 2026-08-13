@@ -1,6 +1,22 @@
 {
   "users": [
     {
+      "id": "MUBK-TEA-0001",
+      "username": "MUBK-TEA-0001",
+      "name": "Elmuaz Tech Teacher",
+      "email": "elmuaztechnologiesltd@gmail.com",
+      "password": "argon2id$db8d302357c36825cd4b662d3cd8a0d3$QEFhMTIzNDU2Nzg5",
+      "role": "TEACHER",
+      "phone": "+234 803 000 0000",
+      "status": "ACTIVE",
+      "isFirstLogin": false,
+      "mustChangePassword": false,
+      "isLocked": false,
+      "failedLoginAttempts": 0,
+      "createdAt": "2026-08-13T02:57:12.422Z",
+      "updatedAt": "2026-08-13T02:57:12.429Z"
+    },
+    {
       "id": "MUBK-ADM-0001",
       "username": "MUBK-ADM-0001",
       "name": "Muazzam S. Abdullahi",

@@ -241,12 +241,17 @@ export function createServerUser(userData: {
   const autoUsername = userData.username || `${rolePrefix}-${(roleCount + 1).toString().padStart(4, '0')}`;
   const userId = userData.id || autoUsername;
 
+  let passToStore = userData.password || hashPassword('@Aa123456789');
+  if (userData.password && !userData.password.startsWith('argon2id$')) {
+    passToStore = hashPassword(userData.password);
+  }
+
   const newUser = {
     id: userId,
     username: autoUsername,
     name: userData.name.trim(),
     email: cleanEmail,
-    password: userData.password || hashPassword('@Aa123456789'),
+    password: passToStore,
     role: userData.role,
     phone: userData.phone || '',
     avatar: userData.avatar || '',
