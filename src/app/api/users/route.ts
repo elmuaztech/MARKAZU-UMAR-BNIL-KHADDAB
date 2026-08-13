@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
     sendSystemEmail({
       to: email,
       recipientName: name,
-      subject: `Welcome to Markazu Umar Portal - Your Account Credentials (${generatedUsername})`,
+      subject: `Welcome to Markazu Umar bn Al-Khattab Centre for Islamic Studies Portal - Your Account Credentials (${generatedUsername})`,
       template: 'WELCOME_NEW_ACCOUNT',
       metadata: {
         username: generatedUsername,

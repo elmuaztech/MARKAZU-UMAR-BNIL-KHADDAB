@@ -710,6 +710,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           }
         })
         .catch((e) => console.warn('[syncTahfiz] error:', e));
+
+      // 7. Fetch Announcements
+      fetch('/api/announcements')
+        .then((res) => res.json())
+        .then((resData) => {
+          if (resData && Array.isArray(resData.announcements)) {
+            if (resData.announcements.length > 0) {
+              setAnnouncements(resData.announcements);
+              safeLocalStorageSet('markazu_announcements', resData.announcements);
+            }
+          }
+        })
+        .catch((e) => console.warn('[syncAnnouncements] error:', e));
     }
   }, []);
 
@@ -1388,6 +1401,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return updated;
     });
 
+    // Sync batch to backend database
+    try {
+      fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ records: newRecords, isDraft }),
+      }).catch((err) => console.warn('[saveAttendanceBatch] API sync warning:', err));
+    } catch (e) {
+      console.warn('[saveAttendanceBatch] API error:', e);
+    }
+
     if (!isDraft) {
       addAuditLog({
         action: 'ATTENDANCE_CREATED',
@@ -1461,6 +1485,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     setTahfizRecords((prev) => [recordWithId, ...prev]);
+
+    // Sync to backend database
+    try {
+      fetch('/api/tahfiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(recordWithId),
+      }).catch((err) => console.warn('[saveTahfizRecord] API sync warning:', err));
+    } catch (e) {
+      console.warn('[saveTahfizRecord] API error:', e);
+    }
 
     // Update student's primary Hifz stats
     setStudents((prev) =>
@@ -3415,6 +3450,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       id: `ann-${Date.now()}`,
     };
     setAnnouncements((prev) => [newAnn, ...prev]);
+
+    // Sync to backend database
+    try {
+      fetch('/api/announcements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAnn),
+      }).catch((err) => console.warn('[addAnnouncement] API sync warning:', err));
+    } catch (e) {
+      console.warn('[addAnnouncement] API error:', e);
+    }
 
     addAuditLog({
       action: 'ANNOUNCEMENT_PUBLISHED',

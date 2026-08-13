@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import { getAllServerTahfiz, createServerTahfizRecord } from '@/lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,20 +30,32 @@ export async function GET(request: NextRequest) {
 
     const targetProgId = authUser?.role === 'HEADMASTER' ? authUser.assignedProgrammeId : requestedProgId;
 
-    const whereClause: any = {};
-    if (studentId) whereClause.studentId = studentId;
-    if (classId) whereClause.classId = classId;
-    if (targetProgId) whereClause.programmeId = targetProgId;
+    let records: any[] = [];
+    let querySuccess = false;
 
-    const records = await prisma.tahfizRecord.findMany({
-      where: whereClause,
-      include: {
-        student: true,
-        schoolClass: true,
-        teacher: true,
-      },
-      orderBy: { date: 'desc' },
-    });
+    try {
+      const whereClause: any = {};
+      if (studentId) whereClause.studentId = studentId;
+      if (classId) whereClause.classId = classId;
+      if (targetProgId) whereClause.programmeId = targetProgId;
+
+      records = await prisma.tahfizRecord.findMany({
+        where: whereClause,
+        include: {
+          student: true,
+          schoolClass: true,
+          teacher: true,
+        },
+        orderBy: { date: 'desc' },
+      });
+      querySuccess = true;
+    } catch (dbErr) {
+      console.warn('[GET_TAHFIZ] Postgres query failed, falling back to serverDb:', dbErr);
+    }
+
+    if (!querySuccess || records.length === 0) {
+      records = getAllServerTahfiz(studentId, classId, targetProgId);
+    }
 
     return NextResponse.json({ success: true, data: records });
   } catch (error: any) {
@@ -93,28 +106,57 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const record = await prisma.tahfizRecord.create({
-      data: {
-        studentId,
-        classId,
-        programmeId: programmeId || authUser?.assignedProgrammeId || 'prog-01',
-        teacherId: teacherId || authUser?.id || 'usr-teacher-1',
-        hifzSurah: hifzSurah || 'Surah Al-Fatihah',
-        hifzFromAyah: Number(hifzFromAyah || 1),
-        hifzToAyah: Number(hifzToAyah || 1),
-        hifzPages: Number(hifzPages || 1.0),
-        currentJuz: Number(currentJuz || 1),
-        sabkiSurah: sabkiSurah || '',
-        sabkiRating: Number(sabkiRating || 5),
-        manzilJuz: Number(manzilJuz || 1),
-        manzilRating: Number(manzilRating || 5),
-        teacherNotes: teacherNotes || '',
-        studentBehaviour: studentBehaviour || 'EXCELLENT',
-        completionPercentage: Number(completionPercentage || 0),
-      },
+    // 1. Save to persistent serverDb JSON database
+    const serverRecord = createServerTahfizRecord({
+      studentId,
+      classId,
+      programmeId: programmeId || authUser?.assignedProgrammeId || 'prog-01',
+      teacherId: teacherId || authUser?.id || 'usr-teacher-1',
+      hifzSurah,
+      hifzFromAyah,
+      hifzToAyah,
+      hifzPages,
+      currentJuz,
+      sabkiSurah,
+      sabkiRating,
+      manzilJuz,
+      manzilRating,
+      teacherNotes,
+      studentBehaviour,
+      completionPercentage,
     });
 
-    return NextResponse.json({ success: true, data: record });
+    // 2. Try Postgres Prisma create
+    let prismaRecord: any = null;
+    try {
+      prismaRecord = await prisma.tahfizRecord.create({
+        data: {
+          id: serverRecord.id,
+          studentId,
+          classId,
+          programmeId: programmeId || authUser?.assignedProgrammeId || 'prog-01',
+          teacherId: teacherId || authUser?.id || 'usr-teacher-1',
+          hifzSurah: hifzSurah || 'Surah Al-Fatihah',
+          hifzFromAyah: Number(hifzFromAyah || 1),
+          hifzToAyah: Number(hifzToAyah || 1),
+          hifzPages: Number(hifzPages || 1.0),
+          currentJuz: Number(currentJuz || 1),
+          sabkiSurah: sabkiSurah || '',
+          sabkiRating: Number(sabkiRating || 5),
+          manzilJuz: Number(manzilJuz || 1),
+          manzilRating: Number(manzilRating || 5),
+          teacherNotes: teacherNotes || '',
+          studentBehaviour: studentBehaviour || 'EXCELLENT',
+          completionPercentage: Number(completionPercentage || 0),
+        },
+      });
+    } catch (dbErr) {
+      console.warn('[POST_TAHFIZ] Postgres write warning, saved to serverDb:', dbErr);
+    }
+
+    const finalRecord = prismaRecord || serverRecord;
+
+    return NextResponse.json({ success: true, data: finalRecord });
   } catch (error: any) {
     console.error('[POST_TAHFIZ_ERROR]', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

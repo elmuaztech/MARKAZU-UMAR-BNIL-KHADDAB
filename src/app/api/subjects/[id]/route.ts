@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import { updateServerSubject, deleteServerSubject } from '@/lib/serverDb';
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -18,7 +19,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       const assignedProg = authUser.assignedProgrammeId;
       const subject = await prisma.subject.findUnique({
         where: { id: subjectId },
-      });
+      }).catch(() => null);
       if (subject && subject.programmeId && assignedProg && subject.programmeId !== assignedProg) {
         return NextResponse.json(
           { error: `Access Forbidden (HTTP 403): Headmaster cannot modify subjects in another programme section.` },
@@ -38,14 +39,25 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (body.status !== undefined) updateData.status = body.status;
     if (body.displayOrder !== undefined) updateData.displayOrder = Number(body.displayOrder);
 
-    const updatedSubject = await prisma.subject.update({
-      where: { id: subjectId },
-      data: updateData,
-    });
+    // 1. Update in serverDb
+    const serverSubj = updateServerSubject(subjectId, updateData);
+
+    // 2. Update in Postgres Prisma if connected
+    let prismaSubject: any = null;
+    try {
+      prismaSubject = await prisma.subject.update({
+        where: { id: subjectId },
+        data: updateData,
+      });
+    } catch (dbErr) {
+      console.warn('[UPDATE_SUBJECT] Postgres update warning, saved to serverDb:', dbErr);
+    }
+
+    const result = prismaSubject || serverSubj || { id: subjectId, ...updateData };
 
     return NextResponse.json({
       message: 'Subject updated successfully',
-      subject: updatedSubject,
+      subject: result,
     });
   } catch (error: any) {
     console.error('[UPDATE_SUBJECT_ERROR]', error);
@@ -68,7 +80,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       const assignedProg = authUser.assignedProgrammeId;
       const subject = await prisma.subject.findUnique({
         where: { id: subjectId },
-      });
+      }).catch(() => null);
       if (subject && subject.programmeId && assignedProg && subject.programmeId !== assignedProg) {
         return NextResponse.json(
           { error: `Access Forbidden (HTTP 403): Headmaster cannot delete subjects in another programme section.` },
@@ -77,14 +89,21 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       }
     }
 
-    // Delete subject
-    const deletedSubject = await prisma.subject.delete({
-      where: { id: subjectId },
-    });
+    // 1. Delete from serverDb
+    deleteServerSubject(subjectId);
+
+    // 2. Delete from Postgres Prisma if connected
+    try {
+      await prisma.subject.delete({
+        where: { id: subjectId },
+      });
+    } catch (dbErr) {
+      console.warn('[DELETE_SUBJECT] Postgres delete warning, deleted from serverDb:', dbErr);
+    }
 
     return NextResponse.json({
       message: 'Subject deleted successfully',
-      subject: deletedSubject,
+      subject: { id: subjectId },
     });
   } catch (error: any) {
     console.error('[DELETE_SUBJECT_ERROR]', error);

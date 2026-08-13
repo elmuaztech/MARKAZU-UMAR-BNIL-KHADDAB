@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import { getAllServerSubjects, createServerSubject } from '@/lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,18 +17,30 @@ export async function GET(req: NextRequest) {
     const classId = searchParams.get('classId');
     const programmeId = searchParams.get('programmeId');
 
-    const whereClause: any = {};
-    if (classId) whereClause.classId = classId;
-    if (programmeId) whereClause.programmeId = programmeId;
+    let subjects: any[] = [];
+    let querySuccess = false;
 
-    const subjects = await prisma.subject.findMany({
-      where: whereClause,
-      include: {
-        programme: true,
-        schoolClass: true,
-      },
-      orderBy: { displayOrder: 'asc' },
-    });
+    try {
+      const whereClause: any = {};
+      if (classId) whereClause.classId = classId;
+      if (programmeId) whereClause.programmeId = programmeId;
+
+      subjects = await prisma.subject.findMany({
+        where: whereClause,
+        include: {
+          programme: true,
+          schoolClass: true,
+        },
+        orderBy: { displayOrder: 'asc' },
+      });
+      querySuccess = true;
+    } catch (dbErr) {
+      console.warn('[GET_SUBJECTS] Postgres query failed, falling back to serverDb:', dbErr);
+    }
+
+    if (!querySuccess || subjects.length === 0) {
+      subjects = getAllServerSubjects(classId, programmeId);
+    }
 
     return NextResponse.json({
       subjects,
@@ -64,24 +77,47 @@ export async function POST(req: NextRequest) {
       body.programmeId = assignedProg;
     }
 
-    const newSubject = await prisma.subject.create({
-      data: {
-        name: body.name,
-        arabicName: body.arabicName || null,
-        code: body.code,
-        category: body.category || 'GENERAL', // TAHFIZ, ISLAMIC, GENERAL
-        description: body.description || null,
-        programmeId: body.programmeId || null,
-        classId: body.classId || null,
-        status: body.status || 'ACTIVE',
-        displayOrder: Number(body.displayOrder || 1),
-      },
+    // 1. Save to persistent serverDb JSON database
+    const serverSubject = createServerSubject({
+      id: body.id,
+      name: body.name,
+      arabicName: body.arabicName,
+      code: body.code,
+      category: body.category,
+      description: body.description,
+      programmeId: body.programmeId,
+      classId: body.classId,
+      status: body.status,
+      displayOrder: body.displayOrder,
     });
+
+    // 2. Save to Postgres Prisma if connected
+    let prismaSubject: any = null;
+    try {
+      prismaSubject = await prisma.subject.create({
+        data: {
+          id: serverSubject.id,
+          name: body.name,
+          arabicName: body.arabicName || null,
+          code: body.code,
+          category: body.category || 'GENERAL',
+          description: body.description || null,
+          programmeId: body.programmeId || null,
+          classId: body.classId || null,
+          status: body.status || 'ACTIVE',
+          displayOrder: Number(body.displayOrder || 1),
+        },
+      });
+    } catch (dbErr) {
+      console.warn('[CREATE_SUBJECT] Postgres write warning, saved to serverDb:', dbErr);
+    }
+
+    const created = prismaSubject || serverSubject;
 
     return NextResponse.json(
       {
-        message: 'Subject created successfully',
-        subject: newSubject,
+        message: 'Subject created and saved permanently',
+        subject: created,
       },
       { status: 201 }
     );

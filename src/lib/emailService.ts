@@ -42,8 +42,8 @@ export function getAppBaseUrl(): string {
 }
 
 export function generateEmailHtml(payload: EmailPayload): string {
-  const schoolNameEng = "MARKAZU UMARU BNIL KHATTAB DANEJI";
-  const schoolNameArab = "مركز عمر ابن الخطاب دنيج";
+  const schoolNameEng = "MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI";
+  const schoolNameArab = "مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج";
   const schoolMotto = "Knowledge and Discipline (العلم والتربية)";
   const schoolAddress = "NO. 32 DANEJI QTR., KANO, NIGERIA";
   
@@ -60,18 +60,18 @@ export function generateEmailHtml(payload: EmailPayload): string {
 
   const headerHtml = `
     <div style="background: linear-gradient(135deg, #022c1e 0%, #064e3b 100%); padding: 32px 24px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 4px solid #f59e0b;">
-      <!-- Official School Crest Logo -->
+      <!-- Official School Crest Logo (CID embedded with HTTP fallback) -->
       <div style="text-align: center; margin-bottom: 14px;">
-        <img src="${logoUrl}" width="110" height="110" alt="Markazu Umaru Bnil Khattab Logo" style="display: block; margin: 0 auto; border-radius: 50%; border: 4px solid #f59e0b; background-color: #ffffff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);" />
+        <img src="cid:school_logo_header" onerror="this.onerror=null; this.src='${logoUrl}';" width="110" height="110" alt="Markazu Umar bn Al-Khattab School Logo" style="display: block; margin: 0 auto; border-radius: 50%; border: 4px solid #f59e0b; background-color: #ffffff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);" />
       </div>
 
       <!-- Full English School Title -->
-      <h1 style="color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 8px 0 4px 0; font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.4;">
+      <h1 style="color: #ffffff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 8px 0 4px 0; font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.4;">
         ${schoolNameEng}
       </h1>
       
       <!-- Full Arabic School Title -->
-      <h2 style="color: #fef08a; font-family: 'Amiri', 'Traditional Arabic', 'Segoe UI', sans-serif; margin: 6px 0 8px 0; font-size: 20px; font-weight: bold; direction: rtl; text-align: center;">
+      <h2 style="color: #fef08a; font-family: 'Amiri', 'Traditional Arabic', 'Segoe UI', sans-serif; margin: 6px 0 8px 0; font-size: 19px; font-weight: bold; direction: rtl; text-align: center;">
         ${schoolNameArab}
       </h2>
 

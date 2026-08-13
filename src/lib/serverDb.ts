@@ -1,6 +1,17 @@
 import fs from 'fs';
 import path from 'path';
-import { MOCK_USERS, MOCK_TEACHERS, MOCK_STUDENTS, MOCK_PARENTS, MOCK_PROGRAMMES, MOCK_CLASSES, MOCK_SUBJECTS } from './mockData';
+import {
+  MOCK_USERS,
+  MOCK_TEACHERS,
+  MOCK_STUDENTS,
+  MOCK_PARENTS,
+  MOCK_PROGRAMMES,
+  MOCK_CLASSES,
+  MOCK_SUBJECTS,
+  MOCK_ATTENDANCE,
+  MOCK_TAHFIZ_RECORDS,
+  MOCK_ANNOUNCEMENTS,
+} from './mockData';
 import { hashPassword } from './security';
 
 export interface ServerDatabase {
@@ -25,6 +36,11 @@ export interface ServerDatabase {
     createdAt?: string;
     updatedAt?: string;
   }>;
+  classes: Array<any>;
+  subjects: Array<any>;
+  attendance: Array<any>;
+  tahfizRecords: Array<any>;
+  announcements: Array<any>;
   deletedIdentifiers: {
     ids: string[];
     emails: string[];
@@ -67,6 +83,11 @@ function getInitialDatabase(): ServerDatabase {
 
   return {
     users: initialUsers,
+    classes: MOCK_CLASSES || [],
+    subjects: MOCK_SUBJECTS || [],
+    attendance: MOCK_ATTENDANCE || [],
+    tahfizRecords: MOCK_TAHFIZ_RECORDS || [],
+    announcements: MOCK_ANNOUNCEMENTS || [],
     deletedIdentifiers: {
       ids: [],
       emails: [],
@@ -99,6 +120,11 @@ export function readServerDatabase(): ServerDatabase {
 
     // Ensure all top-level keys exist
     if (!Array.isArray(parsed.users)) parsed.users = [];
+    if (!Array.isArray(parsed.classes)) parsed.classes = MOCK_CLASSES || [];
+    if (!Array.isArray(parsed.subjects)) parsed.subjects = MOCK_SUBJECTS || [];
+    if (!Array.isArray(parsed.attendance)) parsed.attendance = MOCK_ATTENDANCE || [];
+    if (!Array.isArray(parsed.tahfizRecords)) parsed.tahfizRecords = MOCK_TAHFIZ_RECORDS || [];
+    if (!Array.isArray(parsed.announcements)) parsed.announcements = MOCK_ANNOUNCEMENTS || [];
     if (!parsed.deletedIdentifiers) parsed.deletedIdentifiers = { ids: [], emails: [], usernames: [] };
     if (!parsed.schoolSettings) {
       parsed.schoolSettings = {
@@ -301,4 +327,233 @@ export function createServerUser(user: any) {
   db.users.push(newUser);
   writeServerDatabase(db);
   return newUser;
+}
+
+// ------------------------------------
+// Classes CRUD Helpers
+// ------------------------------------
+export function getAllServerClasses(programmeId?: string | null) {
+  const db = readServerDatabase();
+  let result = db.classes || [];
+  if (programmeId) {
+    result = result.filter((c) => c.programmeId === programmeId);
+  }
+  return result;
+}
+
+export function createServerClass(newClassData: any) {
+  const db = readServerDatabase();
+  const newClass = {
+    id: newClassData.id || `cls-${Date.now()}`,
+    name: newClassData.name,
+    category: newClassData.category,
+    section: newClassData.section,
+    subcategory: newClassData.subcategory || null,
+    capacity: Number(newClassData.capacity || 30),
+    programmeId: newClassData.programmeId || null,
+    classTeacherId: newClassData.classTeacherId || null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  db.classes = [newClass, ...(db.classes || [])];
+  writeServerDatabase(db);
+  return newClass;
+}
+
+export function updateServerClass(classId: string, updates: any) {
+  const db = readServerDatabase();
+  const idx = (db.classes || []).findIndex((c) => c.id === classId);
+  if (idx === -1) return null;
+  const updated = {
+    ...db.classes[idx],
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+  db.classes[idx] = updated;
+  writeServerDatabase(db);
+  return updated;
+}
+
+export function deleteServerClass(classId: string) {
+  const db = readServerDatabase();
+  const idx = (db.classes || []).findIndex((c) => c.id === classId);
+  if (idx === -1) return false;
+  db.classes.splice(idx, 1);
+  writeServerDatabase(db);
+  return true;
+}
+
+// ------------------------------------
+// Subjects CRUD Helpers
+// ------------------------------------
+export function getAllServerSubjects(classId?: string | null, programmeId?: string | null) {
+  const db = readServerDatabase();
+  let result = db.subjects || [];
+  if (classId) result = result.filter((s) => s.classId === classId);
+  if (programmeId) result = result.filter((s) => s.programmeId === programmeId);
+  return result;
+}
+
+export function createServerSubject(subjectData: any) {
+  const db = readServerDatabase();
+  const newSubject = {
+    id: subjectData.id || `subj-${Date.now()}`,
+    name: subjectData.name,
+    arabicName: subjectData.arabicName || null,
+    code: subjectData.code,
+    category: subjectData.category || 'GENERAL',
+    description: subjectData.description || null,
+    programmeId: subjectData.programmeId || null,
+    classId: subjectData.classId || null,
+    status: subjectData.status || 'ACTIVE',
+    displayOrder: Number(subjectData.displayOrder || 1),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  db.subjects = [newSubject, ...(db.subjects || [])];
+  writeServerDatabase(db);
+  return newSubject;
+}
+
+export function updateServerSubject(subjectId: string, updates: any) {
+  const db = readServerDatabase();
+  const idx = (db.subjects || []).findIndex((s) => s.id === subjectId);
+  if (idx === -1) return null;
+  const updated = {
+    ...db.subjects[idx],
+    ...updates,
+    updatedAt: new Date().toISOString(),
+  };
+  db.subjects[idx] = updated;
+  writeServerDatabase(db);
+  return updated;
+}
+
+export function deleteServerSubject(subjectId: string) {
+  const db = readServerDatabase();
+  const idx = (db.subjects || []).findIndex((s) => s.id === subjectId);
+  if (idx === -1) return false;
+  db.subjects.splice(idx, 1);
+  writeServerDatabase(db);
+  return true;
+}
+
+// ------------------------------------
+// Attendance CRUD Helpers
+// ------------------------------------
+export function getAllServerAttendance(date?: string | null, classId?: string | null, programmeId?: string | null) {
+  const db = readServerDatabase();
+  let result = db.attendance || [];
+  if (date) result = result.filter((a) => a.date?.startsWith(date) || a.date === date);
+  if (classId) result = result.filter((a) => a.classId === classId);
+  if (programmeId) result = result.filter((a) => a.programmeId === programmeId);
+  return result;
+}
+
+export function saveServerAttendanceBatch(records: any[], isDraft: boolean = false) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.attendance)) db.attendance = [];
+
+  records.forEach((rec) => {
+    const existingIdx = db.attendance.findIndex(
+      (a) => a.studentId === rec.studentId && a.date === rec.date
+    );
+    const newRecord = {
+      id: rec.id || `att-${rec.classId}-${rec.studentId}-${rec.date}`,
+      date: rec.date || new Date().toISOString().split('T')[0],
+      studentId: rec.studentId,
+      classId: rec.classId,
+      programmeId: rec.programmeId || null,
+      teacherId: rec.teacherId || null,
+      status: rec.status || 'PRESENT',
+      statusEnum: rec.status || 'PRESENT',
+      remarks: rec.remarks || '',
+      isDraft,
+      createdAt: new Date().toISOString(),
+    };
+
+    if (existingIdx >= 0) {
+      db.attendance[existingIdx] = { ...db.attendance[existingIdx], ...newRecord };
+    } else {
+      db.attendance.push(newRecord);
+    }
+  });
+
+  writeServerDatabase(db);
+  return db.attendance;
+}
+
+// ------------------------------------
+// Tahfiz CRUD Helpers
+// ------------------------------------
+export function getAllServerTahfiz(studentId?: string | null, classId?: string | null, programmeId?: string | null) {
+  const db = readServerDatabase();
+  let result = db.tahfizRecords || [];
+  if (studentId) result = result.filter((t) => t.studentId === studentId);
+  if (classId) result = result.filter((t) => t.classId === classId);
+  if (programmeId) result = result.filter((t) => t.programmeId === programmeId);
+  return result;
+}
+
+export function createServerTahfizRecord(recordData: any) {
+  const db = readServerDatabase();
+  const newRecord = {
+    id: recordData.id || `tahfiz-${Date.now()}`,
+    date: recordData.date || new Date().toISOString(),
+    studentId: recordData.studentId,
+    classId: recordData.classId,
+    programmeId: recordData.programmeId || null,
+    teacherId: recordData.teacherId || 'usr-teacher-1',
+    hifzSurah: recordData.hifzSurah || 'Surah Al-Fatihah',
+    hifzFromAyah: Number(recordData.hifzFromAyah || 1),
+    hifzToAyah: Number(recordData.hifzToAyah || 1),
+    hifzPages: Number(recordData.hifzPages || 1.0),
+    currentJuz: Number(recordData.currentJuz || 1),
+    sabkiSurah: recordData.sabkiSurah || '',
+    sabkiRating: Number(recordData.sabkiRating || 5),
+    manzilJuz: Number(recordData.manzilJuz || 1),
+    manzilRating: Number(recordData.manzilRating || 5),
+    teacherNotes: recordData.teacherNotes || '',
+    studentBehaviour: recordData.studentBehaviour || 'EXCELLENT',
+    completionPercentage: Number(recordData.completionPercentage || 0),
+    createdAt: new Date().toISOString(),
+  };
+  db.tahfizRecords = [newRecord, ...(db.tahfizRecords || [])];
+  writeServerDatabase(db);
+  return newRecord;
+}
+
+// ------------------------------------
+// Announcements CRUD Helpers
+// ------------------------------------
+export function getAllServerAnnouncements() {
+  const db = readServerDatabase();
+  return db.announcements || [];
+}
+
+export function createServerAnnouncement(annData: any) {
+  const db = readServerDatabase();
+  const newAnn = {
+    id: annData.id || `ann-${Date.now()}`,
+    title: annData.title,
+    content: annData.content,
+    date: annData.date || new Date().toISOString(),
+    category: annData.category || 'GENERAL',
+    targetRole: annData.targetRole || 'ALL',
+    author: annData.author || 'Admin',
+    pinned: !!annData.pinned,
+    createdAt: new Date().toISOString(),
+  };
+  db.announcements = [newAnn, ...(db.announcements || [])];
+  writeServerDatabase(db);
+  return newAnn;
+}
+
+export function deleteServerAnnouncement(id: string) {
+  const db = readServerDatabase();
+  const idx = (db.announcements || []).findIndex((a) => a.id === id);
+  if (idx === -1) return false;
+  db.announcements.splice(idx, 1);
+  writeServerDatabase(db);
+  return true;
 }

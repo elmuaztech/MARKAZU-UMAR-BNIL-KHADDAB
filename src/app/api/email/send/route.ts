@@ -60,8 +60,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const logoPath = path.join(process.cwd(), 'public', 'logo.png');
-    const logoExists = fs.existsSync(logoPath);
+    const logoPngPath = path.join(process.cwd(), 'public', 'logo.png');
+    const logoJpgPath = path.join(process.cwd(), 'public', 'logo.jpg');
+    const actualLogoPath = fs.existsSync(logoPngPath) ? logoPngPath : (fs.existsSync(logoJpgPath) ? logoJpgPath : null);
 
     const info = await transporter.sendMail({
       from: SYSTEM_EMAIL_FROM,
@@ -69,11 +70,11 @@ export async function POST(req: NextRequest) {
       to: targetRecipient,
       subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
       html: htmlContent,
-      attachments: logoExists
+      attachments: actualLogoPath
         ? [
             {
-              filename: 'logo.png',
-              path: logoPath,
+              filename: path.basename(actualLogoPath),
+              path: actualLogoPath,
               cid: 'school_logo_header',
             },
           ]

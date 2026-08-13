@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import { getAllServerAttendance, saveServerAttendanceBatch } from '@/lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,19 +31,31 @@ export async function GET(request: NextRequest) {
 
     const targetProgId = authUser?.role === 'HEADMASTER' ? authUser.assignedProgrammeId : requestedProgId;
 
-    const whereClause: any = {};
-    if (date) whereClause.date = new Date(date);
-    if (classId) whereClause.classId = classId;
-    if (targetProgId) whereClause.programmeId = targetProgId;
+    let records: any[] = [];
+    let querySuccess = false;
 
-    const records = await prisma.attendanceRecord.findMany({
-      where: whereClause,
-      include: {
-        student: true,
-        schoolClass: true,
-      },
-      orderBy: { date: 'desc' },
-    });
+    try {
+      const whereClause: any = {};
+      if (date) whereClause.date = new Date(date);
+      if (classId) whereClause.classId = classId;
+      if (targetProgId) whereClause.programmeId = targetProgId;
+
+      records = await prisma.attendanceRecord.findMany({
+        where: whereClause,
+        include: {
+          student: true,
+          schoolClass: true,
+        },
+        orderBy: { date: 'desc' },
+      });
+      querySuccess = true;
+    } catch (dbErr) {
+      console.warn('[GET_ATTENDANCE] Postgres query failed, falling back to serverDb:', dbErr);
+    }
+
+    if (!querySuccess || records.length === 0) {
+      records = getAllServerAttendance(date, classId, targetProgId);
+    }
 
     return NextResponse.json({ success: true, data: records });
   } catch (error: any) {
@@ -77,33 +90,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 1. Save to persistent serverDb JSON database
+    const savedServerRecords = saveServerAttendanceBatch(records, !!isDraft);
+
+    // 2. Try Postgres Prisma upsert
     const createdRecords = [];
     for (const item of records) {
-      const rec = await prisma.attendanceRecord.upsert({
-        where: {
-          id: item.id || `att-${item.classId}-${item.studentId}-${item.date}`,
-        },
-        update: {
-          statusEnum: item.status || 'PRESENT',
-          remarks: item.remarks || '',
-          isDraft: !!isDraft,
-        },
-        create: {
-          date: new Date(item.date || Date.now()),
-          studentId: item.studentId,
-          classId: item.classId,
-          programmeId: item.programmeId || authUser?.assignedProgrammeId || 'prog-01',
-          teacherId: item.teacherId || authUser?.id || 'usr-teacher-1',
-          status: 'PRESENT',
-          statusEnum: item.status || 'PRESENT',
-          remarks: item.remarks || '',
-          isDraft: !!isDraft,
-        },
-      });
-      createdRecords.push(rec);
+      try {
+        const rec = await prisma.attendanceRecord.upsert({
+          where: {
+            id: item.id || `att-${item.classId}-${item.studentId}-${item.date}`,
+          },
+          update: {
+            statusEnum: item.status || 'PRESENT',
+            remarks: item.remarks || '',
+            isDraft: !!isDraft,
+          },
+          create: {
+            date: new Date(item.date || Date.now()),
+            studentId: item.studentId,
+            classId: item.classId,
+            programmeId: item.programmeId || authUser?.assignedProgrammeId || 'prog-01',
+            teacherId: item.teacherId || authUser?.id || 'usr-teacher-1',
+            status: 'PRESENT',
+            statusEnum: item.status || 'PRESENT',
+            remarks: item.remarks || '',
+            isDraft: !!isDraft,
+          },
+        });
+        createdRecords.push(rec);
+      } catch (dbErr) {
+        // Postgres offline
+      }
     }
 
-    return NextResponse.json({ success: true, count: createdRecords.length, data: createdRecords });
+    const finalRecords = createdRecords.length > 0 ? createdRecords : savedServerRecords;
+
+    return NextResponse.json({ success: true, count: finalRecords.length, data: finalRecords });
   } catch (error: any) {
     console.error('[POST_ATTENDANCE_ERROR]', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
