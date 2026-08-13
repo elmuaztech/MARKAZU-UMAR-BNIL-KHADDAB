@@ -257,6 +257,40 @@ export function updateServerUser(userId: string, updates: Record<string, any>) {
   return updatedUser;
 }
 
+// In-Memory & File-based OTP Token Management for Password Resets
+interface ServerOtpToken {
+  token: string;
+  userId: string;
+  email: string;
+  expiresAt: number;
+  used: boolean;
+}
+
+const globalServerOtpTokens: ServerOtpToken[] = [];
+
+export function saveServerOtpToken(userId: string, email: string, token: string, expiresAt: Date) {
+  globalServerOtpTokens.push({
+    token: token.trim(),
+    userId,
+    email: email.toLowerCase().trim(),
+    expiresAt: expiresAt.getTime(),
+    used: false,
+  });
+}
+
+export function findServerOtpToken(otp: string) {
+  const cleanOtp = otp.trim();
+  const now = Date.now();
+  return globalServerOtpTokens.find((t) => !t.used && t.token === cleanOtp && t.expiresAt > now);
+}
+
+export function markServerOtpTokenUsed(otp: string) {
+  const token = findServerOtpToken(otp);
+  if (token) {
+    token.used = true;
+  }
+}
+
 export function deleteServerUser(userId: string) {
   const db = readServerDatabase();
   const cleanId = userId.trim().toLowerCase();

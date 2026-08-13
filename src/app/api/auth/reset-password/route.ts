@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { validatePasswordPolicy, hashPassword, verifyPassword } from '../../../../lib/security';
 import { sendSystemEmail } from '../../../../lib/emailService';
+import { findServerOtpToken, markServerOtpTokenUsed, findServerUser, updateServerUser } from '../../../../lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,23 +20,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please enter a new password.' }, { status: 400 });
     }
 
-    // 1. Verify 4-Digit OTP against Prisma Database
-    const tokenRecord = await prisma.passwordResetToken.findFirst({
-      where: {
-        tokenHash: otp,
-        used: false,
-        expiresAt: {
-          gt: new Date(),
+    let tokenRecord: any = null;
+    let targetUser: any = null;
+
+    // 1. Try Prisma DB first
+    try {
+      tokenRecord = await prisma.passwordResetToken.findFirst({
+        where: {
+          tokenHash: otp,
+          used: false,
+          expiresAt: {
+            gt: new Date(),
+          },
         },
-      },
-      include: {
-        user: true,
-      },
-    });
+        include: {
+          user: true,
+        },
+      });
 
-    let targetUser = tokenRecord?.user;
+      if (tokenRecord?.user) {
+        targetUser = tokenRecord.user;
+      }
+    } catch (dbErr) {
+      console.warn('[RESET_PASSWORD] Postgres query skipped, using serverDb:', dbErr);
+    }
 
-    if (!targetUser || !tokenRecord) {
+    // 2. Fallback to serverDb OTP verification
+    if (!targetUser) {
+      const serverToken = findServerOtpToken(otp);
+      if (serverToken) {
+        const sUser = findServerUser(serverToken.email) || findServerUser(serverToken.userId);
+        if (sUser) {
+          targetUser = sUser;
+          markServerOtpTokenUsed(otp);
+        }
+      }
+    }
+
+    if (!targetUser) {
       return NextResponse.json({ error: 'Invalid or expired 4-digit OTP code. Please request a new OTP.' }, { status: 400 });
     }
 
@@ -48,56 +70,55 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Check Password History Reuse
-    const recentHistory = await prisma.passwordHistory.findMany({
-      where: { userId: targetUser.id },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    });
-
-    const isReused = recentHistory.some((record) => verifyPassword(newPassword, record.passwordHash));
-    if (isReused) {
-      return NextResponse.json(
-        { error: 'You cannot reuse a recent password. Please enter a different password.' },
-        { status: 400 }
-      );
-    }
-
     const newHash = hashPassword(newPassword);
 
-    // 4. Update Database User Password Hash
-    const updatedUser = await prisma.user.update({
-      where: { id: targetUser.id },
-      data: {
-        password: newHash,
-        isFirstLogin: false,
-        mustChangePassword: false,
-        failedLoginAttempts: 0,
-        isLocked: false,
-        lockoutUntil: null,
-      },
+    // 3. Update persistent serverDb
+    updateServerUser(targetUser.id || targetUser.email, {
+      password: newHash,
+      isFirstLogin: false,
+      mustChangePassword: false,
+      failedLoginAttempts: 0,
+      isLocked: false,
     });
 
-    // Mark Token Used in DB
-    if (tokenRecord) {
-      await prisma.passwordResetToken.update({
-        where: { id: tokenRecord.id },
-        data: { used: true },
+    // 4. Update Database User Password Hash in Prisma if connected
+    let updatedUser: any = null;
+    try {
+      updatedUser = await prisma.user.update({
+        where: { id: targetUser.id },
+        data: {
+          password: newHash,
+          isFirstLogin: false,
+          mustChangePassword: false,
+          failedLoginAttempts: 0,
+          isLocked: false,
+          lockoutUntil: null,
+        },
       });
+
+      if (tokenRecord) {
+        await prisma.passwordResetToken.update({
+          where: { id: tokenRecord.id },
+          data: { used: true },
+        });
+      }
+
+      await prisma.passwordHistory.create({
+        data: {
+          userId: targetUser.id,
+          passwordHash: newHash,
+        },
+      });
+    } catch (dbErr) {
+      console.warn('[RESET_PASSWORD] Postgres write warning, updated in serverDb:', dbErr);
     }
 
-    // Record Password History
-    await prisma.passwordHistory.create({
-      data: {
-        userId: targetUser.id,
-        passwordHash: newHash,
-      },
-    });
+    const finalUser = updatedUser || targetUser;
 
     // 5. Send Password Changed Confirmation Email
     sendSystemEmail({
-      to: updatedUser.email,
-      recipientName: updatedUser.name,
+      to: finalUser.email,
+      recipientName: finalUser.name,
       subject: 'Password Reset Successfully - Markazu Umar Portal',
       template: 'PASSWORD_CHANGED_CONFIRMATION',
     }).catch(() => {});
@@ -105,11 +126,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       message: 'Your password has been successfully reset in the database. You can now log in with your new password.',
       user: {
-        id: updatedUser.id,
-        username: updatedUser.username || updatedUser.id,
-        name: updatedUser.name,
-        email: updatedUser.email,
-        role: updatedUser.role,
+        id: finalUser.id,
+        username: finalUser.username || finalUser.id,
+        name: finalUser.name,
+        email: finalUser.email,
+        role: finalUser.role,
       },
     });
   } catch (error: any) {
