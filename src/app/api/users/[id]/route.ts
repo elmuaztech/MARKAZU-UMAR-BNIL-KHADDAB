@@ -16,18 +16,44 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // 1. Locate user in PostgreSQL Prisma database
     let dbUser: any = null;
     try {
-      dbUser = await prisma.user.findFirst({
-        where: {
-          OR: [
-            { id: userId },
-            { username: userId },
-            { email: { equals: userId.toLowerCase().trim(), mode: 'insensitive' } },
-          ],
-          deletedAt: null,
-        },
-      });
+      if (userId === 'me' && authUser) {
+        dbUser = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { id: authUser.id },
+              { email: { equals: authUser.email.toLowerCase().trim(), mode: 'insensitive' } },
+            ],
+            deletedAt: null,
+          },
+        });
+      } else {
+        dbUser = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { id: userId },
+              { username: userId },
+              { email: { equals: userId.toLowerCase().trim(), mode: 'insensitive' } },
+            ],
+            deletedAt: null,
+          },
+        });
+      }
     } catch (e) {
       console.warn('[PUT_USER] Prisma lookup warning:', e);
+    }
+
+    if (!dbUser && authUser) {
+      try {
+        dbUser = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { id: authUser.id },
+              { email: { equals: authUser.email.toLowerCase().trim(), mode: 'insensitive' } },
+            ],
+            deletedAt: null,
+          },
+        });
+      } catch (e) {}
     }
 
     if (!dbUser) {

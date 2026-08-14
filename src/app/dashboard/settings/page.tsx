@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../../lib/context';
 import { AuditEntry } from '../../../lib/audit';
+import { compressImageFile } from '../../../lib/imageUtils';
 import { ThemeToggle } from '../../../components/navigation/ThemeToggle';
 import { Settings, School, Calendar, ShieldCheck, RotateCcw, Upload, Trash2, Image as ImageIcon, Sparkles, CheckCircle2, User, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -36,31 +37,24 @@ export default function SettingsPage() {
     }
   }, [currentUser]);
 
-  const handleSavePersonalProfile = (e: React.FormEvent) => {
+  const handleSavePersonalProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!adminName.trim()) return;
 
     const updatedName = adminName.trim();
     const updatedEmail = adminEmail.trim();
     const updatedPhone = adminPhone.trim();
+    const finalAvatar = adminAvatar || currentUser.avatar || undefined;
 
-    updateUserAccount(currentUser.id, {
+    await updateUserAccount(currentUser.id || currentUser.email, {
       name: updatedName,
       email: updatedEmail,
       phone: updatedPhone,
-      avatar: adminAvatar || currentUser.avatar,
+      avatar: finalAvatar,
     });
 
-    setCurrentUser({
-      ...currentUser,
-      name: updatedName,
-      email: updatedEmail,
-      phone: updatedPhone,
-      avatar: adminAvatar || currentUser.avatar,
-    });
-
-    if (adminAvatar) {
-      updateUserAvatar(adminAvatar);
+    if (finalAvatar) {
+      await updateUserAvatar(finalAvatar);
     }
 
     addAuditLog({
@@ -73,7 +67,7 @@ export default function SettingsPage() {
       status: 'SUCCESS',
     });
 
-    setProfileNotice('Your personal profile & display name updated successfully! Your updated name will now appear on your welcome banners, sidebar, and dashboards.');
+    setProfileNotice('Your personal profile & display name updated successfully! Your updated profile will persist across all sessions and page refreshes.');
     setTimeout(() => setProfileNotice(''), 4000);
   };
 
@@ -269,18 +263,16 @@ export default function SettingsPage() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      const reader = new FileReader();
-                      reader.onload = (evt) => {
-                        const res = evt.target?.result as string;
-                        if (res) {
-                          setAdminAvatar(res);
-                          updateUserAvatar(res);
-                        }
-                      };
-                      reader.readAsDataURL(file);
+                      try {
+                        const compressed = await compressImageFile(file);
+                        setAdminAvatar(compressed);
+                        await updateUserAvatar(compressed);
+                      } catch (err) {
+                        console.warn('[Avatar Upload] Compression warning:', err);
+                      }
                     }
                   }}
                   className="hidden"

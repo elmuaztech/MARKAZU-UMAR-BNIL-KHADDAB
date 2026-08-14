@@ -81,7 +81,7 @@ interface AppContextType {
   isHydrated: boolean;
   currentUser: User;
   users: User[];
-  updateUserAvatar: (avatarUrl: string) => void;
+  updateUserAvatar: (avatarUrl: string) => Promise<User | undefined>;
   auditLogs: AuditEntry[];
   activeSessions: UserSession[];
   schoolLogo: string | null;
@@ -464,25 +464,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
             // Sync logged-in currentUser with latest real PostgreSQL database record
             setCurrentUser((curr) => {
+              if (!curr || (!curr.id && !curr.email && !curr.username)) return curr;
               const matched = validUsers.find(
                 (u: any) =>
                   (curr.id && u.id === curr.id) ||
                   (curr.email && u.email.toLowerCase().trim() === curr.email.toLowerCase().trim()) ||
-                  (curr.username && u.username && u.username.toLowerCase().trim() === curr.username.toLowerCase().trim()) ||
-                  (curr.role === 'SUPER_ADMIN' && u.role === 'SUPER_ADMIN')
+                  (curr.username && u.username && u.username.toLowerCase().trim() === curr.username.toLowerCase().trim())
               );
               if (matched) {
-                const synced = { ...curr, ...matched };
+                const synced = {
+                  ...curr,
+                  ...matched,
+                  avatar: matched.avatar !== undefined ? matched.avatar : curr.avatar,
+                };
                 safeLocalStorageSet('markazu_current_user', synced);
                 return synced;
-              }
-              if (validUsers.length > 0 && curr.role === 'SUPER_ADMIN') {
-                const sa = validUsers.find((u: any) => u.role === 'SUPER_ADMIN');
-                if (sa) {
-                  const synced = { ...curr, ...sa };
-                  safeLocalStorageSet('markazu_current_user', synced);
-                  return synced;
-                }
               }
               return curr;
             });
@@ -788,29 +784,77 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentUser]);
 
-  const updateUserAvatar = async (avatarUrl: string) => {
-    if (!currentUser) return;
+  const updateUserAvatar = async (avatarUrl: string): Promise<User | undefined> => {
+    if (!currentUser) return undefined;
+
+    const targetId = currentUser.id || currentUser.email || currentUser.username;
+    if (!targetId) return undefined;
 
     // Optimistically update frontend state
-    setCurrentUser((prev) => ({ ...prev, avatar: avatarUrl }));
-    setUsers((prev) => prev.map((u) => (u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...u, avatar: avatarUrl } : u)));
-    setTeachers((prev) => prev.map((t) => (t.id === currentUser.id || t.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...t, avatar: avatarUrl } : t)));
-    setStudents((prev) => prev.map((s) => (s.id === currentUser.id || (s.email && s.email.toLowerCase() === currentUser.email.toLowerCase()) ? { ...s, avatar: avatarUrl } : s)));
-    setParents((prev) => prev.map((p) => (p.id === currentUser.id || p.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...p, avatar: avatarUrl } : p)));
+    const optimisticUser: User = { ...currentUser, avatar: avatarUrl };
+    setCurrentUser(optimisticUser);
+    safeLocalStorageSet('markazu_current_user', optimisticUser);
+
+    setUsers((prev) =>
+      prev.map((u) =>
+        (currentUser.id && u.id === currentUser.id) ||
+        (currentUser.email && u.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (currentUser.username && u.username && u.username.toLowerCase() === currentUser.username.toLowerCase())
+          ? { ...u, avatar: avatarUrl }
+          : u
+      )
+    );
+    setTeachers((prev) =>
+      prev.map((t) =>
+        (currentUser.id && t.id === currentUser.id) ||
+        (currentUser.id && t.userId === currentUser.id) ||
+        (currentUser.email && t.email && t.email.toLowerCase() === currentUser.email.toLowerCase())
+          ? { ...t, avatar: avatarUrl }
+          : t
+      )
+    );
+    setStudents((prev) =>
+      prev.map((s) =>
+        (currentUser.id && s.id === currentUser.id) ||
+        (currentUser.id && s.userId === currentUser.id) ||
+        (currentUser.email && s.email && s.email.toLowerCase() === currentUser.email.toLowerCase())
+          ? { ...s, avatar: avatarUrl }
+          : s
+      )
+    );
+    setParents((prev) =>
+      prev.map((p) =>
+        (currentUser.id && p.id === currentUser.id) ||
+        (currentUser.id && p.userId === currentUser.id) ||
+        (currentUser.email && p.email && p.email.toLowerCase() === currentUser.email.toLowerCase())
+          ? { ...p, avatar: avatarUrl }
+          : p
+      )
+    );
 
     // Persist to PostgreSQL database via shared API
     try {
-      const res = await fetch(`/api/users/${encodeURIComponent(currentUser.id || currentUser.email)}`, {
+      const res = await fetch(`/api/users/${encodeURIComponent(targetId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ avatar: avatarUrl }),
       });
       const data = await res.json();
-      if (data && data.user) {
-        const savedUser = data.user;
-        setCurrentUser((prev) => ({ ...prev, ...savedUser }));
-        safeLocalStorageSet('markazu_current_user', { ...currentUser, ...savedUser });
-        setUsers((prev) => prev.map((u) => (u.id === savedUser.id || u.email.toLowerCase() === savedUser.email.toLowerCase() ? { ...u, ...savedUser } : u)));
+      if (res.ok && data && data.user) {
+        const savedUser: User = data.user;
+        setCurrentUser((prev) => {
+          const synced = { ...prev, ...savedUser };
+          safeLocalStorageSet('markazu_current_user', synced);
+          return synced;
+        });
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === savedUser.id || (savedUser.email && u.email.toLowerCase() === savedUser.email.toLowerCase())
+              ? { ...u, ...savedUser }
+              : u
+          )
+        );
+        return savedUser;
       }
     } catch (e) {
       console.warn('[updateUserAvatar] API sync warning:', e);
@@ -819,8 +863,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     notify({
       type: 'success',
       title: 'Profile Photo Updated',
-      message: `Profile image updated successfully.`,
+      message: `Profile image updated and saved to PostgreSQL successfully.`,
     });
+
+    return optimisticUser;
   };
 
   const setSchoolLogo = (logo: string | null) => {
@@ -1021,18 +1067,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } catch (err: any) {
       console.warn(`[localStorage QUOTA EXCEEDED] Storage quota limit reached for key '${key}'. Cleaning up legacy cache...`);
       try {
-        // Clear redundant legacy avatar keys
+        // Clear redundant legacy keys
         for (let i = localStorage.length - 1; i >= 0; i--) {
           const k = localStorage.key(i);
-          if (k && k.startsWith('markazu_user_avatar_')) {
+          if (k && (k.startsWith('markazu_user_avatar_') || k.startsWith('markazu_user_profile_') || k.startsWith('markazu_fav_') || k.startsWith('markazu_recent_'))) {
             localStorage.removeItem(k);
           }
         }
-        // Strip heavy inline base64 string duplicates over 50KB if any exist
+        // Save without modification if key is markazu_current_user
+        if (key === 'markazu_current_user') {
+          localStorage.setItem(key, JSON.stringify(data));
+          return;
+        }
         if (Array.isArray(data)) {
           const sanitized = data.map((item: any) => {
             if (item && typeof item === 'object') {
               const copy = { ...item };
+              // Strip heavy avatars only from multi-item array lists if quota is critically exceeded
               if (typeof copy.avatar === 'string' && copy.avatar.length > 50000) delete copy.avatar;
               if (typeof copy.photoUrl === 'string' && copy.photoUrl.length > 50000) delete copy.photoUrl;
               return copy;
@@ -1040,6 +1091,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             return item;
           });
           localStorage.setItem(key, JSON.stringify(sanitized));
+        } else {
+          localStorage.setItem(key, JSON.stringify(data));
         }
       } catch (innerErr) {
         console.error(`[localStorage FALLBACK] Storage full for '${key}'. Kept safely in active memory state.`);
@@ -2128,14 +2181,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (data && data.user) {
-        const savedUser = data.user;
-        setUsers((prev) => prev.map((u) => (u.id === savedUser.id || u.email.toLowerCase() === savedUser.email.toLowerCase() ? { ...u, ...savedUser } : u)));
+        const savedUser: User = data.user;
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === savedUser.id || (savedUser.email && u.email.toLowerCase() === savedUser.email.toLowerCase())
+              ? { ...u, ...savedUser }
+              : u
+          )
+        );
         if (
           currentUser &&
           (currentUser.id === savedUser.id ||
             currentUser.email.toLowerCase() === savedUser.email.toLowerCase() ||
-            (currentUser.username && savedUser.username && currentUser.username.toLowerCase() === savedUser.username.toLowerCase()) ||
-            (currentUser.role === 'SUPER_ADMIN' && targetUser?.role === 'SUPER_ADMIN'))
+            (currentUser.username && savedUser.username && currentUser.username.toLowerCase() === savedUser.username.toLowerCase()))
         ) {
           const merged = { ...currentUser, ...savedUser };
           setCurrentUser(merged);

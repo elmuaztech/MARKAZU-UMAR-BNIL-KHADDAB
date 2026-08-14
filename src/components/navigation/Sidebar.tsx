@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useApp } from '../../lib/context';
+import { compressImageFile } from '../../lib/imageUtils';
 import { ThemeToggle } from './ThemeToggle';
 import { hasPageAccess } from '../../lib/rbac';
 import {
@@ -177,34 +178,36 @@ export function Sidebar({
     }));
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
     if (file.size > MAX_FILE_SIZE) {
       notify({
         type: 'error',
-        title: 'File Size Exceeded (Max 5MB)',
-        message: `Selected image size is ${(file.size / (1024 * 1024)).toFixed(2)} MB. Maximum allowed size is 5 MB.`,
+        title: 'File Size Exceeded (Max 10MB)',
+        message: `Selected image size is ${(file.size / (1024 * 1024)).toFixed(2)} MB. Maximum allowed size is 10 MB.`,
       });
       e.target.value = '';
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const result = event.target?.result as string;
-      if (result) {
-        updateUserAvatar(result);
-        notify({
-          type: 'success',
-          title: 'Avatar Updated!',
-          message: 'Your profile photo has been updated successfully.',
-        });
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      const compressed = await compressImageFile(file);
+      await updateUserAvatar(compressed);
+      notify({
+        type: 'success',
+        title: 'Avatar Updated!',
+        message: 'Your profile photo has been updated and saved to PostgreSQL successfully.',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Avatar Update Failed',
+        message: err.message || 'Could not process selected image file.',
+      });
+    }
   };
 
   // Live Notification Badges Calculation
