@@ -105,34 +105,7 @@ export default function BackupCenterPage() {
           // ignore corrupted local storage
         }
       }
-
-      // Initial baseline snapshot log reflecting current real database count
-      const initialLog: BackupLogItem = {
-        id: 'bkp-init-01',
-        timestamp: new Date().toLocaleString(),
-        backupType: 'FULL_PACKAGE',
-        backupTypeLabel: 'Complete Database (JSON + PDF)',
-        performedBy: currentUser.name || 'Administrator',
-        performedByRole: currentUser.role || 'ADMIN',
-        fileSize: `${Math.max(0.85, totalDatabaseRecords * 0.0035).toFixed(2)} MB`,
-        totalRecords: totalDatabaseRecords,
-        recordsBreakdown: {
-          students: students.length,
-          teachers: teachers.length,
-          parents: parents.length,
-          programmes: programmes.length,
-          classes: classes.length,
-          subjects: subjects.length,
-          tahfiz: tahfizRecords.length,
-          attendance: attendance.length,
-          grades: grades.length,
-          admissions: admissionApplications.length,
-          auditLogs: auditLogs.length,
-        },
-        status: 'DOWNLOADED_AND_SAVED',
-        filename: `Markazu_Umar_Full_Backup_Baseline`,
-      };
-      setBackupLogs([initialLog]);
+      setBackupLogs([]);
     }
   }, []);
 
@@ -698,35 +671,45 @@ export default function BackupCenterPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-500/10">
-              {backupLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-emerald-500/5 transition-colors">
-                  <td className="p-3.5 font-mono text-slate-600 dark:text-gray-300">{log.timestamp}</td>
-                  <td className="p-3.5">
-                    <span className="font-bold text-slate-900 dark:text-white">{log.backupTypeLabel}</span>
-                  </td>
-                  <td className="p-3.5 font-medium text-slate-800 dark:text-emerald-200">
-                    {log.performedBy} <span className="text-[10px] text-slate-400">({log.performedByRole})</span>
-                  </td>
-                  <td className="p-3.5 font-bold text-slate-800 dark:text-emerald-200 font-mono">
-                    {log.totalRecords} Records
-                  </td>
-                  <td className="p-3.5 font-mono text-slate-500 dark:text-emerald-400/70">{log.fileSize}</td>
-                  <td className="p-3.5">
-                    <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1 w-fit">
-                      <CheckCircle2 className="w-3 h-3" /> Downloaded & Saved
-                    </span>
-                  </td>
-                  <td className="p-3.5 text-right">
-                    <button
-                      onClick={() => handleReDownload(log)}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] border border-emerald-500/20 transition-all inline-flex items-center gap-1"
-                    >
-                      <Download className="w-3 h-3" />
-                      <span>Download Again</span>
-                    </button>
+              {backupLogs.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-slate-500 dark:text-emerald-400/60 font-sans">
+                    <Database className="w-8 h-8 mx-auto mb-2 opacity-40 text-emerald-500" />
+                    <p className="font-semibold text-xs text-slate-700 dark:text-emerald-300">No backup snapshots recorded yet.</p>
+                    <p className="text-[11px] text-slate-400 dark:text-emerald-500/70 mt-0.5">Click &quot;Download Backup Package Now&quot; above to create your first manual archive.</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                backupLogs.map((log) => (
+                  <tr key={log.id} className="hover:bg-emerald-500/5 transition-colors">
+                    <td className="p-3.5 font-mono text-slate-600 dark:text-gray-300">{log.timestamp}</td>
+                    <td className="p-3.5">
+                      <span className="font-bold text-slate-900 dark:text-white">{log.backupTypeLabel}</span>
+                    </td>
+                    <td className="p-3.5 font-medium text-slate-800 dark:text-emerald-200">
+                      {log.performedBy} <span className="text-[10px] text-slate-400">({log.performedByRole})</span>
+                    </td>
+                    <td className="p-3.5 font-bold text-slate-800 dark:text-emerald-200 font-mono">
+                      {log.totalRecords} Records
+                    </td>
+                    <td className="p-3.5 font-mono text-slate-500 dark:text-emerald-400/70">{log.fileSize}</td>
+                    <td className="p-3.5">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1 w-fit">
+                        <CheckCircle2 className="w-3 h-3" /> Downloaded & Saved
+                      </span>
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <button
+                        onClick={() => handleReDownload(log)}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold text-[11px] border border-emerald-500/20 transition-all inline-flex items-center gap-1"
+                      >
+                        <Download className="w-3 h-3" />
+                        <span>Download Again</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

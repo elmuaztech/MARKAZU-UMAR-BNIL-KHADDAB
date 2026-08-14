@@ -43,15 +43,15 @@ export function TeacherDashboard() {
         (t.full_name_english && currentUser.name && t.full_name_english.toLowerCase() === currentUser.name.toLowerCase())
     ) || {
       id: currentUser.id,
-      staffNo: currentUser.username || 'TCH-001',
+      staffNo: currentUser.username || '',
       fullName: currentUser.name,
       full_name_english: currentUser.name,
       full_name_arabic: '',
       email: currentUser.email,
       phone: '',
-      programmeIds: currentUser.assignedProgrammeId ? [currentUser.assignedProgrammeId] : ['prog-02'],
-      classesAssigned: ['cls-tahfiz-1'],
-      subjectsAssigned: ["Qur'an & Tajweed"],
+      programmeIds: currentUser.assignedProgrammeId ? [currentUser.assignedProgrammeId] : [],
+      classesAssigned: [],
+      subjectsAssigned: [],
       dateJoined: new Date().toISOString().split('T')[0],
       status: 'ACTIVE' as const,
     };
@@ -76,10 +76,10 @@ export function TeacherDashboard() {
   );
 
   const myProgrammes = programmes.filter(
-    (p) => assignedProgrammeIds.length === 0 || assignedProgrammeIds.includes(p.id)
+    (p) => assignedProgrammeIds.includes(p.id)
   );
   const myClasses = classes.filter(
-    (c) => assignedClassIds.length === 0 || assignedClassIds.includes(c.id)
+    (c) => assignedClassIds.includes(c.id)
   );
 
   const [selectedProgId, setSelectedProgId] = useState<string>(myProgrammes[0]?.id || 'ALL');
@@ -88,7 +88,7 @@ export function TeacherDashboard() {
   // Scoped classes & subjects under selected Programme
   const filteredMyClasses = myClasses.filter((c) => selectedProgId === 'ALL' || c.programmeId === selectedProgId);
   const teacherStudents = students.filter(
-    (s) => assignedClassIds.length === 0 || assignedClassIds.includes(s.classId)
+    (s) => assignedClassIds.includes(s.classId)
   );
 
   const quickActions: QuickActionItem[] = [
@@ -174,7 +174,7 @@ export function TeacherDashboard() {
       <PortalHeroBanner
         badgeText="Faculty Educator Portal"
         badgeIcon={UserCheck}
-        title={`Assalamu Alaikum, ${currentTeacher.full_name_english || currentUser.name}`}
+        title={`Assalamu Alaikum, ${currentTeacher.full_name_english || currentUser.name || 'Teacher'}`}
         titleArabic={currentTeacher.full_name_arabic}
         description="Teacher Command Portal: Scoped exclusively to your assigned Programmes, Classes, and Subjects. Manage daily Hifz, Muraja'ah, class attendance, and grade entries."
         actions={

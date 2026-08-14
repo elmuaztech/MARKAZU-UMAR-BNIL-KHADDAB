@@ -72,6 +72,7 @@ import {
 
 export function AdminDashboard() {
   const {
+    users,
     programmes,
     students,
     teachers,
@@ -131,6 +132,8 @@ export function AdminDashboard() {
   const totalTeachers = displayTeachers.length;
   const totalParents = displayParents.length;
   const totalClasses = displayClasses.length;
+  const totalAdmins = users.filter((u) => (u.role === 'SUPER_ADMIN' || u.role === 'ADMIN') && u.status === 'ACTIVE').length;
+  const totalActiveUsers = users.filter((u) => u.status === 'ACTIVE').length;
   const totalJuzMemorized = displayStudents.reduce((acc, s) => acc + (s.hifzProgress?.juzCompleted || 0), 0);
 
   // Attendance Calculations
@@ -139,26 +142,31 @@ export function AdminDashboard() {
   const lateCount = displayAttendance.filter((a) => a.status === 'LATE').length;
   const excusedCount = displayAttendance.filter((a) => a.status === 'EXCUSED').length;
   const totalAttendanceRecords = displayAttendance.length || 1;
-  const attendanceRatePercentage = ((presentCount / totalAttendanceRecords) * 100).toFixed(1);
+  const attendanceRatePercentage = displayAttendance.length > 0 ? ((presentCount / totalAttendanceRecords) * 100).toFixed(1) : '0.0';
 
-  // Chart Datasets
-  const tahfizData = [
-    { month: 'Jan', juzCompleted: 120 },
-    { month: 'Feb', juzCompleted: 145 },
-    { month: 'Mar', juzCompleted: 180 },
-    { month: 'Apr', juzCompleted: 210 },
-    { month: 'May', juzCompleted: 250 },
-    { month: 'Jun', juzCompleted: 290 },
-    { month: 'Jul', juzCompleted: 340 },
-  ];
+  // Dynamic Chart Datasets
+  const tahfizData = displayTahfiz.length > 0
+    ? ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'].map((m) => ({
+        month: m,
+        juzCompleted: displayTahfiz.length,
+      }))
+    : [
+        { month: 'Jan', juzCompleted: 0 },
+        { month: 'Feb', juzCompleted: 0 },
+        { month: 'Mar', juzCompleted: 0 },
+        { month: 'Apr', juzCompleted: 0 },
+        { month: 'May', juzCompleted: 0 },
+        { month: 'Jun', juzCompleted: 0 },
+        { month: 'Jul', juzCompleted: 0 },
+      ];
 
   const studentGrowthData = [
-    { month: 'Sep', students: 1820 },
-    { month: 'Oct', students: 1890 },
-    { month: 'Nov', students: 1940 },
-    { month: 'Dec', students: 1980 },
-    { month: 'Jan', students: 2010 },
-    { month: 'Feb', students: 2040 },
+    { month: 'Sep', students: totalStudents },
+    { month: 'Oct', students: totalStudents },
+    { month: 'Nov', students: totalStudents },
+    { month: 'Dec', students: totalStudents },
+    { month: 'Jan', students: totalStudents },
+    { month: 'Feb', students: totalStudents },
   ];
 
   const attendancePie = [
@@ -276,7 +284,7 @@ export function AdminDashboard() {
             </div>
           </div>
           <p suppressHydrationWarning className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
-            {Math.max(1, activeSessions.length)}
+            {totalAdmins}
           </p>
         </Link>
 
@@ -291,7 +299,7 @@ export function AdminDashboard() {
             </div>
           </div>
           <p suppressHydrationWarning className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
-            {totalStudents + totalTeachers + totalParents}
+            {totalActiveUsers}
           </p>
         </div>
       </div>
@@ -541,28 +549,30 @@ export function AdminDashboard() {
           </div>
 
           <div className="space-y-2.5">
-            {[
-              { date: '15 Aug', title: 'Mid-Term Qur\'an Recitation Assessment', tag: 'Academic' },
-              { date: '22 Aug', title: 'Parent-Teacher Consultative Meeting', tag: 'Community' },
-              { date: '01 Sep', title: 'New Term Admission Test & Screening', tag: 'Admissions' },
-            ].map((ev, i) => (
-              <div
-                key={i}
-                className="p-2.5 rounded-2xl bg-slate-50 dark:bg-[#021810] flex items-center gap-3 text-xs"
-              >
-                <div className="px-2.5 py-1 rounded-xl bg-orange-500/15 text-orange-700 dark:text-orange-300 font-mono font-black text-[10px] text-center shrink-0">
-                  {ev.date}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-bold text-slate-900 dark:text-white truncate">
-                    {ev.title}
-                  </p>
-                  <p className="text-[10px] text-slate-500 dark:text-emerald-400 font-medium">
-                    {ev.tag}
-                  </p>
-                </div>
+            {announcements.length === 0 ? (
+              <div className="py-8 text-center bg-slate-50 dark:bg-[#021810] rounded-2xl border border-dashed border-slate-200 dark:border-emerald-500/20 text-slate-400 dark:text-emerald-300/60 font-medium text-xs">
+                No upcoming events scheduled
               </div>
-            ))}
+            ) : (
+              announcements.slice(0, 3).map((ev) => (
+                <div
+                  key={ev.id}
+                  className="p-2.5 rounded-2xl bg-slate-50 dark:bg-[#021810] flex items-center gap-3 text-xs"
+                >
+                  <div className="px-2.5 py-1 rounded-xl bg-orange-500/15 text-orange-700 dark:text-orange-300 font-mono font-black text-[10px] text-center shrink-0">
+                    {ev.date ? new Date(ev.date).toLocaleDateString('en-US', { day: '2-digit', month: 'short' }) : 'Notice'}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-slate-900 dark:text-white truncate">
+                      {ev.title}
+                    </p>
+                    <p className="text-[10px] text-slate-500 dark:text-emerald-400 font-medium">
+                      {ev.category}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

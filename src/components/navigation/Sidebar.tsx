@@ -492,7 +492,7 @@ export function Sidebar({
                 {currentUser.avatar ? (
                   <img
                     src={currentUser.avatar}
-                    alt={currentUser.name}
+                    alt={currentUser.name || 'User Profile'}
                     className="w-8 h-8 rounded-full border-2 border-emerald-400/50 object-cover"
                   />
                 ) : (
@@ -506,7 +506,7 @@ export function Sidebar({
               {!isCollapsed && (
                 <div className="overflow-hidden min-w-0">
                   <p className="text-xs font-bold text-slate-900 dark:text-emerald-100 truncate">{currentUser.name}</p>
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold truncate">{currentUser.role}</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold truncate">{currentUser.role ? currentUser.role.replace('_', ' ') : ''}</p>
                 </div>
               )}
             </div>

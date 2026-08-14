@@ -1,17 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import {
-  MOCK_USERS,
-  MOCK_TEACHERS,
-  MOCK_STUDENTS,
-  MOCK_PARENTS,
-  MOCK_PROGRAMMES,
-  MOCK_CLASSES,
-  MOCK_SUBJECTS,
-  MOCK_ATTENDANCE,
-  MOCK_TAHFIZ_RECORDS,
-  MOCK_ANNOUNCEMENTS,
-} from './mockData';
 import { hashPassword } from './security';
 
 export interface ServerDatabase {
@@ -42,6 +30,7 @@ export interface ServerDatabase {
   attendance: Array<any>;
   tahfizRecords: Array<any>;
   announcements: Array<any>;
+  otpTokens?: Array<any>;
   deletedIdentifiers: {
     ids: string[];
     emails: string[];
@@ -58,38 +47,17 @@ export interface ServerDatabase {
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DATA_DIR, 'mssms_database.json');
 
-// Initial seed template if file does not exist
+// Clean initial empty database structure
 function getInitialDatabase(): ServerDatabase {
-  const initialUsers = MOCK_USERS.map((u) => ({
-    id: u.id,
-    username: u.username || u.id,
-    name: u.name,
-    email: u.email.toLowerCase().trim(),
-    password: u.passwordHash || hashPassword('@Aa123456789'),
-    role: u.role,
-    phone: u.phone,
-    avatar: u.avatar,
-    assignedProgrammeId: u.assignedProgrammeId || null,
-    assignedProgrammeName: u.assignedProgrammeName || null,
-    status: u.status || 'ACTIVE',
-    isFirstLogin: u.isFirstLogin ?? false,
-    mustChangePassword: u.mustChangePassword ?? false,
-    isLocked: false,
-    failedLoginAttempts: 0,
-    lastLoginAt: null,
-    deletedAt: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }));
-
   return {
-    users: initialUsers,
-    programmes: MOCK_PROGRAMMES || [],
-    classes: MOCK_CLASSES || [],
-    subjects: MOCK_SUBJECTS || [],
-    attendance: MOCK_ATTENDANCE || [],
-    tahfizRecords: MOCK_TAHFIZ_RECORDS || [],
-    announcements: MOCK_ANNOUNCEMENTS || [],
+    users: [],
+    programmes: [],
+    classes: [],
+    subjects: [],
+    attendance: [],
+    tahfizRecords: [],
+    announcements: [],
+    otpTokens: [],
     deletedIdentifiers: {
       ids: [],
       emails: [],
@@ -98,7 +66,7 @@ function getInitialDatabase(): ServerDatabase {
     schoolSettings: {
       name: "MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI",
       logo: '/logo.jpg',
-      activeSession: '2025/2026',
+      activeSession: '1447/1448 AH (2025/2026 AD)',
       activeTerm: 'Term 1',
     },
   };
@@ -120,20 +88,20 @@ export function readServerDatabase(): ServerDatabase {
     const content = fs.readFileSync(DB_FILE, 'utf8');
     const parsed: ServerDatabase = JSON.parse(content);
 
-    // Ensure all top-level keys exist
+    // Ensure all top-level keys exist as clean arrays
     if (!Array.isArray(parsed.users)) parsed.users = [];
-    if (!Array.isArray(parsed.programmes)) parsed.programmes = MOCK_PROGRAMMES || [];
-    if (!Array.isArray(parsed.classes)) parsed.classes = MOCK_CLASSES || [];
-    if (!Array.isArray(parsed.subjects)) parsed.subjects = MOCK_SUBJECTS || [];
-    if (!Array.isArray(parsed.attendance)) parsed.attendance = MOCK_ATTENDANCE || [];
-    if (!Array.isArray(parsed.tahfizRecords)) parsed.tahfizRecords = MOCK_TAHFIZ_RECORDS || [];
-    if (!Array.isArray(parsed.announcements)) parsed.announcements = MOCK_ANNOUNCEMENTS || [];
+    if (!Array.isArray(parsed.programmes)) parsed.programmes = [];
+    if (!Array.isArray(parsed.classes)) parsed.classes = [];
+    if (!Array.isArray(parsed.subjects)) parsed.subjects = [];
+    if (!Array.isArray(parsed.attendance)) parsed.attendance = [];
+    if (!Array.isArray(parsed.tahfizRecords)) parsed.tahfizRecords = [];
+    if (!Array.isArray(parsed.announcements)) parsed.announcements = [];
     if (!parsed.deletedIdentifiers) parsed.deletedIdentifiers = { ids: [], emails: [], usernames: [] };
     if (!parsed.schoolSettings) {
       parsed.schoolSettings = {
         name: "MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI",
         logo: '/logo.jpg',
-        activeSession: '2025/2026',
+        activeSession: '1447/1448 AH (2025/2026 AD)',
         activeTerm: 'Term 1',
       };
     }
@@ -177,18 +145,13 @@ export function findServerUser(identifier: string) {
     return (
       u.email.toLowerCase() === cleanId ||
       (u.username && u.username.toLowerCase() === cleanId) ||
-      u.id.toLowerCase() === cleanId ||
-      (cleanId === 'superadmin' && u.role === 'SUPER_ADMIN') ||
-      (cleanId.includes('superadmin') && u.role === 'SUPER_ADMIN') ||
-      (cleanId === 'admin' && u.role === 'ADMIN') ||
-      (cleanId === 'schooladmin' && u.role === 'ADMIN')
+      u.id.toLowerCase() === cleanId
     );
   });
 }
 
 export function getAllServerUsers() {
   const db = readServerDatabase();
-
   return db.users.filter((u) => !u.deletedAt);
 }
 
@@ -255,363 +218,75 @@ export function createServerUser(userData: {
     updatedAt: new Date().toISOString(),
   };
 
-  if (existingIndex !== -1) {
-    db.users[existingIndex] = {
-      ...db.users[existingIndex],
-      ...newUser,
-    };
+  if (existingIndex >= 0) {
+    db.users[existingIndex] = { ...db.users[existingIndex], ...newUser };
   } else {
     db.users.unshift(newUser);
-  }
-
-  // Remove from deletedIdentifiers if present
-  if (db.deletedIdentifiers) {
-    db.deletedIdentifiers.ids = (db.deletedIdentifiers.ids || []).filter((i) => i !== userId);
-    db.deletedIdentifiers.emails = (db.deletedIdentifiers.emails || []).filter((e) => e !== cleanEmail);
-    if (autoUsername) {
-      db.deletedIdentifiers.usernames = (db.deletedIdentifiers.usernames || []).filter((u) => u !== autoUsername.toLowerCase());
-    }
   }
 
   writeServerDatabase(db);
   return newUser;
 }
 
-export function updateServerUser(userId: string, updates: Record<string, any>) {
+export function updateServerUser(userId: string, updates: any) {
   const db = readServerDatabase();
   const cleanId = userId.trim().toLowerCase();
 
-  let targetIndex = db.users.findIndex(
+  const userIndex = db.users.findIndex(
     (u) =>
-      u.id.toLowerCase() === cleanId ||
-      u.email.toLowerCase() === cleanId ||
-      (u.username && u.username.toLowerCase() === cleanId) ||
-      (cleanId === 'superadmin' && u.role === 'SUPER_ADMIN') ||
-      (cleanId === 'usr-superadmin-1' && u.role === 'SUPER_ADMIN')
+      !u.deletedAt &&
+      (u.id.toLowerCase() === cleanId ||
+        u.email.toLowerCase() === cleanId ||
+        (u.username && u.username.toLowerCase() === cleanId))
   );
 
-  if (targetIndex === -1 && updates.role === 'SUPER_ADMIN') {
-    targetIndex = db.users.findIndex((u) => u.role === 'SUPER_ADMIN');
-  }
+  if (userIndex === -1) return null;
 
-  if (targetIndex === -1) return null;
-
-  const existing = db.users[targetIndex];
-  const updatedUser = {
-    ...existing,
+  db.users[userIndex] = {
+    ...db.users[userIndex],
     ...updates,
     updatedAt: new Date().toISOString(),
   };
 
-  db.users[targetIndex] = updatedUser;
   writeServerDatabase(db);
-  return updatedUser;
-}
-
-// In-Memory & File-based OTP Token Management for Password Resets
-interface ServerOtpToken {
-  token: string;
-  userId: string;
-  email: string;
-  expiresAt: number;
-  used: boolean;
-}
-
-const globalServerOtpTokens: ServerOtpToken[] = [];
-
-export function saveServerOtpToken(userId: string, email: string, token: string, expiresAt: Date) {
-  globalServerOtpTokens.push({
-    token: token.trim(),
-    userId,
-    email: email.toLowerCase().trim(),
-    expiresAt: expiresAt.getTime(),
-    used: false,
-  });
-}
-
-export function findServerOtpToken(otp: string) {
-  const cleanOtp = otp.trim();
-  const now = Date.now();
-  return globalServerOtpTokens.find((t) => !t.used && t.token === cleanOtp && t.expiresAt > now);
-}
-
-export function markServerOtpTokenUsed(otp: string) {
-  const token = findServerOtpToken(otp);
-  if (token) {
-    token.used = true;
-  }
+  return db.users[userIndex];
 }
 
 export function deleteServerUser(userId: string) {
   const db = readServerDatabase();
   const cleanId = userId.trim().toLowerCase();
 
-  const targetIndex = db.users.findIndex(
+  const userIndex = db.users.findIndex(
     (u) =>
       u.id.toLowerCase() === cleanId ||
       u.email.toLowerCase() === cleanId ||
       (u.username && u.username.toLowerCase() === cleanId)
   );
 
-  if (targetIndex === -1) return false;
+  if (userIndex === -1) return false;
 
-  const targetUser = db.users[targetIndex];
-  if (targetUser.role === 'SUPER_ADMIN') {
-    return false; // Prevent primary Super Admin root account deletion
+  const target = db.users[userIndex];
+  target.deletedAt = new Date().toISOString();
+  target.status = 'DEACTIVATED';
+
+  if (!db.deletedIdentifiers) {
+    db.deletedIdentifiers = { ids: [], emails: [], usernames: [] };
   }
 
-  // Soft delete and record in deletedIdentifiers
-  targetUser.deletedAt = new Date().toISOString();
-  targetUser.status = 'DEACTIVATED';
-
-  if (!db.deletedIdentifiers.ids.includes(targetUser.id)) {
-    db.deletedIdentifiers.ids.push(targetUser.id);
+  if (target.id && !db.deletedIdentifiers.ids.includes(target.id)) {
+    db.deletedIdentifiers.ids.push(target.id);
   }
-  if (!db.deletedIdentifiers.emails.includes(targetUser.email.toLowerCase())) {
-    db.deletedIdentifiers.emails.push(targetUser.email.toLowerCase());
+  if (target.email && !db.deletedIdentifiers.emails.includes(target.email.toLowerCase())) {
+    db.deletedIdentifiers.emails.push(target.email.toLowerCase());
   }
-  if (targetUser.username && !db.deletedIdentifiers.usernames.includes(targetUser.username.toLowerCase())) {
-    db.deletedIdentifiers.usernames.push(targetUser.username.toLowerCase());
+  if (target.username && !db.deletedIdentifiers.usernames.includes(target.username.toLowerCase())) {
+    db.deletedIdentifiers.usernames.push(target.username.toLowerCase());
   }
 
-  // Remove completely from active array
-  db.users.splice(targetIndex, 1);
   writeServerDatabase(db);
   return true;
 }
 
-// ------------------------------------
-// Classes CRUD Helpers
-// ------------------------------------
-export function getAllServerClasses(programmeId?: string | null) {
-  const db = readServerDatabase();
-  let result = db.classes || [];
-  if (programmeId) {
-    result = result.filter((c) => c.programmeId === programmeId);
-  }
-  return result;
-}
-
-export function createServerClass(newClassData: any) {
-  const db = readServerDatabase();
-  const newClass = {
-    id: newClassData.id || `cls-${Date.now()}`,
-    name: newClassData.name,
-    category: newClassData.category,
-    section: newClassData.section,
-    subcategory: newClassData.subcategory || null,
-    capacity: Number(newClassData.capacity || 30),
-    programmeId: newClassData.programmeId || null,
-    classTeacherId: newClassData.classTeacherId || null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  db.classes = [newClass, ...(db.classes || [])];
-  writeServerDatabase(db);
-  return newClass;
-}
-
-export function updateServerClass(classId: string, updates: any) {
-  const db = readServerDatabase();
-  const idx = (db.classes || []).findIndex((c) => c.id === classId);
-  if (idx === -1) return null;
-  const updated = {
-    ...db.classes[idx],
-    ...updates,
-    updatedAt: new Date().toISOString(),
-  };
-  db.classes[idx] = updated;
-  writeServerDatabase(db);
-  return updated;
-}
-
-export function deleteServerClass(classId: string) {
-  const db = readServerDatabase();
-  const idx = (db.classes || []).findIndex((c) => c.id === classId);
-  if (idx === -1) return false;
-  db.classes.splice(idx, 1);
-  writeServerDatabase(db);
-  return true;
-}
-
-// ------------------------------------
-// Subjects CRUD Helpers
-// ------------------------------------
-export function getAllServerSubjects(classId?: string | null, programmeId?: string | null) {
-  const db = readServerDatabase();
-  let result = db.subjects || [];
-  if (classId) result = result.filter((s) => s.classId === classId);
-  if (programmeId) result = result.filter((s) => s.programmeId === programmeId);
-  return result;
-}
-
-export function createServerSubject(subjectData: any) {
-  const db = readServerDatabase();
-  const newSubject = {
-    id: subjectData.id || `subj-${Date.now()}`,
-    name: subjectData.name,
-    arabicName: subjectData.arabicName || null,
-    code: subjectData.code,
-    category: subjectData.category || 'GENERAL',
-    description: subjectData.description || null,
-    programmeId: subjectData.programmeId || null,
-    classId: subjectData.classId || null,
-    status: subjectData.status || 'ACTIVE',
-    displayOrder: Number(subjectData.displayOrder || 1),
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-  db.subjects = [newSubject, ...(db.subjects || [])];
-  writeServerDatabase(db);
-  return newSubject;
-}
-
-export function updateServerSubject(subjectId: string, updates: any) {
-  const db = readServerDatabase();
-  const idx = (db.subjects || []).findIndex((s) => s.id === subjectId);
-  if (idx === -1) return null;
-  const updated = {
-    ...db.subjects[idx],
-    ...updates,
-    updatedAt: new Date().toISOString(),
-  };
-  db.subjects[idx] = updated;
-  writeServerDatabase(db);
-  return updated;
-}
-
-export function deleteServerSubject(subjectId: string) {
-  const db = readServerDatabase();
-  const idx = (db.subjects || []).findIndex((s) => s.id === subjectId);
-  if (idx === -1) return false;
-  db.subjects.splice(idx, 1);
-  writeServerDatabase(db);
-  return true;
-}
-
-// ------------------------------------
-// Attendance CRUD Helpers
-// ------------------------------------
-export function getAllServerAttendance(date?: string | null, classId?: string | null, programmeId?: string | null) {
-  const db = readServerDatabase();
-  let result = db.attendance || [];
-  if (date) result = result.filter((a) => a.date?.startsWith(date) || a.date === date);
-  if (classId) result = result.filter((a) => a.classId === classId);
-  if (programmeId) result = result.filter((a) => a.programmeId === programmeId);
-  return result;
-}
-
-export function saveServerAttendanceBatch(records: any[], isDraft: boolean = false) {
-  const db = readServerDatabase();
-  if (!Array.isArray(db.attendance)) db.attendance = [];
-
-  records.forEach((rec) => {
-    const existingIdx = db.attendance.findIndex(
-      (a) => a.studentId === rec.studentId && a.date === rec.date
-    );
-    const newRecord = {
-      id: rec.id || `att-${rec.classId}-${rec.studentId}-${rec.date}`,
-      date: rec.date || new Date().toISOString().split('T')[0],
-      studentId: rec.studentId,
-      classId: rec.classId,
-      programmeId: rec.programmeId || null,
-      teacherId: rec.teacherId || null,
-      status: rec.status || 'PRESENT',
-      statusEnum: rec.status || 'PRESENT',
-      remarks: rec.remarks || '',
-      isDraft,
-      createdAt: new Date().toISOString(),
-    };
-
-    if (existingIdx >= 0) {
-      db.attendance[existingIdx] = { ...db.attendance[existingIdx], ...newRecord };
-    } else {
-      db.attendance.push(newRecord);
-    }
-  });
-
-  writeServerDatabase(db);
-  return db.attendance;
-}
-
-// ------------------------------------
-// Tahfiz CRUD Helpers
-// ------------------------------------
-export function getAllServerTahfiz(studentId?: string | null, classId?: string | null, programmeId?: string | null) {
-  const db = readServerDatabase();
-  let result = db.tahfizRecords || [];
-  if (studentId) result = result.filter((t) => t.studentId === studentId);
-  if (classId) result = result.filter((t) => t.classId === classId);
-  if (programmeId) result = result.filter((t) => t.programmeId === programmeId);
-  return result;
-}
-
-export function createServerTahfizRecord(recordData: any) {
-  const db = readServerDatabase();
-  const newRecord = {
-    id: recordData.id || `tahfiz-${Date.now()}`,
-    date: recordData.date || new Date().toISOString(),
-    studentId: recordData.studentId,
-    classId: recordData.classId,
-    programmeId: recordData.programmeId || null,
-    teacherId: recordData.teacherId || 'usr-teacher-1',
-    hifzSurah: recordData.hifzSurah || 'Surah Al-Fatihah',
-    hifzFromAyah: Number(recordData.hifzFromAyah || 1),
-    hifzToAyah: Number(recordData.hifzToAyah || 1),
-    hifzPages: Number(recordData.hifzPages || 1.0),
-    currentJuz: Number(recordData.currentJuz || 1),
-    sabkiSurah: recordData.sabkiSurah || '',
-    sabkiRating: Number(recordData.sabkiRating || 5),
-    manzilJuz: Number(recordData.manzilJuz || 1),
-    manzilRating: Number(recordData.manzilRating || 5),
-    teacherNotes: recordData.teacherNotes || '',
-    studentBehaviour: recordData.studentBehaviour || 'EXCELLENT',
-    completionPercentage: Number(recordData.completionPercentage || 0),
-    createdAt: new Date().toISOString(),
-  };
-  db.tahfizRecords = [newRecord, ...(db.tahfizRecords || [])];
-  writeServerDatabase(db);
-  return newRecord;
-}
-
-// ------------------------------------
-// Announcements CRUD Helpers
-// ------------------------------------
-export function getAllServerAnnouncements() {
-  const db = readServerDatabase();
-  return db.announcements || [];
-}
-
-export function createServerAnnouncement(annData: any) {
-  const db = readServerDatabase();
-  const newAnn = {
-    id: annData.id || `ann-${Date.now()}`,
-    title: annData.title,
-    content: annData.content,
-    date: annData.date || new Date().toISOString(),
-    category: annData.category || 'GENERAL',
-    targetRole: annData.targetRole || 'ALL',
-    author: annData.author || 'Admin',
-    pinned: !!annData.pinned,
-    createdAt: new Date().toISOString(),
-  };
-  db.announcements = [newAnn, ...(db.announcements || [])];
-  writeServerDatabase(db);
-  return newAnn;
-}
-
-export function deleteServerAnnouncement(id: string) {
-  const db = readServerDatabase();
-  const idx = (db.announcements || []).findIndex((a) => a.id === id);
-  if (idx === -1) return false;
-  db.announcements.splice(idx, 1);
-  writeServerDatabase(db);
-  return true;
-}
-
-// ------------------------------------
-// Programme / Section CRUD Helpers
-// ------------------------------------
 export function getAllServerProgrammes() {
   const db = readServerDatabase();
   return db.programmes || [];
@@ -620,45 +295,238 @@ export function getAllServerProgrammes() {
 export function createServerProgramme(progData: any) {
   const db = readServerDatabase();
   if (!Array.isArray(db.programmes)) db.programmes = [];
+
   const newProg = {
     id: progData.id || `prog-${Date.now()}`,
     programme_code: progData.programme_code || progData.code,
-    programme_name_english: progData.programme_name_english || progData.nameEnglish || progData.name,
+    programme_name_english: progData.programme_name_english || progData.nameEnglish,
     programme_name_arabic: progData.programme_name_arabic || progData.nameArabic || '',
-    programme_name: progData.programme_name || progData.nameEnglish || progData.name,
-    hasSubcategories: !!progData.hasSubcategories,
-    subcategories: Array.isArray(progData.subcategories) ? progData.subcategories : [],
+    programme_name: progData.programme_name || progData.programme_name_english || progData.nameEnglish,
+    hasSubcategories: progData.hasSubcategories ?? false,
+    subcategories: progData.subcategories || [],
     status: progData.status || 'Active',
-    display_order: Number(progData.display_order || 1),
+    display_order: progData.display_order || progData.displayOrder || db.programmes.length + 1,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   };
-  db.programmes = [newProg, ...db.programmes];
+
+  db.programmes.push(newProg);
   writeServerDatabase(db);
   return newProg;
 }
 
-export function updateServerProgramme(progId: string, updates: any) {
+export function updateServerProgramme(id: string, updates: any) {
   const db = readServerDatabase();
   if (!Array.isArray(db.programmes)) db.programmes = [];
-  const idx = db.programmes.findIndex((p) => p.id === progId);
+  const idx = db.programmes.findIndex((p) => p.id === id);
   if (idx === -1) return null;
-  const updated = {
-    ...db.programmes[idx],
-    ...updates,
-    updated_at: new Date().toISOString(),
-  };
-  db.programmes[idx] = updated;
+  db.programmes[idx] = { ...db.programmes[idx], ...updates, updated_at: new Date().toISOString() };
   writeServerDatabase(db);
-  return updated;
+  return db.programmes[idx];
 }
 
-export function deleteServerProgramme(progId: string) {
+export function deleteServerProgramme(id: string) {
   const db = readServerDatabase();
   if (!Array.isArray(db.programmes)) db.programmes = [];
-  const idx = db.programmes.findIndex((p) => p.id === progId);
+  const idx = db.programmes.findIndex((p) => p.id === id);
   if (idx === -1) return false;
   db.programmes.splice(idx, 1);
   writeServerDatabase(db);
   return true;
+}
+
+export function getAllServerClasses() {
+  const db = readServerDatabase();
+  return db.classes || [];
+}
+
+export function createServerClass(classData: any) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.classes)) db.classes = [];
+
+  const newCls = {
+    id: classData.id || `cls-${Date.now()}`,
+    name: classData.name,
+    category: classData.category,
+    section: classData.section,
+    subcategory: classData.subcategory || null,
+    capacity: classData.capacity || 30,
+    programmeId: classData.programmeId || null,
+    classTeacherId: classData.classTeacherId || null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  db.classes.push(newCls);
+  writeServerDatabase(db);
+  return newCls;
+}
+
+export function updateServerClass(id: string, updates: any) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.classes)) db.classes = [];
+  const idx = db.classes.findIndex((c) => c.id === id);
+  if (idx === -1) return null;
+  db.classes[idx] = { ...db.classes[idx], ...updates, updated_at: new Date().toISOString() };
+  writeServerDatabase(db);
+  return db.classes[idx];
+}
+
+export function deleteServerClass(id: string) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.classes)) db.classes = [];
+  const idx = db.classes.findIndex((c) => c.id === id);
+  if (idx === -1) return false;
+  db.classes.splice(idx, 1);
+  writeServerDatabase(db);
+  return true;
+}
+
+export function getAllServerSubjects() {
+  const db = readServerDatabase();
+  return db.subjects || [];
+}
+
+export function createServerSubject(subjectData: any) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.subjects)) db.subjects = [];
+
+  const newSubj = {
+    id: subjectData.id || `subj-${Date.now()}`,
+    name: subjectData.name,
+    arabicName: subjectData.arabicName || null,
+    code: subjectData.code,
+    category: subjectData.category || 'GENERAL',
+    description: subjectData.description || null,
+    programmeId: subjectData.programmeId || null,
+    classId: subjectData.classId || null,
+    status: subjectData.status || 'Active',
+    displayOrder: subjectData.displayOrder || db.subjects.length + 1,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
+
+  db.subjects.push(newSubj);
+  writeServerDatabase(db);
+  return newSubj;
+}
+
+export function updateServerSubject(id: string, updates: any) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.subjects)) db.subjects = [];
+  const idx = db.subjects.findIndex((s) => s.id === id);
+  if (idx === -1) return null;
+  db.subjects[idx] = { ...db.subjects[idx], ...updates, updated_at: new Date().toISOString() };
+  writeServerDatabase(db);
+  return db.subjects[idx];
+}
+
+export function deleteServerSubject(id: string) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.subjects)) db.subjects = [];
+  const idx = db.subjects.findIndex((s) => s.id === id);
+  if (idx === -1) return false;
+  db.subjects.splice(idx, 1);
+  writeServerDatabase(db);
+  return true;
+}
+
+export function getAllServerAttendance() {
+  const db = readServerDatabase();
+  return db.attendance || [];
+}
+
+export function saveServerAttendanceBatch(records: any[], isDraft: boolean = false) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.attendance)) db.attendance = [];
+
+  for (const rec of records) {
+    const existingIndex = db.attendance.findIndex((a) => a.id === rec.id || (a.studentId === rec.studentId && a.date === rec.date));
+    if (existingIndex >= 0) {
+      db.attendance[existingIndex] = { ...db.attendance[existingIndex], ...rec, isDraft, updated_at: new Date().toISOString() };
+    } else {
+      db.attendance.push({ ...rec, isDraft, created_at: new Date().toISOString() });
+    }
+  }
+
+  writeServerDatabase(db);
+  return db.attendance;
+}
+
+export function getAllServerTahfiz() {
+  const db = readServerDatabase();
+  return db.tahfizRecords || [];
+}
+
+export function createServerTahfizRecord(record: any) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.tahfizRecords)) db.tahfizRecords = [];
+
+  const newRec = {
+    id: record.id || `thf-${Date.now()}`,
+    ...record,
+    createdAt: new Date().toISOString(),
+  };
+
+  db.tahfizRecords.unshift(newRec);
+  writeServerDatabase(db);
+  return newRec;
+}
+
+export function getAllServerAnnouncements() {
+  const db = readServerDatabase();
+  return db.announcements || [];
+}
+
+export function createServerAnnouncement(data: any) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.announcements)) db.announcements = [];
+
+  const newAnn = {
+    id: data.id || `ann-${Date.now()}`,
+    ...data,
+    date: data.date || new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+  };
+
+  db.announcements.unshift(newAnn);
+  writeServerDatabase(db);
+  return newAnn;
+}
+
+export function saveServerOtpToken(userIdOrToken: any, email?: string, token?: string, expiresAt?: Date | number) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.otpTokens)) db.otpTokens = [];
+
+  const tokenObj = typeof userIdOrToken === 'object' ? userIdOrToken : {
+    userId: userIdOrToken,
+    email,
+    token,
+    expiresAt: expiresAt instanceof Date ? expiresAt.getTime() : expiresAt,
+  };
+
+  db.otpTokens.push({
+    ...tokenObj,
+    createdAt: new Date().toISOString(),
+  });
+  writeServerDatabase(db);
+  return tokenObj;
+}
+
+export function findServerOtpToken(tokenString: string) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.otpTokens)) return null;
+  return db.otpTokens.find((t: any) => t.token === tokenString && !t.used && t.expiresAt > Date.now()) || null;
+}
+
+export function markServerOtpTokenUsed(tokenString: string) {
+  const db = readServerDatabase();
+  if (!Array.isArray(db.otpTokens)) return false;
+  const t = db.otpTokens.find((item: any) => item.token === tokenString);
+  if (t) {
+    t.used = true;
+    writeServerDatabase(db);
+    return true;
+  }
+  return false;
 }

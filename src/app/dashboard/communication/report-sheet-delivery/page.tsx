@@ -365,28 +365,38 @@ export default function ReportSheetDeliveryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-emerald-500/10">
-              {parentGroups.map((pg) => (
-                <tr key={pg.parentId} className="hover:bg-slate-50 dark:hover:bg-emerald-900/20">
-                  <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{pg.parentName}</td>
-                  <td className="py-3.5 px-4">
-                    <div className="font-extrabold text-emerald-700 dark:text-emerald-300">{pg.wardNames.join(', ')}</div>
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-600 dark:text-emerald-200 font-mono">📱 {pg.parentPhone}</td>
-                  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-100">
-                    📄 {pg.reportCardsCount} PDF Card{pg.reportCardsCount > 1 ? 's' : ''}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <button
-                      onClick={() => handleOpenSingleParentWhatsApp(pg)}
-                      className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1.5 ml-auto transition-all hover:scale-105"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      <span>Send WhatsApp</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </button>
+              {parentGroups.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-8 text-center text-slate-500 dark:text-emerald-400/60 font-sans">
+                    <Users className="w-8 h-8 mx-auto mb-2 opacity-40 text-emerald-500" />
+                    <p className="font-semibold text-xs text-slate-700 dark:text-emerald-300">No parent recipient accounts found for the selected scope.</p>
+                    <p className="text-[11px] text-slate-400 dark:text-emerald-500/70 mt-0.5">Enrolled students and linked parent accounts will automatically populate this roster.</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                parentGroups.map((pg) => (
+                  <tr key={pg.parentId} className="hover:bg-slate-50 dark:hover:bg-emerald-900/20">
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{pg.parentName}</td>
+                    <td className="py-3.5 px-4">
+                      <div className="font-extrabold text-emerald-700 dark:text-emerald-300">{pg.wardNames.join(', ')}</div>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-emerald-200 font-mono">📱 {pg.parentPhone}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-100">
+                      📄 {pg.reportCardsCount} PDF Card{pg.reportCardsCount > 1 ? 's' : ''}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <button
+                        onClick={() => handleOpenSingleParentWhatsApp(pg)}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1.5 ml-auto transition-all hover:scale-105"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Send WhatsApp</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

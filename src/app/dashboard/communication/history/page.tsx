@@ -62,24 +62,34 @@ export default function DeliveryHistoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-emerald-500/10">
-              {filtered.map((c) => (
-                <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-emerald-900/20">
-                  <td className="py-3.5 px-4">
-                    <div className="font-extrabold text-slate-900 dark:text-white">{c.title}</div>
-                    <div className="text-[10px] text-slate-500">{c.type}</div>
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-600 dark:text-emerald-200 font-mono">
-                    {c.sentAt ? new Date(c.sentAt).toLocaleDateString() : 'N/A'}
-                  </td>
-                  <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-100">{c.senderName}</td>
-                  <td className="py-3.5 px-4 font-bold text-emerald-700 dark:text-emerald-300">{c.recipientType}</td>
-                  <td className="py-3.5 px-4 font-mono">{c.stats.emailCount}</td>
-                  <td className="py-3.5 px-4 font-mono">{c.stats.whatsappCount}</td>
-                  <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400">
-                    {Math.round((c.stats.readCount / Math.max(1, c.stats.totalRecipients)) * 100)}%
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-slate-500 dark:text-emerald-400/60 font-sans">
+                    <Send className="w-8 h-8 mx-auto mb-2 opacity-40 text-emerald-500" />
+                    <p className="font-semibold text-xs text-slate-700 dark:text-emerald-300">No communication campaigns dispatched yet.</p>
+                    <p className="text-[11px] text-slate-400 dark:text-emerald-500/70 mt-0.5">Dispatched messages, announcements, and report card deliveries will appear here.</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((c) => (
+                  <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-emerald-900/20">
+                    <td className="py-3.5 px-4">
+                      <div className="font-extrabold text-slate-900 dark:text-white">{c.title}</div>
+                      <div className="text-[10px] text-slate-500">{c.type}</div>
+                    </td>
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-emerald-200 font-mono">
+                      {c.sentAt ? new Date(c.sentAt).toLocaleDateString() : 'N/A'}
+                    </td>
+                    <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-100">{c.senderName}</td>
+                    <td className="py-3.5 px-4 font-bold text-emerald-700 dark:text-emerald-300">{c.recipientType}</td>
+                    <td className="py-3.5 px-4 font-mono">{c.stats.emailCount}</td>
+                    <td className="py-3.5 px-4 font-mono">{c.stats.whatsappCount}</td>
+                    <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400">
+                      {Math.round((c.stats.readCount / Math.max(1, c.stats.totalRecipients)) * 100)}%
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

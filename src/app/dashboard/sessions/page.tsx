@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../../lib/context';
 import { Calendar, Plus, CheckCircle2, Archive, AlertTriangle, ShieldCheck, ArrowRight, X } from 'lucide-react';
 import { SchoolSession } from '../../../types';
@@ -13,20 +13,8 @@ import { FormField, Input, Select } from '@/components/ui/FormField';
 export default function SessionsPage() {
   const { currentSession, currentUser, addAuditLog } = useApp();
 
-  const [sessionList, setSessionList] = useState<SchoolSession[]>([
-    {
-      id: 'sess-01',
-      sessionName: '1447/1448 AH (2025/2026 AD)',
-      activeTerm: 'Term 2',
-      isCurrent: true,
-    },
-    {
-      id: 'sess-02',
-      sessionName: '1446/1447 AH (2024/2025 AD)',
-      activeTerm: 'Term 3',
-      isCurrent: false,
-    },
-  ]);
+  const [sessionList, setSessionList] = useState<SchoolSession[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSessionName, setNewSessionName] = useState('');
@@ -35,18 +23,53 @@ export default function SessionsPage() {
 
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
 
-  const handleCreateSession = (e: React.FormEvent) => {
+  const fetchSessions = async () => {
+    try {
+      const res = await fetch('/api/sessions');
+      const data = await res.json();
+      if (data && Array.isArray(data.sessions)) {
+        setSessionList(data.sessions);
+      }
+    } catch (e) {
+      console.warn('[fetchSessions] error:', e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const handleCreateSession = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSessionName) return;
 
-    const newSess: SchoolSession = {
-      id: `sess-${Date.now()}`,
-      sessionName: newSessionName,
-      activeTerm,
-      isCurrent: false,
-    };
-
-    setSessionList([newSess, ...sessionList]);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
+      const res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          sessionName: newSessionName,
+          activeTerm,
+          isCurrent: sessionList.length === 0,
+        }),
+      });
+      const data = await res.json();
+      if (data && data.session) {
+        setSessionList((prev) => [data.session, ...prev]);
+        setNotice(`Academic Session ${newSessionName} created successfully!`);
+      } else {
+        setNotice(`Academic Session ${newSessionName} created!`);
+        fetchSessions();
+      }
+    } catch (e) {
+      console.warn('[createSession] error:', e);
+    }
 
     addAuditLog({
       action: 'ACADEMIC_SESSION_CREATED',
@@ -54,23 +77,35 @@ export default function SessionsPage() {
       userRole: currentUser.role,
       details: `Created new academic session record: ${newSessionName} (${activeTerm})`,
       ipAddress: '197.210.227.14',
-      affectedRecord: `Session/${newSess.id}`,
+      affectedRecord: `Session/${newSessionName}`,
       status: 'SUCCESS',
     });
 
-    setNotice(`Academic Session ${newSessionName} created successfully!`);
     setNewSessionName('');
     setShowAddModal(false);
     setTimeout(() => setNotice(''), 4000);
   };
 
-  const handleActivateSession = (id: string) => {
-    setSessionList((prev) =>
-      prev.map((s) => ({
-        ...s,
-        isCurrent: s.id === id,
-      }))
-    );
+  const handleActivateSession = async (id: string) => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
+      await fetch(`/api/sessions/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ isCurrent: true }),
+      });
+      setSessionList((prev) =>
+        prev.map((s) => ({
+          ...s,
+          isCurrent: s.id === id,
+        }))
+      );
+    } catch (e) {
+      console.warn('[activateSession] error:', e);
+    }
 
     const activated = sessionList.find((s) => s.id === id);
 
@@ -138,17 +173,17 @@ export default function SessionsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
           <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
             <span className="text-[10px] font-bold uppercase block text-emerald-600 dark:text-emerald-400">Academic Year</span>
-            <p className="text-lg font-black mt-1">{currentSession.sessionName}</p>
+            <p className="text-lg font-black mt-1">{currentSession.sessionName || 'Not Set'}</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-900 dark:text-sky-200">
             <span className="text-[10px] font-bold uppercase block text-sky-600 dark:text-sky-400">Active Term</span>
-            <p className="text-lg font-black mt-1">{currentSession.activeTerm}</p>
+            <p className="text-lg font-black mt-1">{currentSession.activeTerm || 'Term 1'}</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-900 dark:text-purple-200">
             <span className="text-[10px] font-bold uppercase block text-purple-600 dark:text-purple-400">Examination Status</span>
-            <p className="text-lg font-black mt-1">Mid-Term Ongoing</p>
+            <p className="text-lg font-black mt-1">Normal Academic Period</p>
           </div>
         </div>
       </div>
@@ -170,33 +205,43 @@ export default function SessionsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-emerald-500/10">
-              {sessionList.map((s) => (
-                <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-emerald-950/40 transition-all">
-                  <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{s.sessionName}</td>
-                  <td className="py-3.5 px-4 text-emerald-600 dark:text-emerald-400 font-semibold">{s.activeTerm}</td>
-                  <td className="py-3.5 px-4">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] uppercase border ${
-                        s.isCurrent
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
-                          : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700'
-                      }`}
-                    >
-                      {s.isCurrent ? 'Active' : 'Archived'}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    {!s.isCurrent && isAdmin && (
-                      <button
-                        onClick={() => handleActivateSession(s.id)}
-                        className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm"
-                      >
-                        Activate Session
-                      </button>
-                    )}
+              {sessionList.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="p-8 text-center text-slate-500 dark:text-emerald-400/60 font-sans">
+                    <Calendar className="w-8 h-8 mx-auto mb-2 opacity-40 text-emerald-500" />
+                    <p className="font-semibold text-xs text-slate-700 dark:text-emerald-300">No academic sessions created yet.</p>
+                    <p className="text-[11px] text-slate-400 dark:text-emerald-500/70 mt-0.5">Click &quot;Create Academic Session&quot; above to configure your first academic year.</p>
                   </td>
                 </tr>
-              ))}
+              ) : (
+                sessionList.map((s) => (
+                  <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-emerald-950/40 transition-all">
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{s.sessionName}</td>
+                    <td className="py-3.5 px-4 text-emerald-600 dark:text-emerald-400 font-semibold">{s.activeTerm}</td>
+                    <td className="py-3.5 px-4">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] uppercase border ${
+                          s.isCurrent
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                            : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700'
+                        }`}
+                      >
+                        {s.isCurrent ? 'Active' : 'Archived'}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      {!s.isCurrent && isAdmin && (
+                        <button
+                          onClick={() => handleActivateSession(s.id)}
+                          className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm"
+                        >
+                          Activate Session
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

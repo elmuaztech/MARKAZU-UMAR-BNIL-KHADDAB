@@ -16,31 +16,19 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const programmeId = searchParams.get('programmeId');
 
-    let classes: any[] = [];
-    let querySuccess = false;
-
-    try {
-      const whereClause: any = {};
-      if (programmeId) {
-        whereClause.programmeId = programmeId;
-      }
-
-      classes = await prisma.schoolClass.findMany({
-        where: whereClause,
-        include: {
-          programme: true,
-          classTeacher: true,
-        },
-        orderBy: { name: 'asc' },
-      });
-      querySuccess = true;
-    } catch (dbErr) {
-      console.warn('[GET_CLASSES] Postgres query failed, falling back to serverDb:', dbErr);
+    const whereClause: any = {};
+    if (programmeId) {
+      whereClause.programmeId = programmeId;
     }
 
-    if (!querySuccess || classes.length === 0) {
-      classes = getAllServerClasses(programmeId);
-    }
+    const classes = await prisma.schoolClass.findMany({
+      where: whereClause,
+      include: {
+        programme: true,
+        classTeacher: true,
+      },
+      orderBy: { name: 'asc' },
+    });
 
     return NextResponse.json({
       classes,

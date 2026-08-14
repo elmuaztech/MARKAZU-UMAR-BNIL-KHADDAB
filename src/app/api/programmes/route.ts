@@ -7,21 +7,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    let programmes: any[] = [];
-    let querySuccess = false;
-
-    try {
-      programmes = await prisma.programme.findMany({
-        orderBy: { displayOrder: 'asc' },
-      });
-      querySuccess = true;
-    } catch (dbErr) {
-      console.warn('[GET_PROGRAMMES] Postgres query failed, falling back to serverDb:', dbErr);
-    }
-
-    if (!querySuccess || programmes.length === 0) {
-      programmes = getAllServerProgrammes();
-    }
+    const programmes = await prisma.programme.findMany({
+      orderBy: { displayOrder: 'asc' },
+    });
 
     return NextResponse.json({
       programmes,

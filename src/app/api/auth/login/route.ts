@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
-import { verifyPassword, checkLockoutStatus, getLockoutExpiryTime, hashPassword } from '../../../../lib/security';
+import { verifyPassword, checkLockoutStatus } from '../../../../lib/security';
 import { sendSystemEmail } from '../../../../lib/emailService';
-import { ensureDefaultDatabaseUsers } from '../../../../lib/dbSeed';
-import { MOCK_USERS } from '../../../../lib/mockData';
-import { findServerUser } from '../../../../lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,16 +16,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please provide your Username/Email and Password.' }, { status: 400 });
     }
 
-    // Try seeding default core users if DB is brand new
-    try {
-      await ensureDefaultDatabaseUsers();
-    } catch (e) {
-      console.warn('[LOGIN_API] DB seed skipped due to DB connection state');
-    }
-
-    // 1. Query user from PostgreSQL database or persistent serverDb
+    // 1. Query user strictly from PostgreSQL database via Prisma
     let user: any = null;
-    let isDbConnected = false;
 
     try {
       user = await prisma.user.findFirst({
@@ -65,71 +54,9 @@ export async function POST(req: NextRequest) {
       if (deletedUser) {
         return NextResponse.json({ error: 'Account has been deactivated. Please contact the school administrator.' }, { status: 403 });
       }
-
-      if (user) {
-        isDbConnected = true;
-      }
     } catch (dbErr) {
-      // Database not connected or offline, proceed to persistent serverDb
-    }
-
-    // Persistent serverDb Query (Persisted on disk across reboots, logins, and logouts)
-    if (!user) {
-      let serverUser = findServerUser(identifier);
-
-      // If not in serverDb yet, check MOCK_USERS or auto-register fallback
-      if (!serverUser) {
-        const mockMatch = MOCK_USERS.find(
-          (m) =>
-            m.email.toLowerCase() === identifier ||
-            (m.username && m.username.toLowerCase() === identifier) ||
-            m.id.toLowerCase() === identifier
-        );
-
-        if (mockMatch) {
-          serverUser = {
-            id: mockMatch.id,
-            username: mockMatch.username || mockMatch.id,
-            name: mockMatch.name,
-            email: mockMatch.email,
-            password: mockMatch.passwordHash || hashPassword('@Aa123456789'),
-            role: mockMatch.role,
-            phone: mockMatch.phone || '',
-            avatar: mockMatch.avatar || '',
-            assignedProgrammeId: mockMatch.assignedProgrammeId || null,
-            assignedProgrammeName: mockMatch.assignedProgrammeName || null,
-            status: mockMatch.status || 'ACTIVE',
-            isFirstLogin: mockMatch.isFirstLogin ?? false,
-            mustChangePassword: mockMatch.mustChangePassword ?? false,
-            isLocked: false,
-            failedLoginAttempts: 0,
-            lastLoginAt: null,
-            deletedAt: null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          };
-        }
-      }
-
-      if (serverUser) {
-        user = {
-          id: serverUser.id,
-          username: serverUser.username || serverUser.id,
-          name: serverUser.name,
-          email: serverUser.email,
-          phone: serverUser.phone,
-          password: serverUser.password || hashPassword('@Aa123456789'),
-          role: serverUser.role,
-          assignedProgrammeId: serverUser.assignedProgrammeId || null,
-          assignedProgrammeName: serverUser.assignedProgrammeName || null,
-          status: serverUser.status || 'ACTIVE',
-          isFirstLogin: serverUser.isFirstLogin ?? false,
-          mustChangePassword: serverUser.mustChangePassword ?? false,
-          isLocked: serverUser.isLocked ?? false,
-          failedLoginAttempts: serverUser.failedLoginAttempts || 0,
-          avatar: serverUser.avatar || (serverUser.role === 'SUPER_ADMIN' ? '/avatars/superadmin.jpg' : null),
-        };
-      }
+      console.error('[LOGIN_DB_ERROR]', dbErr);
+      return NextResponse.json({ error: 'Database connection error. Please try again.' }, { status: 500 });
     }
 
     // Distinguish "User not found"
@@ -200,18 +127,16 @@ export async function POST(req: NextRequest) {
       const isNowLocked = failedCount >= 5;
       const lockoutTime = isNowLocked ? new Date(Date.now() + 15 * 60 * 1000) : null;
 
-      if (isDbConnected) {
-        try {
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              failedLoginAttempts: failedCount,
-              isLocked: isNowLocked,
-              lockoutUntil: lockoutTime,
-            },
-          });
-        } catch (e) {}
-      }
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            failedLoginAttempts: failedCount,
+            isLocked: isNowLocked,
+            lockoutUntil: lockoutTime,
+          },
+        });
+      } catch (e) {}
 
       if (isNowLocked) {
         sendSystemEmail({
@@ -235,41 +160,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 4. Success: Reset failed attempts & record last login if DB connected
-    if (isDbConnected) {
-      try {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            failedLoginAttempts: 0,
-            isLocked: false,
-            lockoutUntil: null,
-            lastLoginAt: new Date(),
-          },
-        });
-      } catch (e) {}
-    }
+    // 4. Success: Reset failed attempts & record last login
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          failedLoginAttempts: 0,
+          isLocked: false,
+          lockoutUntil: null,
+          lastLoginAt: new Date(),
+        },
+      });
+    } catch (e) {}
 
-    // 5. Create Session
+    // 5. Create Session in PostgreSQL
     const sessionId = `sess-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    if (isDbConnected) {
-      try {
-        await prisma.userSession.create({
-          data: {
-            sessionId,
-            userId: user.id,
-            ipAddress: req.headers.get('x-forwarded-for') || '197.210.227.14',
-            userAgent: req.headers.get('user-agent') || 'NextJS/Client',
-            browser: 'Browser',
-            operatingSystem: 'OS',
-            device: 'Desktop',
-            refreshTokenHash: sessionId,
-            expiresAt,
-          },
-        });
-      } catch (e) {}
+    try {
+      await prisma.userSession.create({
+        data: {
+          sessionId,
+          userId: user.id,
+          ipAddress: req.headers.get('x-forwarded-for') || '197.210.227.14',
+          userAgent: req.headers.get('user-agent') || 'NextJS/Client',
+          browser: 'Browser',
+          operatingSystem: 'OS',
+          device: 'Desktop',
+          refreshTokenHash: sessionId,
+          expiresAt,
+        },
+      });
+    } catch (e) {
+      console.warn('[LOGIN] Session persistence warning:', e);
     }
 
     const response = NextResponse.json({
@@ -280,6 +203,7 @@ export async function POST(req: NextRequest) {
         username: user.username || user.id,
         name: user.name,
         email: user.email,
+        phone: user.phone || null,
         role: user.role,
         avatar: user.avatar || null,
         assignedProgrammeId: user.assignedProgrammeId || null,

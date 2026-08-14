@@ -4,4 +4,5 @@
 - **Always Start Server After Code Updates**: After modifying code or completing updates, always ensure the unified Next.js dev server (`npm run dev`) is active and running in the background for both frontend and backend API endpoints.
 
 ## Git & Vercel Deployment Execution
-- **Always Automatically Push Changes to GitHub**: After modifying code or completing updates, automatically stage, commit, and push changes to GitHub (`git push origin main`) so Vercel redeploys automatically without needing explicit instructions.
+- **Approval Required Before Git Push**: After completing code changes and validating them locally on localhost, STOP and report the results. Do NOT automatically commit or push to GitHub. Only stage, commit, and push to GitHub (`git push origin main`) after receiving explicit user approval.
+- **Single Source of Truth**: PostgreSQL + Prisma is the only permanent source of truth. Never introduce mock data, hardcoded records, or JSON fallbacks.

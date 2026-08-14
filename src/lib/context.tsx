@@ -39,122 +39,31 @@ import {
   ImportSchoolStructureSummary,
 } from '../types';
 import {
-  MOCK_USERS,
-  MOCK_STUDENTS,
-  MOCK_TEACHERS,
-  MOCK_PARENTS,
-  MOCK_CLASSES,
-  MOCK_SUBJECTS,
-  MOCK_TEACHER_ASSIGNMENTS,
-  MOCK_ATTENDANCE,
-  MOCK_TAHFIZ_RECORDS,
-  MOCK_GRADES,
   DEFAULT_ASSESSMENT_CONFIG,
-  MOCK_RESULT_SUBMISSIONS,
-  MOCK_ANNOUNCEMENTS,
+  DEFAULT_COMMUNICATION_SETTINGS,
   CURRENT_SESSION,
-  MOCK_PROGRAMMES,
-  MOCK_COMMUNICATIONS,
-  MOCK_MESSAGE_TEMPLATES,
-  MOCK_QUEUE_ITEMS,
-  MOCK_NOTIFICATIONS,
-  MOCK_COMMUNICATION_SETTINGS,
-  MOCK_TIMETABLE,
-  MOCK_DIRECT_MESSAGES,
 } from './mockData';
 import { AuditEntry, INITIAL_AUDIT_LOGS, createAuditLogEntry } from './audit';
 import { sendSystemEmail } from './emailService';
 import { UserSession, ACTIVE_SESSIONS, revokeSession, revokeAllUserSessions, hashPassword, generateTemporaryPassword } from './security';
 import { NotificationService } from '../services/notificationService';
 
-const INITIAL_ADMISSION_APPLICATIONS: AdmissionApplication[] = [
-  {
-    id: 'app-001',
-    applicationNo: 'APP-2026-001',
-    studentFullName: 'Zayd Muhammad Daneji',
-    studentGender: 'MALE',
-    studentDob: '2016-04-12',
-    state: 'Kano State',
-    lga: 'Kano Municipal',
-    studentAddress: 'No. 45 Daneji Quarters, Kano',
-    previousSchool: 'Al-Iman Academy Kano',
-    parentName: 'Alhaji Muhammad Daneji',
-    parentRelationship: 'Father',
-    parentPhone: '+2348037966581',
-    parentWhatsapp: '+2348037966581',
-    parentEmail: 'muhammad.daneji@gmail.com',
-    parentOccupation: 'Merchant & Trader',
-    parentAddress: 'No. 45 Daneji Quarters, Kano',
-    emergencyName: 'Hajiya Fatima Daneji',
-    emergencyRelationship: 'Mother',
-    emergencyPhone: '+2348167109421',
-    medicalInformation: 'No known allergies',
-    remarks: 'Applicant has memorized 5 Juz in previous Madrasa.',
-    status: 'PENDING_REVIEW',
-    submittedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-  },
-  {
-    id: 'app-002',
-    applicationNo: 'APP-2026-002',
-    studentFullName: 'Aisha Ibrahim Sheka',
-    studentGender: 'FEMALE',
-    studentDob: '2017-09-20',
-    state: 'Kano State',
-    lga: 'Kumbotso',
-    studentAddress: 'Sheka Quarters, Kano',
-    previousSchool: 'Nuru Islamic School',
-    parentName: 'Mallam Ibrahim Sheka',
-    parentRelationship: 'Father',
-    parentPhone: '+2349042786093',
-    parentWhatsapp: '+2349042786093',
-    parentEmail: 'ibrahim.sheka@gmail.com',
-    parentOccupation: 'Civil Servant',
-    parentAddress: 'Sheka Quarters, Kano',
-    emergencyName: 'Aisha Sheka',
-    emergencyRelationship: 'Mother',
-    emergencyPhone: '+2349042786093',
-    status: 'APPROVED',
-    submittedAt: new Date(Date.now() - 3600000 * 72).toISOString(),
-    reviewedAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    reviewedBy: 'Super Administrator',
-    assignedProgrammeIds: ['prog-02'],
-    assignedClassIds: ['cls-tahfiz-1'],
-    generatedStudentId: 'MU-2026-STUD-088',
-    generatedParentId: 'usr-parent-088',
-  },
-];
+const INITIAL_ADMISSION_APPLICATIONS: AdmissionApplication[] = [];
 
-const INITIAL_ACADEMIC_EVENTS: AcademicEvent[] = [
-  {
-    id: 'evt-01',
-    term: 'Term 1',
-    title: 'First Term Session (1448 AH)',
-    badge: 'Term 1 (Autumn)',
-    badgeColor: 'emerald',
-    dates: 'Resumption: Sept 15 • Mid-Term: Oct 28 • Exams: Dec 10 • Hifz Assessment',
-    description: 'Systematic 30-Juz Halqa placement, initial diagnostic assessment, and first term examinations.',
-    isPublished: true,
-  },
-  {
-    id: 'evt-02',
-    term: 'Term 2',
-    title: 'Second Term Session (1448 AH)',
-    badge: 'Term 2 (Current)',
-    badgeColor: 'amber',
-    dates: 'Resumption: Jan 10 • Ramadan Break: Mar 15 • Term Exams: April 20',
-    description: 'Mid-year Quranic competition, Ramadan intensive Hifz program, and parent progress reviews.',
-    isPublished: true,
-  },
-  {
-    id: 'evt-03',
-    term: 'Term 3',
-    title: 'Third Term & Graduation (1448 AH)',
-    badge: 'Term 3 (Summer)',
-    badgeColor: 'sky',
-    dates: 'Resumption: May 5 • Annual Hifz Competition: July 12 • Graduation: August 20',
-    description: 'Annual Huffaz graduation ceremony, Sanad distribution, and final academic promotion exams.',
-    isPublished: true,
-  },
+const INITIAL_ACADEMIC_EVENTS: AcademicEvent[] = [];
+
+const DEFAULT_GALLERY_ITEMS: GalleryItem[] = [
+  { id: 'gal-01', title: 'Huffazu Daru Abi-Bakr As-Siddiq', category: 'Classes', image: '/gallery/huffazu-abi-bakr.jpg' },
+  { id: 'gal-02', title: 'Huffazu Daru Umar Bin Khaddab', category: 'Classes', image: '/gallery/huffazu-umar-bin-khaddab.jpg' },
+  { id: 'gal-03', title: 'Alh. Salisu Abubakar Daneji (Director)', category: 'School Officials', image: '/gallery/director.jpg' },
+  { id: 'gal-04', title: 'Ustaz Sani Abubakar Daneji (Deputy Director)', category: 'School Officials', image: '/gallery/deputy-director.jpg' },
+  { id: 'gal-05', title: 'Mal. Ahmad Abba - Headmaster, Matan Aure Section', category: 'School Officials', image: '/gallery/headmaster-matan-aure.jpg' },
+  { id: 'gal-06', title: 'Mal. Siraɗullahi Balarabe Lawan - Headmaster, Asuba da Maghrib Section', category: 'School Officials', image: '/gallery/headmaster-asuba-maghrib.jpg' },
+  { id: 'gal-07', title: 'Female Tahfiz Halqa Recitation Class', category: 'Students', image: '/gallery/students-group-1.jpg' },
+  { id: 'gal-08', title: 'Markazu Umar Female Students Assembly', category: 'Students', image: '/gallery/students-group-2.jpg' },
+  { id: 'gal-09', title: 'Academic Teachers Halqa Supervision', category: 'Teachers', image: '/gallery/teachers-1.jpg' },
+  { id: 'gal-10', title: 'Markazu Umar Teaching Staff', category: 'Teachers', image: '/gallery/teachers-2.jpg' },
+  { id: 'gal-11', title: 'Tahfiz Instructors Assembly', category: 'Teachers', image: '/gallery/teachers-3.jpg' },
 ];
 
 interface AppContextType {
@@ -169,6 +78,7 @@ interface AppContextType {
   progressOptions: ProgressOptions | null;
   dismissProgress: () => void;
 
+  isHydrated: boolean;
   currentUser: User;
   users: User[];
   updateUserAvatar: (avatarUrl: string) => void;
@@ -453,31 +363,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [users, setUsers] = useState<User[]>([]);
 
-  const [currentUser, setCurrentUser] = useState<User>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_current_user');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return MOCK_USERS[0];
-  });
-  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_audit_logs');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return INITIAL_AUDIT_LOGS;
-  });
-  const [sessions, setSessions] = useState<UserSession[]>(ACTIVE_SESSIONS);
+  const DEFAULT_USER: User = {
+    id: '',
+    name: '',
+    email: '',
+    role: 'SUPER_ADMIN',
+    username: '',
+    avatar: '',
+    status: 'ACTIVE',
+    isFirstLogin: false,
+    mustChangePassword: false,
+    isLocked: false,
+    failedLoginAttempts: 0,
+    lastLoginAt: '',
+  };
+
+  const [currentUser, setCurrentUser] = useState<User>(DEFAULT_USER);
+  const [isHydrated, setIsHydrated] = useState<boolean>(false);
+  const [auditLogs, setAuditLogs] = useState<AuditEntry[]>([]);
+  const [sessions, setSessions] = useState<UserSession[]>([]);
 
   const DEFAULT_SCHOOL_NAME = "MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI";
   const [schoolLogo, setSchoolLogoState] = useState<string | null>('/logo.jpg');
   const [schoolName, setSchoolNameState] = useState<string>(DEFAULT_SCHOOL_NAME);
 
   useEffect(() => {
+    setIsHydrated(true);
+
     if (typeof window !== 'undefined') {
       const savedLogo = localStorage.getItem('markazu_school_logo');
       if (savedLogo) {
@@ -490,11 +402,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setSchoolNameState(savedName);
       }
 
-      // Sync latest persisted users from backend serverDb
+      // 1. Immediately hydrate saved currentUser from localStorage on client mount
+      const savedUserStr = localStorage.getItem('markazu_current_user');
+      if (savedUserStr) {
+        try {
+          const parsedUser = JSON.parse(savedUserStr);
+          if (parsedUser && typeof parsedUser === 'object' && (parsedUser.name || parsedUser.email)) {
+            setCurrentUser(parsedUser);
+          }
+        } catch {}
+      }
+
+      // 2. Hydrate other local storage caches safely after mount
+      const savedTmpl = localStorage.getItem('markazu_report_card_template');
+      if (savedTmpl) {
+        try {
+          setReportCardTemplateState(JSON.parse(savedTmpl));
+        } catch {}
+      }
+
+      const savedNews = localStorage.getItem('markazu_news_articles');
+      if (savedNews) {
+        try {
+          setNewsArticles(JSON.parse(savedNews));
+        } catch {}
+      }
+
+      const savedGallery = localStorage.getItem('markazu_gallery_items');
+      if (savedGallery) {
+        try {
+          setGalleryItems(JSON.parse(savedGallery));
+        } catch {}
+      }
+
+      const savedAdmStatus = localStorage.getItem('markazu_admission_status');
+      if (savedAdmStatus === 'CLOSED') {
+        setAdmissionStatusState('CLOSED');
+      }
+
+      const savedAdmApps = localStorage.getItem('markazu_admission_apps');
+      if (savedAdmApps) {
+        try {
+          setAdmissionApplications(JSON.parse(savedAdmApps));
+        } catch {}
+      }
+
+      // 3. Sync latest persisted users from PostgreSQL backend
       fetch('/api/users')
         .then((res) => res.json())
         .then((data) => {
-          if (data && Array.isArray(data.users) && data.users.length > 0) {
+          if (data && Array.isArray(data.users)) {
             const deleted = getDeletedUserIdentifiers();
             const validUsers = data.users.filter(
               (u: any) =>
@@ -502,23 +459,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 !deleted.emails.includes(u.email.toLowerCase().trim()) &&
                 (!u.username || !deleted.usernames.includes(u.username.toLowerCase().trim()))
             );
-            if (validUsers.length > 0) {
-              setUsers((prevUsers) => {
-                const merged = [...validUsers];
-                (prevUsers || []).forEach((pu) => {
-                  if (pu && pu.email && !merged.some((m) => m.email.toLowerCase().trim() === pu.email.toLowerCase().trim())) {
-                    merged.push(pu);
-                    fetch('/api/users', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify(pu),
-                    }).catch(() => {});
-                  }
-                });
-                safeLocalStorageSet('markazu_users', merged);
-                return merged;
-              });
-            }
+            setUsers(validUsers);
+            safeLocalStorageSet('markazu_users', validUsers);
+
+            // Sync logged-in currentUser with latest real PostgreSQL database record
+            setCurrentUser((curr) => {
+              const matched = validUsers.find(
+                (u: any) =>
+                  (curr.id && u.id === curr.id) ||
+                  (curr.email && u.email.toLowerCase().trim() === curr.email.toLowerCase().trim()) ||
+                  (curr.username && u.username && u.username.toLowerCase().trim() === curr.username.toLowerCase().trim()) ||
+                  (curr.role === 'SUPER_ADMIN' && u.role === 'SUPER_ADMIN')
+              );
+              if (matched) {
+                const synced = { ...curr, ...matched };
+                safeLocalStorageSet('markazu_current_user', synced);
+                return synced;
+              }
+              if (validUsers.length > 0 && curr.role === 'SUPER_ADMIN') {
+                const sa = validUsers.find((u: any) => u.role === 'SUPER_ADMIN');
+                if (sa) {
+                  const synced = { ...curr, ...sa };
+                  safeLocalStorageSet('markazu_current_user', synced);
+                  return synced;
+                }
+              }
+              return curr;
+            });
           }
         })
         .catch(() => {});
@@ -563,10 +530,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 akhlaqRating: s.akhlaqRating || 'EXCELLENT',
                 avatar: s.avatar || undefined,
               }));
-            if (mappedStudents.length > 0) {
-              setStudents(mappedStudents);
-              safeLocalStorageSet('markazu_students', mappedStudents);
-            }
+            setStudents(mappedStudents);
+            safeLocalStorageSet('markazu_students', mappedStudents);
           }
         })
         .catch((e) => console.warn('[syncStudents] error:', e));
@@ -600,10 +565,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                   avatar: t.avatar || undefined,
                 };
               });
-            if (mappedTeachers.length > 0) {
-              setTeachers(mappedTeachers);
-              safeLocalStorageSet('markazu_teachers', mappedTeachers);
-            }
+            setTeachers(mappedTeachers);
+            safeLocalStorageSet('markazu_teachers', mappedTeachers);
           }
         })
         .catch((e) => console.warn('[syncTeachers] error:', e));
@@ -626,10 +589,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               programmeId: c.programmeId || '',
               programmeName: c.programme?.nameEnglish || 'Programme',
             }));
-            if (mappedClasses.length > 0) {
-              setClasses(mappedClasses);
-              safeLocalStorageSet('markazu_classes', mappedClasses);
-            }
+            setClasses(mappedClasses);
+            safeLocalStorageSet('markazu_classes', mappedClasses);
           }
         })
         .catch((e) => console.warn('[syncClasses] error:', e));
@@ -653,10 +614,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               status: s.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
               displayOrder: s.displayOrder || 1,
             }));
-            if (mappedSubjects.length > 0) {
-              setSubjects(mappedSubjects);
-              safeLocalStorageSet('markazu_subjects', mappedSubjects);
-            }
+            setSubjects(mappedSubjects);
+            safeLocalStorageSet('markazu_subjects', mappedSubjects);
           }
         })
         .catch((e) => console.warn('[syncSubjects] error:', e));
@@ -679,10 +638,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               remarks: a.remarks || undefined,
               isDraft: a.isDraft,
             }));
-            if (mappedAttendance.length > 0) {
-              setAttendance(mappedAttendance);
-              safeLocalStorageSet('markazu_attendance', mappedAttendance);
-            }
+            setAttendance(mappedAttendance);
+            safeLocalStorageSet('markazu_attendance', mappedAttendance);
           }
         })
         .catch((e) => console.warn('[syncAttendance] error:', e));
@@ -716,10 +673,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               completionPercentage: t.completionPercentage,
               teacherComment: t.teacherComment || undefined,
             }));
-            if (mappedTahfiz.length > 0) {
-              setTahfizRecords(mappedTahfiz);
-              safeLocalStorageSet('markazu_tahfiz_records', mappedTahfiz);
-            }
+            setTahfizRecords(mappedTahfiz);
+            safeLocalStorageSet('markazu_tahfiz_records', mappedTahfiz);
           }
         })
         .catch((e) => console.warn('[syncTahfiz] error:', e));
@@ -729,13 +684,95 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         .then((res) => res.json())
         .then((resData) => {
           if (resData && Array.isArray(resData.announcements)) {
-            if (resData.announcements.length > 0) {
-              setAnnouncements(resData.announcements);
-              safeLocalStorageSet('markazu_announcements', resData.announcements);
-            }
+            setAnnouncements(resData.announcements);
+            safeLocalStorageSet('markazu_announcements', resData.announcements);
           }
         })
         .catch((e) => console.warn('[syncAnnouncements] error:', e));
+
+      // 8. Fetch Parents
+      fetch('/api/parents')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.parents)) {
+            setParents(data.parents);
+            safeLocalStorageSet('markazu_parents', data.parents);
+          }
+        })
+        .catch((e) => console.warn('[syncParents] error:', e));
+
+      // 9. Fetch Programmes
+      fetch('/api/programmes')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.programmes)) {
+            setProgrammes(data.programmes);
+            safeLocalStorageSet('markazu_programmes', data.programmes);
+          }
+        })
+        .catch((e) => console.warn('[syncProgrammes] error:', e));
+
+      // 10. Fetch Timetable Periods
+      fetch('/api/timetable')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.timetablePeriods)) {
+            setTimetablePeriods(data.timetablePeriods);
+            safeLocalStorageSet('markazu_timetable', data.timetablePeriods);
+          }
+        })
+        .catch((e) => console.warn('[syncTimetable] error:', e));
+
+      // 11. Fetch Direct Messages
+      fetch('/api/messages')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && data.success && Array.isArray(data.data)) {
+            setDirectMessages(data.data);
+            safeLocalStorageSet('markazu_direct_messages', data.data);
+          }
+        })
+        .catch((e) => console.warn('[syncMessages] error:', e));
+
+      // 12. Fetch Grades / Results
+      fetch('/api/results')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.grades)) {
+            setGrades(data.grades);
+            safeLocalStorageSet('markazu_grades', data.grades);
+          }
+        })
+        .catch((e) => console.warn('[syncResults] error:', e));
+
+      // 13. Fetch Audit Logs
+      fetch('/api/audit')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.auditLogs)) {
+            setAuditLogs(data.auditLogs);
+            safeLocalStorageSet('markazu_audit_logs', data.auditLogs);
+          }
+        })
+        .catch((e) => console.warn('[syncAudit] error:', e));
+
+      // 14. Fetch Academic Sessions
+      fetch('/api/sessions')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.sessions)) {
+            const active = data.sessions.find((s: any) => s.isCurrent) || data.sessions[0];
+            if (active) {
+              setCurrentSession({
+                id: active.id,
+                sessionName: active.sessionName,
+                activeTerm: active.activeTerm,
+                isCurrent: active.isCurrent,
+              });
+            }
+          }
+        })
+        .catch((e) => console.warn('[syncSessions] error:', e));
     }
   }, []);
 
@@ -751,53 +788,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [currentUser]);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined' && currentUser?.id) {
-      const savedAvatar =
-        localStorage.getItem(`markazu_user_avatar_${currentUser.id}`) ||
-        localStorage.getItem(`markazu_user_avatar_${currentUser.email.toLowerCase()}`);
-      if (savedAvatar && savedAvatar !== currentUser.avatar) {
-        setCurrentUser((prev) => ({ ...prev, avatar: savedAvatar }));
-      }
-
-      const savedProfileStr =
-        localStorage.getItem(`markazu_user_profile_${currentUser.id}`) ||
-        localStorage.getItem(`markazu_user_profile_${currentUser.email.toLowerCase()}`);
-      if (savedProfileStr) {
-        try {
-          const profile = JSON.parse(savedProfileStr);
-          setCurrentUser((prev) => ({
-            ...prev,
-            name: profile.name || prev.name,
-            email: profile.email || prev.email,
-            phone: profile.phone !== undefined ? profile.phone : prev.phone,
-            avatar: savedAvatar || profile.avatar || prev.avatar,
-          }));
-        } catch {}
-      }
-    }
-  }, [currentUser?.id]);
-
   const updateUserAvatar = async (avatarUrl: string) => {
+    if (!currentUser) return;
+
+    // Optimistically update frontend state
     setCurrentUser((prev) => ({ ...prev, avatar: avatarUrl }));
     setUsers((prev) => prev.map((u) => (u.id === currentUser.id || u.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...u, avatar: avatarUrl } : u)));
     setTeachers((prev) => prev.map((t) => (t.id === currentUser.id || t.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...t, avatar: avatarUrl } : t)));
     setStudents((prev) => prev.map((s) => (s.id === currentUser.id || (s.email && s.email.toLowerCase() === currentUser.email.toLowerCase()) ? { ...s, avatar: avatarUrl } : s)));
     setParents((prev) => prev.map((p) => (p.id === currentUser.id || p.email.toLowerCase() === currentUser.email.toLowerCase() ? { ...p, avatar: avatarUrl } : p)));
 
-    if (typeof window !== 'undefined' && currentUser?.id) {
-      try {
-        localStorage.setItem(`markazu_user_avatar_${currentUser.id}`, avatarUrl);
-        localStorage.setItem(`markazu_user_avatar_${currentUser.email.toLowerCase()}`, avatarUrl);
-      } catch {}
-    }
-
+    // Persist to PostgreSQL database via shared API
     try {
-      await fetch(`/api/users/${currentUser.id}`, {
+      const res = await fetch(`/api/users/${encodeURIComponent(currentUser.id || currentUser.email)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ avatar: avatarUrl }),
       });
+      const data = await res.json();
+      if (data && data.user) {
+        const savedUser = data.user;
+        setCurrentUser((prev) => ({ ...prev, ...savedUser }));
+        safeLocalStorageSet('markazu_current_user', { ...currentUser, ...savedUser });
+        setUsers((prev) => prev.map((u) => (u.id === savedUser.id || u.email.toLowerCase() === savedUser.email.toLowerCase() ? { ...u, ...savedUser } : u)));
+      }
     } catch (e) {
       console.warn('[updateUserAvatar] API sync warning:', e);
     }
@@ -805,7 +819,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     notify({
       type: 'success',
       title: 'Profile Photo Updated',
-      message: `Profile image updated successfully for ${currentUser.name}.`,
+      message: `Profile image updated successfully.`,
     });
   };
 
@@ -832,7 +846,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const [programmes, setProgrammes] = useState<Programme[]>(MOCK_PROGRAMMES);
+  const [programmes, setProgrammes] = useState<Programme[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [parents, setParents] = useState<Parent[]>([]);
@@ -841,79 +855,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [teacherAssignments, setTeacherAssignments] = useState<TeacherAssignment[]>([]);
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [tahfizRecords, setTahfizRecords] = useState<TahfizRecord[]>([]);
-  const [timetablePeriods, setTimetablePeriods] = useState<TimetablePeriod[]>(MOCK_TIMETABLE);
-  const [directMessages, setDirectMessages] = useState<DirectMessage[]>(MOCK_DIRECT_MESSAGES);
-  const [grades, setGrades] = useState<GradeRecord[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_grades');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return MOCK_GRADES;
-  });
+  const [timetablePeriods, setTimetablePeriods] = useState<TimetablePeriod[]>([]);
+  const [directMessages, setDirectMessages] = useState<DirectMessage[]>([]);
+  const [grades, setGrades] = useState<GradeRecord[]>([]);
   const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(DEFAULT_ASSESSMENT_CONFIG);
-  const [resultSubmissions, setResultSubmissions] = useState<ResultApprovalSubmission[]>(MOCK_RESULT_SUBMISSIONS);
-  const [reportCardTemplate, setReportCardTemplateState] = useState<ReportCardTemplate>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_report_card_template');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return DEFAULT_REPORT_CARD_TEMPLATE;
-  });
-
-  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_news_articles');
-        if (saved !== null) return JSON.parse(saved);
-      } catch {}
-    }
-    return [
-      {
-        id: 'art-01',
-        title: 'Annual Qur’an Recitation Competition (Musabaqah 1447 AH) Announced',
-        category: 'Musabaqah & Tahfiz',
-        date: '2026-08-01',
-        summary: 'Markazu Umar in Kano hosts its flagship annual Musabaqah across 10 Juz, 20 Juz, and 30 Juz categories with state dignitaries.',
-        image: '/gallery/huffazu-abi-bakr.jpg',
-        published: true,
-      },
-      {
-        id: 'art-02',
-        title: 'Admissions Open for 1447/1448 AH Tahfiz & Islamiyya Stream',
-        category: 'Admissions',
-        date: '2026-07-25',
-        summary: 'Entrance applications now available online and at the administrative office for Primary & Secondary Islamiyya.',
-        image: '/gallery/students-group-1.jpg',
-        published: true,
-      },
-    ];
-  });
-
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_gallery_items');
-        if (saved !== null) return JSON.parse(saved);
-      } catch {}
-    }
-    return [
-      { id: 'gal-01', title: 'Huffazu Daru Abi-Bakr As-Siddiq', category: 'Classes', image: '/gallery/huffazu-abi-bakr.jpg' },
-      { id: 'gal-02', title: 'Huffazu Daru Umar Bin Khaddab', category: 'Classes', image: '/gallery/huffazu-umar-bin-khaddab.jpg' },
-      { id: 'gal-03', title: 'Alh. Salisu Abubakar Daneji (Director)', category: 'School Officials', image: '/gallery/director.jpg' },
-      { id: 'gal-04', title: 'Ustaz Sani Abubakar Daneji (Deputy Director)', category: 'School Officials', image: '/gallery/deputy-director.jpg' },
-      { id: 'gal-05', title: 'Mal. Ahmad Abba - Headmaster, Matan Aure Section', category: 'School Officials', image: '/gallery/headmaster-matan-aure.jpg' },
-      { id: 'gal-06', title: 'Mal. Siraɗullahi Balarabe Lawan - Headmaster, Asuba da Maghrib Section', category: 'School Officials', image: '/gallery/headmaster-asuba-maghrib.jpg' },
-      { id: 'gal-07', title: 'Female Tahfiz Halqa Recitation Class', category: 'Students', image: '/gallery/students-group-1.jpg' },
-      { id: 'gal-08', title: 'Markazu Umar Female Students Assembly', category: 'Students', image: '/gallery/students-group-2.jpg' },
-      { id: 'gal-09', title: 'Academic Teachers Halqa Supervision', category: 'Teachers', image: '/gallery/teachers-1.jpg' },
-      { id: 'gal-10', title: 'Markazu Umar Teaching Staff', category: 'Teachers', image: '/gallery/teachers-2.jpg' },
-      { id: 'gal-11', title: 'Tahfiz Instructors Assembly', category: 'Teachers', image: '/gallery/teachers-3.jpg' },
-    ];
-  });
+  const [resultSubmissions, setResultSubmissions] = useState<ResultApprovalSubmission[]>([]);
+  const [reportCardTemplate, setReportCardTemplateState] = useState<ReportCardTemplate>(DEFAULT_REPORT_CARD_TEMPLATE);
+  const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(DEFAULT_GALLERY_ITEMS);
 
   // Permanent Auto-Syncing useEffect Hooks to ensure zero data loss on logout/login/refresh
   useEffect(() => {
@@ -1136,23 +1085,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, [auditLogs]);
 
   // Admission System State
-  const [admissionStatus, setAdmissionStatusState] = useState<'OPEN' | 'CLOSED'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('markazu_admission_status');
-      if (saved === 'CLOSED') return 'CLOSED';
-    }
-    return 'OPEN';
-  });
-
-  const [admissionApplications, setAdmissionApplications] = useState<AdmissionApplication[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('markazu_admission_apps');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return INITIAL_ADMISSION_APPLICATIONS;
-  });
+  const [admissionStatus, setAdmissionStatusState] = useState<'OPEN' | 'CLOSED'>('OPEN');
+  const [admissionApplications, setAdmissionApplications] = useState<AdmissionApplication[]>(INITIAL_ADMISSION_APPLICATIONS);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -1320,7 +1254,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setStudents((prev) => [newStudent, ...prev]);
     setParents((prev) => [newParent, ...prev]);
     setUsers((prev) => [newStudentUser, newParentUser, ...prev]);
-    MOCK_USERS.unshift(newStudentUser, newParentUser);
 
     setAdmissionApplications((prev) =>
       prev.map((a) =>
@@ -1886,15 +1819,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'WARNING',
     });
   };
-  const [announcements, setAnnouncements] = useState<Announcement[]>(MOCK_ANNOUNCEMENTS);
-  const [currentSession] = useState<SchoolSession>(CURRENT_SESSION);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [currentSession, setCurrentSession] = useState<SchoolSession>(CURRENT_SESSION);
 
   // Enterprise Communication Center States
-  const [communications, setCommunications] = useState<CommunicationMessage[]>(MOCK_COMMUNICATIONS);
-  const [messageTemplates, setMessageTemplates] = useState<MessageTemplate[]>(MOCK_MESSAGE_TEMPLATES);
-  const [deliveryQueue, setDeliveryQueue] = useState<QueueItem[]>(MOCK_QUEUE_ITEMS);
-  const [inAppNotifications, setInAppNotifications] = useState<InAppNotification[]>(MOCK_NOTIFICATIONS);
-  const [communicationSettings, setCommunicationSettings] = useState<CommunicationSettings>(MOCK_COMMUNICATION_SETTINGS);
+  const [communications, setCommunications] = useState<CommunicationMessage[]>([]);
+  const [messageTemplates, setMessageTemplates] = useState<MessageTemplate[]>([]);
+  const [deliveryQueue, setDeliveryQueue] = useState<QueueItem[]>([]);
+  const [inAppNotifications, setInAppNotifications] = useState<InAppNotification[]>([]);
+  const [communicationSettings, setCommunicationSettings] = useState<CommunicationSettings>(DEFAULT_COMMUNICATION_SETTINGS);
 
   const addAuditLog = (entry: Omit<AuditEntry, 'id' | 'timestamp'>) => {
     const newEntry: AuditEntry = {
@@ -1903,6 +1836,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       timestamp: new Date().toLocaleString(),
     };
     setAuditLogs((prev) => [newEntry, ...prev]);
+
+    // Asynchronously persist to PostgreSQL audit log table
+    if (typeof window !== 'undefined') {
+      fetch('/api/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newEntry),
+      }).catch((err) => console.warn('[auditLog API sync warning]:', err));
+    }
   };
 
   const switchRole = (role: UserRole) => {
@@ -1964,7 +1906,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const updatedUsers = [newUser, ...users];
         setUsers(updatedUsers);
         safeLocalStorageSet('markazu_users', updatedUsers);
-        MOCK_USERS.unshift(newUser);
 
         // Also ensure client-side email dispatch if needed
         sendSystemEmail({
@@ -2035,7 +1976,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const updatedUsers = [newUser, ...users];
     setUsers(updatedUsers);
     safeLocalStorageSet('markazu_users', updatedUsers);
-    MOCK_USERS.unshift(newUser);
 
     // Dispatch real welcome email with temporary password & username
     sendSystemEmail({
@@ -2119,17 +2059,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setUsers(updatedUsers);
     safeLocalStorageSet('markazu_users', updatedUsers);
 
-    // Remove permanently from MOCK_USERS in memory
-    for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
-      if (
-        MOCK_USERS[i].id === targetId ||
-        MOCK_USERS[i].email.toLowerCase().trim() === targetEmail ||
-        (targetUsername && MOCK_USERS[i].username?.toLowerCase().trim() === targetUsername)
-      ) {
-        MOCK_USERS.splice(i, 1);
-      }
-    }
-
     // 2. Remove permanently from teachers/headmasters state & LocalStorage
     setTeachers((prev) => {
       const updated = prev.filter(
@@ -2138,15 +2067,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_teachers', updated);
       return updated;
     });
-    for (let i = MOCK_TEACHERS.length - 1; i >= 0; i--) {
-      if (
-        MOCK_TEACHERS[i].id === targetId ||
-        MOCK_TEACHERS[i].userId === targetId ||
-        MOCK_TEACHERS[i].email?.toLowerCase().trim() === targetEmail
-      ) {
-        MOCK_TEACHERS.splice(i, 1);
-      }
-    }
 
     // 3. Remove permanently from students state & LocalStorage
     setStudents((prev) => {
@@ -2156,15 +2076,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_students', updated);
       return updated;
     });
-    for (let i = MOCK_STUDENTS.length - 1; i >= 0; i--) {
-      if (
-        MOCK_STUDENTS[i].id === targetId ||
-        MOCK_STUDENTS[i].userId === targetId ||
-        MOCK_STUDENTS[i].email?.toLowerCase().trim() === targetEmail
-      ) {
-        MOCK_STUDENTS.splice(i, 1);
-      }
-    }
 
     // 4. Remove permanently from parents state & LocalStorage
     setParents((prev) => {
@@ -2174,15 +2085,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_parents', updated);
       return updated;
     });
-    for (let i = MOCK_PARENTS.length - 1; i >= 0; i--) {
-      if (
-        MOCK_PARENTS[i].id === targetId ||
-        MOCK_PARENTS[i].userId === targetId ||
-        MOCK_PARENTS[i].email?.toLowerCase().trim() === targetEmail
-      ) {
-        MOCK_PARENTS.splice(i, 1);
-      }
-    }
 
     notify({
       type: 'success',
@@ -2211,58 +2113,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const realTargetId = targetUser ? targetUser.id : userId;
     const realTargetEmail = targetUser ? targetUser.email.toLowerCase() : userId.toLowerCase();
 
+    // Optimistic update in state
     const updated = users.map((u) =>
       u.id === realTargetId || u.email.toLowerCase() === realTargetEmail ? { ...u, ...updates } : u
     );
     setUsers(updated);
-    safeLocalStorageSet('markazu_users', updated);
 
-    // Save individual profile updates so they persist across logins and sessions
-    if (typeof window !== 'undefined') {
-      try {
-        const existingProfileStr = localStorage.getItem(`markazu_user_profile_${realTargetId}`);
-        const existingProfile = existingProfileStr ? JSON.parse(existingProfileStr) : {};
-        const mergedProfile = { ...existingProfile, ...updates };
-        localStorage.setItem(`markazu_user_profile_${realTargetId}`, JSON.stringify(mergedProfile));
-        if (realTargetEmail) {
-          localStorage.setItem(`markazu_user_profile_${realTargetEmail}`, JSON.stringify(mergedProfile));
-        }
-        if (updates.avatar) {
-          localStorage.setItem(`markazu_user_avatar_${realTargetId}`, updates.avatar);
-          if (realTargetEmail) {
-            localStorage.setItem(`markazu_user_avatar_${realTargetEmail}`, updates.avatar);
-          }
-        }
-      } catch {}
-    }
-
-    // Call backend API to persist in database
+    // Call shared backend API to persist in PostgreSQL database
     try {
-      await fetch(`/api/users/${encodeURIComponent(realTargetId)}`, {
+      const res = await fetch(`/api/users/${encodeURIComponent(realTargetId)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
+      const data = await res.json();
+      if (data && data.user) {
+        const savedUser = data.user;
+        setUsers((prev) => prev.map((u) => (u.id === savedUser.id || u.email.toLowerCase() === savedUser.email.toLowerCase() ? { ...u, ...savedUser } : u)));
+        if (
+          currentUser &&
+          (currentUser.id === savedUser.id ||
+            currentUser.email.toLowerCase() === savedUser.email.toLowerCase() ||
+            (currentUser.username && savedUser.username && currentUser.username.toLowerCase() === savedUser.username.toLowerCase()) ||
+            (currentUser.role === 'SUPER_ADMIN' && targetUser?.role === 'SUPER_ADMIN'))
+        ) {
+          const merged = { ...currentUser, ...savedUser };
+          setCurrentUser(merged);
+          safeLocalStorageSet('markazu_current_user', merged);
+        }
+      }
     } catch (e) {
       console.warn('[updateUserAccount] API update warning:', e);
-    }
-
-    // Update MOCK_USERS in memory as well
-    MOCK_USERS.forEach((mu, idx) => {
-      if (mu.id === realTargetId || mu.email.toLowerCase() === realTargetEmail) {
-        MOCK_USERS[idx] = { ...mu, ...updates };
-      }
-    });
-
-    if (
-      currentUser &&
-      (currentUser.id === realTargetId ||
-        currentUser.email.toLowerCase() === realTargetEmail ||
-        (currentUser.role === 'SUPER_ADMIN' && targetUser?.role === 'SUPER_ADMIN'))
-    ) {
-      const updatedCurr = { ...currentUser, ...updates };
-      setCurrentUser(updatedCurr);
-      safeLocalStorageSet('markazu_current_user', updatedCurr);
     }
 
     // Also update corresponding Teacher / Student / Parent if applicable
@@ -2345,17 +2226,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           : u
       )
     );
-
-    MOCK_USERS.forEach((u) => {
-      if (u.id === userId) {
-        u.isLocked = false;
-        u.status = 'ACTIVE';
-        u.failedLoginAttempts = 0;
-        u.passwordHash = tempHash;
-        u.isFirstLogin = true;
-        u.mustChangePassword = true;
-      }
-    });
 
     if (targetUser) {
       sendSystemEmail({
@@ -2443,21 +2313,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     setUsers(updated);
     safeLocalStorageSet('markazu_users', updated);
-
-    MOCK_USERS.forEach((u) => {
-      if (
-        u.email.toLowerCase() === cleanEmail ||
-        u.username?.toLowerCase() === cleanEmail ||
-        (cleanEmail.includes('superadmin') && u.role === 'SUPER_ADMIN') ||
-        (cleanEmail.includes('markazu') && u.role === 'SUPER_ADMIN')
-      ) {
-        u.passwordHash = newHash;
-        u.isFirstLogin = false;
-        u.mustChangePassword = false;
-        u.failedLoginAttempts = 0;
-        u.isLocked = false;
-      }
-    });
 
     if (
       currentUser &&
@@ -2549,7 +2404,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_users', next);
       return next;
     });
-    MOCK_USERS.unshift(newUser);
 
     // Sync to backend database
     try {
@@ -2689,16 +2543,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       status: 'SUCCESS',
     });
   };
-
-  const deleteStudent = async (id: string) => {
+  const deleteStudent = async (id: string) => {
     const targetStudent = students.find((s) => s.id === id);
     const updatedStudents = students.filter((s) => s.id !== id);
     setStudents(updatedStudents);
     safeLocalStorageSet('markazu_students', updatedStudents);
-
-    for (let i = MOCK_STUDENTS.length - 1; i >= 0; i--) {
-      if (MOCK_STUDENTS[i].id === id) MOCK_STUDENTS.splice(i, 1);
-    }
 
     if (targetStudent) {
       const targetUserId = targetStudent.userId || targetStudent.id;
@@ -2713,11 +2562,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       );
       setUsers(updatedUsers);
       safeLocalStorageSet('markazu_users', updatedUsers);
-      for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
-        if (MOCK_USERS[i].id === targetUserId || MOCK_USERS[i].id === id || (targetEmail && MOCK_USERS[i].email.toLowerCase().trim() === targetEmail)) {
-          MOCK_USERS.splice(i, 1);
-        }
-      }
     }
 
     // Sync to backend database
@@ -2787,7 +2631,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_users', next);
       return next;
     });
-    MOCK_USERS.unshift(newUser);
 
     // Auto-create TeacherAssignment records for relational dashboard queries
     if (newTeacher.programmeIds && newTeacher.classesAssigned) {
@@ -2960,10 +2803,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTeachers(updatedTeachers);
     safeLocalStorageSet('markazu_teachers', updatedTeachers);
 
-    for (let i = MOCK_TEACHERS.length - 1; i >= 0; i--) {
-      if (MOCK_TEACHERS[i].id === id) MOCK_TEACHERS.splice(i, 1);
-    }
-
     if (targetTeacher) {
       const targetUserId = targetTeacher.userId || targetTeacher.id;
       const targetEmail = targetTeacher.email?.toLowerCase().trim();
@@ -2977,11 +2816,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       );
       setUsers(updatedUsers);
       safeLocalStorageSet('markazu_users', updatedUsers);
-      for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
-        if (MOCK_USERS[i].id === targetUserId || MOCK_USERS[i].id === id || (targetEmail && MOCK_USERS[i].email.toLowerCase().trim() === targetEmail)) {
-          MOCK_USERS.splice(i, 1);
-        }
-      }
     }
 
     // Sync to backend database
@@ -3183,7 +3017,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     setUsers((prev) => [newUser, ...prev]);
-    MOCK_USERS.unshift(newUser);
 
     // Send Welcome Email
     sendSystemEmail({
@@ -3261,10 +3094,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setParents(updatedParents);
     safeLocalStorageSet('markazu_parents', updatedParents);
 
-    for (let i = MOCK_PARENTS.length - 1; i >= 0; i--) {
-      if (MOCK_PARENTS[i].id === id) MOCK_PARENTS.splice(i, 1);
-    }
-
     if (targetParent) {
       const targetUserId = targetParent.userId || targetParent.id;
       const targetEmail = targetParent.email.toLowerCase().trim();
@@ -3275,12 +3104,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const updatedUsers = users.filter((u) => u.id !== targetUserId && u.id !== id && u.email.toLowerCase().trim() !== targetEmail);
       setUsers(updatedUsers);
       safeLocalStorageSet('markazu_users', updatedUsers);
-
-      for (let i = MOCK_USERS.length - 1; i >= 0; i--) {
-        if (MOCK_USERS[i].id === targetUserId || MOCK_USERS[i].id === id || MOCK_USERS[i].email.toLowerCase().trim() === targetEmail) {
-          MOCK_USERS.splice(i, 1);
-        }
-      }
     }
 
     notify({
@@ -3954,7 +3777,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_programmes', next);
       return next;
     });
-    MOCK_PROGRAMMES.unshift(newProg);
 
     // Sync to backend database
     try {
@@ -3982,13 +3804,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateProgramme = (id: string, updated: Partial<Programme>) => {
-    const englishName = updated.programme_name_english || updated.programme_name;
-    if (englishName) {
+    if (updated.programme_name_english) {
       const isDuplicateName = programmes.some(
-        (p) => p.id !== id && p.programme_name_english.trim().toLowerCase() === englishName.trim().toLowerCase()
+        (p) =>
+          p.id !== id &&
+          (p.programme_name_english || p.programme_name).trim().toLowerCase() === updated.programme_name_english!.trim().toLowerCase()
       );
       if (isDuplicateName) {
-        throw new Error(`A Programme with the name "${englishName}" already exists.`);
+        throw new Error(`A Programme with the name "${updated.programme_name_english}" already exists.`);
       }
     }
     if (updated.programme_code) {
@@ -4010,19 +3833,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       } : p));
       safeLocalStorageSet('markazu_programmes', next);
       return next;
-    });
-
-    MOCK_PROGRAMMES.forEach((mp, idx) => {
-      if (mp.id === id) {
-        MOCK_PROGRAMMES[idx] = {
-          ...mp,
-          ...updated,
-          programme_name_english: updated.programme_name_english || mp.programme_name_english,
-          programme_name_arabic: updated.programme_name_arabic !== undefined ? updated.programme_name_arabic : mp.programme_name_arabic,
-          programme_name: updated.programme_name_english || mp.programme_name_english,
-          updated_at: new Date().toISOString(),
-        };
-      }
     });
 
     // Sync to backend database
@@ -4061,12 +3871,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    MOCK_PROGRAMMES.forEach((mp, idx) => {
-      if (mp.id === id) {
-        MOCK_PROGRAMMES[idx].status = mp.status === 'Active' ? 'Inactive' : 'Active';
-      }
-    });
-
     addAuditLog({
       action: 'PROGRAMME_STATUS_TOGGLED',
       performedBy: currentUser.name,
@@ -4085,23 +3889,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    for (let i = MOCK_PROGRAMMES.length - 1; i >= 0; i--) {
-      if (MOCK_PROGRAMMES[i].id === id) {
-        MOCK_PROGRAMMES.splice(i, 1);
-      }
-    }
-
     setClasses((prev) => {
       const next = prev.filter((c) => c.programmeId !== id);
       safeLocalStorageSet('markazu_classes', next);
       return next;
     });
-
-    for (let i = MOCK_CLASSES.length - 1; i >= 0; i--) {
-      if (MOCK_CLASSES[i].programmeId === id) {
-        MOCK_CLASSES.splice(i, 1);
-      }
-    }
 
     // Sync to backend database
     try {
@@ -4302,7 +4094,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_classes', next);
       return next;
     });
-    MOCK_CLASSES.push(newClass);
 
     // Sync to backend database
     try {
@@ -4360,20 +4151,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    MOCK_CLASSES.forEach((mc, idx) => {
-      if (mc.id === id) {
-        const englishName = updated.class_name_english || updated.name || mc.class_name_english || mc.name;
-        const arabicName = updated.class_name_arabic !== undefined ? updated.class_name_arabic : mc.class_name_arabic;
-        MOCK_CLASSES[idx] = {
-          ...mc,
-          ...updated,
-          class_name_english: englishName,
-          class_name_arabic: arabicName,
-          name: englishName,
-        };
-      }
-    });
-
     // Sync to backend database
     try {
       const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
@@ -4416,12 +4193,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    for (let i = MOCK_CLASSES.length - 1; i >= 0; i--) {
-      if (MOCK_CLASSES[i].id === id) {
-        MOCK_CLASSES.splice(i, 1);
-      }
-    }
-
     setTeacherAssignments((prev) => {
       const next = prev.filter((ta) => ta.classId !== id);
       safeLocalStorageSet('markazu_teacher_assignments', next);
@@ -4462,7 +4233,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch (e) {}
       }
     }
-    return INITIAL_ACADEMIC_EVENTS;
+    return [];
   });
 
   useEffect(() => {
@@ -4733,6 +4504,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         showProgress,
         progressOptions,
         dismissProgress,
+        isHydrated,
         currentUser,
         users,
         updateUserAvatar,

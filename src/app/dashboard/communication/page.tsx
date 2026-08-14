@@ -100,7 +100,7 @@ export default function CommunicationDashboardPage() {
               SENT
             </span>
             <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-              {totalDispatched || 12}
+              {totalDispatched}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-md">
@@ -115,7 +115,7 @@ export default function CommunicationDashboardPage() {
               SCHEDULED
             </span>
             <p className="text-3xl font-black text-slate-900 dark:text-white mt-1">
-              {totalScheduled || 3}
+              {totalScheduled}
             </p>
           </div>
           <div className="w-12 h-12 rounded-full bg-sky-500 text-white flex items-center justify-center shadow-md">

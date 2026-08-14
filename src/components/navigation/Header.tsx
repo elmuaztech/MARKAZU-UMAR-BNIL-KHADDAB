@@ -51,7 +51,7 @@ export function Header({
           {currentUser.avatar ? (
             <img
               src={currentUser.avatar}
-              alt={currentUser.name}
+              alt={currentUser.name || 'User Avatar'}
               className="w-8 h-8 rounded-full border-2 border-emerald-400/50 object-cover shrink-0"
             />
           ) : (

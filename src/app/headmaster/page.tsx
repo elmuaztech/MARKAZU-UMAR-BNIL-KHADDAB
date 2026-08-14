@@ -42,22 +42,22 @@ export default function HeadmasterPortalPage() {
     }
   }, [currentUser, router]);
 
-  const assignedProgId = currentUser.assignedProgrammeId || 'prog-01';
-  const assignedProgName = currentUser.assignedProgrammeName || 'Asubah & Maghrib';
+  const assignedProgId = currentUser.assignedProgrammeId || (programmes[0]?.id ?? '');
   const currentProgramme = programmes.find((p) => p.id === assignedProgId) || programmes[0];
+  const assignedProgName = currentUser.assignedProgrammeName || currentProgramme?.programme_name_english || currentProgramme?.programme_name || 'Programme';
 
   // Raw Data Scoped to Headmaster's Parent Programme
-  const rawClasses = classes.filter((c) => c.programmeId === assignedProgId);
-  const rawStudents = students.filter((s) => s.programmeId === assignedProgId);
+  const rawClasses = assignedProgId ? classes.filter((c) => c.programmeId === assignedProgId) : classes;
+  const rawStudents = assignedProgId ? students.filter((s) => s.programmeId === assignedProgId) : students;
   const rawTeachers = teachers.filter(
     (t) =>
-      (t.programmeIds && t.programmeIds.includes(assignedProgId)) ||
+      (assignedProgId && t.programmeIds && t.programmeIds.includes(assignedProgId)) ||
       rawClasses.some((c) => c.classTeacherId === t.id || (c.assignedTeacherIds && c.assignedTeacherIds.includes(t.id)))
   );
   const rawAttendance = attendance.filter((a) => rawStudents.some((s) => s.id === a.studentId));
 
   // Available Subcategories for current Programme
-  const availableSubcategories = currentProgramme?.subcategories || ['Asubah', 'Maghrib', 'Tahfiz'];
+  const availableSubcategories = currentProgramme?.subcategories || [];
 
   // Isolated Filtered Data based on selectedSubcategory
   const sectionClasses = rawClasses.filter((c) => {

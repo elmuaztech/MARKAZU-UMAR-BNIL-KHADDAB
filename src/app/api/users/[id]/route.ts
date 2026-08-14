@@ -13,13 +13,47 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const userId = params.id;
     const body = await req.json();
 
+    // 1. Locate user in PostgreSQL Prisma database
+    let dbUser: any = null;
+    try {
+      dbUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { id: userId },
+            { username: userId },
+            { email: { equals: userId.toLowerCase().trim(), mode: 'insensitive' } },
+          ],
+          deletedAt: null,
+        },
+      });
+    } catch (e) {
+      console.warn('[PUT_USER] Prisma lookup warning:', e);
+    }
+
+    if (!dbUser) {
+      const serverUser = findServerUser(userId);
+      if (serverUser) {
+        try {
+          dbUser = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { email: { equals: serverUser.email.toLowerCase().trim(), mode: 'insensitive' } },
+                { username: serverUser.username || '' },
+              ],
+              deletedAt: null,
+            },
+          });
+        } catch (e) {}
+      }
+    }
+
     const updateData: any = {};
-    if (body.name) updateData.name = body.name.trim();
+    if (body.name !== undefined) updateData.name = body.name.trim();
     if (body.avatar !== undefined) updateData.avatar = body.avatar;
     if (body.phone !== undefined) updateData.phone = body.phone.trim();
-    if (body.email) updateData.email = body.email.trim().toLowerCase();
-    if (body.role) updateData.role = body.role;
-    if (body.status) updateData.status = body.status;
+    if (body.email !== undefined) updateData.email = body.email.trim().toLowerCase();
+    if (body.role !== undefined) updateData.role = body.role;
+    if (body.status !== undefined) updateData.status = body.status;
     if (body.assignedProgrammeId !== undefined) updateData.assignedProgrammeId = body.assignedProgrammeId;
     if (body.assignedProgrammeName !== undefined) updateData.assignedProgrammeName = body.assignedProgrammeName;
 
@@ -35,36 +69,69 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       updateData.lockoutUntil = null;
       tempPassSent = newTempPass;
 
-      const targetEmail = updateData.email || body.email;
+      const targetEmail = updateData.email || (dbUser ? dbUser.email : body.email);
       if (targetEmail) {
         sendSystemEmail({
           to: targetEmail,
-          recipientName: updateData.name || 'User',
+          recipientName: updateData.name || (dbUser ? dbUser.name : 'User'),
           subject: 'Password Reset Notice - Markazu Umar Portal',
           template: 'WELCOME_NEW_ACCOUNT',
           metadata: {
-            username: body.username || targetEmail,
+            username: body.username || (dbUser ? dbUser.username : targetEmail),
             tempPassword: newTempPass,
           },
         }).catch(() => {});
       }
     }
 
-    // 1. Update in persistent serverDb
+    // 2. Update in persistent serverDb backup
     const serverDbResult = updateServerUser(userId, updateData);
 
-    // 2. Also update in PostgreSQL Prisma database if available
+    // 3. Persist update in PostgreSQL Prisma database
     let prismaUser: any = null;
-    try {
-      prismaUser = await prisma.user.update({
-        where: { id: userId },
-        data: updateData,
-      });
-    } catch (dbErr) {
-      // Postgres offline or record not in Postgres, serverDb handles persistence
+    if (dbUser) {
+      try {
+        prismaUser = await prisma.user.update({
+          where: { id: dbUser.id },
+          data: updateData,
+        });
+
+        // Synchronize associated profile records in respective tables based on role
+        if (prismaUser.role === 'TEACHER') {
+          await prisma.teacher.updateMany({
+            where: {
+              OR: [{ userId: prismaUser.id }, { email: { equals: prismaUser.email, mode: 'insensitive' } }],
+            },
+            data: {
+              ...(updateData.name ? { fullName: updateData.name } : {}),
+              ...(updateData.phone !== undefined ? { phone: updateData.phone } : {}),
+            },
+          }).catch(() => {});
+        } else if (prismaUser.role === 'STUDENT') {
+          await prisma.student.updateMany({
+            where: { userId: prismaUser.id },
+            data: {
+              ...(updateData.name ? { fullName: updateData.name } : {}),
+              ...(updateData.avatar !== undefined ? { avatar: updateData.avatar } : {}),
+            },
+          }).catch(() => {});
+        } else if (prismaUser.role === 'PARENT') {
+          await prisma.parent.updateMany({
+            where: {
+              OR: [{ userId: prismaUser.id }, { email: { equals: prismaUser.email, mode: 'insensitive' } }],
+            },
+            data: {
+              ...(updateData.name ? { fullName: updateData.name } : {}),
+              ...(updateData.phone !== undefined ? { phone: updateData.phone } : {}),
+            },
+          }).catch(() => {});
+        }
+      } catch (dbErr) {
+        console.error('[PUT_USER] PostgreSQL Prisma update error:', dbErr);
+      }
     }
 
-    const finalUser = prismaUser || serverDbResult || { id: userId, ...updateData };
+    const finalUser = prismaUser || serverDbResult || (dbUser ? { ...dbUser, ...updateData } : { id: userId, ...updateData });
 
     return NextResponse.json({
       message: `User account updated successfully.${tempPassSent ? ` Temporary password dispatched to email.` : ''}`,
@@ -94,22 +161,52 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     // 1. Delete from persistent serverDb
     deleteServerUser(userId);
 
-    // 2. Also soft-delete in PostgreSQL Prisma database if available
+    // 2. Also soft-delete in PostgreSQL Prisma database
+    let dbUser: any = null;
     try {
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          deletedAt: new Date(),
-          status: 'DEACTIVATED',
+      dbUser = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { id: userId },
+            { username: userId },
+            { email: { equals: userId.toLowerCase().trim(), mode: 'insensitive' } },
+          ],
         },
       });
 
-      await prisma.userSession.updateMany({
-        where: { userId },
-        data: { revoked: true },
-      });
+      if (dbUser) {
+        // Enforce protection: Last active SUPER_ADMIN cannot be deleted or deactivated
+        if (dbUser.role === 'SUPER_ADMIN') {
+          const activeSuperAdminCount = await prisma.user.count({
+            where: {
+              role: 'SUPER_ADMIN',
+              status: 'ACTIVE',
+              deletedAt: null,
+            },
+          });
+          if (activeSuperAdminCount <= 1 && dbUser.status === 'ACTIVE' && !dbUser.deletedAt) {
+            return NextResponse.json(
+              { error: 'Security Violation: Cannot delete or deactivate the last active Super Admin account.' },
+              { status: 403 }
+            );
+          }
+        }
+
+        await prisma.user.update({
+          where: { id: dbUser.id },
+          data: {
+            deletedAt: new Date(),
+            status: 'DEACTIVATED',
+          },
+        });
+
+        await prisma.userSession.updateMany({
+          where: { userId: dbUser.id },
+          data: { revoked: true },
+        });
+      }
     } catch (dbErr) {
-      // Postgres offline, serverDb handles persistence
+      console.warn('[DELETE_USER] Prisma delete warning:', dbErr);
     }
 
     return NextResponse.json({

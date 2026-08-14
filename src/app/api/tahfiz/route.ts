@@ -30,32 +30,20 @@ export async function GET(request: NextRequest) {
 
     const targetProgId = authUser?.role === 'HEADMASTER' ? authUser.assignedProgrammeId : requestedProgId;
 
-    let records: any[] = [];
-    let querySuccess = false;
+    const whereClause: any = {};
+    if (studentId) whereClause.studentId = studentId;
+    if (classId) whereClause.classId = classId;
+    if (targetProgId) whereClause.programmeId = targetProgId;
 
-    try {
-      const whereClause: any = {};
-      if (studentId) whereClause.studentId = studentId;
-      if (classId) whereClause.classId = classId;
-      if (targetProgId) whereClause.programmeId = targetProgId;
-
-      records = await prisma.tahfizRecord.findMany({
-        where: whereClause,
-        include: {
-          student: true,
-          schoolClass: true,
-          teacher: true,
-        },
-        orderBy: { date: 'desc' },
-      });
-      querySuccess = true;
-    } catch (dbErr) {
-      console.warn('[GET_TAHFIZ] Postgres query failed, falling back to serverDb:', dbErr);
-    }
-
-    if (!querySuccess || records.length === 0) {
-      records = getAllServerTahfiz(studentId, classId, targetProgId);
-    }
+    const records = await prisma.tahfizRecord.findMany({
+      where: whereClause,
+      include: {
+        student: true,
+        schoolClass: true,
+        teacher: true,
+      },
+      orderBy: { date: 'desc' },
+    });
 
     return NextResponse.json({ success: true, data: records });
   } catch (error: any) {

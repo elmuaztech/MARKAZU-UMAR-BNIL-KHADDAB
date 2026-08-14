@@ -6,21 +6,9 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
-    let announcements: any[] = [];
-    let querySuccess = false;
-
-    try {
-      announcements = await prisma.announcement.findMany({
-        orderBy: { date: 'desc' },
-      });
-      querySuccess = true;
-    } catch (dbErr) {
-      console.warn('[GET_ANNOUNCEMENTS] Postgres query failed, falling back to serverDb:', dbErr);
-    }
-
-    if (!querySuccess || announcements.length === 0) {
-      announcements = getAllServerAnnouncements();
-    }
+    const announcements = await prisma.announcement.findMany({
+      orderBy: { date: 'desc' },
+    });
 
     return NextResponse.json({
       announcements,

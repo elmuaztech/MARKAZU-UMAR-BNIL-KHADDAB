@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../../lib/context';
-import { INITIAL_AUDIT_LOGS, AuditEntry } from '../../../lib/audit';
+import { AuditEntry } from '../../../lib/audit';
 import { ThemeToggle } from '../../../components/navigation/ThemeToggle';
 import { Settings, School, Calendar, ShieldCheck, RotateCcw, Upload, Trash2, Image as ImageIcon, Sparkles, CheckCircle2, User, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -11,22 +11,30 @@ import { Card } from '@/components/ui/Card';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 
 export default function SettingsPage() {
-  const { currentSession, schoolLogo, setSchoolLogo, schoolName, setSchoolName, currentUser, setCurrentUser, updateUserAccount, updateUserAvatar, addAuditLog } = useApp();
+  const { currentSession, schoolLogo, setSchoolLogo, schoolName, setSchoolName, currentUser, setCurrentUser, updateUserAccount, updateUserAvatar, addAuditLog, auditLogs } = useApp();
 
   const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
   const [activeTerm, setActiveTerm] = useState<'Term 1' | 'Term 2' | 'Term 3'>(currentSession.activeTerm);
-  const [auditLogs] = useState<AuditEntry[]>(INITIAL_AUDIT_LOGS);
   const [sessionSuccess, setSessionSuccess] = useState(false);
   const [logoNotice, setLogoNotice] = useState('');
   const [profileNotice, setProfileNotice] = useState('');
   const [customLogoUrl, setCustomLogoUrl] = useState('');
   const [editableSchoolName, setEditableSchoolName] = useState(schoolName);
 
-  // Super Admin Personal Profile Form State
-  const [adminName, setAdminName] = useState(currentUser.name || '');
-  const [adminEmail, setAdminEmail] = useState(currentUser.email || '');
-  const [adminPhone, setAdminPhone] = useState(currentUser.phone || '');
-  const [adminAvatar, setAdminAvatar] = useState(currentUser.avatar || '');
+  // Personal Profile Form State
+  const [adminName, setAdminName] = useState(currentUser?.name || '');
+  const [adminEmail, setAdminEmail] = useState(currentUser?.email || '');
+  const [adminPhone, setAdminPhone] = useState(currentUser?.phone || '');
+  const [adminAvatar, setAdminAvatar] = useState(currentUser?.avatar || '');
+
+  React.useEffect(() => {
+    if (currentUser) {
+      setAdminName(currentUser.name || '');
+      setAdminEmail(currentUser.email || '');
+      setAdminPhone(currentUser.phone || '');
+      setAdminAvatar(currentUser.avatar || '');
+    }
+  }, [currentUser]);
 
   const handleSavePersonalProfile = (e: React.FormEvent) => {
     e.preventDefault();

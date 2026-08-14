@@ -53,8 +53,8 @@ export default function AdmissionsPage() {
 
   // Wizard Review State
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4 | 5>(1);
-  const [selectedProgrammeIds, setSelectedProgrammeIds] = useState<string[]>(['prog-02']);
-  const [selectedClassIds, setSelectedClassIds] = useState<string[]>(['cls-tahfiz-1']);
+  const [selectedProgrammeIds, setSelectedProgrammeIds] = useState<string[]>([]);
+  const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
   const [rejectionReason, setRejectionReason] = useState('');
 
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';

@@ -71,7 +71,7 @@ export function HeadmasterDashboard() {
   const todayAttendance = scopedAttendance.filter((a) => a.date.startsWith(todayStr));
   const presentCount = todayAttendance.filter((a) => a.status === 'PRESENT').length;
   const attendanceRate =
-    todayAttendance.length > 0 ? Math.round((presentCount / todayAttendance.length) * 100) : 100;
+    todayAttendance.length > 0 ? Math.round((presentCount / todayAttendance.length) * 100) : 0;
 
   const totalSectionStudents =
     scopedStudents.length > 0
@@ -99,7 +99,7 @@ export function HeadmasterDashboard() {
             </div>
 
             <h1 className="text-2xl sm:text-3xl font-black font-poppins text-white flex items-center gap-2">
-              Welcome, {currentUser.name}
+              Welcome, {currentUser.name || 'Headmaster'}
             </h1>
 
             {assignedProg ? (

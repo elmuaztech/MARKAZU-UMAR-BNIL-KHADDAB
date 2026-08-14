@@ -1,8 +1,6 @@
 import { NextRequest } from 'next/server';
 import prisma from './prisma';
 import { UserRole } from '@prisma/client';
-import { MOCK_USERS } from './mockData';
-import { findServerUser } from './serverDb';
 
 export interface AuthenticatedUser {
   id: string;
@@ -23,7 +21,7 @@ export interface AuthenticatedUser {
 /**
  * Server-side Session Authenticator
  * Extracts session ID from HTTP-Only cookie, Authorization header, or x-session-id.
- * Verifies session against PostgreSQL database via Prisma Client with graceful memory fallback.
+ * Verifies session strictly against PostgreSQL database via Prisma Client.
  */
 export async function getAuthenticatedUser(req: NextRequest): Promise<AuthenticatedUser | null> {
   try {
@@ -42,9 +40,8 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
 
     // Strip prefix if jwt-token- wrapper exists
     const cleanSessionId = sessionId.replace(/^jwt-token-/, '');
-    const cleanLower = cleanSessionId.toLowerCase();
 
-    // Query active session from Prisma DB
+    // 1. Query active session from PostgreSQL UserSession
     try {
       const dbSession = await prisma.userSession.findFirst({
         where: {
@@ -77,107 +74,40 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
         };
       }
 
-      // Fallback lookup: Search directly by user ID if session ID matches user format
-      if (cleanSessionId.startsWith('usr-') || cleanSessionId.startsWith('MUBK-')) {
-        const dbUser = await prisma.user.findFirst({
-          where: {
-            OR: [{ id: cleanSessionId }, { username: cleanSessionId }],
-            status: 'ACTIVE',
-            deletedAt: null,
-          },
-        });
-
-        if (dbUser) {
-          return {
-            id: dbUser.id,
-            name: dbUser.name,
-            email: dbUser.email,
-            username: dbUser.username || null,
-            role: dbUser.role,
-            avatar: dbUser.avatar || null,
-            assignedProgrammeId: dbUser.assignedProgrammeId,
-            assignedProgrammeName: dbUser.assignedProgrammeName,
-            status: dbUser.status,
-            isFirstLogin: dbUser.isFirstLogin,
-            mustChangePassword: dbUser.mustChangePassword,
-            isLocked: dbUser.isLocked,
-            failedLoginAttempts: dbUser.failedLoginAttempts,
-          };
-        }
-      }
-
-      // Check if user was explicitly deleted in database
-      const deletedUser = await prisma.user.findFirst({
+      // 2. Direct active user lookup by ID, username, or email
+      const dbUser = await prisma.user.findFirst({
         where: {
-          OR: [{ id: cleanSessionId }, { username: cleanSessionId }],
-          NOT: { deletedAt: null },
+          OR: [{ id: cleanSessionId }, { username: cleanSessionId }, { email: cleanSessionId }],
+          status: 'ACTIVE',
+          deletedAt: null,
         },
       });
-      if (deletedUser) {
-        return null;
+
+      if (dbUser) {
+        return {
+          id: dbUser.id,
+          name: dbUser.name,
+          email: dbUser.email,
+          username: dbUser.username || null,
+          role: dbUser.role,
+          avatar: dbUser.avatar || null,
+          assignedProgrammeId: dbUser.assignedProgrammeId,
+          assignedProgrammeName: dbUser.assignedProgrammeName,
+          status: dbUser.status,
+          isFirstLogin: dbUser.isFirstLogin,
+          mustChangePassword: dbUser.mustChangePassword,
+          isLocked: dbUser.isLocked,
+          failedLoginAttempts: dbUser.failedLoginAttempts,
+        };
       }
 
-      // If database query succeeded but no active session or user found, return null
       return null;
     } catch (dbErr) {
-      console.warn('[AUTH_DB_WARNING] Session query failed due to DB connection:', dbErr);
+      console.error('[AUTH_DB_ERROR] Session query error:', dbErr);
+      return null;
     }
-
-    // Fallback lookup from serverDb or MOCK_USERS if DB is unreachable or session ID is user format
-    const serverUser = findServerUser(cleanSessionId) || findServerUser(cleanLower);
-    const mockUser = serverUser || MOCK_USERS.find(
-      (u) =>
-        u.id.toLowerCase() === cleanLower ||
-        u.email.toLowerCase() === cleanLower ||
-        (u.username && u.username.toLowerCase() === cleanLower) ||
-        (cleanLower.includes('superadmin') && u.role === 'SUPER_ADMIN')
-    );
-
-    if (mockUser) {
-      return {
-        id: mockUser.id,
-        name: mockUser.name,
-        email: mockUser.email,
-        username: mockUser.username || null,
-        role: mockUser.role,
-        avatar: mockUser.avatar || null,
-        assignedProgrammeId: mockUser.assignedProgrammeId || null,
-        assignedProgrammeName: mockUser.assignedProgrammeName || null,
-        status: mockUser.status || 'ACTIVE',
-        isFirstLogin: mockUser.isFirstLogin ?? false,
-        mustChangePassword: mockUser.mustChangePassword ?? false,
-        isLocked: mockUser.isLocked ?? false,
-        failedLoginAttempts: mockUser.failedLoginAttempts || 0,
-      };
-    }
-
-    return null;
   } catch (error) {
     console.error('[AUTH_ERROR] getAuthenticatedUser failed:', error);
-
-    // Final catch fallback for emergency session recovery
-    const cookieSessionId = req.cookies.get('mssms_session_id')?.value || req.headers.get('x-session-id') || '';
-    const clean = cookieSessionId.replace(/^jwt-token-/, '').toLowerCase();
-    const emergencyUser = MOCK_USERS.find((u) => u.id.toLowerCase() === clean || u.email.toLowerCase() === clean || u.role === 'SUPER_ADMIN');
-
-    if (emergencyUser) {
-      return {
-        id: emergencyUser.id,
-        name: emergencyUser.name,
-        email: emergencyUser.email,
-        username: emergencyUser.username || null,
-        role: emergencyUser.role,
-        avatar: emergencyUser.avatar || null,
-        assignedProgrammeId: emergencyUser.assignedProgrammeId || null,
-        assignedProgrammeName: emergencyUser.assignedProgrammeName || null,
-        status: 'ACTIVE',
-        isFirstLogin: false,
-        mustChangePassword: false,
-        isLocked: false,
-        failedLoginAttempts: 0,
-      };
-    }
-
     return null;
   }
 }

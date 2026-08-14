@@ -27,10 +27,16 @@ import {
 } from 'lucide-react';
 
 export function StudentDashboard() {
-  const { students, grades, tahfizRecords } = useApp();
+  const { currentUser, students, grades, tahfizRecords } = useApp();
 
-  const student = students.find((s) => s.id === 'usr-student-1') || students[0];
-  const studentGrades = grades.filter((g) => g.studentId === student.id);
+  const student = students.find(
+    (s) =>
+      s.userId === currentUser.id ||
+      s.id === currentUser.id ||
+      (s.email && currentUser.email && s.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+      (s.admissionNo && currentUser.username && s.admissionNo.toLowerCase() === currentUser.username.toLowerCase())
+  );
+  const studentGrades = student ? grades.filter((g) => g.studentId === student.id) : [];
 
   const studentActions: QuickActionItem[] = [
     {
@@ -97,6 +103,27 @@ export function StudentDashboard() {
       ),
     },
   ];
+
+  if (!student) {
+    return (
+      <PortalTheme>
+        <PortalHeroBanner
+          badgeText="Student Portal"
+          badgeIcon={GraduationCap}
+          title={currentUser.name || "Student"}
+          description="Assalamu Alaikum. No student academic record is currently assigned to this account in the database."
+        />
+        <NoticeBoardWidget />
+        <div className="p-8 rounded-3xl bg-white dark:bg-[#042419] border border-dashed border-slate-200 dark:border-emerald-500/20 text-center space-y-2">
+          <GraduationCap className="w-10 h-10 text-slate-400 mx-auto" />
+          <h3 className="font-black text-slate-900 dark:text-white text-base">No Student Profile Linked</h3>
+          <p className="text-xs text-slate-500 dark:text-emerald-300/70 max-w-md mx-auto">
+            Your account is active, but you have not yet been enrolled in an active class or programme. Please contact the school administration.
+          </p>
+        </div>
+      </PortalTheme>
+    );
+  }
 
   return (
     <PortalTheme>

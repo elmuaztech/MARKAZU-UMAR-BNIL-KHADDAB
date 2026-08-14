@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp, getDeletedUserIdentifiers } from '../../lib/context';
-import { MOCK_USERS } from '../../lib/mockData';
 import { UserRole, User } from '../../types';
 import { verifyPassword, checkLockoutStatus, generatePasswordResetToken, createNewSession, verifyResetToken, markResetTokenUsed, validatePasswordPolicy, isPasswordInHistory } from '../../lib/security';
 import { sendSystemEmail } from '../../lib/emailService';
@@ -277,28 +276,12 @@ export default function LoginPage() {
         return;
       }
 
-      let savedCustomProfile: any = {};
-      if (typeof window !== 'undefined') {
-        try {
-          const profileById = localStorage.getItem(`markazu_user_profile_${authUser.id}`);
-          const profileByEmail = localStorage.getItem(`markazu_user_profile_${authUser.email.toLowerCase()}`);
-          if (profileById) savedCustomProfile = JSON.parse(profileById);
-          else if (profileByEmail) savedCustomProfile = JSON.parse(profileByEmail);
-        } catch {}
-      }
-
-      const savedCustomAvatar =
-        typeof window !== 'undefined'
-          ? localStorage.getItem(`markazu_user_avatar_${authUser.id}`) ||
-            localStorage.getItem(`markazu_user_avatar_${authUser.email.toLowerCase()}`)
-          : null;
-
       const fullUserRecord: User = {
         id: authUser.id,
-        name: savedCustomProfile.name || authUser.name,
-        email: savedCustomProfile.email || authUser.email,
-        phone: savedCustomProfile.phone || authUser.phone,
-        avatar: savedCustomAvatar || savedCustomProfile.avatar || authUser.avatar || (authUser.role === 'SUPER_ADMIN' ? '/avatars/superadmin.jpg' : undefined),
+        name: authUser.name,
+        email: authUser.email,
+        phone: authUser.phone || '',
+        avatar: authUser.avatar || undefined,
         username: authUser.username,
         role: authUser.role,
         assignedProgrammeId: authUser.assignedProgrammeId,

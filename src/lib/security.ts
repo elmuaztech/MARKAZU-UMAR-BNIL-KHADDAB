@@ -1,3 +1,5 @@
+import bcrypt from 'bcryptjs';
+
 // Enterprise Security, Password Policy, Hashing, Session Management & Account Lockout Engine
 // Markazu Umar School Management System
 
@@ -37,34 +39,7 @@ export interface PasswordHistoryRecord {
 }
 
 // Global In-Memory Stores for Active Sessions, Reset Tokens & Password History
-export const ACTIVE_SESSIONS: UserSession[] = [
-  {
-    sessionId: 'sess-superadmin-001',
-    userId: 'usr-superadmin-1',
-    userName: 'Dr. Abubakar Umar (Super Admin)',
-    userRole: 'SUPER_ADMIN',
-    ipAddress: '197.210.227.14',
-    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0',
-    browser: 'Chrome 128',
-    os: 'Windows 11',
-    device: 'Desktop',
-    createdAt: new Date(Date.now() - 3600000).toLocaleString(),
-    lastActiveAt: new Date().toLocaleString(),
-  },
-  {
-    sessionId: 'sess-teacher-002',
-    userId: 'usr-teacher-1',
-    userName: 'Ustaz Abubakar Sadiq',
-    userRole: 'TEACHER',
-    ipAddress: '102.89.23.11',
-    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Safari/605.1.15',
-    browser: 'Safari 17',
-    os: 'macOS Sonoma',
-    device: 'MacBook Pro',
-    createdAt: new Date(Date.now() - 7200000).toLocaleString(),
-    lastActiveAt: new Date(Date.now() - 900000).toLocaleString(),
-  },
-];
+export const ACTIVE_SESSIONS: UserSession[] = [];
 
 const globalForSecurity = globalThis as unknown as {
   RESET_TOKENS: ResetToken[];
@@ -109,60 +84,21 @@ export function isAdminAlias(input: string): boolean {
   );
 }
 
-// 1. Password Hashing (Salted Argon2id / Enterprise Sha-256 Digest Simulation)
+// 1. Standard Password Hashing (bcrypt with 10 cryptographic salt rounds)
 export function hashPassword(password: string): string {
-  const salt = 'MARKAZU_UMAR_ARGON2_SALT_2026_V1';
-  let hash = 0;
-  const combined = password + salt;
-  for (let i = 0; i < combined.length; i++) {
-    const char = combined.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0;
-  }
-  const hexHash = Math.abs(hash).toString(16).padStart(8, '0');
-  const base64Digest = typeof btoa !== 'undefined' ? btoa(combined).slice(0, 16) : 'b3BlbnNzb25z';
-  return `argon2id$v1$${hexHash}$${base64Digest}`;
+  if (!password) return '';
+  const salt = bcrypt.genSaltSync(10);
+  return bcrypt.hashSync(password.trim(), salt);
 }
 
+// 2. Standard Password Verification (bcrypt constant-time compare)
 export function verifyPassword(password: string, storedHash: string): boolean {
   if (!storedHash || !password) return false;
-
-  const cleanPass = password.trim();
-
-  // 1. Direct password match & master password fallbacks
-  if (cleanPass === storedHash || cleanPass === '@Aa123456789' || cleanPass === 'Absaj@2785' || cleanPass === 'admin123') {
-    return true;
+  try {
+    return bcrypt.compareSync(password.trim(), storedHash);
+  } catch (err) {
+    return false;
   }
-
-  // 2. Computed hash match
-  const computed = hashPassword(cleanPass);
-  if (computed === storedHash) return true;
-
-  // 3. Hex-only hash match (handles btoa environment differences across mobile/browser/SSR)
-  const salt = 'MARKAZU_UMAR_ARGON2_SALT_2026_V1';
-  let hash = 0;
-  const combined = cleanPass + salt;
-  for (let i = 0; i < combined.length; i++) {
-    const char = combined.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash |= 0;
-  }
-  const hexHash = Math.abs(hash).toString(16).padStart(8, '0');
-  if (storedHash.includes(hexHash)) return true;
-
-  // 4. Legacy PBKDF2 salt fallback match
-  const legacySalt = 'MARKAZU_UMAR_SALT_2026_V1';
-  let legacyHash = 0;
-  const legacyCombined = cleanPass + legacySalt;
-  for (let i = 0; i < legacyCombined.length; i++) {
-    const char = legacyCombined.charCodeAt(i);
-    legacyHash = (legacyHash << 5) - legacyHash + char;
-    legacyHash |= 0;
-  }
-  const legacyHex = Math.abs(legacyHash).toString(16);
-  if (storedHash.includes(legacyHex)) return true;
-
-  return false;
 }
 
 // 2. Enterprise Password Policy Inspector
