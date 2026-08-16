@@ -128,21 +128,21 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto font-poppins">
-      <div className="relative w-full max-w-2xl max-h-[85vh] sm:max-h-[88vh] bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/40 rounded-2xl sm:rounded-3xl p-5 sm:p-8 flex flex-col justify-between shadow-2xl overflow-y-auto text-xs scrollbar-thin scrollbar-thumb-emerald-600 space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200 font-poppins">
+      <div className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/40 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden text-xs">
         {/* Close Button */}
         <button
           onClick={() => {
             resetForm();
             onClose();
           }}
-          className="absolute top-5 right-5 p-2 bg-slate-100 dark:bg-emerald-950 text-slate-500 dark:text-emerald-300 hover:text-slate-900 dark:hover:text-white rounded-2xl transition-all z-10 shadow-sm"
+          className="absolute top-4 right-4 p-2 bg-slate-100 dark:bg-emerald-950 text-slate-500 dark:text-emerald-300 hover:text-slate-900 dark:hover:text-white rounded-2xl transition-all z-10 shadow-sm"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Fixed Modal Header */}
-        <div className="shrink-0 text-center space-y-1.5 border-b border-slate-100 dark:border-emerald-800/40 pb-3">
+        <div className="shrink-0 p-5 sm:p-6 text-center space-y-1.5 border-b border-slate-100 dark:border-emerald-800/40">
           {schoolLogo ? (
             <div className="w-12 h-12 rounded-full bg-white border-2 border-emerald-500/50 p-0.5 mx-auto flex items-center justify-center shadow-md overflow-hidden">
               <img src={schoolLogo} alt="Markazu Umar Logo" className="w-full h-full rounded-full object-cover" />
@@ -171,7 +171,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
 
         {/* Admission Closed Banner if Status is Closed */}
         {admissionStatus === 'CLOSED' ? (
-          <div className="p-6 rounded-3xl bg-rose-950/40 border border-rose-500/40 text-center space-y-3">
+          <div className="p-6 sm:p-8 flex-1 overflow-y-auto min-h-0 text-center space-y-3">
             <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30">
               <Lock className="w-6 h-6" />
             </div>
@@ -179,27 +179,20 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
             <p className="text-xs text-rose-200/80 leading-relaxed max-w-md mx-auto">
               Admissions for the 2026/2027 Academic Session are currently closed. Please contact the school administration office for inquiry.
             </p>
-            <button
-              onClick={onClose}
-              className="px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs"
-            >
-              Close Window
-            </button>
           </div>
         ) : submittedApp ? (
-          /* Application Confirmation Screen */
-          <div className="p-6 rounded-3xl bg-emerald-950/50 border border-emerald-500/40 text-center space-y-4 animate-in zoom-in-95">
-            <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center border-2 border-emerald-500/40 shadow-lg">
-              <CheckCircle2 className="w-10 h-10" />
+          /* Success Screen */
+          <div className="p-6 sm:p-8 flex-1 overflow-y-auto min-h-0 text-center space-y-4 animate-in zoom-in-95 duration-200">
+            <div className="w-14 h-14 mx-auto rounded-3xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center shadow-lg">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
 
             <div>
-              <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-bold uppercase tracking-widest border border-amber-500/30">
-                Status: Pending Admin Review
-              </span>
-              <h3 className="text-2xl font-black text-white mt-2">Application Submitted!</h3>
-              <p className="text-xs text-emerald-300/80 max-w-md mx-auto mt-1">
-                Your child's admission application has been registered successfully.
+              <h3 className="text-lg font-black text-slate-900 dark:text-white">
+                Application Received Successfully!
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-emerald-300/80 mt-1">
+                Your admission application has been registered with Markazu Umar.
               </p>
             </div>
 
@@ -238,9 +231,9 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
           </div>
         ) : (
           /* Multi-Step Application Wizard */
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col justify-between overflow-hidden pt-2">
+          <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
             {/* Step Indicator (Fixed Top) */}
-            <div className="shrink-0 flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/40 pb-2.5">
+            <div className="shrink-0 px-5 sm:px-6 py-3 flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/40 bg-slate-50 dark:bg-[#021810]">
               {[
                 { step: 1, label: 'Student Info' },
                 { step: 2, label: 'Parent Info' },
@@ -276,7 +269,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
             </div>
 
             {/* Scrollable Form Body Container */}
-            <div className="flex-1 overflow-y-auto max-h-[50vh] pr-1.5 py-3 space-y-3">
+            <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
               {/* Step 1: Student Information */}
               {currentStep === 1 && (
               <div className="space-y-3 animate-in fade-in duration-150">

@@ -92,95 +92,100 @@ export default function AnnouncementsPage() {
 
       {/* Publish Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#032417] border border-emerald-500/40 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl text-white">
-            <div className="flex items-center justify-between border-b border-emerald-800/60 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-[#032417] border border-emerald-500/40 rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-white text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-emerald-800/60 flex items-center justify-between">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5 text-emerald-400" /> Publish New Notice
               </h3>
               <button onClick={() => setShowModal(false)} className="text-emerald-400 hover:text-white">✕</button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3 text-xs">
-              <div>
-                <label className="block text-emerald-300 font-semibold mb-1">Title</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ramadan School Hours Notice"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2.5 text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            {/* Body (Scrollable) */}
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
                 <div>
-                  <label className="block text-emerald-300 font-semibold mb-1">Category</label>
+                  <label className="block text-emerald-300 font-semibold mb-1">Title</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ramadan School Hours Notice"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2.5 text-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-emerald-300 font-semibold mb-1">Category</label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value as any)}
+                      className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2 text-white"
+                    >
+                      <option value="GENERAL">General</option>
+                      <option value="TAHFIZ">Tahfiz</option>
+                      <option value="ACADEMIC">Academic</option>
+                      <option value="URGENT">Urgent</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-emerald-300 font-semibold mb-1">Target Audience</label>
+                    <select
+                      value={targetRole}
+                      onChange={(e) => setTargetRole(e.target.value as any)}
+                      className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2 text-white"
+                    >
+                      <option value="ALL">All Users</option>
+                      <option value="PARENTS">Parents Only</option>
+                      <option value="TEACHERS">Teachers Only</option>
+                      <option value="STUDENTS">Students Only</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-emerald-300 font-semibold mb-1">Target Programme</label>
                   <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as any)}
-                    className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2 text-white"
+                    value={targetProgrammeId}
+                    onChange={(e) => setTargetProgrammeId(e.target.value)}
+                    className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2 text-white font-bold"
                   >
-                    <option value="GENERAL">General</option>
-                    <option value="TAHFIZ">Tahfiz</option>
-                    <option value="ACADEMIC">Academic</option>
-                    <option value="URGENT">Urgent</option>
+                    <option value="ALL">All Programmes (School-wide)</option>
+                    {programmes.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.programme_name} ({p.programme_code})
+                      </option>
+                    ))}
                   </select>
                 </div>
+
                 <div>
-                  <label className="block text-emerald-300 font-semibold mb-1">Target Audience</label>
-                  <select
-                    value={targetRole}
-                    onChange={(e) => setTargetRole(e.target.value as any)}
-                    className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2 text-white"
-                  >
-                    <option value="ALL">All Users</option>
-                    <option value="PARENTS">Parents Only</option>
-                    <option value="TEACHERS">Teachers Only</option>
-                    <option value="STUDENTS">Students Only</option>
-                  </select>
+                  <label className="block text-emerald-300 font-semibold mb-1">Notice Body / Message</label>
+                  <textarea
+                    rows={4}
+                    required
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
+                    className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2.5 text-white"
+                  />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-emerald-300 font-semibold mb-1">Target Programme</label>
-                <select
-                  value={targetProgrammeId}
-                  onChange={(e) => setTargetProgrammeId(e.target.value)}
-                  className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2 text-white font-bold"
-                >
-                  <option value="ALL">All Programmes (School-wide)</option>
-                  {programmes.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.programme_name} ({p.programme_code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-emerald-300 font-semibold mb-1">Notice Body / Message</label>
-                <textarea
-                  rows={4}
-                  required
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  className="w-full bg-emerald-950 border border-emerald-700 rounded-xl p-2.5 text-white"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-emerald-800/60">
+              {/* Footer (Fixed) */}
+              <div className="shrink-0 p-4 sm:p-5 border-t border-emerald-800/60 flex items-center justify-end gap-2 bg-[#021810]">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-xl bg-emerald-900/60 text-emerald-300 hover:bg-emerald-800"
+                  className="px-4 py-2 rounded-xl bg-emerald-900/60 text-emerald-300 hover:bg-emerald-800 font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-bold shadow-md"
                 >
                   Publish Notice
                 </button>

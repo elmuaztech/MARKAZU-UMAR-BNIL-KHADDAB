@@ -67,6 +67,9 @@ export interface Student {
   guardianId: string;
   guardianName: string;
   guardianPhone: string;
+  parentName?: string;
+  parentPhone?: string;
+  parentEmail?: string;
   stateOfOrigin?: string;
   localGovtArea?: string;
   residentialAddress?: string;
@@ -106,8 +109,8 @@ export interface Parent {
   avatar?: string;
   occupation: string;
   address: string;
-  wardsCount: number;
-  wardIds: string[];
+  wardsCount?: number;
+  wardIds?: string[];
   linkedStudentIds?: string[];
   dateRegistered?: string;
   status?: 'ACTIVE' | 'INACTIVE';

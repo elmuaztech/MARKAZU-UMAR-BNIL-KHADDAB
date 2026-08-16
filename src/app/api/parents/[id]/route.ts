@@ -46,11 +46,27 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     const { id } = params;
+    const deletionTimestamp = new Date();
 
-    await prisma.parent.update({
+    const deletedParent = await prisma.parent.update({
       where: { id },
-      data: { deletedAt: new Date() },
+      data: { deletedAt: deletionTimestamp },
     });
+
+    if (deletedParent.userId) {
+      await prisma.user.updateMany({
+        where: { id: deletedParent.userId, deletedAt: null },
+        data: {
+          deletedAt: deletionTimestamp,
+          status: 'DEACTIVATED',
+        },
+      });
+
+      await prisma.userSession.updateMany({
+        where: { userId: deletedParent.userId },
+        data: { revoked: true },
+      });
+    }
 
     return NextResponse.json({
       message: 'Parent deleted successfully from database',

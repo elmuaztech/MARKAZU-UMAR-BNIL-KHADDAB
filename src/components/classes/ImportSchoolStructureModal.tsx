@@ -140,10 +140,10 @@ export function ImportSchoolStructureModal({
     });
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-poppins">
-      <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl w-full max-w-5xl shadow-2xl overflow-y-auto flex flex-col max-h-[88vh] scrollbar-thin scrollbar-thumb-emerald-600">
-        {/* Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 text-white flex items-center justify-between sticky top-0 z-10">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 font-poppins">
+      <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl w-full max-w-5xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+        {/* Header (Fixed) */}
+        <div className="shrink-0 p-5 sm:p-6 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center">
               <FileSpreadsheet className="w-6 h-6 text-emerald-300" />
@@ -171,7 +171,7 @@ export function ImportSchoolStructureModal({
 
         {/* STEP 1: FILE UPLOAD */}
         {step === 1 && (
-          <div className="p-6 sm:p-8 space-y-6">
+          <div className="flex-1 overflow-y-auto min-h-0 p-6 sm:p-8 space-y-6">
             <div className="rounded-3xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/30 p-5 space-y-2">
               <div className="flex items-center gap-2 font-black text-sm text-emerald-900 dark:text-emerald-300">
                 <Sparkles className="w-5 h-5 text-emerald-500" />

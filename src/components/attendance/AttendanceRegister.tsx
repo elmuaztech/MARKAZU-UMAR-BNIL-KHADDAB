@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   CheckCircle2,
   XCircle,
@@ -47,8 +47,8 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
   // Cascading Selection State
   const [selectedSession, setSelectedSession] = useState<string>(currentSession.sessionName);
   const [selectedTerm, setSelectedTerm] = useState<string>(currentSession.activeTerm);
-  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>('prog-02');
-  const [selectedClassId, setSelectedClassId] = useState<string>('cls-tahfiz-1');
+  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>('');
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [attendanceDate, setAttendanceDate] = useState<string>(new Date().toISOString().split('T')[0]);
 
   // Filtering & Search
@@ -60,24 +60,69 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
 
+  // Initialize selected programme dynamically
+  useEffect(() => {
+    if (programmes.length > 0 && !selectedProgrammeId) {
+      if (currentUser.role === 'HEADMASTER' && currentUser.assignedProgrammeId) {
+        setSelectedProgrammeId(currentUser.assignedProgrammeId);
+      } else {
+        setSelectedProgrammeId(programmes[0].id);
+      }
+    }
+  }, [programmes, currentUser, selectedProgrammeId]);
+
   // RBAC Access Check
   const hasAccess = useMemo(() => {
     return canTeacherAccessAttendance(currentUser, teacherAssignments, selectedProgrammeId, selectedClassId);
   }, [currentUser, teacherAssignments, selectedProgrammeId, selectedClassId]);
 
-  // Teacher Assigned Classes
+  // Available Classes based on role and selected programme
   const availableClasses = useMemo(() => {
     if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
       return classes.filter((c) => !selectedProgrammeId || c.programmeId === selectedProgrammeId);
     }
+    if (currentUser.role === 'HEADMASTER') {
+      const progId = currentUser.assignedProgrammeId || selectedProgrammeId;
+      return classes.filter((c) => !progId || c.programmeId === progId);
+    }
     const assignedClassIds = new Set(
       teacherAssignments
-        .filter((ta) => ta.teacherId === currentUser.id || currentUser.id.includes('teacher'))
+        .filter(
+          (ta) =>
+            ta.teacherId === currentUser.id ||
+            (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
+            (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase()) ||
+            currentUser.id.includes('teacher')
+        )
         .filter((ta) => !selectedProgrammeId || ta.programmeId === selectedProgrammeId)
         .map((ta) => ta.classId)
     );
+    classes.forEach((c) => {
+      if (c.classTeacherId === currentUser.id) {
+        if (!selectedProgrammeId || c.programmeId === selectedProgrammeId) {
+          assignedClassIds.add(c.id);
+        }
+      }
+    });
+
+    // If teacher has no explicit assignments or classes, fallback to show classes under programme
+    if (assignedClassIds.size === 0) {
+      return classes.filter((c) => !selectedProgrammeId || c.programmeId === selectedProgrammeId);
+    }
+
     return classes.filter((c) => assignedClassIds.has(c.id));
   }, [currentUser, teacherAssignments, classes, selectedProgrammeId]);
+
+  // Sync selectedClassId whenever availableClasses changes
+  useEffect(() => {
+    if (availableClasses.length > 0) {
+      if (!selectedClassId || !availableClasses.some((c) => c.id === selectedClassId)) {
+        setSelectedClassId(availableClasses[0].id);
+      }
+    } else {
+      setSelectedClassId('');
+    }
+  }, [availableClasses, selectedClassId]);
 
   // Class Students Roster
   const classStudents = useMemo(() => {
@@ -335,34 +380,47 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
             <select
               value={selectedProgrammeId}
               onChange={(e) => {
-                setSelectedProgrammeId(e.target.value);
-                const matched = classes.find((c) => c.programmeId === e.target.value);
-                if (matched) setSelectedClassId(matched.id);
+                const newPId = e.target.value;
+                setSelectedProgrammeId(newPId);
+                const matched = classes.filter((c) => !newPId || c.programmeId === newPId);
+                if (matched.length > 0) {
+                  setSelectedClassId(matched[0].id);
+                } else {
+                  setSelectedClassId('');
+                }
               }}
               className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
             >
-              {programmes.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.programme_name_english || p.programme_name}
-                </option>
-              ))}
+              {programmes.length === 0 ? (
+                <option value="">-- No Programmes Found --</option>
+              ) : (
+                programmes.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.programme_name_english || p.programme_name} ({p.programme_code})
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
           <div>
             <label className="block text-[11px] font-extrabold text-slate-500 dark:text-emerald-300/80 mb-1">
-              Assigned Class
+              Class Roster
             </label>
             <select
               value={selectedClassId}
               onChange={(e) => setSelectedClassId(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
             >
-              {availableClasses.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {availableClasses.length === 0 ? (
+                <option value="">-- No Classes in Programme --</option>
+              ) : (
+                availableClasses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} {c.section ? `(${c.section})` : ''}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
@@ -571,36 +629,42 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
       {/* Preview Summary Modal */}
       {isPreviewOpen && (
         <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl w-full max-w-2xl shadow-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-500/20 pb-4">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-500/20 p-5 shrink-0">
               <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <FileCheck className="w-5 h-5 text-emerald-500" />
                 Confirm Attendance Submission
               </h3>
-              <button onClick={() => setIsPreviewOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+              <button onClick={() => setIsPreviewOpen(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-emerald-950">
                 ✕
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-xs font-bold bg-slate-50 dark:bg-[#021810] p-4 rounded-2xl border border-slate-200 dark:border-emerald-500/20">
-              <div>Date: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{attendanceDate}</span></div>
-              <div>Class: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{classes.find((c) => c.id === selectedClassId)?.name}</span></div>
-              <div>Present: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{stats.present} / {stats.total}</span></div>
-              <div>Absent: <span className="text-rose-600 dark:text-rose-400 font-extrabold">{stats.absent}</span></div>
+            <div className="p-5 overflow-y-auto flex-1 space-y-4 text-xs font-poppins">
+              <div className="grid grid-cols-2 gap-4 bg-slate-50 dark:bg-[#021810] p-4 rounded-2xl border border-slate-200 dark:border-emerald-500/20">
+                <div>Date: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{attendanceDate}</span></div>
+                <div>Class: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{classes.find((c) => c.id === selectedClassId)?.name}</span></div>
+                <div>Present: <span className="text-emerald-600 dark:text-emerald-400 font-extrabold">{stats.present} / {stats.total}</span></div>
+                <div>Absent: <span className="text-rose-600 dark:text-rose-400 font-extrabold">{stats.absent}</span></div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="font-extrabold text-slate-700 dark:text-emerald-300">Roster Summary Breakdown:</div>
+                {attendancePayload.map((r) => (
+                  <div key={r.studentId} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-emerald-500/20 bg-slate-50/50 dark:bg-emerald-950/20">
+                    <div>
+                      <span className="font-bold text-slate-900 dark:text-white">{r.studentName}</span>
+                      {r.remarks && <span className="text-[11px] text-slate-500 dark:text-emerald-400/80 block italic">Remarks: {r.remarks}</span>}
+                    </div>
+                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${getStatusBadge(r.status)}`}>
+                      {r.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="max-h-60 overflow-y-auto space-y-2 text-xs">
-              {attendancePayload.map((r) => (
-                <div key={r.studentId} className="flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-emerald-500/20">
-                  <span className="font-bold text-slate-900 dark:text-white">{r.studentName}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${getStatusBadge(r.status)}`}>
-                    {r.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-200 dark:border-emerald-500/20 shrink-0 bg-slate-50/50 dark:bg-[#021810]">
               <button
                 onClick={() => setIsPreviewOpen(false)}
                 className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 font-bold text-xs"

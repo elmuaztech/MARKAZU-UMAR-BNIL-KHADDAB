@@ -147,10 +147,10 @@ export function ReportCardTemplateModal({ isOpen, onClose }: ReportCardTemplateM
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 font-poppins overflow-y-auto">
-      <div className="max-w-4xl w-full bg-white dark:bg-[#032015] border border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden my-6 flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 font-poppins">
+      <div className="max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#032015] border border-emerald-500/30 rounded-3xl shadow-2xl">
         {/* Header Bar */}
-        <div className="p-6 bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white flex items-center justify-between border-b border-emerald-500/30 shrink-0">
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white flex items-center justify-between border-b border-emerald-500/30 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-amber-300 shadow-md">
               <Sparkles className="w-6 h-6" />
@@ -225,10 +225,11 @@ export function ReportCardTemplateModal({ isOpen, onClose }: ReportCardTemplateM
         </div>
 
         {/* Modal Form Body */}
-        <form onSubmit={handleFormSave} className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
-          {/* TAB 1: HEADER TITLES & CONTENT */}
-          {activeTab === 'content' && (
-            <div className="space-y-5">
+        <form onSubmit={handleFormSave} className="flex-1 flex flex-col min-h-0 overflow-hidden text-xs">
+          <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-6">
+            {/* TAB 1: HEADER TITLES & CONTENT */}
+            {activeTab === 'content' && (
+              <div className="space-y-5">
               <div className="space-y-1">
                 <label className="font-bold text-slate-800 dark:text-emerald-200">
                   School Name in English (Header Title) *
@@ -576,20 +577,21 @@ export function ReportCardTemplateModal({ isOpen, onClose }: ReportCardTemplateM
               </div>
             </div>
           )}
+          </div>
 
-          {/* Action Bar Footer */}
-          <div className="pt-4 border-t border-slate-200 dark:border-emerald-800/40 flex items-center justify-between shrink-0">
+          {/* Action Bar Footer (Fixed) */}
+          <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-800/40 flex items-center justify-between bg-slate-50/50 dark:bg-[#021810]">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-3 rounded-2xl bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 font-bold text-xs hover:bg-slate-200 transition-all"
+              className="px-5 py-2.5 rounded-2xl bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 font-bold text-xs hover:bg-slate-300 transition-all"
             >
               Cancel
             </button>
 
             <button
               type="submit"
-              className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-black text-xs shadow-xl flex items-center gap-2 transition-all hover:scale-105"
+              className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-black text-xs shadow-xl flex items-center gap-2 transition-all hover:scale-105"
             >
               <Save className="w-4 h-4" />
               <span>Save Default Report Card Template & Signature</span>

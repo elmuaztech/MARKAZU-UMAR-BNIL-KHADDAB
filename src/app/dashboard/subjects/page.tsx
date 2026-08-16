@@ -324,13 +324,14 @@ export default function SubjectsPage() {
 
       {/* Add / Edit Subject Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md font-poppins">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md font-poppins">
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-lg rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-2xl p-6 space-y-5"
+            className="w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-2xl"
           >
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-500/20 pb-3">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 flex items-center justify-between border-b border-slate-200 dark:border-emerald-500/20">
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-emerald-500" />
                 {editingSubject ? 'Edit Subject Details' : 'Create New Academic Subject'}
@@ -338,115 +339,119 @@ export default function SubjectsPage() {
               <IconButton icon={<X className="w-4 h-4" />} onClick={() => setIsModalOpen(false)} />
             </div>
 
-            {errorMessage && (
-              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-                <span>{errorMessage}</span>
-              </div>
-            )}
+            {/* Body (Scrollable) */}
+            <form onSubmit={handleSaveSubject} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4 text-xs font-bold">
+                {errorMessage && (
+                  <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                    <span>{errorMessage}</span>
+                  </div>
+                )}
 
-            <form onSubmit={handleSaveSubject} className="space-y-4 text-xs font-bold">
-              <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-slate-600 dark:text-emerald-300">English Name *</label>
+                    <input
+                      type="text"
+                      required
+                      value={nameEnglish}
+                      onChange={(e) => setNameEnglish(e.target.value)}
+                      placeholder="e.g. Hadith Studies"
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-slate-600 dark:text-emerald-300">Arabic Name (Optional)</label>
+                    <input
+                      type="text"
+                      value={nameArabic}
+                      onChange={(e) => setNameArabic(e.target.value)}
+                      placeholder="دراسات الحديث"
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-arabic"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-slate-600 dark:text-emerald-300">Subject Code *</label>
+                    <input
+                      type="text"
+                      required
+                      value={code}
+                      onChange={(e) => setCode(e.target.value.toUpperCase())}
+                      placeholder="e.g. HDS101"
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-mono uppercase"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-slate-600 dark:text-emerald-300">Category</label>
+                    <select
+                      value={category}
+                      onChange={(e) => setCategory(e.target.value as 'TAHFIZ' | 'ISLAMIC' | 'GENERAL')}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    >
+                      <option value="TAHFIZ">TAHFIZ</option>
+                      <option value="ISLAMIC">ISLAMIC</option>
+                      <option value="GENERAL">GENERAL</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-slate-600 dark:text-emerald-300">Programme</label>
+                    <select
+                      value={programmeId}
+                      onChange={(e) => {
+                        setProgrammeId(e.target.value);
+                        setClassId('');
+                      }}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    >
+                      {!isHeadmaster && <option value="">-- Optional Programme --</option>}
+                      {userProgrammes.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.programme_name_english || p.programme_name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-slate-600 dark:text-emerald-300">Class</label>
+                    <select
+                      value={classId}
+                      onChange={(e) => setClassId(e.target.value)}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    >
+                      <option value="">-- Optional Specific Class --</option>
+                      {modalClasses.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
                 <div className="space-y-1">
-                  <label className="text-slate-600 dark:text-emerald-300">English Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={nameEnglish}
-                    onChange={(e) => setNameEnglish(e.target.value)}
-                    placeholder="e.g. Hadith Studies"
+                  <label className="text-slate-600 dark:text-emerald-300">Description</label>
+                  <textarea
+                    rows={2}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Curriculum summary and learning objectives..."
                     className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
                   />
                 </div>
-
-                <div className="space-y-1">
-                  <label className="text-slate-600 dark:text-emerald-300">Arabic Name (Optional)</label>
-                  <input
-                    type="text"
-                    value={nameArabic}
-                    onChange={(e) => setNameArabic(e.target.value)}
-                    placeholder="دراسات الحديث"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-arabic"
-                  />
-                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-slate-600 dark:text-emerald-300">Subject Code *</label>
-                  <input
-                    type="text"
-                    required
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. HDS101"
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-mono uppercase"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-slate-600 dark:text-emerald-300">Category</label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value as 'TAHFIZ' | 'ISLAMIC' | 'GENERAL')}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  >
-                    <option value="TAHFIZ">TAHFIZ</option>
-                    <option value="ISLAMIC">ISLAMIC</option>
-                    <option value="GENERAL">GENERAL</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-slate-600 dark:text-emerald-300">Programme</label>
-                  <select
-                    value={programmeId}
-                    onChange={(e) => {
-                      setProgrammeId(e.target.value);
-                      setClassId('');
-                    }}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  >
-                    {!isHeadmaster && <option value="">-- Optional Programme --</option>}
-                    {userProgrammes.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.programme_name_english || p.programme_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-slate-600 dark:text-emerald-300">Class</label>
-                  <select
-                    value={classId}
-                    onChange={(e) => setClassId(e.target.value)}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  >
-                    <option value="">-- Optional Specific Class --</option>
-                    {modalClasses.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-slate-600 dark:text-emerald-300">Description</label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Curriculum summary and learning objectives..."
-                  className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-emerald-500/20">
+              {/* Footer (Fixed) */}
+              <div className="shrink-0 p-4 sm:p-5 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-emerald-500/20 bg-slate-50/50 dark:bg-[#021810]">
                 <Button variant="ghost" onClick={() => setIsModalOpen(false)}>
                   Cancel
                 </Button>

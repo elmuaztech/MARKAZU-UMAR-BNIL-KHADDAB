@@ -9,13 +9,29 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const statusParam = searchParams.get('status');
+    const includeDeactivated = searchParams.get('includeDeactivated') === 'true';
+
+    let whereClause: any = { deletedAt: null, status: { not: 'DEACTIVATED' } };
+    if (statusParam === 'DEACTIVATED') {
+      whereClause = {
+        OR: [
+          { deletedAt: { not: null } },
+          { status: 'DEACTIVATED' },
+        ],
+      };
+    } else if (statusParam === 'ALL' || includeDeactivated) {
+      whereClause = {};
+    }
+
     let users: any[] = [];
     let querySuccess = false;
 
     // 1. Try PostgreSQL Prisma if connected
     try {
       users = await prisma.user.findMany({
-        where: { deletedAt: null },
+        where: whereClause,
         orderBy: { createdAt: 'desc' },
         select: {
           id: true,
@@ -32,6 +48,7 @@ export async function GET(req: NextRequest) {
           isLocked: true,
           lastLoginAt: true,
           createdAt: true,
+          deletedAt: true,
         },
       });
       querySuccess = true;
@@ -40,7 +57,14 @@ export async function GET(req: NextRequest) {
     }
 
     if (!querySuccess) {
-      users = getAllServerUsers();
+      const allServer = getAllServerUsers();
+      if (statusParam === 'DEACTIVATED') {
+        users = allServer.filter((u: any) => u.deletedAt || u.status === 'DEACTIVATED');
+      } else if (statusParam === 'ALL' || includeDeactivated) {
+        users = allServer;
+      } else {
+        users = allServer.filter((u: any) => !u.deletedAt && u.status !== 'DEACTIVATED');
+      }
     }
 
     return NextResponse.json({ users, total: users.length });
@@ -65,26 +89,54 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Full Name and Email address are required.' }, { status: 400 });
     }
 
-    // Duplicate Email Prevention: Reject creation if email already exists in system
-    let existingUser: any = null;
+    // Deactivated vs Active Duplicate Email Detection
+    let existingAnyUser: any = null;
     try {
-      existingUser = await prisma.user.findFirst({
+      existingAnyUser = await prisma.user.findFirst({
         where: {
           email: { equals: email, mode: 'insensitive' },
-          deletedAt: null,
+        },
+        include: {
+          student: true,
+          teacher: true,
+          parent: true,
         },
       });
     } catch (e) {}
 
-    if (!existingUser) {
-      existingUser = findServerUser(email);
+    if (!existingAnyUser) {
+      existingAnyUser = findServerUser(email);
     }
 
-    if (existingUser) {
-      return NextResponse.json(
-        { error: `An account with the email address "${email}" already exists in the system. Duplicate email addresses are not allowed.` },
-        { status: 400 }
-      );
+    if (existingAnyUser) {
+      const isDeactivated = existingAnyUser.deletedAt !== null || existingAnyUser.status === 'DEACTIVATED';
+      if (isDeactivated) {
+        return NextResponse.json(
+          {
+            isDeactivated: true,
+            error: 'This email belongs to a previously deactivated account.',
+            message: 'This email belongs to a previously deactivated account.',
+            deactivatedUser: {
+              id: existingAnyUser.id,
+              name: existingAnyUser.name,
+              username: existingAnyUser.username,
+              email: existingAnyUser.email,
+              role: existingAnyUser.role,
+              status: existingAnyUser.status,
+              deletedAt: existingAnyUser.deletedAt,
+              student: existingAnyUser.student ? { id: existingAnyUser.student.id, admissionNo: existingAnyUser.student.admissionNo } : null,
+              teacher: existingAnyUser.teacher ? { id: existingAnyUser.teacher.id, staffNo: existingAnyUser.teacher.staffNo } : null,
+              parent: existingAnyUser.parent ? { id: existingAnyUser.parent.id } : null,
+            },
+          },
+          { status: 409 }
+        );
+      } else {
+        return NextResponse.json(
+          { error: `An active account with the email address "${email}" already exists in the system. Duplicate email addresses are not allowed.` },
+          { status: 400 }
+        );
+      }
     }
 
     // Auto-generate Unique User ID / Username (e.g., MUBK-HM-0001, MUBK-TEA-0001)
@@ -131,27 +183,132 @@ export async function POST(req: NextRequest) {
       mustChangePassword: body.mustChangePassword ?? true,
     });
 
-    // 2. Also save to PostgreSQL database if available
+    // 2. Also save to PostgreSQL database if available with atomic profile creation
     let prismaUser: any = null;
     try {
-      prismaUser = await prisma.user.create({
-        data: {
-          username: generatedUsername,
-          name,
-          email,
-          password: passwordHash,
-          role: role as any,
-          phone,
-          avatar,
-          assignedProgrammeId: role === 'HEADMASTER' ? assignedProgrammeId : undefined,
-          assignedProgrammeName: role === 'HEADMASTER' ? assignedProgrammeName : undefined,
-          status: 'ACTIVE',
-          isFirstLogin: true,
-          mustChangePassword: true,
-        },
+      prismaUser = await prisma.$transaction(async (tx) => {
+        const newUser = await tx.user.create({
+          data: {
+            username: generatedUsername,
+            name,
+            email,
+            password: passwordHash,
+            role: role as any,
+            phone,
+            avatar,
+            assignedProgrammeId: role === 'HEADMASTER' ? assignedProgrammeId : undefined,
+            assignedProgrammeName: role === 'HEADMASTER' ? assignedProgrammeName : undefined,
+            status: 'ACTIVE',
+            isFirstLogin: true,
+            mustChangePassword: true,
+          },
+        });
+
+        if (role === 'TEACHER') {
+          const existingTeacher = await tx.teacher.findFirst({
+            where: {
+              OR: [
+                { userId: newUser.id },
+                { email: newUser.email },
+                { staffNo: generatedUsername },
+              ],
+            },
+          });
+          if (!existingTeacher) {
+            await tx.teacher.create({
+              data: {
+                userId: newUser.id,
+                staffNo: generatedUsername,
+                fullName: name,
+                email: newUser.email,
+                phone: phone || '',
+                qualification: body.qualification || 'Degree / Higher Qualification',
+                specialization: body.specialization || 'General Studies',
+                status: 'ACTIVE',
+              },
+            });
+          }
+        } else if (role === 'STUDENT') {
+          const existingStudent = await tx.student.findFirst({
+            where: {
+              OR: [
+                { userId: newUser.id },
+                { admissionNo: generatedUsername },
+              ],
+            },
+          });
+          if (!existingStudent) {
+            let targetClass = body.classId ? await tx.schoolClass.findUnique({ where: { id: body.classId } }) : null;
+            if (!targetClass) {
+              targetClass = await tx.schoolClass.findFirst();
+            }
+            if (!targetClass) {
+              targetClass = await tx.schoolClass.create({
+                data: {
+                  name: 'Tahfiz Class A',
+                  category: 'TAHFIZ',
+                  section: 'Section A',
+                  capacity: 30,
+                },
+              });
+            }
+
+            let guardian = body.guardianId ? await tx.parent.findUnique({ where: { id: body.guardianId } }) : null;
+            if (!guardian) {
+              guardian = await tx.parent.findFirst();
+            }
+            if (!guardian) {
+              guardian = await tx.parent.create({
+                data: {
+                  fullName: 'School Guardian / Parent',
+                  email: `guardian.${Date.now()}@markazuumar.edu.ng`,
+                  phone: phone || '08000000000',
+                  occupation: 'Guardian',
+                  address: 'Kano, Nigeria',
+                },
+              });
+            }
+
+            await tx.student.create({
+              data: {
+                userId: newUser.id,
+                admissionNo: generatedUsername,
+                fullName: name,
+                gender: body.gender || 'MALE',
+                dob: body.dob ? new Date(body.dob) : new Date('2015-01-01'),
+                classId: targetClass.id,
+                guardianId: guardian.id,
+                status: 'ACTIVE',
+              },
+            });
+          }
+        } else if (role === 'PARENT') {
+          const existingParent = await tx.parent.findFirst({
+            where: {
+              OR: [
+                { userId: newUser.id },
+                { email: newUser.email },
+              ],
+            },
+          });
+          if (!existingParent) {
+            await tx.parent.create({
+              data: {
+                userId: newUser.id,
+                fullName: name,
+                email: newUser.email,
+                phone: phone || '',
+                occupation: body.occupation || 'Parent',
+                address: body.address || 'Kano, Nigeria',
+              },
+            });
+          }
+        }
+
+        return newUser;
       });
     } catch (dbErr) {
-      // Postgres offline, serverDb handles persistence
+      console.error('[CREATE_USER_PRISMA_ERROR]', dbErr);
     }
 
     const createdUser = prismaUser || serverUser || { id: generatedUsername, name, email, role };

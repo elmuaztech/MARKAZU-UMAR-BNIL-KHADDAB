@@ -146,10 +146,10 @@ export function WhatsAppBatchModal({
   }, [onClose]);
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto font-poppins">
-      <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl w-full max-w-4xl shadow-2xl overflow-y-auto flex flex-col max-h-[85vh] sm:max-h-[88vh] scrollbar-thin scrollbar-thumb-emerald-600">
-        {/* Header */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 text-white flex items-center justify-between sticky top-0 z-10">
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 font-poppins">
+      <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl w-full max-w-4xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+        {/* Header (Fixed) */}
+        <div className="shrink-0 p-5 sm:p-6 bg-gradient-to-r from-emerald-900 via-emerald-800 to-emerald-950 text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center">
               <MessageSquare className="w-6 h-6 text-emerald-300" />
@@ -173,8 +173,8 @@ export function WhatsAppBatchModal({
           </button>
         </div>
 
-        {/* Progress & Quick Batch Actions Bar */}
-        <div className="p-5 bg-slate-50 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 space-y-4">
+        {/* Progress & Quick Batch Actions Bar (Fixed) */}
+        <div className="shrink-0 p-5 bg-slate-50 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-xs font-bold text-slate-800 dark:text-emerald-100">
@@ -255,14 +255,14 @@ export function WhatsAppBatchModal({
 
         {/* Batch Success Toast */}
         {batchCompleted && (
-          <div className="px-6 py-3 bg-emerald-500/20 border-b border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-extrabold text-xs flex items-center gap-2">
+          <div className="shrink-0 px-6 py-3 bg-emerald-500/20 border-b border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-extrabold text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
             <span>🎉 Automated Batch Dispatch Complete! All {selectedPayloads.length} selected WhatsApp messages sent to parents.</span>
           </div>
         )}
 
         {/* Security & Strict Isolation Notice */}
-        <div className="px-6 py-3 bg-amber-500/10 border-b border-amber-500/20 text-amber-800 dark:text-amber-300 font-bold text-xs flex items-center gap-2">
+        <div className="shrink-0 px-6 py-3 bg-amber-500/10 border-b border-amber-500/20 text-amber-800 dark:text-amber-300 font-bold text-xs flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
           <span>
             Automated Parent Isolation Active: Each parent receives ONLY their own ward(s) report cards and tailored greeting. Select parents and click <strong>"Send All Selected"</strong> to launch batch sending automatically.
@@ -270,7 +270,7 @@ export function WhatsAppBatchModal({
         </div>
 
         {/* Payload Recipient Cards List */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto min-h-0 p-6 space-y-4">
           {filteredPayloads.length > 0 ? (
             filteredPayloads.map((payload, index) => {
               const isSent = !!sentStatusMap[payload.parentId];
@@ -283,40 +283,46 @@ export function WhatsAppBatchModal({
                   className={`p-5 rounded-2xl border transition-all flex items-start gap-4 ${
                     isSelectedNext
                       ? 'bg-emerald-500/10 border-emerald-500 dark:border-emerald-400 ring-2 ring-emerald-500/30'
-                      : isChecked
-                      ? 'bg-white dark:bg-[#042419] border-emerald-500/40 shadow-sm'
-                      : 'bg-slate-50 dark:bg-emerald-950/20 border-slate-200 dark:border-emerald-900/40 opacity-60'
+                      : isSent
+                      ? 'bg-emerald-500/5 border-emerald-500/30 dark:border-emerald-500/20'
+                      : 'bg-slate-50 dark:bg-[#021810] border-slate-200 dark:border-emerald-500/20'
                   }`}
                 >
-                  {/* Parent Checkbox Selector */}
-                  <button
+                  {/* Select Checkbox */}
+                  <div
                     onClick={() => toggleSelectParent(payload.parentId)}
-                    className="mt-1 p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-emerald-900/40 transition-colors"
+                    className="cursor-pointer pt-1"
                   >
                     {isChecked ? (
-                      <CheckSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                      <CheckSquare className="w-5 h-5 text-emerald-500" />
                     ) : (
                       <Square className="w-5 h-5 text-slate-400" />
                     )}
-                  </button>
+                  </div>
 
+                  {/* Body Info */}
                   <div className="flex-1 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div className="space-y-1.5 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="font-extrabold text-sm text-slate-900 dark:text-white">
                           {payload.parentName}
                         </span>
-                        <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-emerald-950 font-mono text-[10px] text-slate-600 dark:text-emerald-300">
-                          📱 {payload.parentPhone}
+                        <span className="px-2 py-0.5 rounded-full bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-400 font-mono text-[10px]">
+                          {payload.parentPhone}
                         </span>
                         {isSent && (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-extrabold flex items-center gap-1">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-extrabold text-[10px] flex items-center gap-1">
                             <CheckCircle2 className="w-3 h-3" /> Dispatched
+                          </span>
+                        )}
+                        {isSelectedNext && (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px]">
+                            Next Up
                           </span>
                         )}
                       </div>
 
-                      <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+                      <div className="text-xs text-slate-500 dark:text-emerald-300/80 font-semibold">
                         Assigned Ward(s): {payload.wardNames.join(', ')}
                       </div>
 
@@ -349,8 +355,8 @@ export function WhatsAppBatchModal({
           )}
         </div>
 
-        {/* Footer */}
-        <div className="p-5 bg-slate-50 dark:bg-[#021810] border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-between text-xs font-bold">
+        {/* Footer (Fixed) */}
+        <div className="shrink-0 p-5 bg-slate-50 dark:bg-[#021810] border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-between text-xs font-bold">
           <div className="text-slate-500 dark:text-emerald-300/70">
             Selected: {selectedPayloads.length} parent accounts ready for WhatsApp dispatch.
           </div>

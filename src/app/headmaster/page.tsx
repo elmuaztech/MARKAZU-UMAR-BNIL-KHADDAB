@@ -30,9 +30,14 @@ import Link from 'next/link';
 
 export default function HeadmasterPortalPage() {
   const router = useRouter();
-  const { currentUser, programmes, classes, students, teachers, attendance, grades } = useApp();
+  const { currentUser, users, programmes, classes, students, teachers, attendance, grades } = useApp();
+
+  const isAdmin = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN';
 
   const [activeTab, setActiveTab] = useState<'overview' | 'classes' | 'students' | 'teachers' | 'attendance'>('overview');
+  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>(
+    currentUser.role === 'HEADMASTER' ? (currentUser.assignedProgrammeId || programmes[0]?.id || '') : (programmes[0]?.id || 'ALL')
+  );
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('ALL');
 
   // Verify Role - Redirect if not Headmaster or Admin
@@ -42,18 +47,39 @@ export default function HeadmasterPortalPage() {
     }
   }, [currentUser, router]);
 
-  const assignedProgId = currentUser.assignedProgrammeId || (programmes[0]?.id ?? '');
-  const currentProgramme = programmes.find((p) => p.id === assignedProgId) || programmes[0];
-  const assignedProgName = currentUser.assignedProgrammeName || currentProgramme?.programme_name_english || currentProgramme?.programme_name || 'Programme';
+  // Determine current active programme based on role and selection
+  const isGlobalScope = isAdmin && selectedProgrammeId === 'ALL';
+  const currentProgramme = isGlobalScope
+    ? null
+    : programmes.find((p) => p.id === selectedProgrammeId) || (currentUser.role === 'HEADMASTER' ? programmes.find((p) => p.id === currentUser.assignedProgrammeId) : programmes[0]);
 
-  // Raw Data Scoped to Headmaster's Parent Programme
-  const rawClasses = assignedProgId ? classes.filter((c) => c.programmeId === assignedProgId) : classes;
-  const rawStudents = assignedProgId ? students.filter((s) => s.programmeId === assignedProgId) : students;
-  const rawTeachers = teachers.filter(
-    (t) =>
-      (assignedProgId && t.programmeIds && t.programmeIds.includes(assignedProgId)) ||
-      rawClasses.some((c) => c.classTeacherId === t.id || (c.assignedTeacherIds && c.assignedTeacherIds.includes(t.id)))
-  );
+  const activeProgName = isGlobalScope
+    ? 'All School Programmes (Global Scope)'
+    : currentProgramme?.programme_name_english || currentProgramme?.programme_name || 'Academic Programme';
+
+  // Scoped Data based on selected Programme (or all if Global Scope)
+  const rawClasses = isGlobalScope
+    ? classes
+    : currentProgramme
+    ? classes.filter((c) => c.programmeId === currentProgramme.id)
+    : classes;
+
+  const rawStudents = isGlobalScope
+    ? students
+    : currentProgramme
+    ? students.filter((s) => s.programmeId === currentProgramme.id || rawClasses.some((c) => c.id === s.classId))
+    : students;
+
+  const rawTeachers = isGlobalScope
+    ? teachers
+    : currentProgramme
+    ? teachers.filter(
+        (t) =>
+          (t.programmeIds && t.programmeIds.includes(currentProgramme.id)) ||
+          rawClasses.some((c) => c.classTeacherId === t.id || (c.assignedTeacherIds && c.assignedTeacherIds.includes(t.id)))
+      )
+    : teachers;
+
   const rawAttendance = attendance.filter((a) => rawStudents.some((s) => s.id === a.studentId));
 
   // Available Subcategories for current Programme
@@ -82,6 +108,24 @@ export default function HeadmasterPortalPage() {
 
   const sectionAttendance = rawAttendance.filter((a) => sectionStudents.some((s) => s.id === a.studentId));
 
+  // Real attendance rate calculated strictly from PostgreSQL attendance records (0% if no records)
+  const totalSectionAttendance = sectionAttendance.length;
+  const presentSectionCount = sectionAttendance.filter((a) => a.status === 'PRESENT').length;
+  const avgAttendancePercentage =
+    totalSectionAttendance > 0
+      ? `${((presentSectionCount / totalSectionAttendance) * 100).toFixed(1)}%`
+      : '0%';
+
+  // Managing officer resolution
+  const assignedHeadmaster = users.find(
+    (u) => u.role === 'HEADMASTER' && currentProgramme && u.assignedProgrammeId === currentProgramme.id
+  );
+  const managingOfficerDisplay = currentUser.role === 'HEADMASTER'
+    ? `${currentUser.name} (${currentUser.email})`
+    : assignedHeadmaster
+    ? `${assignedHeadmaster.name} (${assignedHeadmaster.email})`
+    : 'Global Administration (Admin Oversight)';
+
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
@@ -92,14 +136,73 @@ export default function HeadmasterPortalPage() {
         <Header mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
         <main className="flex-1 p-4 sm:p-6 md:p-8 space-y-6">
+          {/* Super Admin & Admin Dynamic Programme Switcher */}
+          {isAdmin && (
+            <div className="p-4 rounded-3xl bg-white dark:bg-[#042419] border border-amber-500/40 shadow-sm space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-amber-500" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-emerald-200">
+                    Admin Programme Switcher (School-Wide Access):
+                  </span>
+                </div>
+                <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                  {programmes.length} Programmes in Database
+                </span>
+              </div>
+
+              {programmes.length === 0 ? (
+                <div className="text-xs text-slate-500 dark:text-emerald-300/70 italic py-2">
+                  No programmes configured yet.
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                  <button
+                    onClick={() => {
+                      setSelectedProgrammeId('ALL');
+                      setSelectedSubcategory('ALL');
+                    }}
+                    className={`px-4 py-2 rounded-2xl text-xs transition-all shrink-0 flex items-center gap-1.5 ${
+                      selectedProgrammeId === 'ALL'
+                        ? 'bg-amber-500 text-slate-950 shadow-md scale-105 font-black'
+                        : 'bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 hover:bg-slate-200 font-bold'
+                    }`}
+                  >
+                    <span>All Programmes (Global View)</span>
+                  </button>
+
+                  {programmes.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => {
+                        setSelectedProgrammeId(p.id);
+                        setSelectedSubcategory('ALL');
+                      }}
+                      className={`px-4 py-2 rounded-2xl text-xs transition-all shrink-0 flex items-center gap-1.5 ${
+                        selectedProgrammeId === p.id
+                          ? 'bg-emerald-600 text-white shadow-md scale-105 font-black'
+                          : 'bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 hover:bg-slate-200 font-bold'
+                      }`}
+                    >
+                      <span>{p.programme_name_english || p.programme_name}</span>
+                      <span className="text-[10px] opacity-75 font-mono">({p.programme_code})</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Main Programme Header Banner */}
           <div className="p-6 rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border border-emerald-500/40">
             <div className="space-y-1.5 z-10">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge className="bg-amber-400 text-emerald-950 font-black px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider flex items-center gap-1">
-                  <Crown className="w-3 h-3 text-emerald-950" /> Headmaster Portal
+                  <Crown className="w-3 h-3 text-emerald-950" /> {isAdmin ? 'Global Administrator Portal' : 'Headmaster Portal'}
                 </Badge>
-                <span className="text-xs text-emerald-200 font-semibold">{currentProgramme?.programme_name_arabic || ''}</span>
+                {currentProgramme?.programme_name_arabic && (
+                  <span className="text-xs text-emerald-200 font-semibold">{currentProgramme.programme_name_arabic}</span>
+                )}
                 {currentProgramme?.hasSubcategories && (
                   <span className="bg-emerald-500/30 text-emerald-200 font-bold px-2 py-0.5 rounded-full text-[10px] border border-emerald-400/40">
                     {availableSubcategories.length} Subcategories Stream
@@ -107,10 +210,10 @@ export default function HeadmasterPortalPage() {
                 )}
               </div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight uppercase">
-                {assignedProgName} Programme
+                {activeProgName}
               </h1>
               <p className="text-xs text-emerald-100/90 max-w-xl">
-                Managing Officer: <span className="font-bold text-white">{currentUser.name}</span> ({currentUser.email})
+                Managing Officer: <span className="font-bold text-white">{managingOfficerDisplay}</span>
               </p>
             </div>
 
@@ -226,8 +329,8 @@ export default function HeadmasterPortalPage() {
             />
             <StatCard
               title="Average Attendance"
-              value="95.4%"
-              subtitle="Current term average"
+              value={avgAttendancePercentage}
+              subtitle={totalSectionAttendance > 0 ? `${presentSectionCount} present of ${totalSectionAttendance} marks` : 'No attendance recorded yet'}
               icon={<CalendarCheck className="w-5 h-5 text-purple-500" />}
               variant="purple"
             />
@@ -293,34 +396,38 @@ export default function HeadmasterPortalPage() {
 
                 <div className="space-y-2">
                   <h2 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
-                    <span>{assignedProgName}</span>
+                    <span>{activeProgName}</span>
                     <span className="text-base text-emerald-600 dark:text-emerald-400 font-normal">
                       {currentProgramme?.programme_name_arabic}
                     </span>
                   </h2>
                   <p className="text-xs text-slate-600 dark:text-gray-300">
-                    {currentProgramme?.description || 'Morning & Evening Quranic Memorization & Islamic Studies Program'}
+                    {currentProgramme?.description || 'Markazu Umar Quranic Memorization & Islamic Studies Academic Programme'}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
                   <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#062c1e] border border-emerald-500/10">
                     <p className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold uppercase">Programme Code</p>
-                    <p className="text-sm font-bold text-slate-900 dark:text-white">{currentProgramme?.programme_code || 'PRG'}</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">{currentProgramme?.programme_code || (isGlobalScope ? 'GLOBAL' : 'PRG')}</p>
                   </div>
                   <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#062c1e] border border-emerald-500/10">
                     <p className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold uppercase">Subcategories</p>
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {availableSubcategories.map((sub) => (
-                        <span key={sub} className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
-                          {sub}
-                        </span>
-                      ))}
+                      {availableSubcategories.length > 0 ? (
+                        availableSubcategories.map((sub) => (
+                          <span key={sub} className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                            {sub}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-[10px] text-slate-400">Direct Classes</span>
+                      )}
                     </div>
                   </div>
                   <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#062c1e] border border-emerald-500/10">
-                    <p className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold uppercase">Programme Headmaster</p>
-                    <p className="text-xs font-bold text-slate-900 dark:text-white">{currentUser.name}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold uppercase">Managing Officer</p>
+                    <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{managingOfficerDisplay}</p>
                   </div>
                 </div>
               </div>
@@ -415,7 +522,7 @@ export default function HeadmasterPortalPage() {
             <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-emerald-200 dark:border-emerald-800/40 space-y-4 shadow-sm overflow-x-auto">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold uppercase tracking-wider text-xs text-emerald-600 dark:text-emerald-400">
-                  Enrolled Students ({selectedSubcategory === 'ALL' ? assignedProgName : `${assignedProgName} — ${selectedSubcategory}`})
+                  Enrolled Students ({selectedSubcategory === 'ALL' ? activeProgName : `${activeProgName} — ${selectedSubcategory}`})
                 </h3>
                 <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
                   {sectionStudents.length} Students

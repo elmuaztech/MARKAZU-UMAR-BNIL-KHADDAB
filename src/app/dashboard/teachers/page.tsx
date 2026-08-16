@@ -751,163 +751,176 @@ export default function TeachersPage() {
 
       {/* Add Teacher Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <UserCheck className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-2xl text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add New Teacher / Ustaz</h3>
+                  <p className="text-xs text-slate-500 dark:text-emerald-300/70">Register a new faculty member profile</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add New Teacher / Ustaz</h3>
-                <p className="text-xs text-slate-500 dark:text-emerald-300/70">Register a new faculty member profile</p>
-              </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Staff ID Number</label>
-                  <input
-                    type="text"
-                    required
-                    value={staffNo}
-                    onChange={(e) => setStaffNo(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-mono"
-                  />
+            {/* Body (Scrolls Independently) */}
+            <form onSubmit={handleAddSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Staff ID Number</label>
+                    <input
+                      type="text"
+                      required
+                      value={staffNo}
+                      onChange={(e) => setStaffNo(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Full Name (English)</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Abdullahi Sulaiman"
+                      value={fullNameEnglish}
+                      onChange={(e) => setFullNameEnglish(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Full Name (Arabic)</label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      placeholder="مثال: عبدالله سليمان"
+                      value={fullNameArabic}
+                      onChange={(e) => setFullNameArabic(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Full Name (English)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Abdullahi Sulaiman"
-                    value={fullNameEnglish}
-                    onChange={(e) => setFullNameEnglish(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Full Name (Arabic)</label>
-                  <input
-                    type="text"
-                    dir="rtl"
-                    placeholder="مثال: عبدالله سليمان"
-                    value={fullNameArabic}
-                    onChange={(e) => setFullNameArabic(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="ustaz@markazuumar.edu.ng"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Phone Number</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="+234 803 111 2222"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Programme Selection Cascade */}
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="ustaz@markazuumar.edu.ng"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Phone Number</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="+234 803 111 2222"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-
-
-              {/* Programme Selection Cascade */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">
-                  Step 1: Select Programme(s) <span className="text-amber-500 font-normal">(Admin Assignment)</span>
-                </label>
-                <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30">
-                  {programmes.map((p) => {
-                    const isSelected = selectedProgrammes.includes(p.id);
-                    return (
-                      <button
-                        type="button"
-                        key={p.id}
-                        onClick={() => toggleArrayItem(p.id, selectedProgrammes, setSelectedProgrammes)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold font-poppins transition-all ${
-                          isSelected
-                            ? 'bg-amber-500 text-slate-950 shadow'
-                            : 'bg-slate-200 dark:bg-emerald-950/80 text-slate-700 dark:text-emerald-300'
-                        }`}
-                      >
-                        {p.programme_name} ({p.programme_code})
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Class Selection Cascade */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">
-                  Step 2: Assign Class(es) Under Selected Programme(s)
-                </label>
-                <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-28 overflow-y-auto">
-                  {classes
-                    .filter((c) => selectedProgrammes.length === 0 || selectedProgrammes.includes(c.programmeId))
-                    .map((c) => {
-                      const isSelected = selectedClasses.includes(c.id) || selectedClasses.includes(c.name);
+                  <label className="font-bold text-slate-700 dark:text-gray-300">
+                    Step 1: Select Programme(s) <span className="text-amber-500 font-normal">(Admin Assignment)</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30">
+                    {programmes.map((p) => {
+                      const isSelected = selectedProgrammes.includes(p.id);
                       return (
                         <button
                           type="button"
-                          key={c.id}
-                          onClick={() => toggleArrayItem(c.id, selectedClasses, setSelectedClasses)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold font-poppins transition-all flex items-center gap-1 ${
+                          key={p.id}
+                          onClick={() => toggleArrayItem(p.id, selectedProgrammes, setSelectedProgrammes)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold font-poppins transition-all ${
                             isSelected
-                              ? 'bg-emerald-600 text-white shadow'
-                              : 'bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300'
+                              ? 'bg-amber-500 text-slate-950 shadow'
+                              : 'bg-slate-200 dark:bg-emerald-950/80 text-slate-700 dark:text-emerald-300'
                           }`}
                         >
-                          <span>{c.name}</span>
-                          <span className="text-[9px] opacity-75 font-mono">({c.programmeName || 'General'})</span>
+                          {p.programme_name} ({p.programme_code})
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* Class Selection Cascade */}
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">
+                    Step 2: Assign Class(es) Under Selected Programme(s)
+                  </label>
+                  <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-28 overflow-y-auto">
+                    {classes
+                      .filter((c) => selectedProgrammes.length === 0 || selectedProgrammes.includes(c.programmeId))
+                      .map((c) => {
+                        const isSelected = selectedClasses.includes(c.id) || selectedClasses.includes(c.name);
+                        return (
+                          <button
+                            type="button"
+                            key={c.id}
+                            onClick={() => toggleArrayItem(c.id, selectedClasses, setSelectedClasses)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold font-poppins transition-all flex items-center gap-1 ${
+                              isSelected
+                                ? 'bg-emerald-600 text-white shadow'
+                                : 'bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300'
+                            }`}
+                          >
+                            <span>{c.name}</span>
+                            <span className="text-[9px] opacity-75 font-mono">({c.programmeName || 'General'})</span>
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+
+                {/* Initial Temporary Password */}
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">
+                    Initial Password <span className="text-slate-400 font-normal">(Optional: auto-generated if left blank)</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. TempPass@2026 (Leave empty for random temp pass)"
+                    value={customPassword}
+                    onChange={(e) => setCustomPassword(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-mono"
+                  />
                 </div>
               </div>
 
-              {/* Initial Temporary Password */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">
-                  Initial Password <span className="text-slate-400 font-normal">(Optional: auto-generated if left blank)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. TempPass@2026 (Leave empty for random temp pass)"
-                  value={customPassword}
-                  onChange={(e) => setCustomPassword(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-mono"
-                />
+              {/* Footer (Fixed) */}
+              <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-[#021810]">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-emerald-900/60 text-slate-700 dark:text-emerald-300 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md uppercase tracking-wider font-poppins"
+                >
+                  Save & Register Faculty Profile
+                </button>
               </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all uppercase tracking-wider mt-2 font-poppins"
-              >
-                Save & Register Faculty Profile
-              </button>
             </form>
           </div>
         </div>
@@ -1112,136 +1125,140 @@ export default function TeachersPage() {
 
       {/* Edit Teacher Modal */}
       {editingTeacher && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-2xl w-full max-h-[85vh] overflow-y-auto bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
-            <button
-              onClick={() => setEditingTeacher(null)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <Edit className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-2xl text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Edit className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Faculty Profile</h3>
+                  <p className="text-xs text-slate-500 dark:text-emerald-300/70">Modify teacher record, assignments, and credentials</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Teacher Details</h3>
-                <p className="text-xs text-slate-500 dark:text-emerald-300/70">Updating profile for {editingTeacher.fullName}</p>
-              </div>
+              <button
+                onClick={() => setEditingTeacher(null)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="space-y-3 font-poppins">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Staff ID Number</label>
-                  <input
-                    type="text"
-                    required
-                    value={editStaffNo}
-                    onChange={(e) => setEditStaffNo(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-mono"
-                  />
+            {/* Body (Scrolls Independently) */}
+            <form onSubmit={handleEditSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Staff ID Number</label>
+                    <input
+                      type="text"
+                      required
+                      value={editStaffNo}
+                      onChange={(e) => setEditStaffNo(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-mono"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Full Name (English)</label>
+                    <input
+                      type="text"
+                      required
+                      value={editFullNameEnglish}
+                      onChange={(e) => setEditFullNameEnglish(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Full Name (Arabic)</label>
+                    <input
+                      type="text"
+                      dir="rtl"
+                      value={editFullNameArabic}
+                      onChange={(e) => setEditFullNameArabic(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Full Name (English)</label>
-                  <input
-                    type="text"
-                    required
-                    value={editFullNameEnglish}
-                    onChange={(e) => setEditFullNameEnglish(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Full Name (Arabic)</label>
-                  <input
-                    type="text"
-                    dir="rtl"
-                    value={editFullNameArabic}
-                    onChange={(e) => setEditFullNameArabic(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Phone Number</label>
+                    <input
+                      type="text"
+                      required
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Edit Programme Selection Cascade */}
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Phone Number</label>
-                  <input
-                    type="text"
-                    required
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-
-
-              {/* Edit Programme Selection Cascade */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Step 1: Select Programme(s)</label>
-                <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30">
-                  {programmes.map((p) => {
-                    const isSelected = editSelectedProgrammes.includes(p.id);
-                    return (
-                      <button
-                        type="button"
-                        key={p.id}
-                        onClick={() => toggleArrayItem(p.id, editSelectedProgrammes, setEditSelectedProgrammes)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                          isSelected
-                            ? 'bg-amber-500 text-slate-950 shadow'
-                            : 'bg-slate-200 dark:bg-emerald-950/80 text-slate-700 dark:text-emerald-300'
-                        }`}
-                      >
-                        {p.programme_name} ({p.programme_code})
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Edit Class Selection Cascade */}
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Step 2: Assign Class(es)</label>
-                <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-36 overflow-y-auto">
-                  {classes
-                    .filter((c) => editSelectedProgrammes.length === 0 || editSelectedProgrammes.includes(c.programmeId))
-                    .map((c) => {
-                      const isSelected = editSelectedClasses.includes(c.id) || editSelectedClasses.includes(c.name);
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Step 1: Select Programme(s)</label>
+                  <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30">
+                    {programmes.map((p) => {
+                      const isSelected = editSelectedProgrammes.includes(p.id);
                       return (
                         <button
                           type="button"
-                          key={c.id}
-                          onClick={() => toggleArrayItem(c.id, editSelectedClasses, setEditSelectedClasses)}
-                          className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 ${
+                          key={p.id}
+                          onClick={() => toggleArrayItem(p.id, editSelectedProgrammes, setEditSelectedProgrammes)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                             isSelected
-                              ? 'bg-emerald-600 text-white shadow'
-                              : 'bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300'
+                              ? 'bg-amber-500 text-slate-950 shadow'
+                              : 'bg-slate-200 dark:bg-emerald-950/80 text-slate-700 dark:text-emerald-300'
                           }`}
                         >
-                          <span>{c.name}</span>
-                          <span className="text-[9px] opacity-75 font-mono">({c.programmeName || 'General'})</span>
+                          {p.programme_name} ({p.programme_code})
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+
+                {/* Edit Class Selection Cascade */}
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Step 2: Assign Class(es)</label>
+                  <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-36 overflow-y-auto">
+                    {classes
+                      .filter((c) => editSelectedProgrammes.length === 0 || editSelectedProgrammes.includes(c.programmeId))
+                      .map((c) => {
+                        const isSelected = editSelectedClasses.includes(c.id) || editSelectedClasses.includes(c.name);
+                        return (
+                          <button
+                            type="button"
+                            key={c.id}
+                            onClick={() => toggleArrayItem(c.id, editSelectedClasses, setEditSelectedClasses)}
+                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 ${
+                              isSelected
+                                ? 'bg-emerald-600 text-white shadow'
+                                : 'bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300'
+                            }`}
+                          >
+                            <span>{c.name}</span>
+                            <span className="text-[9px] opacity-75 font-mono">({c.programmeName || 'General'})</span>
+                          </button>
+                        );
+                      })}
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-emerald-500/20">
+              {/* Footer (Fixed) */}
+              <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 flex justify-end gap-2 bg-slate-50/50 dark:bg-[#021810]">
                 <button
                   type="button"
                   onClick={() => setEditingTeacher(null)}

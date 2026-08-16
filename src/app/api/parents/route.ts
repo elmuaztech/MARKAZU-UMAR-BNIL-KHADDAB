@@ -43,27 +43,83 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
+    const email = (body.email || `parent.${Date.now()}@markazuumar.edu.ng`).toLowerCase().trim();
+    const phone = (body.phone || '08000000000').trim();
+    const fullName = (body.fullName || 'Parent Guardian').trim();
 
-    if (!body.fullName || !body.email || !body.phone) {
-      return NextResponse.json({ error: 'Full Name, Email, and Phone are required.' }, { status: 400 });
+    // Check if Parent or User record already exists (Active or Deactivated)
+    let existingAnyUser = await prisma.user.findFirst({
+      where: {
+        email: email,
+      },
+      include: {
+        parent: true,
+      },
+    });
+
+    if (existingAnyUser) {
+      const isDeactivated = existingAnyUser.deletedAt !== null || existingAnyUser.status === 'DEACTIVATED';
+      if (isDeactivated) {
+        return NextResponse.json(
+          {
+            isDeactivated: true,
+            error: 'This email belongs to a previously deactivated account.',
+            message: 'This email belongs to a previously deactivated account.',
+            deactivatedUser: {
+              id: existingAnyUser.id,
+              name: existingAnyUser.name,
+              username: existingAnyUser.username,
+              email: existingAnyUser.email,
+              role: existingAnyUser.role,
+              status: existingAnyUser.status,
+              deletedAt: existingAnyUser.deletedAt,
+              parent: existingAnyUser.parent ? { id: existingAnyUser.parent.id } : null,
+            },
+          },
+          { status: 409 }
+        );
+      }
     }
 
-    const created = await prisma.parent.create({
-      data: {
-        id: body.id,
-        fullName: body.fullName,
-        email: body.email.toLowerCase().trim(),
-        phone: body.phone,
-        occupation: body.occupation || null,
-        address: body.address || null,
-        userId: body.userId || null,
-      },
+    let linkedUser = existingAnyUser && !existingAnyUser.deletedAt ? existingAnyUser : null;
+
+    const newParent = await prisma.$transaction(async (tx) => {
+      let targetUserId = linkedUser?.id || body.userId;
+
+      if (!targetUserId) {
+        const generatedUsername = body.username || `MUBK-PAR-${Date.now().toString().slice(-4)}`;
+        const passHash = body.passwordHash || '$2a$10$wT.L6G2cQkG6K1hK.zYy.O6qQ1.Q2.Q3.Q4';
+        const createdUser = await tx.user.create({
+          data: {
+            username: generatedUsername,
+            name: fullName,
+            email: email,
+            password: passHash,
+            role: 'PARENT',
+            phone: phone,
+            status: 'ACTIVE',
+          },
+        });
+        targetUserId = createdUser.id;
+      }
+
+      return await tx.parent.create({
+        data: {
+          id: body.id,
+          fullName: fullName,
+          email: email,
+          phone: phone,
+          occupation: body.occupation || 'Parent',
+          address: body.address || 'Kano, Nigeria',
+          userId: targetUserId,
+        },
+      });
     });
 
     return NextResponse.json(
       {
         message: 'Parent created successfully in database',
-        parent: created,
+        parent: newParent,
       },
       { status: 201 }
     );

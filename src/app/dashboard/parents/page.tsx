@@ -18,6 +18,7 @@ import {
   Trash2,
   Download,
   Baby,
+  UserPlus,
 } from 'lucide-react';
 import { Parent } from '../../../types';
 import { filterStudentsForUser, filterParentsForUser } from '../../../lib/rbac';
@@ -385,92 +386,107 @@ export default function ParentsPage() {
 
       {/* Add Parent Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative">
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <HeartHandshake className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-2xl text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <UserPlus className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Register Parent / Guardian</h3>
+                  <p className="text-xs text-slate-500 dark:text-emerald-300/70">Create a new parent profile for linking children</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Register Parent / Guardian</h3>
-                <p className="text-xs text-slate-500 dark:text-emerald-300/70">Create a new parent profile for linking children</p>
-              </div>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleAddParentSubmit} className="space-y-3 text-xs">
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Alhaji Ibrahim Danbatta"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Body (Scrollable) */}
+            <form onSubmit={handleAddParentSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="parent@example.com"
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Phone Number</label>
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Full Name</label>
                   <input
                     type="text"
                     required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+234 803 000 0000"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="e.g. Alhaji Ibrahim Danbatta"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="parent@example.com"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Phone Number</label>
+                    <input
+                      type="text"
+                      required
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+234 803 000 0000"
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Occupation</label>
+                  <input
+                    type="text"
+                    value={occupation}
+                    onChange={(e) => setOccupation(e.target.value)}
+                    placeholder="e.g. Civil Servant, Businessman, Engineer"
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Residential Address</label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="e.g. No 14 Zoo Road, Kano State"
                     className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Occupation</label>
-                <input
-                  type="text"
-                  value={occupation}
-                  onChange={(e) => setOccupation(e.target.value)}
-                  placeholder="e.g. Civil Servant, Businessman, Engineer"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
+              {/* Footer (Fixed) */}
+              <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-[#021810]">
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-emerald-900/60 text-slate-700 dark:text-emerald-300 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md uppercase tracking-wider font-poppins"
+                >
+                  Register Parent Profile
+                </button>
               </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Residential Address</label>
-                <input
-                  type="text"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="e.g. No 14 Zoo Road, Kano State"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all uppercase tracking-wider"
-              >
-                Register Parent Profile
-              </button>
             </form>
           </div>
         </div>
@@ -478,82 +494,88 @@ export default function ParentsPage() {
 
       {/* Edit Parent Modal */}
       {editingParent && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
-            <button
-              onClick={() => setEditingParent(null)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-                <Edit className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-2xl text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                  <Edit className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Parent Details</h3>
+                  <p className="text-xs text-slate-500 dark:text-emerald-300/70">Updating profile for {editingParent.fullName}</p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Parent Details</h3>
-                <p className="text-xs text-slate-500 dark:text-emerald-300/70">Updating profile for {editingParent.fullName}</p>
-              </div>
+              <button
+                onClick={() => setEditingParent(null)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleEditParentSubmit} className="space-y-3">
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={editFullName}
-                  onChange={(e) => setEditFullName(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Body (Scrollable) */}
+            <form onSubmit={handleEditParentSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Email Address</label>
-                  <input
-                    type="email"
-                    required
-                    value={editEmail}
-                    onChange={(e) => setEditEmail(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Phone Number</label>
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Full Name</label>
                   <input
                     type="text"
                     required
-                    value={editPhone}
-                    onChange={(e) => setEditPhone(e.target.value)}
+                    value={editFullName}
+                    onChange={(e) => setEditFullName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Email Address</label>
+                    <input
+                      type="email"
+                      required
+                      value={editEmail}
+                      onChange={(e) => setEditEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Phone Number</label>
+                    <input
+                      type="text"
+                      required
+                      value={editPhone}
+                      onChange={(e) => setEditPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Occupation</label>
+                  <input
+                    type="text"
+                    value={editOccupation}
+                    onChange={(e) => setEditOccupation(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Residential Address</label>
+                  <input
+                    type="text"
+                    value={editAddress}
+                    onChange={(e) => setEditAddress(e.target.value)}
                     className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Occupation</label>
-                <input
-                  type="text"
-                  value={editOccupation}
-                  onChange={(e) => setEditOccupation(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Residential Address</label>
-                <input
-                  type="text"
-                  value={editAddress}
-                  onChange={(e) => setEditAddress(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-emerald-500/20">
+              {/* Footer (Fixed) */}
+              <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 flex justify-end gap-2 bg-slate-50/50 dark:bg-[#021810]">
                 <button
                   type="button"
                   onClick={() => setEditingParent(null)}
@@ -563,7 +585,7 @@ export default function ParentsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md"
                 >
                   Update Profile
                 </button>
@@ -575,43 +597,61 @@ export default function ParentsPage() {
 
       {/* Details View Modal */}
       {selectedParent && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 space-y-4 shadow-2xl relative text-xs">
-            <button
-              onClick={() => setSelectedParent(null)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-200 dark:border-emerald-500/20">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-lg">
-                {selectedParent.fullName[0]}
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-2xl text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-black text-lg">
+                  {selectedParent.fullName[0]}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">{selectedParent.fullName}</h3>
+                  <p className="text-slate-500 dark:text-emerald-300/70">{selectedParent.occupation || 'Parent / Guardian'}</p>
+                </div>
               </div>
+              <button
+                onClick={() => setSelectedParent(null)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Body (Scrollable) */}
+            <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2">
+                <p><strong>Email:</strong> {selectedParent.email}</p>
+                <p><strong>Phone:</strong> {selectedParent.phone}</p>
+                <p><strong>Address:</strong> {selectedParent.address || 'N/A'}</p>
+              </div>
+
               <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">{selectedParent.fullName}</h3>
-                <p className="text-slate-500 dark:text-emerald-300/70">{selectedParent.occupation}</p>
+                <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-1.5">
+                  <Baby className="w-4 h-4 text-amber-500" /> Linked Children:
+                </h4>
+                {students
+                  .filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId)
+                  .map((child) => (
+                    <div key={child.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex justify-between items-center mb-1.5">
+                      <span className="font-bold">{child.fullName} ({child.admissionNo})</span>
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">{child.className}</span>
+                    </div>
+                  ))}
+                {students.filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId).length === 0 && (
+                  <p className="text-slate-400 text-xs italic">No active wards currently linked.</p>
+                )}
               </div>
             </div>
 
-            <div className="space-y-2">
-              <p><strong>Email:</strong> {selectedParent.email}</p>
-              <p><strong>Phone:</strong> {selectedParent.phone}</p>
-              <p><strong>Address:</strong> {selectedParent.address}</p>
-            </div>
-
-            <div className="pt-2">
-              <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-1.5">
-                <Baby className="w-4 h-4 text-amber-500" /> Linked Children:
-              </h4>
-              {students
-                .filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId)
-                .map((child) => (
-                  <div key={child.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex justify-between items-center mb-1.5">
-                    <span className="font-bold">{child.fullName} ({child.admissionNo})</span>
-                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">{child.className}</span>
-                  </div>
-                ))}
+            {/* Footer (Fixed) */}
+            <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 flex justify-end bg-slate-50/50 dark:bg-[#021810]">
+              <button
+                onClick={() => setSelectedParent(null)}
+                className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-bold shadow-md"
+              >
+                Close Details
+              </button>
             </div>
           </div>
         </div>

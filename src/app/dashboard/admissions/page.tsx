@@ -311,10 +311,10 @@ export default function AdmissionsPage() {
 
       {/* 5-Step Admission Review Wizard Modal */}
       {selectedApp && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-hidden">
-          <div className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-[#042419] border border-emerald-500/40 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl overflow-hidden text-xs">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="relative w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#042419] border border-emerald-500/40 rounded-3xl shadow-2xl text-xs">
             {/* Modal Fixed Header */}
-            <div className="shrink-0 space-y-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3">
+            <div className="shrink-0 p-5 sm:p-6 space-y-3 border-b border-slate-200 dark:border-emerald-800/40 bg-slate-50/50 dark:bg-[#021810]">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-500 flex items-center justify-center font-bold">
@@ -325,11 +325,11 @@ export default function AdmissionsPage() {
                       Admission Review Wizard
                     </h3>
                     <p className="text-[11px] text-slate-500 dark:text-emerald-300/80">
-                      Application: <span className="font-mono font-bold text-amber-400">{selectedApp.applicationNo}</span> • Candidate: <span className="font-bold text-white">{selectedApp.studentFullName}</span>
+                      Application: <span className="font-mono font-bold text-amber-400">{selectedApp.applicationNo}</span> • Candidate: <span className="font-bold text-slate-900 dark:text-white">{selectedApp.studentFullName}</span>
                     </p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedApp(null)} className="text-slate-400 hover:text-white p-1 rounded-lg">
+                <button onClick={() => setSelectedApp(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-2 rounded-lg">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -372,7 +372,7 @@ export default function AdmissionsPage() {
             </div>
 
             {/* Modal Scrollable Body */}
-            <div className="flex-1 overflow-y-auto max-h-[55vh] pr-1.5 py-4 space-y-4">
+            <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
               {/* Step 1: Review Application Details */}
               {wizardStep === 1 && (
                 <div className="space-y-4">
@@ -552,7 +552,7 @@ export default function AdmissionsPage() {
             </div>
 
             {/* Modal Fixed Footer Action Buttons */}
-            <div className="shrink-0 pt-3 border-t border-slate-200 dark:border-emerald-800/40 flex items-center justify-between">
+            <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-800/40 flex items-center justify-between bg-slate-50/50 dark:bg-[#021810]">
               {wizardStep > 1 ? (
                 <Button variant="secondary" size="md" disabled={isProcessing} onClick={() => setWizardStep((wizardStep - 1) as any)} leftIcon={<ArrowLeft className="w-4 h-4" />}>
                   Back

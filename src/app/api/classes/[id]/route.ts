@@ -19,13 +19,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     // 1. Update in persistent serverDb
     const serverClass = updateServerClass(id, body);
 
-    // 2. Update in Postgres Prisma if connected
+    // 2. Update in Postgres Prisma
     let prismaClass: any = null;
     try {
       const updateData: any = {};
-      if (body.name || body.class_name_english) updateData.name = body.name || body.class_name_english;
-      if (body.category) updateData.category = body.category;
-      if (body.section) updateData.section = body.section;
+      if (body.name || body.class_name_english) updateData.name = (body.name || body.class_name_english).trim();
+      if (body.category && ['TAHFIZ', 'ISLAMIYYA_PRIMARY', 'ISLAMIYYA_SECONDARY'].includes(body.category)) {
+        updateData.category = body.category;
+      }
+      if (body.section) updateData.section = body.section.trim();
       if (body.subcategory !== undefined) updateData.subcategory = body.subcategory || null;
       if (body.capacity !== undefined) updateData.capacity = Number(body.capacity);
       if (body.programmeId !== undefined) updateData.programmeId = body.programmeId || null;
@@ -34,6 +36,10 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       prismaClass = await prisma.schoolClass.update({
         where: { id },
         data: updateData,
+        include: {
+          programme: true,
+          classTeacher: true,
+        },
       });
     } catch (dbErr) {
       console.warn('[UPDATE_CLASS] Postgres write warning, updated in serverDb:', dbErr);
@@ -43,7 +49,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     return NextResponse.json({
       message: 'Class updated successfully in database',
-      class: updated,
+      class: {
+        id: updated.id,
+        name: updated.name,
+        class_name_english: updated.name,
+        category: updated.category,
+        section: updated.section,
+        subcategory: updated.subcategory || undefined,
+        capacity: updated.capacity,
+        studentCount: updated._count?.students || 0,
+        classTeacherId: updated.classTeacherId || undefined,
+        classTeacherName: updated.classTeacher?.fullName || undefined,
+        programmeId: updated.programmeId || '',
+        programmeName: updated.programme?.nameEnglish || body.programmeName || 'Programme',
+        programme: updated.programme,
+        classTeacher: updated.classTeacher,
+      },
     });
   } catch (error: any) {
     console.error('[UPDATE_CLASS_ERROR]', error);
@@ -61,10 +82,23 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     const { id } = params;
 
+    // Check if students are enrolled in this class
+    try {
+      const studentCount = await prisma.student.count({
+        where: { classId: id, deletedAt: null },
+      });
+      if (studentCount > 0) {
+        return NextResponse.json(
+          { error: `Cannot delete class: ${studentCount} active student(s) are currently enrolled in this class. Please reassign the students before deleting.` },
+          { status: 400 }
+        );
+      }
+    } catch (e) {}
+
     // 1. Delete from persistent serverDb
     deleteServerClass(id);
 
-    // 2. Delete from Postgres Prisma if connected
+    // 2. Delete from Postgres Prisma
     try {
       await prisma.schoolClass.delete({
         where: { id },

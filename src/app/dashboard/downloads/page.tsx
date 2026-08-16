@@ -310,7 +310,7 @@ export default function DownloadsPage() {
       p.whatsapp || p.phone,
       p.occupation,
       p.address,
-      p.wardsCount,
+      p.wardsCount ?? p.wardIds?.length ?? 0,
     ]);
     triggerExcelDownload('Parents_Directory_Records', headers, rows);
   };
@@ -322,7 +322,7 @@ export default function DownloadsPage() {
       p.phone,
       p.email,
       p.occupation,
-      p.wardsCount,
+      p.wardsCount ?? p.wardIds?.length ?? 0,
     ]);
     triggerPrintablePDF('Parents & Guardians Directory', `Total Registered Guardians: ${parents.length}`, headers, rows);
   };

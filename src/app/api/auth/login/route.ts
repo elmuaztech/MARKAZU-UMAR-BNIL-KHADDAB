@@ -54,8 +54,14 @@ export async function POST(req: NextRequest) {
       if (deletedUser) {
         return NextResponse.json({ error: 'Account has been deactivated. Please contact the school administrator.' }, { status: 403 });
       }
-    } catch (dbErr) {
-      console.error('[LOGIN_DB_ERROR]', dbErr);
+    } catch (dbErr: any) {
+      console.error('[LOGIN_DB_ERROR] Database connection/query failure:', {
+        code: dbErr?.code,
+        name: dbErr?.name,
+        message: dbErr?.message,
+        hasDatabaseUrl: !!process.env.DATABASE_URL,
+        isLocalhost: (process.env.DATABASE_URL || '').includes('localhost') || (process.env.DATABASE_URL || '').includes('127.0.0.1'),
+      });
       return NextResponse.json({ error: 'Database connection error. Please try again.' }, { status: 500 });
     }
 

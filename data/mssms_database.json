@@ -1,6 +1,69 @@
 {
   "users": [
     {
+      "id": "MUBK-HM-0001",
+      "username": "MUBK-HM-0001",
+      "name": "muhammad",
+      "email": "myonlinejob90@gmail.com",
+      "password": "$2b$10$ChgDu.gwQ3eOn0g1PL95nO/93MbFjv2tZ6klIE26bYoFJ3ufK20WG",
+      "role": "HEADMASTER",
+      "phone": "+2349115109589",
+      "avatar": "",
+      "assignedProgrammeId": "prog-01",
+      "assignedProgrammeName": null,
+      "status": "ACTIVE",
+      "isFirstLogin": true,
+      "mustChangePassword": true,
+      "isLocked": false,
+      "failedLoginAttempts": 0,
+      "lastLoginAt": null,
+      "deletedAt": null,
+      "createdAt": "2026-08-14T18:07:42.608Z",
+      "updatedAt": "2026-08-14T18:07:42.608Z"
+    },
+    {
+      "id": "MUBK-STU-0001",
+      "username": "MUBK-STU-0001",
+      "name": "Elmuaz",
+      "email": "muazzamsabdullahi11@gmail.com",
+      "password": "$2b$10$5ULIO.l2IejY0Y2dLwRkKOVEnAMTkQfiuuUoT4dPKcfZwGc3mm7.i",
+      "role": "STUDENT",
+      "phone": "+2349115109589",
+      "avatar": "",
+      "assignedProgrammeId": null,
+      "assignedProgrammeName": null,
+      "status": "ACTIVE",
+      "isFirstLogin": true,
+      "mustChangePassword": true,
+      "isLocked": false,
+      "failedLoginAttempts": 0,
+      "lastLoginAt": null,
+      "deletedAt": null,
+      "createdAt": "2026-08-14T17:28:18.444Z",
+      "updatedAt": "2026-08-14T17:28:18.444Z"
+    },
+    {
+      "id": "MUBK-TEA-0001",
+      "username": "MUBK-TEA-0001",
+      "name": "muazzam s abdullahi",
+      "email": "elmuaztechnologiesltd@gmail.com",
+      "password": "$2b$10$VV6FJl50htqsSiWTagyg3.IVt6ilVZLgrDqvUMFmDM3Rc3phHfugG",
+      "role": "TEACHER",
+      "phone": "1234567890",
+      "avatar": "",
+      "assignedProgrammeId": null,
+      "assignedProgrammeName": null,
+      "status": "ACTIVE",
+      "isFirstLogin": true,
+      "mustChangePassword": true,
+      "isLocked": false,
+      "failedLoginAttempts": 0,
+      "lastLoginAt": null,
+      "deletedAt": null,
+      "createdAt": "2026-08-14T16:54:46.015Z",
+      "updatedAt": "2026-08-14T16:54:46.015Z"
+    },
+    {
       "id": "MUBK-ADM-0001",
       "username": "MUBK-ADM-0001",
       "name": "ABDULLAHI MUAZZAM",
@@ -22,9 +85,97 @@
       "updatedAt": "2026-08-14T14:26:59.493Z"
     }
   ],
-  "programmes": [],
-  "classes": [],
-  "subjects": [],
+  "programmes": [
+    {
+      "id": "prog-1786726219857-601",
+      "programme_code": "ASM",
+      "programme_name_english": "Asubah and Magrib",
+      "programme_name_arabic": "",
+      "programme_name": "Asubah and Magrib",
+      "hasSubcategories": true,
+      "subcategories": [
+        "Asubah",
+        "Magrib",
+        "Tahfeez"
+      ],
+      "status": "Active",
+      "display_order": 1,
+      "created_at": "2026-08-14T16:50:20.254Z",
+      "updated_at": "2026-08-14T16:50:20.254Z"
+    },
+    {
+      "id": "prog-1786730749984-173",
+      "programme_code": "SPM",
+      "programme_name_english": "Super Markaz",
+      "programme_name_arabic": "",
+      "programme_name": "Super Markaz",
+      "hasSubcategories": false,
+      "subcategories": [],
+      "status": "Active",
+      "display_order": 1,
+      "created_at": "2026-08-14T18:05:51.040Z",
+      "updated_at": "2026-08-14T18:05:51.040Z"
+    },
+    {
+      "id": "prog-1786732137810-172",
+      "programme_code": "SSSP",
+      "programme_name_english": "wertyjklkjhgfd",
+      "programme_name_arabic": "",
+      "programme_name": "wertyjklkjhgfd",
+      "hasSubcategories": true,
+      "subcategories": [
+        "weghjk",
+        "werghjk,jhg",
+        "werkhh"
+      ],
+      "status": "Active",
+      "display_order": 1,
+      "created_at": "2026-08-14T18:28:57.855Z",
+      "updated_at": "2026-08-14T18:28:57.855Z"
+    }
+  ],
+  "classes": [
+    {
+      "id": "cls-1786730784447-537",
+      "name": "daar aliyu bn abi dalib",
+      "category": "TAHFIZ",
+      "section": "Section A",
+      "subcategory": null,
+      "capacity": 30,
+      "programmeId": "prog-1786730749984-173",
+      "classTeacherId": null,
+      "created_at": "2026-08-14T18:06:24.536Z",
+      "updated_at": "2026-08-14T18:06:24.536Z"
+    },
+    {
+      "id": "cls-1786840312581-347",
+      "name": "wertyuk",
+      "category": "TAHFIZ",
+      "section": "Asubah",
+      "subcategory": "Asubah",
+      "capacity": 30,
+      "programmeId": "prog-1786726219857-601",
+      "classTeacherId": null,
+      "created_at": "2026-08-16T00:31:52.623Z",
+      "updated_at": "2026-08-16T00:31:52.623Z"
+    }
+  ],
+  "subjects": [
+    {
+      "id": "subj-1786730421395",
+      "name": "wertyuio",
+      "arabicName": null,
+      "code": "SSS",
+      "category": "ISLAMIC",
+      "description": null,
+      "programmeId": "prog-1786726219857-601",
+      "classId": null,
+      "status": "ACTIVE",
+      "displayOrder": 1,
+      "created_at": "2026-08-14T18:00:22.016Z",
+      "updated_at": "2026-08-14T18:00:22.016Z"
+    }
+  ],
   "attendance": [],
   "tahfizRecords": [],
   "announcements": [],

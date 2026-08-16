@@ -58,6 +58,10 @@ export default function StudentsPage() {
   const [selectedParentId, setSelectedParentId] = useState(parents[0]?.id || '');
   const [guardianName, setGuardianName] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
+  const [parentMode, setParentMode] = useState<'EXISTING' | 'NEW'>('EXISTING');
+  const [newParentName, setNewParentName] = useState('');
+  const [newParentPhone, setNewParentPhone] = useState('');
+  const [newParentEmail, setNewParentEmail] = useState('');
   const [initialJuz, setInitialJuz] = useState(1);
   const [customPassword, setCustomPassword] = useState('');
 
@@ -105,9 +109,12 @@ export default function StudentsPage() {
         programmeName: targetProgramme?.programme_name || 'Super Markaz',
         classId: classId,
         className: targetClass?.name || 'Tahfiz Halqa',
-        guardianId: targetParent ? targetParent.id : `usr-parent-${Date.now()}`,
-        guardianName: targetParent ? targetParent.fullName : guardianName || 'Alhaji Parent',
-        guardianPhone: targetParent ? targetParent.phone : guardianPhone || '+234 803 000 0000',
+        guardianId: parentMode === 'EXISTING' && targetParent ? targetParent.id : (parents[0]?.id || `usr-parent-${Date.now()}`),
+        guardianName: parentMode === 'EXISTING' && targetParent ? targetParent.fullName : newParentName || 'Parent Guardian',
+        guardianPhone: parentMode === 'EXISTING' && targetParent ? targetParent.phone : newParentPhone || '08000000000',
+        parentName: parentMode === 'NEW' ? newParentName : undefined,
+        parentPhone: parentMode === 'NEW' ? newParentPhone : undefined,
+        parentEmail: parentMode === 'NEW' ? newParentEmail : undefined,
         status: 'ACTIVE',
         hifzProgress: {
           currentJuz: Number(initialJuz),
@@ -134,13 +141,17 @@ export default function StudentsPage() {
     setFullName('');
     setGuardianName('');
     setGuardianPhone('');
+    setNewParentName('');
+    setNewParentPhone('');
+    setNewParentEmail('');
     setCustomPassword('');
   };
 
   const handleDownloadTemplate = () => {
-    const headers = "Full Name,Gender,Assigned Programme,Assigned Class,Guardian Phone,Student ID (Optional)\n";
-    const sample = "Zaid Ibrahim,MALE,Asubah & Maghrib,Tahfiz Halqa 1,+2348031234567,\n";
-    const blob = new Blob([headers + sample], { type: 'text/csv;charset=utf-8;' });
+    const headers = "AdmissionNo,StudentName,Gender,Programme,Class,ParentName,ParentPhone,ParentEmail\n";
+    const sample1 = "MUBK-STU-0010,Ahmad Abdullahi,MALE,Super Markaz,daar aliyu bn abi dalib,Alhaji Abdullahi,08031234567,abdullahi.parent@gmail.com\n";
+    const sample2 = "MUBK-STU-0011,Fatima Abdullahi,FEMALE,Super Markaz,daar aliyu bn abi dalib,Alhaji Abdullahi,08031234567,abdullahi.parent@gmail.com\n";
+    const blob = new Blob([headers + sample1 + sample2], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -163,8 +174,9 @@ export default function StudentsPage() {
         return;
       }
 
-      const parsed: Omit<Student, 'id'>[] = [];
+      const parsed: (Omit<Student, 'id'> & { parentName?: string; parentPhone?: string; parentEmail?: string })[] = [];
       let studentCounter = students.length + 1;
+      const sessionParentCache = new Map<string, string>(); // Key: email/phone -> guardianId
 
       for (let i = 1; i < lines.length; i++) {
         const row = lines[i].split(',').map((col) => col.trim().replace(/^["']|["']$/g, ''));
@@ -173,24 +185,30 @@ export default function StudentsPage() {
         let admNo = '';
         let studentName = '';
         let genderStr = 'MALE';
-        let progStr = 'prog-01';
-        let classStr = 'Tahfiz Halqa 1';
-        let guardianPhone = '+234 803 000 0000';
+        let progStr = '';
+        let classStr = '';
+        let parentName = '';
+        let parentPhone = '';
+        let parentEmail = '';
 
-        if (row[0] && (row[0].toUpperCase().startsWith('MUBK') || row[0].toUpperCase().startsWith('MU-'))) {
+        if (row[0] && (row[0].toUpperCase().startsWith('MUBK') || row[0].toUpperCase().startsWith('MU-') || row[0].toUpperCase().startsWith('STU'))) {
           admNo = row[0];
           studentName = row[1] || '';
           genderStr = (row[2] || 'MALE').toUpperCase();
-          progStr = row[3] || 'prog-01';
-          classStr = row[4] || 'Tahfiz Halqa 1';
-          guardianPhone = row[5] || '+234 803 000 0000';
+          progStr = row[3] || '';
+          classStr = row[4] || '';
+          parentName = row[5] || '';
+          parentPhone = row[6] || '';
+          parentEmail = row[7] || '';
         } else {
           studentName = row[0] || '';
           genderStr = (row[1] || 'MALE').toUpperCase();
-          progStr = row[2] || 'prog-01';
-          classStr = row[3] || 'Tahfiz Halqa 1';
-          guardianPhone = row[4] || '+234 803 000 0000';
-          admNo = row[5] || '';
+          progStr = row[2] || '';
+          classStr = row[3] || '';
+          parentName = row[4] || '';
+          parentPhone = row[5] || '';
+          parentEmail = row[6] || '';
+          admNo = row[7] || '';
         }
 
         if (!admNo) {
@@ -199,15 +217,45 @@ export default function StudentsPage() {
 
         const matchedProg = programmes.find(
           (p) =>
-            p.id === progStr ||
-            p.programme_code?.toLowerCase() === progStr.toLowerCase() ||
-            p.programme_name_english?.toLowerCase() === progStr.toLowerCase() ||
-            p.programme_name?.toLowerCase() === progStr.toLowerCase()
-        );
+            (progStr && p.id === progStr) ||
+            (progStr && p.programme_code?.toLowerCase() === progStr.toLowerCase()) ||
+            (progStr && p.programme_name_english?.toLowerCase() === progStr.toLowerCase()) ||
+            (progStr && p.programme_name?.toLowerCase() === progStr.toLowerCase())
+        ) || programmes[0];
 
         const matchedClass = classes.find(
-          (c) => c.id === classStr || c.name.toLowerCase() === classStr.toLowerCase()
+          (c) => (classStr && c.id === classStr) || (classStr && c.name.toLowerCase() === classStr.toLowerCase())
+        ) || classes[0];
+
+        // Parent Resolution & De-duplication
+        const cleanPEmail = parentEmail ? parentEmail.toLowerCase().trim() : '';
+        const cleanPPhone = parentPhone ? parentPhone.trim() : '';
+        const cacheKey = cleanPEmail || cleanPPhone || parentName.toLowerCase().trim();
+
+        let resolvedGuardianId = '';
+        let resolvedGuardianName = parentName || 'Guardian Parent';
+        let resolvedGuardianPhone = parentPhone || '08000000000';
+
+        // 1. Check existing parents in PostgreSQL context state
+        const existingP = parents.find(
+          (p) =>
+            (cleanPEmail && p.email.toLowerCase() === cleanPEmail) ||
+            (cleanPPhone && p.phone === cleanPPhone)
         );
+
+        if (existingP) {
+          resolvedGuardianId = existingP.id;
+          resolvedGuardianName = existingP.fullName;
+          resolvedGuardianPhone = existingP.phone;
+        } else if (cacheKey && sessionParentCache.has(cacheKey)) {
+          // 2. Check current CSV import session cache (sibling de-duplication)
+          resolvedGuardianId = sessionParentCache.get(cacheKey)!;
+        } else if (cacheKey) {
+          resolvedGuardianId = `usr-parent-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+          sessionParentCache.set(cacheKey, resolvedGuardianId);
+        } else {
+          resolvedGuardianId = parents[0]?.id || `usr-parent-${Date.now()}`;
+        }
 
         parsed.push({
           admissionNo: admNo,
@@ -216,13 +264,16 @@ export default function StudentsPage() {
           email: `${admNo.toLowerCase()}@markazuumar.edu.ng`,
           dob: '2014-06-15',
           dateEnrolled: new Date().toISOString().split('T')[0],
-          programmeId: matchedProg ? matchedProg.id : 'prog-01',
-          programmeName: matchedProg ? (matchedProg.programme_name_english || matchedProg.programme_name) : progStr,
-          classId: matchedClass ? matchedClass.id : 'cls-tahfiz-1',
-          className: matchedClass ? matchedClass.name : classStr,
-          guardianId: `usr-parent-${Date.now()}`,
-          guardianName: 'Guardian Parent',
-          guardianPhone: guardianPhone,
+          programmeId: matchedProg ? matchedProg.id : undefined,
+          programmeName: matchedProg ? (matchedProg.programme_name_english || matchedProg.programme_name) : 'Super Markaz',
+          classId: matchedClass ? matchedClass.id : (classes[0]?.id || 'cls-01'),
+          className: matchedClass ? matchedClass.name : 'Tahfiz Class A',
+          guardianId: resolvedGuardianId,
+          guardianName: resolvedGuardianName,
+          guardianPhone: resolvedGuardianPhone,
+          parentName: parentName || undefined,
+          parentPhone: parentPhone || undefined,
+          parentEmail: parentEmail || undefined,
           status: 'ACTIVE',
           hifzProgress: {
             currentJuz: 1,
@@ -255,7 +306,7 @@ export default function StudentsPage() {
     notify({
       type: 'success',
       title: 'Bulk Enrollment Complete',
-      message: `Successfully enrolled ${result.successCount} students. Welcome credentials emailed to parents/guardians!`,
+      message: `Successfully enrolled ${result.successCount} students (${result.linkedParentsCount || 0} new parents created, ${result.duplicatesPreventedCount || 0} parent duplicates prevented). Welcome credentials emailed to parents/guardians!`,
     });
   };
 
@@ -536,138 +587,208 @@ export default function StudentsPage() {
 
       {/* Enrolment Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-md max-h-[85vh] overflow-y-auto p-6 space-y-4 shadow-2xl text-slate-900 dark:text-white relative text-xs">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/60 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-slate-900 dark:text-white text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-800/60 flex items-center justify-between">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-emerald-500" /> Enrol New Student (Child)
               </h3>
               <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
             </div>
 
-            <form onSubmit={handleAddSubmit} className="space-y-3">
-              <div>
-                <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ahmad Ibrahim Kano"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            {/* Body (Scrolls Independently) */}
+            <form onSubmit={handleAddSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
                 <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Admission Number</label>
+                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Full Name</label>
                   <input
                     type="text"
-                    value={admissionNo}
-                    onChange={(e) => setAdmissionNo(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-mono"
+                    required
+                    placeholder="e.g. Ahmad Ibrahim Kano"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Gender</label>
-                  <select
-                    value={gender}
-                    onChange={(e) => setGender(e.target.value as any)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
-                  >
-                    <option value="MALE">Male</option>
-                    <option value="FEMALE">Female</option>
-                  </select>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">
-                    Step 1: Programme <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={selectedProgrammeId}
-                    onChange={(e) => {
-                      setSelectedProgrammeId(e.target.value);
-                      const matchingClasses = classes.filter((c) => c.programmeId === e.target.value);
-                      if (matchingClasses.length > 0) setClassId(matchingClasses[0].id);
-                    }}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
-                  >
-                    {availableProgrammes.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.programme_name} ({p.programme_code})
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Admission Number</label>
+                    <input
+                      type="text"
+                      value={admissionNo}
+                      onChange={(e) => setAdmissionNo(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Gender</label>
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value as any)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                    >
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">
-                    Step 2: Class under Programme <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={classId}
-                    onChange={(e) => setClassId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
-                  >
-                    {classes
-                      .filter((c) => c.programmeId === selectedProgrammeId || !selectedProgrammeId)
-                      .map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">
+                      Step 1: Programme <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={selectedProgrammeId}
+                      onChange={(e) => {
+                        setSelectedProgrammeId(e.target.value);
+                        const matchingClasses = classes.filter((c) => c.programmeId === e.target.value);
+                        if (matchingClasses.length > 0) setClassId(matchingClasses[0].id);
+                      }}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
+                    >
+                      {availableProgrammes.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.programme_name} ({p.programme_code})
                         </option>
                       ))}
-                  </select>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">
+                      Step 2: Class under Programme <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={classId}
+                      onChange={(e) => setClassId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
+                    >
+                      {classes
+                        .filter((c) => c.programmeId === selectedProgrammeId || !selectedProgrammeId)
+                        .map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2 border-t border-b border-slate-200 dark:border-emerald-800/60 py-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-slate-700 dark:text-emerald-300 font-bold">
+                      Parent / Guardian Option <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="flex bg-slate-100 dark:bg-emerald-950 p-1 rounded-xl gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setParentMode('EXISTING')}
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                          parentMode === 'EXISTING'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-500 dark:text-emerald-400 hover:text-slate-900'
+                        }`}
+                      >
+                        Option A: Select Existing
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setParentMode('NEW')}
+                        className={`px-3 py-1 rounded-lg text-[10px] font-bold transition-all ${
+                          parentMode === 'NEW'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-slate-500 dark:text-emerald-400 hover:text-slate-900'
+                        }`}
+                      >
+                        Option B: Register New
+                      </button>
+                    </div>
+                  </div>
+
+                  {parentMode === 'EXISTING' ? (
+                    <div>
+                      <select
+                        value={selectedParentId}
+                        onChange={(e) => {
+                          setSelectedParentId(e.target.value);
+                          const p = parents.find((pr) => pr.id === e.target.value);
+                          if (p) {
+                            setGuardianName(p.fullName);
+                            setGuardianPhone(p.phone);
+                          }
+                        }}
+                        className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-slate-900 dark:text-white font-semibold"
+                      >
+                        {parents.length === 0 && <option value="">No existing parents found (Use Option B)</option>}
+                        {parents.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.fullName} ({p.phone})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="space-y-2 pt-1">
+                      <div>
+                        <input
+                          type="text"
+                          required={parentMode === 'NEW'}
+                          placeholder="Parent Full Name (e.g. Alhaji Abdullahi)"
+                          value={newParentName}
+                          onChange={(e) => setNewParentName(e.target.value)}
+                          className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          required={parentMode === 'NEW'}
+                          placeholder="Phone Number (e.g. 08031234567)"
+                          value={newParentPhone}
+                          onChange={(e) => setNewParentPhone(e.target.value)}
+                          className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                        />
+                        <input
+                          type="email"
+                          required={parentMode === 'NEW'}
+                          placeholder="Email Address"
+                          value={newParentEmail}
+                          onChange={(e) => setNewParentEmail(e.target.value)}
+                          className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Current Hifz Starting Juz (1-30)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={initialJuz}
+                    onChange={(e) => setInitialJuz(Number(e.target.value))}
+                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                  />
                 </div>
               </div>
 
-              <div>
-                <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Select Parent / Guardian</label>
-                <select
-                  value={selectedParentId}
-                  onChange={(e) => {
-                    setSelectedParentId(e.target.value);
-                    const p = parents.find((pr) => pr.id === e.target.value);
-                    if (p) {
-                      setGuardianName(p.fullName);
-                      setGuardianPhone(p.phone);
-                    }
-                  }}
-                  className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-slate-900 dark:text-white font-semibold"
-                >
-                  {parents.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.fullName} ({p.phone})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Current Hifz Starting Juz (1-30)</label>
-                <input
-                  type="number"
-                  min={1}
-                  max={30}
-                  value={initialJuz}
-                  onChange={(e) => setInitialJuz(Number(e.target.value))}
-                  className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-emerald-800/60">
+              {/* Footer (Fixed / Non-scrolling) */}
+              <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-800/60 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-[#021810]">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-emerald-900/60 text-slate-700 dark:text-emerald-300"
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-emerald-900/60 text-slate-700 dark:text-emerald-300 font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md"
                 >
                   Save Enrolment
                 </button>
@@ -679,153 +800,158 @@ export default function StudentsPage() {
 
       {/* Edit Student Modal */}
       {editingStudent && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-md max-h-[85vh] overflow-y-auto p-6 space-y-4 shadow-2xl text-slate-900 dark:text-white relative text-xs">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/60 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-slate-900 dark:text-white text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-800/60 flex items-center justify-between">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <Edit className="w-5 h-5 text-sky-500" /> Edit Student Details
               </h3>
               <button onClick={() => setEditingStudent(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="space-y-3">
-              <div>
-                <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={editFullName}
-                  onChange={(e) => setEditFullName(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            {/* Body (Scrolls Independently) */}
+            <form onSubmit={handleEditSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
                 <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Admission Number</label>
+                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Full Name</label>
                   <input
                     type="text"
                     required
-                    value={editAdmissionNo}
-                    onChange={(e) => setEditAdmissionNo(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-mono"
+                    value={editFullName}
+                    onChange={(e) => setEditFullName(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-slate-900 dark:text-white"
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Gender</label>
-                  <select
-                    value={editGender}
-                    onChange={(e) => setEditGender(e.target.value as any)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
-                  >
-                    <option value="MALE">Male</option>
-                    <option value="FEMALE">Female</option>
-                  </select>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">
-                    Programme <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={editProgrammeId}
-                    onChange={(e) => {
-                      setEditProgrammeId(e.target.value);
-                      const matchingClasses = classes.filter((c) => c.programmeId === e.target.value);
-                      if (matchingClasses.length > 0) setEditClassId(matchingClasses[0].id);
-                    }}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
-                  >
-                    {availableProgrammes.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.programme_name} ({p.programme_code})
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Admission Number</label>
+                    <input
+                      type="text"
+                      required
+                      value={editAdmissionNo}
+                      onChange={(e) => setEditAdmissionNo(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Gender</label>
+                    <select
+                      value={editGender}
+                      onChange={(e) => setEditGender(e.target.value as any)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                    >
+                      <option value="MALE">Male</option>
+                      <option value="FEMALE">Female</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">
-                    Class under Programme <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={editClassId}
-                    onChange={(e) => setEditClassId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
-                  >
-                    {classes
-                      .filter((c) => c.programmeId === editProgrammeId || !editProgrammeId)
-                      .map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">
+                      Programme <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={editProgrammeId}
+                      onChange={(e) => {
+                        setEditProgrammeId(e.target.value);
+                        const matchingClasses = classes.filter((c) => c.programmeId === e.target.value);
+                        if (matchingClasses.length > 0) setEditClassId(matchingClasses[0].id);
+                      }}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
+                    >
+                      {availableProgrammes.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.programme_name} ({p.programme_code})
                         </option>
                       ))}
-                  </select>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-bold mb-1">
+                      Class <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={editClassId}
+                      onChange={(e) => setEditClassId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
+                    >
+                      {classes
+                        .filter((c) => c.programmeId === editProgrammeId || !editProgrammeId)
+                        .map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Guardian Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editGuardianName}
+                      onChange={(e) => setEditGuardianName(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Guardian Phone</label>
+                    <input
+                      type="text"
+                      required
+                      value={editGuardianPhone}
+                      onChange={(e) => setEditGuardianPhone(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Juz Completed (0-30)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={30}
+                      value={editCompletedJuz}
+                      onChange={(e) => setEditCompletedJuz(Number(e.target.value))}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Enrolment Status</label>
+                    <select
+                      value={editStatus}
+                      onChange={(e) => setEditStatus(e.target.value as any)}
+                      className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-semibold"
+                    >
+                      <option value="ACTIVE">ACTIVE</option>
+                      <option value="GRADUATED">GRADUATED</option>
+                      <option value="SUSPENDED">SUSPENDED</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Parent / Guardian Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={editGuardianName}
-                    onChange={(e) => setEditGuardianName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Guardian Phone</label>
-                  <input
-                    type="text"
-                    required
-                    value={editGuardianPhone}
-                    onChange={(e) => setEditGuardianPhone(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Juz Completed (0-30)</label>
-                  <input
-                    type="number"
-                    min={0}
-                    max={30}
-                    value={editCompletedJuz}
-                    onChange={(e) => setEditCompletedJuz(Number(e.target.value))}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
-                  />
-                </div>
-                <div>
-                  <label className="block text-slate-700 dark:text-emerald-300 font-semibold mb-1">Enrolment Status</label>
-                  <select
-                    value={editStatus}
-                    onChange={(e) => setEditStatus(e.target.value as any)}
-                    className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-semibold"
-                  >
-                    <option value="ACTIVE">ACTIVE</option>
-                    <option value="GRADUATED">GRADUATED</option>
-                    <option value="SUSPENDED">SUSPENDED</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-200 dark:border-emerald-800/60">
+              {/* Footer (Fixed) */}
+              <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-800/60 flex items-center justify-end gap-2 bg-slate-50/50 dark:bg-[#021810]">
                 <button
                   type="button"
                   onClick={() => setEditingStudent(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-emerald-900/60 text-slate-700 dark:text-emerald-300"
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-emerald-900/60 text-slate-700 dark:text-emerald-300 font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md"
                 >
                   Update Profile
                 </button>
@@ -837,43 +963,46 @@ export default function StudentsPage() {
 
       {/* Student Profile Modal */}
       {selectedStudent && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl text-slate-900 dark:text-white relative text-xs">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/60 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-slate-900 dark:text-white text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-800/60 flex items-center justify-between">
               <h3 className="text-base font-bold flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-amber-500" /> Student Profile Details
               </h3>
               <button onClick={() => setSelectedStudent(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/80 border border-slate-200 dark:border-emerald-800/40">
+            {/* Body (Scrollable) */}
+            <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-emerald-950/80 border border-slate-200 dark:border-emerald-800/40">
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white">{selectedStudent.fullName}</h4>
                 <p className="text-emerald-600 dark:text-emerald-300 font-mono mt-0.5">{selectedStudent.admissionNo} • {selectedStudent.className}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-3 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30">
                   <span className="text-[10px] text-purple-700 dark:text-purple-300 font-bold block">Juz Memorized</span>
                   <span className="text-lg font-black text-amber-500">{selectedStudent.hifzProgress.juzCompleted} / 30 Juz</span>
                 </div>
-                <div className="p-3 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-500/30">
+                <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-500/30">
                   <span className="text-[10px] text-sky-700 dark:text-sky-300 font-bold block">Akhlaq Rating</span>
                   <span className="text-sm font-bold text-slate-900 dark:text-white">{selectedStudent.akhlaqRating}</span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/80 border border-slate-200 dark:border-emerald-800/40 space-y-1">
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-emerald-950/80 border border-slate-200 dark:border-emerald-800/40 space-y-1">
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Parent / Guardian Info</span>
                 <p className="font-semibold text-slate-900 dark:text-white">{selectedStudent.guardianName}</p>
                 <p className="text-emerald-600 dark:text-emerald-300 font-mono">{selectedStudent.guardianPhone}</p>
               </div>
             </div>
 
-            <div className="flex justify-end pt-2 border-t border-slate-200 dark:border-emerald-800/60">
+            {/* Footer (Fixed) */}
+            <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-800/60 flex justify-end bg-slate-50/50 dark:bg-[#021810]">
               <button
                 onClick={() => setSelectedStudent(null)}
-                className="px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold"
+                className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-bold shadow-md"
               >
                 Close Profile
               </button>
@@ -881,6 +1010,7 @@ export default function StudentsPage() {
           </div>
         </div>
       )}
+
       {/* Bulk CSV Upload Modal */}
       {showBulkModal && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">

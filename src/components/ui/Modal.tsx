@@ -73,10 +73,10 @@ export function Modal({
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className={`relative z-50 w-full ${maxWidthClasses[maxWidth]} max-h-[85vh] sm:max-h-[88vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl font-sans space-y-4 scrollbar-thin scrollbar-thumb-emerald-600`}
+            className={`relative z-50 w-full ${maxWidthClasses[maxWidth]} max-h-[90vh] flex flex-col overflow-hidden rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl font-sans`}
           >
-            {/* Header */}
-            <div className="sticky top-0 z-10 bg-white/95 dark:bg-[#042419]/95 backdrop-blur-md p-4 sm:p-6 border-b border-slate-100 dark:border-emerald-500/20 flex items-center justify-between">
+            {/* Header (Fixed / Non-scrolling) */}
+            <div className="shrink-0 bg-white/95 dark:bg-[#042419]/95 backdrop-blur-md p-4 sm:p-6 border-b border-slate-100 dark:border-emerald-500/20 flex items-center justify-between">
               <div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">{title}</h3>
                 {titleArabic && <p className="font-arabic text-xs font-bold text-amber-500 mt-0.5">{titleArabic}</p>}
@@ -91,12 +91,12 @@ export function Modal({
               </button>
             </div>
 
-            {/* Body */}
-            <div className="p-5 sm:p-6 max-h-[70vh] overflow-y-auto">{children}</div>
+            {/* Body (Scrolls Independently) */}
+            <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 scrollbar-thin scrollbar-thumb-emerald-600">{children}</div>
 
-            {/* Footer */}
+            {/* Footer (Fixed / Pinned Action Area) */}
             {footer && (
-              <div className="p-4 sm:p-6 border-t border-slate-100 dark:border-emerald-500/20 bg-slate-50/50 dark:bg-[#021810] flex items-center justify-end gap-3">
+              <div className="shrink-0 p-4 sm:p-6 border-t border-slate-100 dark:border-emerald-500/20 bg-slate-50/50 dark:bg-[#021810] flex items-center justify-end gap-3">
                 {footer}
               </div>
             )}

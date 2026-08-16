@@ -455,112 +455,127 @@ function AcademicCalendarManager() {
 
       {/* Add / Edit Event Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-                <Calendar className="w-5 h-5" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-2xl text-xs">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-500/20 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+                  <Calendar className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                    {editingId ? 'Edit Academic Event' : 'Add Academic Event'}
+                  </h3>
+                  <p className="text-slate-500 dark:text-emerald-300/70">
+                    Update dates and info visible on the public website
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                  {editingId ? 'Edit Academic Event' : 'Add Academic Event'}
-                </h3>
-                <p className="text-slate-500 dark:text-emerald-300/70">
-                  Update dates and info visible on the public website
-                </p>
-              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Term</label>
-                  <select
-                    value={term}
-                    onChange={(e: any) => setTerm(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-semibold"
-                  >
-                    <option value="Term 1">Term 1</option>
-                    <option value="Term 2">Term 2</option>
-                    <option value="Term 3">Term 3</option>
-                  </select>
+            {/* Body (Scrollable) */}
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Term</label>
+                    <select
+                      value={term}
+                      onChange={(e: any) => setTerm(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-semibold"
+                    >
+                      <option value="Term 1">Term 1</option>
+                      <option value="Term 2">Term 2</option>
+                      <option value="Term 3">Term 3</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 dark:text-gray-300">Badge Color</label>
+                    <select
+                      value={badgeColor}
+                      onChange={(e: any) => setBadgeColor(e.target.value)}
+                      className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-semibold"
+                    >
+                      <option value="emerald">Emerald Green</option>
+                      <option value="amber">Amber Gold</option>
+                      <option value="sky">Sky Blue</option>
+                      <option value="purple">Purple</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Badge Color</label>
-                  <select
-                    value={badgeColor}
-                    onChange={(e: any) => setBadgeColor(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-semibold"
-                  >
-                    <option value="emerald">Emerald Green</option>
-                    <option value="amber">Amber Gold</option>
-                    <option value="sky">Sky Blue</option>
-                    <option value="purple">Purple</option>
-                  </select>
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Event Title</label>
+                  <input
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Second Term Session & Ramadan Hifz"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Badge Label</label>
+                  <input
+                    type="text"
+                    required
+                    value={badge}
+                    onChange={(e) => setBadge(e.target.value)}
+                    placeholder="e.g. Term 2 (Current)"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Key Dates & Schedule</label>
+                  <textarea
+                    required
+                    rows={2}
+                    value={dates}
+                    onChange={(e) => setDates(e.target.value)}
+                    placeholder="e.g. Resumption: Jan 10 • Ramadan Break: Mar 15 • Term Exams: April 20"
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700 dark:text-gray-300">Description (Optional)</label>
+                  <textarea
+                    rows={2}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Additional event highlights..."
+                    className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                  />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Event Title</label>
-                <input
-                  type="text"
-                  required
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Second Term Session & Ramadan Hifz"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                />
+              {/* Footer (Fixed) */}
+              <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 flex justify-end gap-2 bg-slate-50/50 dark:bg-[#021810]">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-4 py-2 rounded-xl bg-slate-200 dark:bg-emerald-900/60 text-slate-700 dark:text-emerald-300 font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md uppercase tracking-wider font-poppins"
+                >
+                  {editingId ? 'Update Event' : 'Publish to Website'}
+                </button>
               </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Badge Label</label>
-                <input
-                  type="text"
-                  required
-                  value={badge}
-                  onChange={(e) => setBadge(e.target.value)}
-                  placeholder="e.g. Term 2 (Current)"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Key Dates & Schedule</label>
-                <textarea
-                  required
-                  rows={2}
-                  value={dates}
-                  onChange={(e) => setDates(e.target.value)}
-                  placeholder="e.g. Resumption: Jan 10 • Ramadan Break: Mar 15 • Term Exams: April 20"
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700 dark:text-gray-300">Description (Optional)</label>
-                <textarea
-                  rows={2}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Additional event highlights..."
-                  className="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all uppercase tracking-wider"
-              >
-                {editingId ? 'Update Event' : 'Publish to Website'}
-              </button>
             </form>
           </div>
         </div>

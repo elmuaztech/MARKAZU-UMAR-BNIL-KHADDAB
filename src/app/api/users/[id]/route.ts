@@ -218,11 +218,39 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
           }
         }
 
+        const deletionTimestamp = new Date();
+
         await prisma.user.update({
           where: { id: dbUser.id },
           data: {
-            deletedAt: new Date(),
+            deletedAt: deletionTimestamp,
             status: 'DEACTIVATED',
+          },
+        });
+
+        // Cascade soft-delete to linked Student profile if present
+        await prisma.student.updateMany({
+          where: { userId: dbUser.id, deletedAt: null },
+          data: {
+            deletedAt: deletionTimestamp,
+            status: 'SUSPENDED',
+          },
+        });
+
+        // Cascade soft-delete to linked Teacher profile if present
+        await prisma.teacher.updateMany({
+          where: { userId: dbUser.id, deletedAt: null },
+          data: {
+            deletedAt: deletionTimestamp,
+            status: 'ON_LEAVE',
+          },
+        });
+
+        // Cascade soft-delete to linked Parent profile if present
+        await prisma.parent.updateMany({
+          where: { userId: dbUser.id, deletedAt: null },
+          data: {
+            deletedAt: deletionTimestamp,
           },
         });
 

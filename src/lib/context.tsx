@@ -102,6 +102,9 @@ interface AppContextType {
     assignedProgrammeName?: string;
   }) => Promise<User>;
   deleteUserAccount: (userId: string) => void;
+  restoreUserAccount: (userId: string) => Promise<any>;
+  deactivatedUsers: User[];
+  fetchDeactivatedUsers: () => Promise<User[]>;
   updateUserAccount: (userId: string, updates: Partial<User>) => void;
   unlockAccount: (userId: string) => void;
   resetUserPassword: (userId: string, newPass: string) => void;
@@ -241,8 +244,14 @@ interface AppContextType {
   deleteParent: (id: string) => void;
 
   bulkImportTeachers: (teachersData: Omit<Teacher, 'id'>[]) => { successCount: number };
-  bulkImportStudents: (studentsData: Omit<Student, 'id'>[]) => { successCount: number };
+  bulkImportStudents: (studentsData: (Omit<Student, 'id'> & { parentName?: string; parentPhone?: string; parentEmail?: string })[]) => { successCount: number; linkedParentsCount?: number; duplicatesPreventedCount?: number };
   bulkImportParents: (parentsData: (Omit<Parent, 'id'> & { id?: string; linkedChildrenStr?: string })[]) => { successCount: number };
+
+  syncUsersFromBackend: () => Promise<void>;
+  syncStudentsFromBackend: () => Promise<void>;
+  syncTeachersFromBackend: () => Promise<void>;
+  syncParentsFromBackend: () => Promise<void>;
+  syncAttendanceFromBackend: () => Promise<void>;
 
   addTahfizRecord: (record: Omit<TahfizRecord, 'id'>) => void;
   markAttendance: (records: Omit<AttendanceRecord, 'id'>[]) => void;
@@ -302,6 +311,25 @@ export function recordDeletedUserIdentifier(id?: string, email?: string, usernam
         ids: Array.from(newIds),
         emails: Array.from(newEmails),
         usernames: Array.from(newUsernames),
+      })
+    );
+  } catch {}
+}
+
+export function clearDeletedUserIdentifier(id?: string, email?: string, username?: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getDeletedUserIdentifiers();
+    const updatedIds = current.ids.filter((i) => i !== id);
+    const updatedEmails = current.emails.filter((e) => !email || e !== email.toLowerCase().trim());
+    const updatedUsernames = current.usernames.filter((u) => !username || u !== username.toLowerCase().trim());
+
+    localStorage.setItem(
+      'markazu_deleted_users',
+      JSON.stringify({
+        ids: updatedIds,
+        emails: updatedEmails,
+        usernames: updatedUsernames,
       })
     );
   } catch {}
@@ -488,102 +516,279 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const syncTeachersFromBackend = async () => {
+    try {
+      const res = await fetch('/api/teachers');
+      const data = await res.json();
+      if (data && Array.isArray(data.teachers)) {
+        const deleted = getDeletedUserIdentifiers();
+        const mappedTeachers = data.teachers
+          .filter((t: any) => !deleted.ids.includes(t.id))
+          .map((t: any) => {
+            const programmeIds = t.teacherAssignments?.map((a: any) => a.programmeId) || [];
+            const classesAssigned = t.teacherAssignments?.map((a: any) => a.classId) || [];
+            const subjectsAssigned = t.teacherAssignments?.flatMap((a: any) => a.assignedSubjects?.map((s: any) => s.subjectId) || []) || [];
+            return {
+              id: t.id,
+              userId: t.userId || null,
+              staffNo: t.staffNo,
+              fullName: t.fullName,
+              email: t.email,
+              phone: t.phone,
+              qualification: t.qualification || '',
+              specialization: t.specialization || '',
+              programmeIds,
+              classesAssigned,
+              subjectsAssigned,
+              dateJoined: t.dateJoined,
+              status: t.status,
+              avatar: t.avatar || undefined,
+            };
+          });
+        setTeachers(mappedTeachers);
+        safeLocalStorageSet('markazu_teachers', mappedTeachers);
+      }
+    } catch (e) {
+      console.warn('[syncTeachersFromBackend] error:', e);
+    }
+  };
+
+  const syncStudentsFromBackend = async () => {
+    try {
+      const res = await fetch('/api/students');
+      const data = await res.json();
+      if (data && Array.isArray(data.students)) {
+        const deleted = getDeletedUserIdentifiers();
+        const mappedStudents = data.students
+          .filter((s: any) => !deleted.ids.includes(s.id))
+          .map((s: any) => ({
+            id: s.id,
+            userId: s.userId || null,
+            admissionNo: s.admissionNo,
+            fullName: s.fullName,
+            gender: s.gender,
+            dob: s.dob,
+            dateEnrolled: s.dateEnrolled,
+            programmeId: s.programmeId || s.schoolClass?.programmeId || null,
+            classId: s.classId,
+            className: s.schoolClass?.name || 'Class',
+            guardianId: s.guardianId,
+            guardianName: s.parent?.fullName || 'Parent',
+            guardianPhone: s.parent?.phone || '',
+            status: s.status,
+            hifzProgress: {
+              currentJuz: s.currentJuz || 1,
+              juzCompleted: s.juzCompleted || 0,
+              currentSurah: s.currentSurah || 'Surah Al-Fatihah',
+              currentAyah: s.currentAyah || 1,
+              completedSurahsCount: s.completedSurahsCount || 0,
+              tajweedRating: s.tajweedRating || 5,
+              sabkiRating: s.sabkiRating || 5,
+              manzilRating: s.manzilRating || 5,
+            },
+            akhlaqRating: s.akhlaqRating || 'EXCELLENT',
+            avatar: s.avatar || undefined,
+          }));
+        setStudents(mappedStudents);
+        safeLocalStorageSet('markazu_students', mappedStudents);
+      }
+    } catch (e) {
+      console.warn('[syncStudentsFromBackend] error:', e);
+    }
+  };
+
+  const syncParentsFromBackend = async () => {
+    try {
+      const res = await fetch('/api/parents');
+      const data = await res.json();
+      if (data && Array.isArray(data.parents)) {
+        const deleted = getDeletedUserIdentifiers();
+        const mappedParents = data.parents
+          .filter((p: any) => !deleted.ids.includes(p.id))
+          .map((p: any) => ({
+            id: p.id,
+            userId: p.userId || null,
+            fullName: p.fullName,
+            email: p.email,
+            phone: p.phone,
+            occupation: p.occupation || '',
+            address: p.address || '',
+            wardIds: p.wards?.map((w: any) => w.id) || [],
+          }));
+        setParents(mappedParents);
+        safeLocalStorageSet('markazu_parents', mappedParents);
+      }
+    } catch (e) {
+      console.warn('[syncParentsFromBackend] error:', e);
+    }
+  };
+
+  const syncAttendanceFromBackend = async () => {
+    try {
+      const res = await fetch('/api/attendance');
+      const resData = await res.json();
+      if (resData && resData.success && Array.isArray(resData.data)) {
+        const mappedAttendance = resData.data.map((a: any) => ({
+          id: a.id,
+          date: a.date ? (typeof a.date === 'string' ? a.date.split('T')[0] : new Date(a.date).toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
+          studentId: a.studentId,
+          studentName: a.student?.fullName || 'Student',
+          programmeId: a.programmeId || undefined,
+          classId: a.classId,
+          className: a.schoolClass?.name || 'Class',
+          teacherId: a.teacherId || undefined,
+          status: a.statusEnum || a.status,
+          remarks: a.remarks || undefined,
+          isDraft: a.isDraft,
+        }));
+        setAttendance(mappedAttendance);
+        safeLocalStorageSet('markazu_attendance', mappedAttendance);
+      }
+    } catch (e) {
+      console.warn('[syncAttendanceFromBackend] error:', e);
+    }
+  };
+
+  const syncUsersFromBackend = async () => {
+    try {
+      const res = await fetch('/api/users');
+      const data = await res.json();
+      if (data && Array.isArray(data.users)) {
+        setUsers(data.users);
+      }
+    } catch (e) {
+      console.warn('[syncUsersFromBackend] error:', e);
+    }
+  };
+
+  const [deactivatedUsers, setDeactivatedUsers] = useState<User[]>([]);
+
+  const fetchDeactivatedUsers = async (): Promise<User[]> => {
+    try {
+      const res = await fetch('/api/users?status=DEACTIVATED');
+      const data = await res.json();
+      if (data && Array.isArray(data.users)) {
+        setDeactivatedUsers(data.users);
+        return data.users;
+      }
+    } catch (e) {
+      console.warn('[fetchDeactivatedUsers] error:', e);
+    }
+    return [];
+  };
+
+  const restoreUserAccount = async (userId: string) => {
+    try {
+      const targetUser = users.find((u) => u.id === userId) || deactivatedUsers.find((u) => u.id === userId);
+      const res = await fetch(`/api/users/${encodeURIComponent(userId)}/restore`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to restore user account.');
+      }
+
+      // Clear local deleted filters for this user identity
+      clearDeletedUserIdentifier(userId, targetUser?.email, targetUser?.username);
+
+      notify({
+        type: 'success',
+        title: 'Account Restored Successfully',
+        message: `Account for "${data.user?.name || targetUser?.name || userId}" has been restored and is now ACTIVE.`,
+      });
+
+      // Synchronize all arrays cleanly from PostgreSQL Prisma source of truth
+      await Promise.all([
+        syncUsersFromBackend(),
+        syncStudentsFromBackend(),
+        syncTeachersFromBackend(),
+        syncParentsFromBackend(),
+        fetchDeactivatedUsers(),
+      ]);
+
+      return data;
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Restoration Failed',
+        message: err.message || 'Could not restore user account.',
+      });
+      throw err;
+    }
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // 1. Fetch Students
-      fetch('/api/students')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.students)) {
-            const deleted = getDeletedUserIdentifiers();
-            const mappedStudents = data.students
-              .filter((s: any) => !deleted.ids.includes(s.id))
-              .map((s: any) => ({
-                id: s.id,
-                userId: s.userId || null,
-                admissionNo: s.admissionNo,
-                fullName: s.fullName,
-                gender: s.gender,
-                dob: s.dob,
-                dateEnrolled: s.dateEnrolled,
-                programmeId: s.programmeId || s.schoolClass?.programmeId || null,
-                classId: s.classId,
-                className: s.schoolClass?.name || 'Class',
-                guardianId: s.guardianId,
-                guardianName: s.parent?.fullName || 'Parent',
-                guardianPhone: s.parent?.phone || '',
-                status: s.status,
-                hifzProgress: {
-                  currentJuz: s.currentJuz || 1,
-                  juzCompleted: s.juzCompleted || 0,
-                  currentSurah: s.currentSurah || 'Surah Al-Fatihah',
-                  currentAyah: s.currentAyah || 1,
-                  completedSurahsCount: s.completedSurahsCount || 0,
-                  tajweedRating: s.tajweedRating || 5,
-                  sabkiRating: s.sabkiRating || 5,
-                  manzilRating: s.manzilRating || 5,
-                },
-                akhlaqRating: s.akhlaqRating || 'EXCELLENT',
-                avatar: s.avatar || undefined,
-              }));
-            setStudents(mappedStudents);
-            safeLocalStorageSet('markazu_students', mappedStudents);
-          }
-        })
-        .catch((e) => console.warn('[syncStudents] error:', e));
+      syncStudentsFromBackend();
 
       // 2. Fetch Teachers
-      fetch('/api/teachers')
+      syncTeachersFromBackend();
+
+      // 2.2 Fetch Parents
+      syncParentsFromBackend();
+
+      // 2.3 Fetch Attendance
+      syncAttendanceFromBackend();
+
+      // 2.2 Fetch Parents
+      syncParentsFromBackend();
+
+      // 2.5 Fetch Programmes from PostgreSQL
+      fetch('/api/programmes')
         .then((res) => res.json())
         .then((data) => {
-          if (data && Array.isArray(data.teachers)) {
-            const deleted = getDeletedUserIdentifiers();
-            const mappedTeachers = data.teachers
-              .filter((t: any) => !deleted.ids.includes(t.id))
-              .map((t: any) => {
-                const programmeIds = t.teacherAssignments?.map((a: any) => a.programmeId) || [];
-                const classesAssigned = t.teacherAssignments?.map((a: any) => a.classId) || [];
-                const subjectsAssigned = t.teacherAssignments?.flatMap((a: any) => a.assignedSubjects?.map((s: any) => s.subjectId) || []) || [];
-                return {
-                  id: t.id,
-                  userId: t.userId || null,
-                  staffNo: t.staffNo,
-                  fullName: t.fullName,
-                  email: t.email,
-                  phone: t.phone,
-                  qualification: t.qualification || '',
-                  specialization: t.specialization || '',
-                  programmeIds,
-                  classesAssigned,
-                  subjectsAssigned,
-                  dateJoined: t.dateJoined,
-                  status: t.status,
-                  avatar: t.avatar || undefined,
-                };
-              });
-            setTeachers(mappedTeachers);
-            safeLocalStorageSet('markazu_teachers', mappedTeachers);
+          if (data && Array.isArray(data.programmes)) {
+            const mappedProgrammes = data.programmes.map((p: any) => {
+              let subcats: string[] = [];
+              if (p.subcategories) {
+                try {
+                  subcats = typeof p.subcategories === 'string' ? JSON.parse(p.subcategories) : p.subcategories;
+                } catch (e) {
+                  subcats = [];
+                }
+              }
+              return {
+                id: p.id,
+                programme_code: p.programme_code || p.code,
+                programme_name_english: p.programme_name_english || p.nameEnglish || p.name,
+                programme_name_arabic: p.programme_name_arabic || p.nameArabic || '',
+                programme_name: p.programme_name_english || p.nameEnglish || p.name,
+                hasSubcategories: !!p.hasSubcategories,
+                subcategories: subcats,
+                status: p.status === 'Active' || p.status === 'ACTIVE' ? 'Active' : 'Inactive',
+                created_at: p.createdAt || p.created_at || new Date().toISOString(),
+                updated_at: p.updatedAt || p.updated_at || new Date().toISOString(),
+              };
+            });
+            setProgrammes(mappedProgrammes);
+            safeLocalStorageSet('markazu_programmes', mappedProgrammes);
           }
         })
-        .catch((e) => console.warn('[syncTeachers] error:', e));
+        .catch((e) => console.warn('[syncProgrammes] error:', e));
 
-      // 3. Fetch Classes
+      // 3. Fetch Classes from PostgreSQL
       fetch('/api/classes')
         .then((res) => res.json())
         .then((data) => {
           if (data && Array.isArray(data.classes)) {
             const mappedClasses = data.classes.map((c: any) => ({
               id: c.id,
-              name: c.name,
+              name: c.name || c.class_name_english,
+              class_name_english: c.name || c.class_name_english,
+              class_name_arabic: c.class_name_arabic || c.classTeacher?.full_name_arabic || '',
               category: c.category,
               section: c.section,
               subcategory: c.subcategory || undefined,
               capacity: c.capacity,
-              studentCount: c._count?.students || 0,
+              studentCount: c.studentCount || c._count?.students || 0,
               classTeacherId: c.classTeacherId || undefined,
-              classTeacherName: c.classTeacher?.fullName || undefined,
+              classTeacherName: c.classTeacherName || c.classTeacher?.fullName || undefined,
+              classTeacherNameArabic: c.classTeacherNameArabic || c.classTeacher?.full_name_arabic || undefined,
               programmeId: c.programmeId || '',
-              programmeName: c.programme?.nameEnglish || 'Programme',
+              programmeName: c.programmeName || c.programme?.nameEnglish || 'Programme',
+              programmeNameArabic: c.programmeNameArabic || c.programme?.nameArabic || '',
             }));
             setClasses(mappedClasses);
             safeLocalStorageSet('markazu_classes', mappedClasses);
@@ -1386,17 +1591,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const saveAttendanceBatch = (newRecords: AttendanceRecord[], isDraft: boolean = false) => {
+    const normalizedRecords = newRecords.map((r) => ({
+      ...r,
+      date: r.date.includes('T') ? r.date.split('T')[0] : r.date,
+      isDraft,
+    }));
+
     setAttendance((prev) => {
       const updated = [...prev];
-      newRecords.forEach((rec) => {
+      normalizedRecords.forEach((rec) => {
         const idx = updated.findIndex((r) => r.studentId === rec.studentId && r.date === rec.date);
-        const recordToAdd = { ...rec, isDraft };
         if (idx >= 0) {
-          updated[idx] = recordToAdd;
+          updated[idx] = rec;
         } else {
-          updated.push(recordToAdd);
+          updated.push(rec);
         }
       });
+      safeLocalStorageSet('markazu_attendance', updated);
       return updated;
     });
 
@@ -1405,8 +1616,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       fetch('/api/attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ records: newRecords, isDraft }),
-      }).catch((err) => console.warn('[saveAttendanceBatch] API sync warning:', err));
+        body: JSON.stringify({ records: normalizedRecords, isDraft }),
+      })
+        .then((res) => res.json())
+        .then((resData) => {
+          if (resData && resData.success) {
+            syncAttendanceFromBackend();
+          }
+        })
+        .catch((err) => console.warn('[saveAttendanceBatch] API sync warning:', err));
     } catch (e) {
       console.warn('[saveAttendanceBatch] API error:', e);
     }
@@ -1425,7 +1643,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       newRecords.filter((r) => r.status === 'ABSENT' || r.status === 'LATE').forEach((rec) => {
         const targetStudent = students.find((s) => s.id === rec.studentId);
         if (targetStudent) {
-          const parent = parents.find((p) => p.wardIds.includes(targetStudent.id));
+          const parent = parents.find((p) => p.wardIds?.includes(targetStudent.id) || p.id === targetStudent.guardianId);
           if (parent) {
             setInAppNotifications((prev) => [
               {
@@ -1527,7 +1745,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // Generate parent alert
     const targetStudent = students.find((s) => s.id === newRecord.studentId);
     if (targetStudent) {
-      const parent = parents.find((p) => p.wardIds.includes(targetStudent.id));
+      const parent = parents.find((p) => p.wardIds?.includes(targetStudent.id) || p.id === targetStudent.guardianId);
       if (parent) {
         setInAppNotifications((prev) => [
           {
@@ -1960,6 +2178,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setUsers(updatedUsers);
         safeLocalStorageSet('markazu_users', updatedUsers);
 
+        if (created.role === 'TEACHER') {
+          syncTeachersFromBackend();
+        } else if (created.role === 'STUDENT') {
+          syncStudentsFromBackend();
+        }
+
         // Also ensure client-side email dispatch if needed
         sendSystemEmail({
           to: cleanEmail,
@@ -2140,19 +2364,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
 
     notify({
-      type: 'success',
-      title: 'User Account Permanently Deleted',
-      message: `User account for ${userToDelete.name} (${userToDelete.role}) has been permanently deleted.`,
+      type: 'warning',
+      title: 'User Account Deactivated',
+      message: `User account for ${userToDelete.name} (${userToDelete.role}) has been deactivated.`,
     });
 
+    fetchDeactivatedUsers();
+
     addAuditLog({
-      action: 'USER_ACCOUNT_DELETED',
+      action: 'USER_ACCOUNT_DEACTIVATED',
       performedBy: currentUser.name,
       userRole: currentUser.role,
-      details: `Permanently deleted ${userToDelete.role} user account: ${userToDelete.name} (${userToDelete.email})`,
+      details: `Deactivated ${userToDelete.role} user account: ${userToDelete.name} (${userToDelete.email})`,
       ipAddress: '197.210.227.14',
       affectedRecord: `User/${targetId}`,
-      status: 'SUCCESS',
+      status: 'WARNING',
     });
   };
 
@@ -2492,6 +2718,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           tempPassword: tempPass,
         }),
       });
+      await syncStudentsFromBackend();
     } catch (e) {
       console.warn('[addStudent] backend sync error:', e);
     }
@@ -2746,6 +2973,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           tempPassword: tempPass,
         }),
       });
+      await syncTeachersFromBackend();
     } catch (e) {
       console.warn('[addTeacher] backend sync error:', e);
     }
@@ -3048,7 +3276,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const addParent = (parentData: Omit<Parent, 'id'> & { id?: string }, customPassword?: string) => {
+  const addParent = async (parentData: Omit<Parent, 'id'> & { id?: string }, customPassword?: string) => {
     const parentId = parentData.id || `usr-parent-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const newParent: Parent = {
       ...parentData,
@@ -3074,7 +3302,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
     };
 
-    setUsers((prev) => [newUser, ...prev]);
+    // Sync to backend database
+    try {
+      await fetch('/api/parents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: parentId,
+          fullName: parentData.fullName,
+          email: parentData.email,
+          phone: parentData.phone,
+          occupation: parentData.occupation,
+          address: parentData.address,
+        }),
+      });
+      syncParentsFromBackend();
+    } catch (e) {
+      console.warn('[addParent] backend sync error:', e);
+    }
 
     // Send Welcome Email
     sendSystemEmail({
@@ -3189,13 +3434,56 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return { successCount: count };
   };
 
-  const bulkImportStudents = (studentsData: Omit<Student, 'id'>[]): { successCount: number } => {
-    let count = 0;
+  const bulkImportStudents = (
+    studentsData: (Omit<Student, 'id'> & { parentName?: string; parentPhone?: string; parentEmail?: string })[]
+  ): { successCount: number; linkedParentsCount: number; duplicatesPreventedCount: number } => {
+    let successCount = 0;
+    let linkedParentsCount = 0;
+    let duplicatesPreventedCount = 0;
+
+    const parentMap = new Map<string, string>(); // email/phone -> parentId
+
     studentsData.forEach((sData) => {
-      addStudent(sData);
-      count++;
+      let resolvedGuardianId = sData.guardianId;
+      const pEmail = sData.parentEmail ? sData.parentEmail.toLowerCase().trim() : null;
+      const pPhone = sData.parentPhone ? sData.parentPhone.trim() : null;
+      const key = pEmail || pPhone;
+
+      if (key && parentMap.has(key)) {
+        resolvedGuardianId = parentMap.get(key)!;
+        duplicatesPreventedCount++;
+      } else {
+        const existingP = parents.find(
+          (p) => (pEmail && p.email.toLowerCase() === pEmail) || (pPhone && p.phone === pPhone)
+        );
+        if (existingP) {
+          resolvedGuardianId = existingP.id;
+          if (key) parentMap.set(key, existingP.id);
+          duplicatesPreventedCount++;
+        } else if (sData.parentName && (pEmail || pPhone)) {
+          const newParentId = `usr-parent-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+          addParent({
+            id: newParentId,
+            fullName: sData.parentName,
+            email: pEmail || `parent.${Date.now()}@markazuumar.edu.ng`,
+            phone: pPhone || '08000000000',
+            occupation: 'Parent',
+            address: 'Kano, Nigeria',
+          });
+          resolvedGuardianId = newParentId;
+          if (key) parentMap.set(key, newParentId);
+          linkedParentsCount++;
+        }
+      }
+
+      addStudent({
+        ...sData,
+        guardianId: resolvedGuardianId || sData.guardianId,
+      });
+      successCount++;
     });
-    return { successCount: count };
+
+    return { successCount, linkedParentsCount, duplicatesPreventedCount };
   };
 
   const bulkImportParents = (
@@ -3803,12 +4091,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const addProgramme = (progData: Omit<Programme, 'id' | 'created_at' | 'updated_at'>) => {
-    const englishName = progData.programme_name_english || progData.programme_name;
-    const arabicName = progData.programme_name_arabic || '';
+  const addProgramme = async (progData: Omit<Programme, 'id' | 'created_at' | 'updated_at'>) => {
+    const englishName = (progData.programme_name_english || progData.programme_name || '').trim();
+    const arabicName = (progData.programme_name_arabic || '').trim();
 
     const isDuplicateName = programmes.some(
-      (p) => (p.programme_name_english || p.programme_name).trim().toLowerCase() === englishName.trim().toLowerCase()
+      (p) => (p.programme_name_english || p.programme_name).trim().toLowerCase() === englishName.toLowerCase()
     );
     if (isDuplicateName) {
       throw new Error(`A Programme with the name "${englishName}" already exists.`);
@@ -3821,9 +4109,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       throw new Error(`A Programme with the code "${progData.programme_code}" already exists.`);
     }
 
+    const tempId = `prog-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
     const newProg: Programme = {
       ...progData,
-      id: `prog-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      id: tempId,
       programme_name_english: englishName,
       programme_name_arabic: arabicName,
       programme_name: englishName,
@@ -3836,19 +4125,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    // Sync to backend database
+    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      fetch('/api/programmes', {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      const res = await fetch('/api/programmes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'x-session-token': token,
+          'x-session-id': token,
         },
-        body: JSON.stringify(newProg),
-      }).catch(() => {});
-    } catch (e) {}
+        body: JSON.stringify({
+          ...newProg,
+          code: newProg.programme_code,
+          nameEnglish: newProg.programme_name_english,
+          nameArabic: newProg.programme_name_arabic,
+          name: newProg.programme_name_english,
+        }),
+      });
+      const data = await res.json();
+      if (data && data.programme) {
+        setProgrammes((prev) => {
+          const next = prev.map((p) => (p.id === tempId ? { ...p, ...data.programme } : p));
+          safeLocalStorageSet('markazu_programmes', next);
+          return next;
+        });
+      }
+    } catch (e) {
+      console.warn('[addProgramme] backend sync warning:', e);
+    }
 
     addAuditLog({
       action: 'PROGRAMME_CREATED',
@@ -3861,7 +4167,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateProgramme = (id: string, updated: Partial<Programme>) => {
+  const updateProgramme = async (id: string, updated: Partial<Programme>) => {
     if (updated.programme_name_english) {
       const isDuplicateName = programmes.some(
         (p) =>
@@ -3893,19 +4199,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    // Sync to backend database
+    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      fetch(`/api/programmes/${id}`, {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      const res = await fetch(`/api/programmes/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'x-session-token': token,
+          'x-session-id': token,
         },
-        body: JSON.stringify(updated),
-      }).catch(() => {});
-    } catch (e) {}
+        body: JSON.stringify({
+          ...updated,
+          code: updated.programme_code,
+          nameEnglish: updated.programme_name_english,
+          nameArabic: updated.programme_name_arabic,
+        }),
+      });
+      const data = await res.json();
+      if (data && data.programme) {
+        setProgrammes((prev) => {
+          const next = prev.map((p) => (p.id === id ? { ...p, ...data.programme } : p));
+          safeLocalStorageSet('markazu_programmes', next);
+          return next;
+        });
+      }
+    } catch (e) {
+      console.warn('[updateProgramme] backend sync warning:', e);
+    }
 
     addAuditLog({
       action: 'PROGRAMME_UPDATED',
@@ -3940,7 +4262,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const deleteProgramme = (id: string) => {
+  const deleteProgramme = async (id: string) => {
     setProgrammes((prev) => {
       const next = prev.filter((p) => p.id !== id);
       safeLocalStorageSet('markazu_programmes', next);
@@ -3953,17 +4275,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    // Sync to backend database
+    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      fetch(`/api/programmes/${id}`, {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      await fetch(`/api/programmes/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
           'x-session-token': token,
+          'x-session-id': token,
         },
-      }).catch(() => {});
-    } catch (e) {}
+      });
+    } catch (e) {
+      console.warn('[deleteProgramme] backend sync warning:', e);
+    }
 
     addAuditLog({
       action: 'PROGRAMME_DELETED',
@@ -4137,12 +4462,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addClass = async (newClassData: Omit<SchoolClass, 'id'>) => {
-    const englishName = newClassData.class_name_english || newClassData.name;
-    const arabicName = newClassData.class_name_arabic || '';
+    const englishName = (newClassData.class_name_english || newClassData.name || '').trim();
+    const arabicName = (newClassData.class_name_arabic || '').trim();
+    const tempId = `cls-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
     const newClass: SchoolClass = {
       ...newClassData,
-      id: `cls-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      id: tempId,
       class_name_english: englishName,
       class_name_arabic: arabicName,
       name: englishName,
@@ -4153,27 +4479,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    // Sync to backend database
+    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      await fetch('/api/classes', {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      const res = await fetch('/api/classes', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'x-session-token': token,
+          'x-session-id': token,
         },
         body: JSON.stringify({
-          id: newClass.id,
+          id: tempId,
           name: englishName,
-          category: newClassData.category,
-          section: newClassData.section,
+          category: newClassData.category || 'TAHFIZ',
+          section: newClassData.section || newClassData.subcategory || 'Section A',
           subcategory: newClassData.subcategory,
-          capacity: newClassData.capacity,
+          capacity: Number(newClassData.capacity || 30),
           programmeId: newClassData.programmeId,
           classTeacherId: newClassData.classTeacherId,
         }),
       });
+      const data = await res.json();
+      if (data && data.class) {
+        setClasses((prev) => {
+          const next = prev.map((c) => (c.id === tempId ? { ...c, ...data.class } : c));
+          safeLocalStorageSet('markazu_classes', next);
+          return next;
+        });
+      }
     } catch (e) {
       console.warn('[addClass] backend sync error:', e);
     }
@@ -4182,7 +4517,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       action: 'CLASS_CREATED',
       performedBy: currentUser.name,
       userRole: currentUser.role,
-      details: `Created Class: ${newClass.class_name_english} under Programme ${newClass.programmeName}`,
+      details: `Created Class: ${newClass.class_name_english} under Programme ${newClass.programmeName || newClass.programmeId}`,
       ipAddress: '197.210.227.14',
       affectedRecord: `SchoolClass/${newClass.id}`,
       status: 'SUCCESS',
@@ -4209,15 +4544,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    // Sync to backend database
+    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      await fetch(`/api/classes/${id}`, {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      const res = await fetch(`/api/classes/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           'x-session-token': token,
+          'x-session-id': token,
         },
         body: JSON.stringify({
           name: updated.name || updated.class_name_english,
@@ -4229,6 +4565,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           classTeacherId: updated.classTeacherId,
         }),
       });
+      const data = await res.json();
+      if (data && data.class) {
+        setClasses((prev) => {
+          const next = prev.map((c) => (c.id === id ? { ...c, ...data.class } : c));
+          safeLocalStorageSet('markazu_classes', next);
+          return next;
+        });
+      }
     } catch (e) {
       console.warn('[updateClass] backend sync error:', e);
     }
@@ -4257,14 +4601,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    // Sync to backend database
+    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
+      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
       await fetch(`/api/classes/${id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
           'x-session-token': token,
+          'x-session-id': token,
         },
       });
     } catch (e) {
@@ -4586,6 +4931,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setCurrentUser,
         createUserAccount,
         deleteUserAccount,
+        restoreUserAccount,
+        deactivatedUsers,
+        fetchDeactivatedUsers,
         updateUserAccount,
         unlockAccount,
         resetUserPassword,
@@ -4680,6 +5028,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         bulkImportTeachers,
         bulkImportStudents,
         bulkImportParents,
+        syncUsersFromBackend,
+        syncStudentsFromBackend,
+        syncTeachersFromBackend,
+        syncParentsFromBackend,
+        syncAttendanceFromBackend,
         addTahfizRecord,
         markAttendance,
         addGradeRecord,

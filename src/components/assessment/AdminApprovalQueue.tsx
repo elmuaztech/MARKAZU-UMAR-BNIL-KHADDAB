@@ -177,10 +177,10 @@ export function AdminApprovalQueue() {
 
       {/* Review & Approval Modal Dialog */}
       {selectedSub && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-4xl p-6 sm:p-8 space-y-6 shadow-2xl text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/60 pb-4">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl text-slate-900 dark:text-white">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/60">
               <div>
                 <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
                   Batch Evaluation Review • {selectedSub.subjectName}
@@ -197,83 +197,86 @@ export function AdminApprovalQueue() {
                   setSelectedSub(null);
                   setActionType(null);
                 }}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white text-lg font-bold"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white text-lg font-bold p-2"
               >
                 ✕
               </button>
             </div>
 
-            {/* Metrics Breakdown */}
-            <div className="grid grid-cols-4 gap-3 text-xs">
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40">
-                <span className="text-[10px] text-slate-500 dark:text-emerald-400 block font-semibold">Total Students</span>
-                <span className="font-poppins text-lg font-black">{selectedSub.totalStudents}</span>
+            {/* Body (Scrollable) */}
+            <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-6">
+              {/* Metrics Breakdown */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40">
+                  <span className="text-[10px] text-slate-500 dark:text-emerald-400 block font-semibold">Total Students</span>
+                  <span className="font-poppins text-lg font-black">{selectedSub.totalStudents}</span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40">
+                  <span className="text-[10px] text-slate-500 dark:text-emerald-400 block font-semibold">Class Average</span>
+                  <span className="font-poppins text-lg font-black text-emerald-600 dark:text-emerald-400">
+                    {selectedSub.classAverage}%
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40">
+                  <span className="text-[10px] text-slate-500 dark:text-emerald-400 block font-semibold">Highest Score</span>
+                  <span className="font-poppins text-lg font-black text-amber-600 dark:text-amber-400">
+                    {selectedSub.highestScore}%
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40">
+                  <span className="text-[10px] text-slate-500 dark:text-emerald-400 block font-semibold">Lowest Score</span>
+                  <span className="font-poppins text-lg font-black text-rose-600 dark:text-rose-400">
+                    {selectedSub.lowestScore}%
+                  </span>
+                </div>
               </div>
 
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40">
-                <span className="text-[10px] text-slate-500 dark:text-emerald-400 block font-semibold">Class Average</span>
-                <span className="font-poppins text-lg font-black text-emerald-600 dark:text-emerald-400">
-                  {selectedSub.classAverage}%
-                </span>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40">
-                <span className="text-[10px] text-slate-500 dark:text-emerald-400 block font-semibold">Highest Score</span>
-                <span className="font-poppins text-lg font-black text-amber-600 dark:text-amber-400">
-                  {selectedSub.highestScore}%
-                </span>
-              </div>
-
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40">
-                <span className="text-[10px] text-slate-500 dark:text-emerald-400 block font-semibold">Lowest Score</span>
-                <span className="font-poppins text-lg font-black text-rose-600 dark:text-rose-400">
-                  {selectedSub.lowestScore}%
-                </span>
-              </div>
-            </div>
-
-            {/* Student Marks Preview Table */}
-            <div className="rounded-2xl border border-slate-200 dark:border-emerald-800/40 overflow-hidden text-xs">
-              <div className="p-3 bg-slate-100 dark:bg-[#021810] font-bold border-b border-slate-200 dark:border-emerald-800/40 flex justify-between">
-                <span>Student Score Entry Details</span>
-                <span className="text-emerald-600 dark:text-emerald-400">{subGrades.length} Records Loaded</span>
-              </div>
-              <div className="divide-y divide-slate-100 dark:divide-emerald-950/60 max-h-48 overflow-y-auto font-mono">
-                {subGrades.map((g) => (
-                  <div key={g.id} className="p-3 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-900 dark:text-white block font-sans">{g.studentName}</span>
-                      <span className="text-[10px] text-slate-400">{g.admissionNo || 'N/A'}</span>
+              {/* Student Marks Preview Table */}
+              <div className="rounded-2xl border border-slate-200 dark:border-emerald-800/40 overflow-hidden text-xs">
+                <div className="p-3 bg-slate-100 dark:bg-[#021810] font-bold border-b border-slate-200 dark:border-emerald-800/40 flex justify-between">
+                  <span>Student Score Entry Details</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">{subGrades.length} Records Loaded</span>
+                </div>
+                <div className="divide-y divide-slate-100 dark:divide-emerald-950/60 max-h-48 overflow-y-auto font-mono">
+                  {subGrades.map((g) => (
+                    <div key={g.id} className="p-3 flex items-center justify-between">
+                      <div>
+                        <span className="font-bold text-slate-900 dark:text-white block font-sans">{g.studentName}</span>
+                        <span className="text-[10px] text-slate-400">{g.admissionNo || 'N/A'}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-slate-600 dark:text-emerald-300 text-[11px]">
+                          CA: {((g.assignmentScore || 0) + g.ca1Score + g.ca2Score + (g.testScore || 0)).toFixed(0)} | Exam: {g.examScore}
+                        </span>
+                        <span className="font-black px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                          {g.totalScore}% ({g.grade})
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-slate-600 dark:text-emerald-300 text-[11px]">
-                        CA: {((g.assignmentScore || 0) + g.ca1Score + g.ca2Score + (g.testScore || 0)).toFixed(0)} | Exam: {g.examScore}
-                      </span>
-                      <span className="font-black px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                        {g.totalScore}% ({g.grade})
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </div>
+
+              {/* Action Prompt & Comments Area */}
+              <div className="space-y-3 pt-2">
+                <label className="block text-xs font-bold text-slate-800 dark:text-emerald-300">
+                  Administrator Review Comments / Correction Feedback:
+                </label>
+                <textarea
+                  rows={3}
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Enter feedback or comments for teacher (required when returning for correction or rejecting)..."
+                  className="w-full p-3 rounded-2xl text-xs bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white focus:outline-none"
+                />
               </div>
             </div>
 
-            {/* Action Prompt & Comments Area */}
-            <div className="space-y-3 pt-2">
-              <label className="block text-xs font-bold text-slate-800 dark:text-emerald-300">
-                Administrator Review Comments / Correction Feedback:
-              </label>
-              <textarea
-                rows={3}
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Enter feedback or comments for teacher (required when returning for correction or rejecting)..."
-                className="w-full p-3 rounded-2xl text-xs bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white focus:outline-none"
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-200 dark:border-emerald-800/60">
+            {/* Action Buttons (Fixed) */}
+            <div className="shrink-0 p-4 sm:p-5 flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 dark:border-emerald-800/60 bg-slate-50/50 dark:bg-[#021810]">
               <Button
                 variant="danger"
                 size="md"

@@ -279,79 +279,102 @@ export default function ClassesPage() {
       </div>
 
       {/* Grid of Class Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-        {filteredClasses.map((c) => {
-          const teacherName = c.classTeacherName && c.classTeacherName !== 'Unassigned' ? c.classTeacherName : 'Not assigned';
-
-          return (
-            <div
-              key={c.id}
-              className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all"
+      {filteredClasses.length === 0 ? (
+        <div className="text-center py-12 px-4 rounded-3xl bg-white dark:bg-[#042419] border border-dashed border-slate-300 dark:border-emerald-500/30">
+          <School className="w-12 h-12 text-slate-400 dark:text-emerald-500/40 mx-auto mb-3" />
+          <h3 className="text-sm font-bold text-slate-800 dark:text-emerald-200">No Classes Found</h3>
+          <p className="text-xs text-slate-500 dark:text-emerald-400/60 mt-1 max-w-sm mx-auto">
+            {programmes.length === 0
+              ? 'Please create a Programme first before adding classes.'
+              : 'Click the "Add New Class" button above to create a new class stream.'}
+          </p>
+          {isAdmin && (
+            <Button
+              variant="success"
+              size="sm"
+              leftIcon={<Plus className="w-4 h-4" />}
+              className="mt-4"
+              onClick={handleOpenAdd}
             >
-              {/* Card Header with official Islamic Emerald Green gradient */}
-              <div className="p-5 bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-black text-white tracking-tight">
-                    {c.class_name_english || c.name}
-                  </h3>
-                  <p className="text-xs text-emerald-100/90 font-semibold mt-0.5">
-                    {c.section || 'Section A'}
-                  </p>
-                </div>
+              Add New Class
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          {filteredClasses.map((c) => {
+            const teacherName = c.classTeacherName && c.classTeacherName !== 'Unassigned' ? c.classTeacherName : 'Not assigned';
 
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-extrabold text-[10px] flex items-center gap-1 shadow-xs">
-                  ✓ Active
-                </span>
-              </div>
-
-              {/* Card Body */}
-              <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                <div className="space-y-2.5">
-                  {/* Box 1: Class Teacher */}
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/40 border border-slate-200 dark:border-emerald-900/30 space-y-0.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                      CLASS TEACHER
-                    </span>
-                    <p className="text-xs font-bold text-slate-800 dark:text-white truncate">
-                      {teacherName}
+            return (
+              <div
+                key={c.id}
+                className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-sm overflow-hidden flex flex-col justify-between hover:shadow-md transition-all"
+              >
+                {/* Card Header with official Islamic Emerald Green gradient */}
+                <div className="p-5 bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white flex items-start justify-between">
+                  <div>
+                    <h3 className="text-xl font-black text-white tracking-tight">
+                      {c.class_name_english || c.name}
+                    </h3>
+                    <p className="text-xs text-emerald-100/90 font-semibold mt-0.5">
+                      {c.section || 'Section A'}
                     </p>
                   </div>
 
-                  {/* Box 2: Students Enrolled */}
-                  <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 space-y-0.5">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                      STUDENTS ENROLLED
-                    </span>
-                    <p className="text-xs font-bold text-slate-800 dark:text-white">
-                      <span className="text-sm font-black text-emerald-700 dark:text-emerald-300">{c.studentCount || 0}</span> / {c.capacity || 40}
-                    </p>
-                  </div>
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-extrabold text-[10px] flex items-center gap-1 shadow-xs">
+                    ✓ Active
+                  </span>
                 </div>
 
-                {/* Bottom Action Buttons: [👁 View] [✏️ Edit] */}
-                <div className="pt-2 flex items-center gap-2">
-                  <button
-                    onClick={() => setViewingClass(c)}
-                    className="flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all"
-                  >
-                    <span>👁 View</span>
-                  </button>
+                {/* Card Body */}
+                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2.5">
+                    {/* Box 1: Class Teacher */}
+                    <div className="p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/40 border border-slate-200 dark:border-emerald-900/30 space-y-0.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        CLASS TEACHER
+                      </span>
+                      <p className="text-xs font-bold text-slate-800 dark:text-white truncate">
+                        {teacherName}
+                      </p>
+                    </div>
 
-                  {isAdmin && (
+                    {/* Box 2: Students Enrolled */}
+                    <div className="p-3 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/30 space-y-0.5">
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                        STUDENTS ENROLLED
+                      </span>
+                      <p className="text-xs font-bold text-slate-800 dark:text-white">
+                        <span className="text-sm font-black text-emerald-700 dark:text-emerald-300">{c.studentCount || 0}</span> / {c.capacity || 40}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Bottom Action Buttons: [👁 View] [✏️ Edit] */}
+                  <div className="pt-2 flex items-center gap-2">
                     <button
-                      onClick={() => handleOpenEdit(c)}
-                      className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-emerald-950/60 hover:bg-slate-200 dark:hover:bg-emerald-900 text-slate-700 dark:text-emerald-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200 dark:border-emerald-800/40 transition-all"
+                      onClick={() => setViewingClass(c)}
+                      className="flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all"
                     >
-                      <span className="text-amber-500">✏️</span>
-                      <span>Edit</span>
+                      <span>👁 View</span>
                     </button>
-                  )}
+
+                    {isAdmin && (
+                      <button
+                        onClick={() => handleOpenEdit(c)}
+                        className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-emerald-950/60 hover:bg-slate-200 dark:hover:bg-emerald-900 text-slate-700 dark:text-emerald-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200 dark:border-emerald-800/40 transition-all"
+                      >
+                        <span className="text-amber-500">✏️</span>
+                        <span>Edit</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ADD CLASS MODAL */}
       <AnimatePresence>
@@ -361,143 +384,145 @@ export default function ClassesPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 p-6 sm:p-8 text-slate-900 dark:text-white shadow-2xl space-y-5"
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 text-slate-900 dark:text-white shadow-2xl max-h-[90vh] flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-emerald-500/20">
+              <div className="flex items-center justify-between p-5 sm:p-6 pb-3 border-b border-slate-200 dark:border-emerald-500/20 shrink-0">
                 <h3 className="text-lg font-black font-poppins text-slate-900 dark:text-white flex items-center gap-2">
                   <Plus className="w-5 h-5 text-emerald-500" /> Add New Class
                 </h3>
-                <button onClick={() => setIsAddClassModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <button onClick={() => setIsAddClassModalOpen(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600">
                   ✕
                 </button>
               </div>
 
               {formError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold">
+                <div className="mx-5 sm:mx-6 mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold shrink-0">
                   {formError}
                 </div>
               )}
 
-              <form onSubmit={handleSaveAdd} className="space-y-3 text-xs font-poppins">
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                    Select Programme <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={classFormData.programmeId}
-                    onChange={(e) => {
-                      const pId = e.target.value;
-                      const prog = programmes.find((p) => p.id === pId);
-                      setClassFormData({
-                        ...classFormData,
-                        programmeId: pId,
-                        subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
-                      });
-                    }}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
-                  >
-                    {programmes.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.programme_name_english || p.programme_name} ({p.programme_code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {(() => {
-                  const selProg = programmes.find((p) => p.id === classFormData.programmeId);
-                  if (selProg && selProg.hasSubcategories && selProg.subcategories && selProg.subcategories.length > 0) {
-                    return (
-                      <div>
-                        <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                          Subcategory <span className="text-rose-500">*</span>
-                        </label>
-                        <select
-                          value={classFormData.subcategory}
-                          onChange={(e) => setClassFormData({ ...classFormData, subcategory: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
-                        >
-                          {selProg.subcategories.map((sub, idx) => (
-                            <option key={idx} value={sub}>
-                              {sub}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                    Class Name (English) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. Dar Abu Bakr As-Siddiq"
-                    value={classFormData.class_name_english}
-                    onChange={(e) => setClassFormData({ ...classFormData, class_name_english: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                    Class Name (Arabic)
-                  </label>
-                  <input
-                    type="text"
-                    dir="rtl"
-                    placeholder="مثال: دار أبي بكر الصديق"
-                    value={classFormData.class_name_arabic}
-                    onChange={(e) => setClassFormData({ ...classFormData, class_name_arabic: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleSaveAdd} className="flex flex-col flex-1 overflow-hidden">
+                <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-3.5 text-xs font-poppins">
                   <div>
-                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">Section / Room</label>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Select Programme <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={classFormData.programmeId}
+                      onChange={(e) => {
+                        const pId = e.target.value;
+                        const prog = programmes.find((p) => p.id === pId);
+                        setClassFormData({
+                          ...classFormData,
+                          programmeId: pId,
+                          subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
+                        });
+                      }}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                    >
+                      {programmes.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.programme_name_english || p.programme_name} ({p.programme_code})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {(() => {
+                    const selProg = programmes.find((p) => p.id === classFormData.programmeId);
+                    if (selProg && selProg.hasSubcategories && selProg.subcategories && selProg.subcategories.length > 0) {
+                      return (
+                        <div>
+                          <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                            Subcategory <span className="text-rose-500">*</span>
+                          </label>
+                          <select
+                            value={classFormData.subcategory}
+                            onChange={(e) => setClassFormData({ ...classFormData, subcategory: e.target.value })}
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                          >
+                            {selProg.subcategories.map((sub, idx) => (
+                              <option key={idx} value={sub}>
+                                {sub}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Class Name (English) <span className="text-rose-500">*</span>
+                    </label>
                     <input
                       type="text"
-                      value={classFormData.section}
-                      onChange={(e) => setClassFormData({ ...classFormData, section: e.target.value })}
+                      required
+                      placeholder="e.g. Dar Abu Bakr As-Siddiq"
+                      value={classFormData.class_name_english}
+                      onChange={(e) => setClassFormData({ ...classFormData, class_name_english: e.target.value })}
                       className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">Capacity</label>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Class Name (Arabic)
+                    </label>
                     <input
-                      type="number"
-                      value={classFormData.capacity}
-                      onChange={(e) => setClassFormData({ ...classFormData, capacity: Number(e.target.value) })}
-                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                      type="text"
+                      dir="rtl"
+                      placeholder="مثال: دار أبي بكر الصديق"
+                      value={classFormData.class_name_arabic}
+                      onChange={(e) => setClassFormData({ ...classFormData, class_name_arabic: e.target.value })}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">Section / Room</label>
+                      <input
+                        type="text"
+                        value={classFormData.section}
+                        onChange={(e) => setClassFormData({ ...classFormData, section: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">Capacity</label>
+                      <input
+                        type="number"
+                        value={classFormData.capacity}
+                        onChange={(e) => setClassFormData({ ...classFormData, capacity: Number(e.target.value) })}
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Assign Class Teacher
+                    </label>
+                    <select
+                      value={classFormData.classTeacherId}
+                      onChange={(e) => setClassFormData({ ...classFormData, classTeacherId: e.target.value })}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-medium"
+                    >
+                      <option value="">-- Leave Unassigned (No Teacher) --</option>
+                      {teachers.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} ({t.staffNo})
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                    Assign Class Teacher
-                  </label>
-                  <select
-                    value={classFormData.classTeacherId}
-                    onChange={(e) => setClassFormData({ ...classFormData, classTeacherId: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-medium"
-                  >
-                    <option value="">-- Leave Unassigned (No Teacher) --</option>
-                    {teachers.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} ({t.staffNo})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-emerald-500/20 font-bold">
+                <div className="flex items-center justify-end gap-3 p-4 sm:p-6 pt-3 border-t border-slate-200 dark:border-emerald-500/20 font-bold shrink-0 bg-slate-50/50 dark:bg-[#021810]">
                   <button
                     type="button"
                     onClick={() => setIsAddClassModalOpen(false)}
@@ -526,141 +551,143 @@ export default function ClassesPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 p-6 sm:p-8 text-slate-900 dark:text-white shadow-2xl space-y-5"
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 text-slate-900 dark:text-white shadow-2xl max-h-[90vh] flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-emerald-500/20">
+              <div className="flex items-center justify-between p-5 sm:p-6 pb-3 border-b border-slate-200 dark:border-emerald-500/20 shrink-0">
                 <h3 className="text-lg font-black font-poppins text-slate-900 dark:text-white flex items-center gap-2">
                   <Edit className="w-5 h-5 text-amber-500" /> Edit Class Details
                 </h3>
-                <button onClick={() => setEditingClass(null)} className="text-slate-400 hover:text-slate-600">
+                <button onClick={() => setEditingClass(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600">
                   ✕
                 </button>
               </div>
 
               {formError && (
-                <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold">
+                <div className="mx-5 sm:mx-6 mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-bold shrink-0">
                   {formError}
                 </div>
               )}
 
-              <form onSubmit={handleSaveEdit} className="space-y-3 text-xs font-poppins">
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                    Select Programme <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={classFormData.programmeId}
-                    onChange={(e) => {
-                      const pId = e.target.value;
-                      const prog = programmes.find((p) => p.id === pId);
-                      setClassFormData({
-                        ...classFormData,
-                        programmeId: pId,
-                        subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
-                      });
-                    }}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
-                  >
-                    {programmes.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.programme_name_english || p.programme_name} ({p.programme_code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {(() => {
-                  const selProg = programmes.find((p) => p.id === classFormData.programmeId);
-                  if (selProg && selProg.hasSubcategories && selProg.subcategories && selProg.subcategories.length > 0) {
-                    return (
-                      <div>
-                        <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                          Subcategory <span className="text-rose-500">*</span>
-                        </label>
-                        <select
-                          value={classFormData.subcategory}
-                          onChange={(e) => setClassFormData({ ...classFormData, subcategory: e.target.value })}
-                          className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
-                        >
-                          {selProg.subcategories.map((sub, idx) => (
-                            <option key={idx} value={sub}>
-                              {sub}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                    Class Name (English) <span className="text-rose-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={classFormData.class_name_english}
-                    onChange={(e) => setClassFormData({ ...classFormData, class_name_english: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                    Class Name (Arabic)
-                  </label>
-                  <input
-                    type="text"
-                    dir="rtl"
-                    value={classFormData.class_name_arabic}
-                    onChange={(e) => setClassFormData({ ...classFormData, class_name_arabic: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleSaveEdit} className="flex flex-col flex-1 overflow-hidden">
+                <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-3.5 text-xs font-poppins">
                   <div>
-                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">Section / Room</label>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Select Programme <span className="text-rose-500">*</span>
+                    </label>
+                    <select
+                      value={classFormData.programmeId}
+                      onChange={(e) => {
+                        const pId = e.target.value;
+                        const prog = programmes.find((p) => p.id === pId);
+                        setClassFormData({
+                          ...classFormData,
+                          programmeId: pId,
+                          subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
+                        });
+                      }}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                    >
+                      {programmes.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.programme_name_english || p.programme_name} ({p.programme_code})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {(() => {
+                    const selProg = programmes.find((p) => p.id === classFormData.programmeId);
+                    if (selProg && selProg.hasSubcategories && selProg.subcategories && selProg.subcategories.length > 0) {
+                      return (
+                        <div>
+                          <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                            Subcategory <span className="text-rose-500">*</span>
+                          </label>
+                          <select
+                            value={classFormData.subcategory}
+                            onChange={(e) => setClassFormData({ ...classFormData, subcategory: e.target.value })}
+                            className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                          >
+                            {selProg.subcategories.map((sub, idx) => (
+                              <option key={idx} value={sub}>
+                                {sub}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Class Name (English) <span className="text-rose-500">*</span>
+                    </label>
                     <input
                       type="text"
-                      value={classFormData.section}
-                      onChange={(e) => setClassFormData({ ...classFormData, section: e.target.value })}
+                      required
+                      value={classFormData.class_name_english}
+                      onChange={(e) => setClassFormData({ ...classFormData, class_name_english: e.target.value })}
                       className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">Capacity</label>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Class Name (Arabic)
+                    </label>
                     <input
-                      type="number"
-                      value={classFormData.capacity}
-                      onChange={(e) => setClassFormData({ ...classFormData, capacity: Number(e.target.value) })}
-                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                      type="text"
+                      dir="rtl"
+                      value={classFormData.class_name_arabic}
+                      onChange={(e) => setClassFormData({ ...classFormData, class_name_arabic: e.target.value })}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white dir-rtl text-right font-arabic"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">Section / Room</label>
+                      <input
+                        type="text"
+                        value={classFormData.section}
+                        onChange={(e) => setClassFormData({ ...classFormData, section: e.target.value })}
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">Capacity</label>
+                      <input
+                        type="number"
+                        value={classFormData.capacity}
+                        onChange={(e) => setClassFormData({ ...classFormData, capacity: Number(e.target.value) })}
+                        className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
+                      Assign Class Teacher
+                    </label>
+                    <select
+                      value={classFormData.classTeacherId}
+                      onChange={(e) => setClassFormData({ ...classFormData, classTeacherId: e.target.value })}
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-medium"
+                    >
+                      <option value="">-- Leave Unassigned (No Teacher) --</option>
+                      {teachers.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} ({t.staffNo})
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
-                <div>
-                  <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                    Assign Class Teacher
-                  </label>
-                  <select
-                    value={classFormData.classTeacherId}
-                    onChange={(e) => setClassFormData({ ...classFormData, classTeacherId: e.target.value })}
-                    className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-medium"
-                  >
-                    <option value="">-- Leave Unassigned (No Teacher) --</option>
-                    {teachers.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.full_name_english || t.fullName} {t.full_name_arabic ? `(${t.full_name_arabic})` : ''} ({t.staffNo})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200 dark:border-emerald-500/20 font-bold">
+                <div className="flex items-center justify-end gap-3 p-4 sm:p-6 pt-3 border-t border-slate-200 dark:border-emerald-500/20 font-bold shrink-0 bg-slate-50/50 dark:bg-[#021810]">
                   <button
                     type="button"
                     onClick={() => setEditingClass(null)}
@@ -670,7 +697,7 @@ export default function ClassesPage() {
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md"
+                    className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-md font-bold"
                   >
                     Save Changes
                   </button>
@@ -689,9 +716,9 @@ export default function ClassesPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-sky-500/40 p-6 sm:p-8 text-slate-900 dark:text-white shadow-2xl space-y-5"
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-sky-500/40 text-slate-900 dark:text-white shadow-2xl max-h-[90vh] flex flex-col overflow-hidden"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-emerald-500/20">
+              <div className="flex items-center justify-between p-5 sm:p-6 pb-3 border-b border-slate-200 dark:border-emerald-500/20 shrink-0">
                 <div className="space-y-0.5">
                   <h3 className="text-lg font-black font-poppins text-slate-900 dark:text-white flex items-center gap-2">
                     <UserCheck className="w-5 h-5 text-sky-500" /> Change Class Teacher
@@ -700,12 +727,12 @@ export default function ClassesPage() {
                     Class: <strong>{reassigningTeacherClass.class_name_english || reassigningTeacherClass.name}</strong>
                   </p>
                 </div>
-                <button onClick={() => setReassigningTeacherClass(null)} className="text-slate-400 hover:text-slate-600">
+                <button onClick={() => setReassigningTeacherClass(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600">
                   ✕
                 </button>
               </div>
 
-              <div className="space-y-4 text-xs font-poppins">
+              <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 text-xs font-poppins">
                 <div>
                   <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1.5">
                     Select New Assigned Teacher:
@@ -727,15 +754,15 @@ export default function ClassesPage() {
                 <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-[11px] leading-relaxed">
                   💡 <strong>Note:</strong> Choosing "Leave Unassigned" will set this class to have no assigned teacher.
                 </div>
+              </div>
 
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <button
-                    onClick={() => setReassigningTeacherClass(null)}
-                    className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold"
-                  >
-                    Close
-                  </button>
-                </div>
+              <div className="flex items-center justify-end gap-2 p-4 sm:p-6 pt-3 border-t border-slate-200 dark:border-emerald-500/20 shrink-0 bg-slate-50/50 dark:bg-[#021810]">
+                <button
+                  onClick={() => setReassigningTeacherClass(null)}
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold"
+                >
+                  Close
+                </button>
               </div>
             </motion.div>
           </div>

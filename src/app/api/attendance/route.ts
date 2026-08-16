@@ -81,34 +81,56 @@ export async function POST(request: NextRequest) {
     // 1. Save to persistent serverDb JSON database
     const savedServerRecords = saveServerAttendanceBatch(records, !!isDraft);
 
-    // 2. Try Postgres Prisma upsert
+    // 2. Postgres Prisma upsert
     const createdRecords = [];
     for (const item of records) {
       try {
+        const attendanceId = item.id || `att-${item.classId}-${item.studentId}-${item.date ? item.date.split('T')[0] : new Date().toISOString().split('T')[0]}`;
+        const recordDate = item.date ? new Date(item.date) : new Date();
+        const validStatus = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED', 'MEDICAL_LEAVE', 'OFFICIAL_ASSIGNMENT', 'HOLIDAY'].includes(item.status)
+          ? item.status
+          : 'PRESENT';
+
+        // Resolve programmeId if missing
+        let itemProgId = item.programmeId || null;
+        if (!itemProgId && item.classId) {
+          const cls = await prisma.schoolClass.findUnique({ where: { id: item.classId }, select: { programmeId: true } });
+          itemProgId = cls?.programmeId || null;
+        }
+
         const rec = await prisma.attendanceRecord.upsert({
           where: {
-            id: item.id || `att-${item.classId}-${item.studentId}-${item.date}`,
+            id: attendanceId,
           },
           update: {
-            statusEnum: item.status || 'PRESENT',
+            status: validStatus as any,
+            statusEnum: validStatus,
             remarks: item.remarks || '',
             isDraft: !!isDraft,
+            editedBy: authUser ? `${authUser.name} (${authUser.role})` : undefined,
+            editedAt: new Date(),
           },
           create: {
-            date: new Date(item.date || Date.now()),
+            id: attendanceId,
+            date: recordDate,
             studentId: item.studentId,
             classId: item.classId,
-            programmeId: item.programmeId || authUser?.assignedProgrammeId || 'prog-01',
-            teacherId: item.teacherId || authUser?.id || 'usr-teacher-1',
-            status: 'PRESENT',
-            statusEnum: item.status || 'PRESENT',
+            programmeId: itemProgId,
+            teacherId: item.teacherId || authUser?.id || null,
+            status: validStatus as any,
+            statusEnum: validStatus,
             remarks: item.remarks || '',
             isDraft: !!isDraft,
+            editedBy: authUser ? `${authUser.name} (${authUser.role})` : null,
+          },
+          include: {
+            student: true,
+            schoolClass: true,
           },
         });
         createdRecords.push(rec);
       } catch (dbErr) {
-        // Postgres offline
+        console.error('[PRISMA_ATTENDANCE_UPSERT_ERROR]', dbErr);
       }
     }
 

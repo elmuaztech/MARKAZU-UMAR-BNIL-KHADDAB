@@ -100,12 +100,17 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     // Also deactivate the user account if linked
     if (deletedStudent.userId) {
-      await prisma.user.update({
-        where: { id: deletedStudent.userId },
+      await prisma.user.updateMany({
+        where: { id: deletedStudent.userId, deletedAt: null },
         data: {
           deletedAt: new Date(),
           status: 'DEACTIVATED',
         },
+      });
+
+      await prisma.userSession.updateMany({
+        where: { userId: deletedStudent.userId },
+        data: { revoked: true },
       });
     }
 

@@ -159,11 +159,23 @@ export default function MessageTemplatesPage() {
 
       {/* CREATE / EDIT TEMPLATE MODAL */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-xl p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl space-y-4 font-poppins">
-            <h2 className="text-lg font-black text-slate-900 dark:text-white">{editingId ? 'Edit Template' : 'Create New Template'}</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-xl max-h-[90vh] flex flex-col overflow-hidden rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl font-poppins">
+            {/* Header (Fixed) */}
+            <div className="shrink-0 p-5 sm:p-6 border-b border-slate-200 dark:border-emerald-500/20 flex items-center justify-between">
+              <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                {editingId ? 'Edit Template' : 'Create New Template'}
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold"
+              >
+                ✕
+              </button>
+            </div>
 
-            <div className="space-y-3 text-xs font-bold">
+            {/* Body (Scrollable) */}
+            <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4 text-xs font-bold">
               <div>
                 <label className="text-[10px] text-slate-500 uppercase">Template Title:</label>
                 <input
@@ -195,11 +207,20 @@ export default function MessageTemplatesPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
-              <button onClick={() => setShowModal(false)} className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-emerald-300 font-bold text-xs">
+            {/* Footer (Fixed) */}
+            <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-end gap-3 bg-slate-50/50 dark:bg-[#021810]">
+              <button
+                type="button"
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2.5 rounded-xl bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 font-bold text-xs hover:bg-slate-300 transition-all"
+              >
                 Cancel
               </button>
-              <button onClick={handleSave} className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-black text-xs">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-md transition-all"
+              >
                 Save Template
               </button>
             </div>

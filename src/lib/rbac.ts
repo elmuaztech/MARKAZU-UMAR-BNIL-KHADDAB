@@ -205,8 +205,12 @@ export function filterStudentsForUser(
   parents: Parent[],
   teacherAssignments: TeacherAssignment[] = []
 ): Student[] {
+  const activeStudents = allStudents.filter(
+    (s: any) => !s.deletedAt && s.status !== 'SUSPENDED' && s.status !== 'DEACTIVATED'
+  );
+
   if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
-    return allStudents;
+    return activeStudents;
   }
 
   if (currentUser.role === 'HEADMASTER') {
@@ -268,8 +272,12 @@ export function filterStudentsForUser(
 }
 
 export function filterTeachersForUser(currentUser: User, allTeachers: Teacher[]): Teacher[] {
+  const activeTeachers = allTeachers.filter(
+    (t: any) => !t.deletedAt && t.status !== 'DEACTIVATED' && t.status !== 'INACTIVE'
+  );
+
   if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
-    return allTeachers;
+    return activeTeachers;
   }
 
   if (currentUser.role === 'HEADMASTER') {
@@ -331,8 +339,10 @@ export function filterSubjectsForUser(currentUser: User, allSubjects: Subject[])
 }
 
 export function filterParentsForUser(currentUser: User, allParents: Parent[], scopedStudents: Student[]): Parent[] {
+  const activeParents = allParents.filter((p: any) => !p.deletedAt);
+
   if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
-    return allParents;
+    return activeParents;
   }
 
   if (currentUser.role === 'HEADMASTER') {
@@ -441,12 +451,26 @@ export function canTeacherAccessAttendance(
     return true;
   }
 
+  if (user.role === 'HEADMASTER') {
+    if (!user.assignedProgrammeId) return true;
+    return !programmeId || user.assignedProgrammeId === programmeId;
+  }
+
   if (user.role !== 'TEACHER') {
     return false;
   }
 
+  if (teacherAssignments.length === 0) {
+    // If no explicit teacher assignments configured yet, allow teacher to mark attendance
+    return true;
+  }
+
   return teacherAssignments.some((assignment) => {
-    const isTeacherMatch = assignment.teacherId === user.id || user.id.includes('teacher');
+    const isTeacherMatch =
+      assignment.teacherId === user.id ||
+      (user.email && assignment.teacherId.toLowerCase() === user.email.toLowerCase()) ||
+      (user.username && assignment.teacherId.toLowerCase() === user.username.toLowerCase()) ||
+      user.id.includes('teacher');
     if (!isTeacherMatch) return false;
 
     const isProgMatch = !programmeId || assignment.programmeId === programmeId;
