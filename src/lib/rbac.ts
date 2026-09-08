@@ -239,19 +239,21 @@ export function filterStudentsForUser(
           (ta) =>
             ta.teacherId === currentUser.id ||
             (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
-            (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase()) ||
-            currentUser.id.includes('teacher') ||
-            currentUser.email.toLowerCase().includes('teacher')
+            (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase())
         )
         .map((ta) => ta.classId)
     );
 
     if (assignedClassIds.size === 0) {
-      // Fallback: If no explicit assignments found, return students in teacher's default assigned classes
-      return allStudents.filter((s) => s.classId === 'cls-tahfiz-1' || s.classId === 'cls-primary-1' || s.classId === 'cls-tahfiz-2');
+      return [];
     }
 
-    return allStudents.filter((s) => assignedClassIds.has(s.classId));
+    return allStudents.filter(
+      (s) =>
+        assignedClassIds.has(s.classId) ||
+        (s.className && assignedClassIds.has(s.className)) ||
+        (s.class_name && assignedClassIds.has(s.class_name))
+    );
   }
 
   if (currentUser.role === 'PARENT') {

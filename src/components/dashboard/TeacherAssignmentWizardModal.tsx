@@ -147,7 +147,7 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h3 className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                  <UserCheck className="w-4 h-4 text-emerald-500" /> Step 1: Select Faculty Member
+                  <UserCheck className="w-4 h-4 text-emerald-500" /> Step 1: Select Teacher
                 </h3>
                 <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-bold">
                   {teachers.length} Active Staff Members

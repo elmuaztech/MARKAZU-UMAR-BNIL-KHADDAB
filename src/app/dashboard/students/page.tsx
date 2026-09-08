@@ -62,11 +62,13 @@ export default function StudentsPage() {
   const [newParentName, setNewParentName] = useState('');
   const [newParentPhone, setNewParentPhone] = useState('');
   const [newParentEmail, setNewParentEmail] = useState('');
+  const [studentEmail, setStudentEmail] = useState('');
   const [initialJuz, setInitialJuz] = useState(1);
   const [customPassword, setCustomPassword] = useState('');
 
   // Edit Student Form State
   const [editFullName, setEditFullName] = useState('');
+  const [editEmail, setEditEmail] = useState('');
   const [editAdmissionNo, setEditAdmissionNo] = useState('');
   const [editGender, setEditGender] = useState<'MALE' | 'FEMALE'>('MALE');
   const [editProgrammeId, setEditProgrammeId] = useState('');
@@ -98,11 +100,14 @@ export default function StudentsPage() {
     const targetClass = classes.find((c) => c.id === classId);
     const targetParent = parents.find((p) => p.id === selectedParentId);
 
+    const cleanEmail = studentEmail.trim().toLowerCase();
+
     addStudent(
       {
         admissionNo,
         fullName,
         gender,
+        email: cleanEmail || undefined,
         dob: '2013-05-10',
         dateEnrolled: new Date().toISOString().split('T')[0],
         programmeId: selectedProgrammeId,
@@ -134,11 +139,14 @@ export default function StudentsPage() {
     notify({
       type: 'success',
       title: 'Student Enrolled',
-      message: `Enrolled ${fullName} (${admissionNo}). Welcome email with portal credentials sent to parent/guardian!`,
+      message: cleanEmail
+        ? `Enrolled ${fullName} (${admissionNo}). Welcome email with portal credentials sent to ${cleanEmail}!`
+        : `Enrolled ${fullName} (${admissionNo}) as offline student without login credentials.`,
     });
 
     setShowAddModal(false);
     setFullName('');
+    setStudentEmail('');
     setGuardianName('');
     setGuardianPhone('');
     setNewParentName('');
@@ -313,6 +321,7 @@ export default function StudentsPage() {
   const handleOpenEdit = (student: Student) => {
     setEditingStudent(student);
     setEditFullName(student.fullName);
+    setEditEmail(student.email || '');
     setEditAdmissionNo(student.admissionNo);
     setEditGender(student.gender);
     setEditProgrammeId(student.programmeId || programmes[0]?.id || '');
@@ -323,30 +332,47 @@ export default function StudentsPage() {
     setEditStatus(student.status);
   };
 
-  const handleEditSubmit = (e: React.FormEvent) => {
+  const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingStudent) return;
     const targetProgramme = programmes.find((p) => p.id === editProgrammeId);
     const targetClass = classes.find((c) => c.id === editClassId);
+    const cleanEditEmail = editEmail.trim().toLowerCase();
 
-    updateStudent(editingStudent.id, {
-      fullName: editFullName,
-      admissionNo: editAdmissionNo,
-      gender: editGender,
-      programmeId: editProgrammeId,
-      programmeName: targetProgramme?.programme_name || editingStudent.programmeName,
-      classId: editClassId,
-      className: targetClass?.name || editingStudent.className,
-      guardianName: editGuardianName,
-      guardianPhone: editGuardianPhone,
-      status: editStatus,
-      hifzProgress: {
-        ...editingStudent.hifzProgress,
-        juzCompleted: Number(editCompletedJuz),
-      },
-    });
+    try {
+      await updateStudent(editingStudent.id, {
+        fullName: editFullName,
+        email: cleanEditEmail || undefined,
+        admissionNo: editAdmissionNo,
+        gender: editGender,
+        programmeId: editProgrammeId,
+        programmeName: targetProgramme?.programme_name || editingStudent.programmeName,
+        classId: editClassId,
+        className: targetClass?.name || editingStudent.className,
+        guardianName: editGuardianName,
+        guardianPhone: editGuardianPhone,
+        status: editStatus,
+        hifzProgress: {
+          ...editingStudent.hifzProgress,
+          juzCompleted: Number(editCompletedJuz),
+        },
+      });
 
-    setEditingStudent(null);
+      notify({
+        type: 'success',
+        title: 'Student Details Saved',
+        message: cleanEditEmail && !editingStudent.email
+          ? `Updated student record. Student portal account activated and credentials sent to ${cleanEditEmail}!`
+          : `Updated student record for ${editFullName}.`,
+      });
+      setEditingStudent(null);
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Failed to Save Student',
+        message: err.message || 'Could not save student changes.',
+      });
+    }
   };
 
   const filteredStudents = userStudents.filter((s) => {
@@ -386,7 +412,18 @@ export default function StudentsPage() {
           </div>
           <div>
             <div className="text-xs">{student.fullName}</div>
-            <div className="text-[10px] text-slate-400 font-mono">{student.admissionNo}</div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-[10px] text-slate-400 font-mono">{student.admissionNo}</span>
+              {student.email ? (
+                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans" title={student.email}>
+                  {student.email}
+                </span>
+              ) : (
+                <span className="text-[9px] text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-1.5 py-0.5 rounded font-sans">
+                  Offline
+                </span>
+              )}
+            </div>
           </div>
         </div>
       ),
@@ -775,6 +812,27 @@ export default function StudentsPage() {
                     className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white"
                   />
                 </div>
+
+                <div className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/40 border border-slate-200 dark:border-emerald-800/40">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-slate-700 dark:text-emerald-300 font-bold text-xs">
+                      Student Email Address <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
+                    </label>
+                    <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Portal Login
+                    </span>
+                  </div>
+                  <input
+                    type="email"
+                    placeholder="student@example.com (Leave blank for offline student)"
+                    value={studentEmail}
+                    onChange={(e) => setStudentEmail(e.target.value)}
+                    className="w-full bg-white dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-slate-900 dark:text-white text-xs"
+                  />
+                  <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 leading-relaxed">
+                    Optional: If provided, a student portal account is automatically generated and login credentials will be emailed to the student. If left blank, the student will be enrolled without portal login details (can be updated later).
+                  </p>
+                </div>
               </div>
 
               {/* Footer (Fixed / Non-scrolling) */}
@@ -938,6 +996,27 @@ export default function StudentsPage() {
                     </select>
                   </div>
                 </div>
+
+                <div className="space-y-1.5 p-3 rounded-2xl bg-slate-50 dark:bg-emerald-950/40 border border-slate-200 dark:border-emerald-800/40">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-slate-700 dark:text-emerald-300 font-bold text-xs">
+                      Student Email Address <span className="text-slate-400 font-normal text-[10px]">(Optional)</span>
+                    </label>
+                    <span className="text-[10px] font-semibold text-sky-600 dark:text-sky-400 bg-sky-500/10 px-2 py-0.5 rounded-full border border-sky-500/20">
+                      Portal Access
+                    </span>
+                  </div>
+                  <input
+                    type="email"
+                    placeholder="student@example.com (Leave blank for offline student)"
+                    value={editEmail}
+                    onChange={(e) => setEditEmail(e.target.value)}
+                    className="w-full bg-white dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2.5 text-slate-900 dark:text-white text-xs"
+                  />
+                  <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 leading-relaxed">
+                    Adding an email to an offline student will activate their student portal login and dispatch login credentials immediately.
+                  </p>
+                </div>
               </div>
 
               {/* Footer (Fixed) */}
@@ -995,6 +1074,19 @@ export default function StudentsPage() {
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Parent / Guardian Info</span>
                 <p className="font-semibold text-slate-900 dark:text-white">{selectedStudent.guardianName}</p>
                 <p className="text-emerald-600 dark:text-emerald-300 font-mono">{selectedStudent.guardianPhone}</p>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-emerald-950/80 border border-slate-200 dark:border-emerald-800/40 space-y-1">
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Student Portal Access</span>
+                {selectedStudent.email ? (
+                  <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <span className="text-emerald-500 font-bold">✓ Portal Active:</span> {selectedStudent.email}
+                  </p>
+                ) : (
+                  <p className="text-slate-500 dark:text-slate-400 italic">
+                    Offline Student (No email assigned. Portal login can be activated by editing student profile).
+                  </p>
+                )}
               </div>
             </div>
 

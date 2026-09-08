@@ -21,10 +21,44 @@ import { TahfizRecord, Student } from '@/types';
 import { filterStudentsForUser, filterTahfizForUser } from '@/lib/rbac';
 
 export function TahfizTracker() {
-  const { students, parents, classes, teacherAssignments, currentUser, tahfizRecords, saveTahfizRecord } = useApp();
+  const { students, parents, classes, teachers, teacherAssignments, currentUser, tahfizRecords, saveTahfizRecord } = useApp();
 
-  const [selectedClassId, setSelectedClassId] = useState<string>('cls-tahfiz-1');
+  // Scope available classes for TEACHER
+  const availableClasses = useMemo(() => {
+    if (currentUser.role !== 'TEACHER') return classes;
+    const currentTeacher = teachers.find(
+      (t) =>
+        t.id === currentUser.id ||
+        (t.userId && t.userId === currentUser.id) ||
+        (t.email && currentUser.email && t.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (t.staffNo && currentUser.username && t.staffNo.toLowerCase() === currentUser.username.toLowerCase())
+    );
+    const assignedIds = new Set<string>();
+    if (currentTeacher?.classesAssigned) {
+      currentTeacher.classesAssigned.forEach((c) => assignedIds.add(c));
+    }
+    teacherAssignments
+      .filter((ta) => ta.teacherId === currentUser.id || (currentTeacher && ta.teacherId === currentTeacher.id))
+      .forEach((ta) => assignedIds.add(ta.classId));
+
+    const scoped = classes.filter(
+      (c) =>
+        assignedIds.has(c.id) ||
+        assignedIds.has(c.name) ||
+        (currentTeacher && c.classTeacherId === currentTeacher.id) ||
+        c.classTeacherId === currentUser.id
+    );
+    return scoped.length > 0 ? scoped : classes;
+  }, [classes, currentUser, teachers, teacherAssignments]);
+
+  const [selectedClassId, setSelectedClassId] = useState<string>(() => availableClasses[0]?.id || 'cls-tahfiz-1');
   const [selectedStudentId, setSelectedStudentId] = useState<string>('usr-student-1');
+
+  React.useEffect(() => {
+    if (availableClasses.length > 0 && !availableClasses.some((c) => c.id === selectedClassId)) {
+      setSelectedClassId(availableClasses[0].id);
+    }
+  }, [availableClasses, selectedClassId]);
 
   // Daily Form State
   const [hifzSurah, setHifzSurah] = useState<string>('Surah Al-Kahf');
@@ -217,7 +251,7 @@ export function TahfizTracker() {
               }}
               className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white focus:outline-none"
             >
-              {classes.map((c) => (
+              {availableClasses.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
                 </option>

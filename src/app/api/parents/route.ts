@@ -118,7 +118,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: 'Parent created successfully in database',
+        message: 'Parent created successfully',
         parent: newParent,
       },
       { status: 201 }

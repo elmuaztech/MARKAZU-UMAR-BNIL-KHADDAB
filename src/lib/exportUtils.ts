@@ -125,7 +125,7 @@ export function printOrExportPDFReference(
             Programme: <strong>${programmeName}</strong> | Class: <strong>${className}</strong> | Subject: <strong>${subjectName}</strong>
           </p>
           <p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">
-            Academic Session: ${session} • Term: ${term} • Faculty Evaluator: ${teacherName}
+            Academic Session: ${session} • Term: ${term} • Teacher Evaluator: ${teacherName}
           </p>
         </div>
 

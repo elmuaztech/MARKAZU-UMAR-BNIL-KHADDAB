@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: 'Programme created successfully in database',
+        message: 'Programme created successfully',
         programme: created,
       },
       { status: 201 }

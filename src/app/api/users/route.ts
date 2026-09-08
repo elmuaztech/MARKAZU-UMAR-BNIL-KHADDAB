@@ -3,7 +3,6 @@ import prisma from '../../../lib/prisma';
 import { getAuthenticatedUser, enforceRoleAndProgramme } from '../../../lib/auth';
 import { hashPassword, generateTemporaryPassword } from '../../../lib/security';
 import { sendSystemEmail } from '../../../lib/emailService';
-import { getAllServerUsers, createServerUser, readServerDatabase, findServerUser } from '../../../lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,47 +24,27 @@ export async function GET(req: NextRequest) {
       whereClause = {};
     }
 
-    let users: any[] = [];
-    let querySuccess = false;
-
-    // 1. Try PostgreSQL Prisma if connected
-    try {
-      users = await prisma.user.findMany({
-        where: whereClause,
-        orderBy: { createdAt: 'desc' },
-        select: {
-          id: true,
-          username: true,
-          name: true,
-          email: true,
-          role: true,
-          phone: true,
-          avatar: true,
-          assignedProgrammeId: true,
-          assignedProgrammeName: true,
-          status: true,
-          isFirstLogin: true,
-          isLocked: true,
-          lastLoginAt: true,
-          createdAt: true,
-          deletedAt: true,
-        },
-      });
-      querySuccess = true;
-    } catch (dbErr) {
-      console.warn('[GET_USERS] Postgres query failed, falling back to serverDb:', dbErr);
-    }
-
-    if (!querySuccess) {
-      const allServer = getAllServerUsers();
-      if (statusParam === 'DEACTIVATED') {
-        users = allServer.filter((u: any) => u.deletedAt || u.status === 'DEACTIVATED');
-      } else if (statusParam === 'ALL' || includeDeactivated) {
-        users = allServer;
-      } else {
-        users = allServer.filter((u: any) => !u.deletedAt && u.status !== 'DEACTIVATED');
-      }
-    }
+    const users = await prisma.user.findMany({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        username: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        avatar: true,
+        assignedProgrammeId: true,
+        assignedProgrammeName: true,
+        status: true,
+        isFirstLogin: true,
+        isLocked: true,
+        lastLoginAt: true,
+        createdAt: true,
+        deletedAt: true,
+      },
+    });
 
     return NextResponse.json({ users, total: users.length });
   } catch (error: any) {
@@ -89,24 +68,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Full Name and Email address are required.' }, { status: 400 });
     }
 
-    // Deactivated vs Active Duplicate Email Detection
-    let existingAnyUser: any = null;
-    try {
-      existingAnyUser = await prisma.user.findFirst({
-        where: {
-          email: { equals: email, mode: 'insensitive' },
-        },
-        include: {
-          student: true,
-          teacher: true,
-          parent: true,
-        },
-      });
-    } catch (e) {}
-
-    if (!existingAnyUser) {
-      existingAnyUser = findServerUser(email);
-    }
+    // Deactivated vs Active Duplicate Email Detection strictly from PostgreSQL
+    const existingAnyUser = await prisma.user.findFirst({
+      where: {
+        email: { equals: email, mode: 'insensitive' },
+      },
+      include: {
+        student: true,
+        teacher: true,
+        parent: true,
+      },
+    });
 
     if (existingAnyUser) {
       const isDeactivated = existingAnyUser.deletedAt !== null || existingAnyUser.status === 'DEACTIVATED';
@@ -139,7 +111,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Auto-generate Unique User ID / Username (e.g., MUBK-HM-0001, MUBK-TEA-0001)
+    // Auto-generate Unique User ID / Username strictly from PostgreSQL count
     let rolePrefix = 'USR';
     if (role === 'HEADMASTER') rolePrefix = 'MUBK-HM';
     else if (role === 'TEACHER') rolePrefix = 'MUBK-TEA';
@@ -147,8 +119,9 @@ export async function POST(req: NextRequest) {
     else if (role === 'PARENT') rolePrefix = 'MUBK-PAR';
     else if (role === 'STUDENT') rolePrefix = 'MUBK-STU';
 
-    const db = readServerDatabase();
-    const roleCount = db.users.filter((u) => u.role === role && !u.deletedAt).length;
+    const roleCount = await prisma.user.count({
+      where: { role: role as any, deletedAt: null },
+    });
     const formattedNum = (roleCount + 1).toString().padStart(4, '0');
     const generatedUsername = body.username || `${rolePrefix}-${formattedNum}`;
 
@@ -167,151 +140,128 @@ export async function POST(req: NextRequest) {
       passwordHash = hashPassword(tempPassword);
     }
 
-    // 1. Save to persistent serverDb
-    const serverUser = createServerUser({
-      username: generatedUsername,
-      name,
-      email,
-      password: passwordHash,
-      role,
-      phone,
-      avatar,
-      assignedProgrammeId: role === 'HEADMASTER' ? assignedProgrammeId : undefined,
-      assignedProgrammeName: role === 'HEADMASTER' ? assignedProgrammeName : undefined,
-      status: 'ACTIVE',
-      isFirstLogin: body.isFirstLogin ?? true,
-      mustChangePassword: body.mustChangePassword ?? true,
-    });
+    // Atomic transaction for User + Profile creation in PostgreSQL
+    const prismaUser = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          username: generatedUsername,
+          name,
+          email,
+          password: passwordHash,
+          role: role as any,
+          phone,
+          avatar,
+          assignedProgrammeId: role === 'HEADMASTER' ? assignedProgrammeId : undefined,
+          assignedProgrammeName: role === 'HEADMASTER' ? assignedProgrammeName : undefined,
+          status: 'ACTIVE',
+          isFirstLogin: true,
+          mustChangePassword: true,
+        },
+      });
 
-    // 2. Also save to PostgreSQL database if available with atomic profile creation
-    let prismaUser: any = null;
-    try {
-      prismaUser = await prisma.$transaction(async (tx) => {
-        const newUser = await tx.user.create({
-          data: {
-            username: generatedUsername,
-            name,
-            email,
-            password: passwordHash,
-            role: role as any,
-            phone,
-            avatar,
-            assignedProgrammeId: role === 'HEADMASTER' ? assignedProgrammeId : undefined,
-            assignedProgrammeName: role === 'HEADMASTER' ? assignedProgrammeName : undefined,
-            status: 'ACTIVE',
-            isFirstLogin: true,
-            mustChangePassword: true,
+      if (role === 'TEACHER') {
+        const existingTeacher = await tx.teacher.findFirst({
+          where: {
+            OR: [
+              { userId: newUser.id },
+              { email: newUser.email },
+              { staffNo: generatedUsername },
+            ],
           },
         });
-
-        if (role === 'TEACHER') {
-          const existingTeacher = await tx.teacher.findFirst({
-            where: {
-              OR: [
-                { userId: newUser.id },
-                { email: newUser.email },
-                { staffNo: generatedUsername },
-              ],
+        if (!existingTeacher) {
+          await tx.teacher.create({
+            data: {
+              userId: newUser.id,
+              staffNo: generatedUsername,
+              fullName: name,
+              email: newUser.email,
+              phone: phone || '',
+              qualification: body.qualification || 'Degree / Higher Qualification',
+              specialization: body.specialization || 'General Studies',
+              status: 'ACTIVE',
             },
           });
-          if (!existingTeacher) {
-            await tx.teacher.create({
-              data: {
-                userId: newUser.id,
-                staffNo: generatedUsername,
-                fullName: name,
-                email: newUser.email,
-                phone: phone || '',
-                qualification: body.qualification || 'Degree / Higher Qualification',
-                specialization: body.specialization || 'General Studies',
-                status: 'ACTIVE',
-              },
-            });
-          }
-        } else if (role === 'STUDENT') {
-          const existingStudent = await tx.student.findFirst({
-            where: {
-              OR: [
-                { userId: newUser.id },
-                { admissionNo: generatedUsername },
-              ],
-            },
-          });
-          if (!existingStudent) {
-            let targetClass = body.classId ? await tx.schoolClass.findUnique({ where: { id: body.classId } }) : null;
-            if (!targetClass) {
-              targetClass = await tx.schoolClass.findFirst();
-            }
-            if (!targetClass) {
-              targetClass = await tx.schoolClass.create({
-                data: {
-                  name: 'Tahfiz Class A',
-                  category: 'TAHFIZ',
-                  section: 'Section A',
-                  capacity: 30,
-                },
-              });
-            }
-
-            let guardian = body.guardianId ? await tx.parent.findUnique({ where: { id: body.guardianId } }) : null;
-            if (!guardian) {
-              guardian = await tx.parent.findFirst();
-            }
-            if (!guardian) {
-              guardian = await tx.parent.create({
-                data: {
-                  fullName: 'School Guardian / Parent',
-                  email: `guardian.${Date.now()}@markazuumar.edu.ng`,
-                  phone: phone || '08000000000',
-                  occupation: 'Guardian',
-                  address: 'Kano, Nigeria',
-                },
-              });
-            }
-
-            await tx.student.create({
-              data: {
-                userId: newUser.id,
-                admissionNo: generatedUsername,
-                fullName: name,
-                gender: body.gender || 'MALE',
-                dob: body.dob ? new Date(body.dob) : new Date('2015-01-01'),
-                classId: targetClass.id,
-                guardianId: guardian.id,
-                status: 'ACTIVE',
-              },
-            });
-          }
-        } else if (role === 'PARENT') {
-          const existingParent = await tx.parent.findFirst({
-            where: {
-              OR: [
-                { userId: newUser.id },
-                { email: newUser.email },
-              ],
-            },
-          });
-          if (!existingParent) {
-            await tx.parent.create({
-              data: {
-                userId: newUser.id,
-                fullName: name,
-                email: newUser.email,
-                phone: phone || '',
-                occupation: body.occupation || 'Parent',
-                address: body.address || 'Kano, Nigeria',
-              },
-            });
-          }
         }
+      } else if (role === 'STUDENT') {
+        const existingStudent = await tx.student.findFirst({
+          where: {
+            OR: [
+              { userId: newUser.id },
+              { admissionNo: generatedUsername },
+            ],
+          },
+        });
+        if (!existingStudent) {
+          let targetClass = body.classId ? await tx.schoolClass.findUnique({ where: { id: body.classId } }) : null;
+          if (!targetClass) {
+            targetClass = await tx.schoolClass.findFirst();
+          }
+          if (!targetClass) {
+            targetClass = await tx.schoolClass.create({
+              data: {
+                name: 'Tahfiz Class A',
+                category: 'TAHFIZ',
+                section: 'Section A',
+                capacity: 30,
+              },
+            });
+          }
 
-        return newUser;
-      });
-    } catch (dbErr) {
-      console.error('[CREATE_USER_PRISMA_ERROR]', dbErr);
-    }
+          let guardian = body.guardianId ? await tx.parent.findUnique({ where: { id: body.guardianId } }) : null;
+          if (!guardian) {
+            guardian = await tx.parent.findFirst();
+          }
+          if (!guardian) {
+            guardian = await tx.parent.create({
+              data: {
+                fullName: 'School Guardian / Parent',
+                email: `guardian.${Date.now()}@markazuumar.edu.ng`,
+                phone: phone || '08000000000',
+                occupation: 'Guardian',
+                address: 'Kano, Nigeria',
+              },
+            });
+          }
 
-    const createdUser = prismaUser || serverUser || { id: generatedUsername, name, email, role };
+          await tx.student.create({
+            data: {
+              userId: newUser.id,
+              admissionNo: generatedUsername,
+              fullName: name,
+              gender: body.gender || 'MALE',
+              dob: body.dob ? new Date(body.dob) : new Date('2015-01-01'),
+              classId: targetClass.id,
+              guardianId: guardian.id,
+              status: 'ACTIVE',
+            },
+          });
+        }
+      } else if (role === 'PARENT') {
+        const existingParent = await tx.parent.findFirst({
+          where: {
+            OR: [
+              { userId: newUser.id },
+              { email: newUser.email },
+            ],
+          },
+        });
+        if (!existingParent) {
+          await tx.parent.create({
+            data: {
+              userId: newUser.id,
+              fullName: name,
+              email: newUser.email,
+              phone: phone || '',
+              occupation: body.occupation || 'Parent',
+              address: body.address || 'Kano, Nigeria',
+            },
+          });
+        }
+      }
+
+      return newUser;
+    });
 
     // Dispatch Welcome Email with Credentials
     const portalUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://markazu-umar-bnil-khaddab-.vercel.app');
@@ -334,7 +284,7 @@ export async function POST(req: NextRequest) {
       {
         message: `Account created successfully for ${name}. Credentials sent to ${email}.`,
         user: {
-          id: createdUser.id,
+          id: prismaUser.id,
           username: generatedUsername,
           name: name,
           email: email,
@@ -351,3 +301,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || 'Failed to create user account' }, { status: 400 });
   }
 }
+

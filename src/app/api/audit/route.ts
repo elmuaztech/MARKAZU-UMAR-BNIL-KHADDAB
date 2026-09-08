@@ -96,3 +96,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || 'Failed to create audit log' }, { status: 400 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const authUser = await getAuthenticatedUser(req);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN']);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: 'Forbidden: Only Super Admin can clear audit logs.' }, { status: 403 });
+    }
+
+    const result = await prisma.auditLog.deleteMany({});
+
+    await prisma.auditLog.create({
+      data: {
+        action: 'AUDIT_LOGS_CLEARED',
+        performedBy: authUser?.name || 'Super Administrator',
+        userRole: 'SUPER_ADMIN',
+        userId: authUser?.id || null,
+        details: `Super Admin cleared ${result.count} historical audit log records.`,
+        ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0] || '127.0.0.1',
+        status: 'WARNING',
+      },
+    });
+
+    return NextResponse.json({
+      message: `Audit logs cleared successfully (${result.count} records removed).`,
+      count: result.count,
+    });
+  } catch (error: any) {
+    console.error('[DELETE_AUDIT_ERROR]', error);
+    return NextResponse.json({ error: error.message || 'Failed to clear audit logs' }, { status: 500 });
+  }
+}

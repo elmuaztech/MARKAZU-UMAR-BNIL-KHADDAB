@@ -49,14 +49,108 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     if (body.manzilRating !== undefined) updateData.manzilRating = Number(body.manzilRating);
     if (body.akhlaqRating !== undefined) updateData.akhlaqRating = body.akhlaqRating;
 
-    const updatedStudent = await prisma.student.update({
-      where: { id: studentId },
-      data: updateData,
+    const rawEmail = typeof body.email === 'string' ? body.email.trim().toLowerCase() : undefined;
+    let userCreated = false;
+    const tempPassword = body.tempPassword || 'student123';
+
+    const updatedStudent = await prisma.$transaction(async (tx) => {
+      let student = await tx.student.update({
+        where: { id: studentId },
+        data: updateData,
+        include: {
+          parent: true,
+          schoolClass: true,
+          user: true,
+        },
+      });
+
+      // Update Parent / Guardian details if provided
+      const guardianPhone = body.guardianPhone || body.parentPhone || body.phone;
+      const guardianName = body.guardianName || body.parentName;
+
+      if (student.guardianId && (guardianPhone !== undefined || guardianName !== undefined)) {
+        await tx.parent.update({
+          where: { id: student.guardianId },
+          data: {
+            ...(guardianPhone !== undefined ? { phone: guardianPhone.trim() } : {}),
+            ...(guardianName !== undefined ? { fullName: guardianName.trim() } : {}),
+          },
+        }).catch((err) => console.warn('[UPDATE_STUDENT_GUARDIAN_WARN]', err));
+      }
+
+      // Handle Student Email & User Account Provisioning
+      if (rawEmail !== undefined) {
+        if (rawEmail.length > 0) {
+          if (student.userId) {
+            // Already has a user account: update user details
+            await tx.user.update({
+              where: { id: student.userId },
+              data: {
+                email: rawEmail,
+                ...(body.fullName ? { name: body.fullName.trim() } : {}),
+              },
+            }).catch((err) => console.warn('[UPDATE_STUDENT_USER_EMAIL_WARN]', err));
+          } else {
+            // Student was offline without a user account: create user account now!
+            const existingUser = await tx.user.findFirst({
+              where: {
+                OR: [
+                  { email: rawEmail },
+                  { username: student.admissionNo },
+                ],
+              },
+            });
+
+            if (existingUser) {
+              await tx.student.update({
+                where: { id: student.id },
+                data: { userId: existingUser.id },
+              });
+            } else {
+              const passHash = body.passwordHash || '$2a$10$wT.L6G2cQkG6K1hK.zYy.O6qQ1.Q2.Q3.Q4';
+              const newUser = await tx.user.create({
+                data: {
+                  username: student.admissionNo,
+                  name: body.fullName ? body.fullName.trim() : student.fullName,
+                  email: rawEmail,
+                  password: passHash,
+                  role: 'STUDENT',
+                  status: 'ACTIVE',
+                  mustChangePassword: true,
+                },
+              });
+
+              await tx.student.update({
+                where: { id: student.id },
+                data: { userId: newUser.id },
+              });
+              userCreated = true;
+            }
+          }
+        }
+      } else if (student.userId && body.fullName !== undefined) {
+        // Update user name if student is linked to a user account
+        await tx.user.update({
+          where: { id: student.userId },
+          data: { name: body.fullName.trim() },
+        }).catch((err) => console.warn('[UPDATE_STUDENT_USER_WARN]', err));
+      }
+
+      return await tx.student.findUnique({
+        where: { id: studentId },
+        include: {
+          parent: true,
+          schoolClass: true,
+          user: true,
+        },
+      });
     });
 
     return NextResponse.json({
       message: 'Student updated successfully',
       student: updatedStudent,
+      userCreated,
+      credentials: userCreated ? { username: updatedStudent?.admissionNo, email: rawEmail, tempPassword } : null,
     });
   } catch (error: any) {
     console.error('[UPDATE_STUDENT_ERROR]', error);

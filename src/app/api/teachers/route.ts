@@ -18,8 +18,15 @@ export async function GET(req: NextRequest) {
         teacherAssignments: {
           include: {
             assignedSubjects: true,
-          }
-        }
+            schoolClass: true,
+            programme: true,
+          },
+        },
+        classesManaged: {
+          include: {
+            programme: true,
+          },
+        },
       },
       orderBy: { fullName: 'asc' },
     });
@@ -91,7 +98,14 @@ export async function POST(req: NextRequest) {
 
     let linkedUser = existingAnyUser && !existingAnyUser.deletedAt ? existingAnyUser : null;
 
-    // If User doesn't exist yet, create User + Teacher in transaction
+    // Normalizing classesAssigned and programmeIds
+    const rawClasses: string[] = Array.isArray(body.classesAssigned)
+      ? body.classesAssigned
+      : body.classesAssigned
+      ? [body.classesAssigned]
+      : [];
+
+    // If User doesn't exist yet, create User + Teacher + Assignments in transaction
     const newTeacher = await prisma.$transaction(async (tx) => {
       let targetUserId = linkedUser?.id || body.userId;
 
@@ -111,7 +125,7 @@ export async function POST(req: NextRequest) {
         targetUserId = createdUser.id;
       }
 
-      return await tx.teacher.create({
+      const createdTeacher = await tx.teacher.create({
         data: {
           staffNo: staffNo,
           fullName: fullName,
@@ -124,11 +138,84 @@ export async function POST(req: NextRequest) {
           dateJoined: body.dateJoined ? new Date(body.dateJoined) : new Date(),
         },
       });
+
+      // Handle Class Assignments and Linkage
+      let primaryProgrammeId: string | null = null;
+
+      for (const classIdentifier of rawClasses) {
+        if (!classIdentifier) continue;
+
+        // Find class by ID or by Name
+        const schoolClass = await tx.schoolClass.findFirst({
+          where: {
+            OR: [
+              { id: classIdentifier },
+              { name: { equals: classIdentifier, mode: 'insensitive' } },
+            ],
+          },
+        });
+
+        if (schoolClass) {
+          // 1. Update SchoolClass classTeacherId
+          await tx.schoolClass.update({
+            where: { id: schoolClass.id },
+            data: { classTeacherId: createdTeacher.id },
+          });
+
+          // Determine Programme
+          const progId = schoolClass.programmeId || (Array.isArray(body.programmeIds) ? body.programmeIds[0] : body.programmeIds) || null;
+          if (progId) {
+            primaryProgrammeId = progId;
+            // Create TeacherAssignment
+            await tx.teacherAssignment.upsert({
+              where: {
+                teacherId_programmeId_classId: {
+                  teacherId: createdTeacher.id,
+                  programmeId: progId,
+                  classId: schoolClass.id,
+                },
+              },
+              create: {
+                teacherId: createdTeacher.id,
+                programmeId: progId,
+                classId: schoolClass.id,
+              },
+              update: {},
+            });
+          }
+        }
+      }
+
+      // If a primary programme was determined, update User.assignedProgrammeId
+      if (primaryProgrammeId && targetUserId) {
+        await tx.user.update({
+          where: { id: targetUserId },
+          data: { assignedProgrammeId: primaryProgrammeId },
+        });
+      }
+
+      // Return teacher with relations
+      return await tx.teacher.findUnique({
+        where: { id: createdTeacher.id },
+        include: {
+          teacherAssignments: {
+            include: {
+              schoolClass: true,
+              programme: true,
+            },
+          },
+          classesManaged: {
+            include: {
+              programme: true,
+            },
+          },
+        },
+      });
     });
 
     return NextResponse.json(
       {
-        message: 'Teacher record created successfully',
+        message: 'Teacher registered successfully',
         teacher: newTeacher,
       },
       { status: 201 }

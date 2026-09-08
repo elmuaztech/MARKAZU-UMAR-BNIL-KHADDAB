@@ -32,7 +32,6 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { BilingualText } from '@/components/ui/BilingualText';
-import { NoticeBoardWidget } from '@/components/dashboard/NoticeBoardWidget';
 
 export function HeadmasterDashboard() {
   const {
@@ -367,11 +366,6 @@ export function HeadmasterDashboard() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Notice Board Widget */}
-        <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl">
-          <NoticeBoardWidget />
         </div>
       </div>
     </div>

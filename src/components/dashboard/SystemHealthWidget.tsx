@@ -7,7 +7,7 @@ export function SystemHealthWidget() {
   const healthMetrics = [
     {
       id: 'db',
-      label: 'PostgreSQL Database',
+      label: 'Core Storage Engine',
       status: 'Healthy',
       detail: 'Latency 2ms • Connections Active',
       icon: Database,
@@ -15,7 +15,7 @@ export function SystemHealthWidget() {
     },
     {
       id: 'server',
-      label: 'Cloud Server & Database',
+      label: 'Cloud Server Node',
       status: 'Healthy',
       detail: 'Secure Cloud Node • Uptime 99.99%',
       icon: Server,
@@ -66,7 +66,7 @@ export function SystemHealthWidget() {
             </h3>
           </div>
           <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-0.5">
-            Real-time infrastructure performance, database connectivity, and automated cloud backups.
+            Real-time infrastructure performance, storage connectivity, and automated cloud backups.
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">

@@ -37,12 +37,14 @@ export function TeacherDashboard() {
     teachers.find(
       (t) =>
         t.id === currentUser.id ||
+        (t.userId && t.userId === currentUser.id) ||
         (t.email && currentUser.email && t.email.toLowerCase() === currentUser.email.toLowerCase()) ||
         (t.staffNo && currentUser.username && t.staffNo.toLowerCase() === currentUser.username.toLowerCase()) ||
         (t.fullName && currentUser.name && t.fullName.toLowerCase() === currentUser.name.toLowerCase()) ||
         (t.full_name_english && currentUser.name && t.full_name_english.toLowerCase() === currentUser.name.toLowerCase())
     ) || {
       id: currentUser.id,
+      userId: currentUser.id,
       staffNo: currentUser.username || '',
       fullName: currentUser.name,
       full_name_english: currentUser.name,
@@ -68,18 +70,29 @@ export function TeacherDashboard() {
   const directProgrammeIds = currentTeacher.programmeIds || [];
   const directClassIds = currentTeacher.classesAssigned || [];
 
-  const assignedProgrammeIds = Array.from(
-    new Set([...myAssignments.map((ta) => ta.programmeId), ...directProgrammeIds])
-  );
-  const assignedClassIds = Array.from(
+  const rawAssignedClassIds = Array.from(
     new Set([...myAssignments.map((ta) => ta.classId), ...directClassIds])
+  );
+
+  // Match classes by ID, Name, or classTeacherId
+  const myClasses = classes.filter(
+    (c) =>
+      rawAssignedClassIds.includes(c.id) ||
+      rawAssignedClassIds.includes(c.name) ||
+      c.classTeacherId === currentTeacher.id ||
+      c.classTeacherId === currentUser.id
+  );
+
+  const assignedProgrammeIds = Array.from(
+    new Set([
+      ...myClasses.map((c) => c.programmeId).filter(Boolean),
+      ...myAssignments.map((ta) => ta.programmeId),
+      ...directProgrammeIds,
+    ])
   );
 
   const myProgrammes = programmes.filter(
     (p) => assignedProgrammeIds.includes(p.id)
-  );
-  const myClasses = classes.filter(
-    (c) => assignedClassIds.includes(c.id)
   );
 
   const [selectedProgId, setSelectedProgId] = useState<string>(myProgrammes[0]?.id || 'ALL');
@@ -87,8 +100,17 @@ export function TeacherDashboard() {
 
   // Scoped classes & subjects under selected Programme
   const filteredMyClasses = myClasses.filter((c) => selectedProgId === 'ALL' || c.programmeId === selectedProgId);
+
+  const myClassIdsAndNames = new Set([
+    ...myClasses.map((c) => c.id),
+    ...myClasses.map((c) => c.name),
+  ]);
+
   const teacherStudents = students.filter(
-    (s) => assignedClassIds.includes(s.classId)
+    (s) =>
+      myClassIdsAndNames.has(s.classId) ||
+      (s.className && myClassIdsAndNames.has(s.className)) ||
+      (s.class_name && myClassIdsAndNames.has(s.class_name))
   );
 
   const quickActions: QuickActionItem[] = [
@@ -172,7 +194,7 @@ export function TeacherDashboard() {
   return (
     <PortalTheme>
       <PortalHeroBanner
-        badgeText="Faculty Educator Portal"
+        badgeText="Teacher & Educator Portal"
         badgeIcon={UserCheck}
         title={`Assalamu Alaikum, ${currentTeacher.full_name_english || currentUser.name || 'Teacher'}`}
         titleArabic={currentTeacher.full_name_arabic}
@@ -225,7 +247,7 @@ export function TeacherDashboard() {
             <Layers className="w-4 h-4 text-emerald-500" /> My Assigned Academic Load
           </h3>
           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
-            Strict RBAC Scoped
+            Class Scoped
           </span>
         </div>
 

@@ -111,7 +111,7 @@ export function StudentDashboard() {
           badgeText="Student Portal"
           badgeIcon={GraduationCap}
           title={currentUser.name || "Student"}
-          description="Assalamu Alaikum. No student academic record is currently assigned to this account in the database."
+          description="Assalamu Alaikum. No student academic record is currently assigned to this account yet."
         />
         <NoticeBoardWidget />
         <div className="p-8 rounded-3xl bg-white dark:bg-[#042419] border border-dashed border-slate-200 dark:border-emerald-500/20 text-center space-y-2">

@@ -70,13 +70,13 @@ export default function ChangePasswordPage() {
         action: 'FIRST_LOGIN_PASSWORD_CHANGED',
         performedBy: currentUser.name,
         userRole: currentUser.role,
-        details: 'User successfully replaced temporary password in database',
+        details: 'User successfully replaced temporary password',
         ipAddress: '197.210.227.14',
         affectedRecord: `User/${currentUser.id}`,
         status: 'SUCCESS',
       });
 
-      setSuccessMsg('Password updated successfully in database! Redirecting...');
+      setSuccessMsg('Password updated successfully! Redirecting...');
 
       setTimeout(() => {
         if (currentUser.role === 'HEADMASTER') {

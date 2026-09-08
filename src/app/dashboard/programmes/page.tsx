@@ -310,10 +310,10 @@ export default function ProgrammesPage() {
   };
 
   // SUBCATEGORY HANDLERS
-  const handleAddNewSubcategory = (progId: string) => {
+  const handleAddNewSubcategory = async (progId: string) => {
     if (!newSubcategoryName.trim()) return;
     try {
-      addSubcategory(progId, newSubcategoryName.trim());
+      await addSubcategory(progId, newSubcategoryName.trim());
       setNewSubcategoryName('');
       showToast(`Subcategory "${newSubcategoryName.trim()}" added successfully!`);
 
@@ -327,10 +327,10 @@ export default function ProgrammesPage() {
     }
   };
 
-  const handleConfirmEditSubcategory = () => {
+  const handleConfirmEditSubcategory = async () => {
     if (!editingSubcategory) return;
     try {
-      updateSubcategory(
+      await updateSubcategory(
         editingSubcategory.programmeId,
         editingSubcategory.oldName,
         editingSubcategory.newName.trim()
@@ -342,10 +342,10 @@ export default function ProgrammesPage() {
     }
   };
 
-  const handleConfirmDeleteSubcategory = () => {
+  const handleConfirmDeleteSubcategory = async () => {
     if (!deletingSubcategory) return;
     try {
-      deleteSubcategory(deletingSubcategory.programmeId, deletingSubcategory.subcategoryName);
+      await deleteSubcategory(deletingSubcategory.programmeId, deletingSubcategory.subcategoryName);
       showToast(`Subcategory "${deletingSubcategory.subcategoryName}" deleted successfully!`);
       setDeletingSubcategory(null);
     } catch (err: any) {
@@ -354,20 +354,24 @@ export default function ProgrammesPage() {
   };
 
   // HEADMASTER ASSIGNMENT HANDLERS
-  const handleSaveHeadmasterAssignment = () => {
+  const handleSaveHeadmasterAssignment = async () => {
     if (!assigningHeadmasterProgramme) return;
     if (!selectedHeadmasterUserId) {
       alert('Please select a Headmaster user account.');
       return;
     }
 
-    const progName =
-      assigningHeadmasterProgramme.programme_name_english || assigningHeadmasterProgramme.programme_name;
-    assignHeadmasterProgramme(selectedHeadmasterUserId, assigningHeadmasterProgramme.id, progName);
+    try {
+      const progName =
+        assigningHeadmasterProgramme.programme_name_english || assigningHeadmasterProgramme.programme_name;
+      await assignHeadmasterProgramme(selectedHeadmasterUserId, assigningHeadmasterProgramme.id, progName);
 
-    showToast(`Headmaster assigned to "${progName}" successfully!`);
-    setAssigningHeadmasterProgramme(null);
-    setSelectedHeadmasterUserId('');
+      showToast(`Headmaster assigned to "${progName}" successfully!`);
+      setAssigningHeadmasterProgramme(null);
+      setSelectedHeadmasterUserId('');
+    } catch (err: any) {
+      alert(err.message || 'Failed to assign Headmaster.');
+    }
   };
 
   // CLASS HANDLERS UNDER PROGRAMME

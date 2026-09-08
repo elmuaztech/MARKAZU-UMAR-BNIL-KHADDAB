@@ -118,20 +118,33 @@
     },
     {
       "id": "prog-1786732137810-172",
-      "programme_code": "SSSP",
-      "programme_name_english": "wertyjklkjhgfd",
+      "programme_code": "MA",
+      "programme_name_english": "Matan Aure",
       "programme_name_arabic": "",
-      "programme_name": "wertyjklkjhgfd",
-      "hasSubcategories": true,
-      "subcategories": [
-        "weghjk",
-        "werghjk,jhg",
-        "werkhh"
-      ],
+      "programme_name": "Matan Aure",
+      "hasSubcategories": false,
+      "subcategories": [],
       "status": "Active",
       "display_order": 1,
       "created_at": "2026-08-14T18:28:57.855Z",
-      "updated_at": "2026-08-14T18:28:57.855Z"
+      "updated_at": "2026-08-30T13:14:49.393Z",
+      "description": "",
+      "code": "MA",
+      "nameEnglish": "Matan Aure",
+      "nameArabic": ""
+    },
+    {
+      "id": "prog-1788095539065",
+      "programme_code": "ISM",
+      "programme_name_english": "Islamiyyah",
+      "programme_name_arabic": "اسلامية",
+      "programme_name": "Islamiyyah",
+      "hasSubcategories": false,
+      "subcategories": [],
+      "status": "Active",
+      "display_order": 1,
+      "created_at": "2026-08-30T13:12:19.065Z",
+      "updated_at": "2026-08-30T13:12:19.065Z"
     }
   ],
   "classes": [
@@ -143,9 +156,9 @@
       "subcategory": null,
       "capacity": 30,
       "programmeId": "prog-1786730749984-173",
-      "classTeacherId": null,
+      "classTeacherId": "",
       "created_at": "2026-08-14T18:06:24.536Z",
-      "updated_at": "2026-08-14T18:06:24.536Z"
+      "updated_at": "2026-08-21T01:38:55.150Z"
     },
     {
       "id": "cls-1786840312581-347",
@@ -158,6 +171,18 @@
       "classTeacherId": null,
       "created_at": "2026-08-16T00:31:52.623Z",
       "updated_at": "2026-08-16T00:31:52.623Z"
+    },
+    {
+      "id": "cls-1788095759392",
+      "name": "DAR abubakar",
+      "category": "TAHFIZ",
+      "section": "Section A",
+      "subcategory": null,
+      "capacity": 30,
+      "programmeId": "prog-1788095539065",
+      "classTeacherId": "51120764-9859-45cd-b117-1d97b4a4c470",
+      "created_at": "2026-08-30T13:15:59.392Z",
+      "updated_at": "2026-08-30T13:15:59.392Z"
     }
   ],
   "subjects": [
@@ -197,6 +222,13 @@
       "token": "2272",
       "expiresAt": 1786719933396,
       "createdAt": "2026-08-14T14:55:33.398Z"
+    },
+    {
+      "userId": "fdbfe3e1-b619-49fd-80f8-8e3fd225ece7",
+      "email": "elmuaztechnologiesltd@gmail.com",
+      "token": "5910",
+      "expiresAt": 1788096653970,
+      "createdAt": "2026-08-30T13:20:53.972Z"
     }
   ]
 }

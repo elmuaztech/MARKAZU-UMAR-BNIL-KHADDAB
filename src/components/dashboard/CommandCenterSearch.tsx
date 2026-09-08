@@ -111,7 +111,7 @@ export function CommandCenterSearch() {
               {filteredTeachers.length > 0 && (
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-wider">
-                    <UserCheck className="w-3.5 h-3.5" /> Faculty ({filteredTeachers.length})
+                    <UserCheck className="w-3.5 h-3.5" /> Teachers ({filteredTeachers.length})
                   </div>
                   <div className="space-y-1">
                     {filteredTeachers.map((t) => (

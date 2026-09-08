@@ -225,7 +225,7 @@ export default function AboutPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span><strong>Faculty:</strong> 40+ Certified Huffaz & Scholars</span>
+                  <span><strong>Teachers & Scholars:</strong> 40+ Certified Huffaz & Scholars</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <MapPin className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../../lib/context';
-import { UserRole } from '../../../types';
+import { User, UserRole } from '../../../types';
 import {
   ShieldCheck,
   ShieldAlert,
@@ -29,6 +29,7 @@ import { StatCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
+import { PermanentDeleteModal } from '@/components/users/PermanentDeleteModal';
 
 export default function SecurityDashboardPage() {
   const {
@@ -60,6 +61,7 @@ export default function SecurityDashboardPage() {
   const [newTempPassInput, setNewTempPassInput] = useState('Markazu@2026!');
   const [resetNotice, setResetNotice] = useState('');
   const [deactivatedCollisionUser, setDeactivatedCollisionUser] = useState<any | null>(null);
+  const [permanentDeleteTarget, setPermanentDeleteTarget] = useState<User | null>(null);
 
   // Create User Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -136,7 +138,7 @@ export default function SecurityDashboardPage() {
       notify({
         type: 'success',
         title: 'User Account Created',
-        message: `System account created for ${newName} (${newRole}). Initial credentials saved to database.`,
+        message: `System account created for ${newName} (${newRole}). Login credentials configured successfully.`,
       });
 
       setShowCreateModal(false);
@@ -606,7 +608,7 @@ export default function SecurityDashboardPage() {
 
                   {deactivatedUsers.length === 0 ? (
                     <div className="p-8 text-center text-xs text-slate-500 dark:text-emerald-300/70">
-                      No deactivated accounts found in PostgreSQL database.
+                      No deactivated accounts found.
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -642,7 +644,7 @@ export default function SecurityDashboardPage() {
                                   <UserX className="w-3 h-3" /> Deactivated
                                 </span>
                               </td>
-                              <td className="p-4 text-right">
+                              <td className="p-4 text-right space-x-2">
                                 <button
                                   onClick={() =>
                                     showConfirm({
@@ -660,6 +662,15 @@ export default function SecurityDashboardPage() {
                                 >
                                   <RefreshCw className="w-3.5 h-3.5" />
                                   <span>Restore Account</span>
+                                </button>
+
+                                <button
+                                  onClick={() => setPermanentDeleteTarget(u)}
+                                  className="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] shadow transition-all inline-flex items-center gap-1.5"
+                                  title="Permanently remove user account and dependencies from system"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Permanent Delete</span>
                                 </button>
                               </td>
                             </tr>
@@ -881,6 +892,15 @@ export default function SecurityDashboardPage() {
               )}
             </div>
           )}
+
+      <PermanentDeleteModal
+        user={permanentDeleteTarget}
+        isOpen={Boolean(permanentDeleteTarget)}
+        onClose={() => setPermanentDeleteTarget(null)}
+        onSuccess={() => {
+          fetchDeactivatedUsers();
+        }}
+      />
     </div>
   );
 }

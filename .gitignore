@@ -30,6 +30,8 @@ Thumbs.db
 # Temporary Files
 *.tmp
 *.temp
+scratch/
+*.zip
 
 # Backups
 backup/

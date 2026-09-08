@@ -28,7 +28,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     });
 
     return NextResponse.json({
-      message: 'Parent updated successfully in database',
+      message: 'Parent updated successfully',
       parent: updated,
     });
   } catch (error: any) {

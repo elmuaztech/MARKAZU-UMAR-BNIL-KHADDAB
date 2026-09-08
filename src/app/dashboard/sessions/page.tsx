@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useApp } from '../../../lib/context';
+import { useApp, getAuthHeaders } from '../../../lib/context';
 import { Calendar, Plus, CheckCircle2, Archive, AlertTriangle, ShieldCheck, ArrowRight, X } from 'lucide-react';
 import { SchoolSession } from '../../../types';
 import { Button } from '@/components/ui/Button';
@@ -46,13 +46,10 @@ export default function SessionsPage() {
     if (!newSessionName) return;
 
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
+      const headers = getAuthHeaders();
       const res = await fetch('/api/sessions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({
           sessionName: newSessionName,
           activeTerm,
@@ -60,68 +57,74 @@ export default function SessionsPage() {
         }),
       });
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create academic session');
+      }
       if (data && data.session) {
         setSessionList((prev) => [data.session, ...prev]);
         setNotice(`Academic Session ${newSessionName} created successfully!`);
       } else {
+        await fetchSessions();
         setNotice(`Academic Session ${newSessionName} created!`);
-        fetchSessions();
       }
-    } catch (e) {
-      console.warn('[createSession] error:', e);
+
+      addAuditLog({
+        action: 'ACADEMIC_SESSION_CREATED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Created new academic session record: ${newSessionName} (${activeTerm})`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Session/${newSessionName}`,
+        status: 'SUCCESS',
+      });
+
+      setNewSessionName('');
+      setShowAddModal(false);
+    } catch (e: any) {
+      console.error('[createSession] error:', e);
+      setNotice(`Error: ${e.message || 'Failed to create academic session'}`);
     }
-
-    addAuditLog({
-      action: 'ACADEMIC_SESSION_CREATED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Created new academic session record: ${newSessionName} (${activeTerm})`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Session/${newSessionName}`,
-      status: 'SUCCESS',
-    });
-
-    setNewSessionName('');
-    setShowAddModal(false);
     setTimeout(() => setNotice(''), 4000);
   };
 
   const handleActivateSession = async (id: string) => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      await fetch(`/api/sessions/${id}`, {
+      const headers = getAuthHeaders();
+      const res = await fetch(`/api/sessions/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers,
         body: JSON.stringify({ isCurrent: true }),
       });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to activate session');
+      }
       setSessionList((prev) =>
         prev.map((s) => ({
           ...s,
           isCurrent: s.id === id,
         }))
       );
-    } catch (e) {
-      console.warn('[activateSession] error:', e);
+      const activated = sessionList.find((s) => s.id === id);
+
+      addAuditLog({
+        action: 'ACADEMIC_SESSION_ACTIVATED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Activated academic session: ${activated?.sessionName}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Session/${id}`,
+        status: 'SUCCESS',
+      });
+
+      setNotice(`Academic session ${activated?.sessionName || id} is now active school-wide!`);
+    } catch (e: any) {
+      console.error('[activateSession] error:', e);
+      setNotice(`Error: ${e.message || 'Failed to activate session'}`);
     }
-
-    const activated = sessionList.find((s) => s.id === id);
-
-    addAuditLog({
-      action: 'ACADEMIC_SESSION_ACTIVATED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Activated academic session: ${activated?.sessionName}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Session/${id}`,
-      status: 'SUCCESS',
-    });
-
-    setNotice(`Academic session ${activated?.sessionName} is now active school-wide!`);
     setTimeout(() => setNotice(''), 4000);
   };
+
 
   return (
     <div className="space-y-6 text-slate-900 dark:text-gray-100 selection:bg-emerald-500 selection:text-white">

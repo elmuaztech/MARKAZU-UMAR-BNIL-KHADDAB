@@ -40,8 +40,13 @@ export function buildReportSheetWhatsAppPayload(
   sessionName: string,
   term: string,
   students: Student[],
-  baseUrl: string = typeof window !== 'undefined' ? window.location.origin : 'https://markazuumar.edu.ng'
+  baseUrl?: string
 ): WhatsAppPayload {
+  const defaultAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://markazu-umar-bnil-khaddab-.vercel.app';
+  let targetBaseUrl = baseUrl || (typeof window !== 'undefined' ? window.location.origin : defaultAppUrl);
+  if (targetBaseUrl.includes('localhost') || targetBaseUrl.includes('127.0.0.1')) {
+    targetBaseUrl = defaultAppUrl;
+  }
   const formattedPhone = formatWhatsAppPhone(group.parentPhone);
 
   const wardLinksText = group.wardIds

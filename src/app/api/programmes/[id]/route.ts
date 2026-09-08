@@ -83,7 +83,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const updated = formatProgrammeResponse(prismaProg || serverProg);
 
     return NextResponse.json({
-      message: 'Programme updated successfully in database',
+      message: 'Programme updated successfully',
       programme: updated,
     });
   } catch (error: any) {

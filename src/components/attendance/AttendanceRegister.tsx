@@ -375,21 +375,24 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
 
           <div>
             <label className="block text-[11px] font-extrabold text-slate-500 dark:text-emerald-300/80 mb-1">
-              Programme
+              Programme {currentUser.role === 'HEADMASTER' && <span className="text-emerald-500 font-bold">(Locked)</span>}
             </label>
             <select
+              disabled={currentUser.role === 'HEADMASTER'}
               value={selectedProgrammeId}
               onChange={(e) => {
-                const newPId = e.target.value;
-                setSelectedProgrammeId(newPId);
-                const matched = classes.filter((c) => !newPId || c.programmeId === newPId);
-                if (matched.length > 0) {
-                  setSelectedClassId(matched[0].id);
-                } else {
-                  setSelectedClassId('');
+                if (currentUser.role !== 'HEADMASTER') {
+                  const newPId = e.target.value;
+                  setSelectedProgrammeId(newPId);
+                  const matched = classes.filter((c) => !newPId || c.programmeId === newPId);
+                  if (matched.length > 0) {
+                    setSelectedClassId(matched[0].id);
+                  } else {
+                    setSelectedClassId('');
+                  }
                 }
               }}
-              className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500"
+              className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {programmes.length === 0 ? (
                 <option value="">-- No Programmes Found --</option>
@@ -443,7 +446,7 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
         <div className="p-8 bg-rose-500/10 border border-rose-500/30 rounded-3xl text-center space-y-3">
           <AlertCircle className="w-10 h-10 text-rose-500 mx-auto" />
           <h3 className="text-base font-black text-rose-700 dark:text-rose-300">
-            Access Restricted by RBAC Policy
+            Access Restricted: Class Not Assigned
           </h3>
           <p className="text-xs text-rose-600/80 dark:text-rose-400/80 max-w-xl mx-auto font-medium">
             You are not assigned to manage attendance for this class or programme. Teachers may only record attendance for their designated class rosters.
@@ -694,7 +697,7 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
               Attendance Register Submitted!
             </h3>
             <p className="text-xs text-slate-600 dark:text-emerald-200">
-              The daily attendance records have been stored in the immutable database and parent in-app alerts have been generated for absent/late students.
+              The daily attendance records have been saved securely and parent in-app alerts have been generated for absent/late students.
             </p>
             <button
               onClick={() => setIsSuccessModalOpen(false)}

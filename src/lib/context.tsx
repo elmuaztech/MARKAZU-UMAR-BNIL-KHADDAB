@@ -103,6 +103,7 @@ interface AppContextType {
   }) => Promise<User>;
   deleteUserAccount: (userId: string) => void;
   restoreUserAccount: (userId: string) => Promise<any>;
+  permanentlyDeleteUserAccount: (userId: string) => Promise<any>;
   deactivatedUsers: User[];
   fetchDeactivatedUsers: () => Promise<User[]>;
   updateUserAccount: (userId: string, updates: Partial<User>) => void;
@@ -352,6 +353,33 @@ export function safeLocalStorageSet(key: string, value: any) {
   }
 }
 
+export function getAuthHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('markazu_session_token') || '';
+    const userStr = localStorage.getItem('markazu_current_user');
+    let userId = '';
+    let userRole = '';
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        userId = u.id || u.email || '';
+        userRole = u.role || '';
+      } catch (e) {}
+    }
+    const sessionVal = token || userId;
+    if (sessionVal) {
+      headers['Authorization'] = `Bearer ${sessionVal}`;
+      headers['x-session-id'] = sessionVal;
+    }
+    if (userId) headers['x-user-id'] = userId;
+    if (userRole) headers['x-user-role'] = userRole;
+  }
+  return headers;
+}
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -522,12 +550,36 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       if (data && Array.isArray(data.teachers)) {
         const deleted = getDeletedUserIdentifiers();
+        const extractedAssignments: TeacherAssignment[] = [];
+
         const mappedTeachers = data.teachers
           .filter((t: any) => !deleted.ids.includes(t.id))
           .map((t: any) => {
-            const programmeIds = t.teacherAssignments?.map((a: any) => a.programmeId) || [];
-            const classesAssigned = t.teacherAssignments?.map((a: any) => a.classId) || [];
+            const assignmentClassIds = t.teacherAssignments?.map((a: any) => a.classId) || [];
+            const managedClassIds = t.classesManaged?.map((c: any) => c.id) || [];
+            const classesAssigned = Array.from(new Set([...assignmentClassIds, ...managedClassIds]));
+
+            const assignmentProgIds = t.teacherAssignments?.map((a: any) => a.programmeId) || [];
+            const managedProgIds = t.classesManaged?.map((c: any) => c.programmeId).filter(Boolean) || [];
+            const programmeIds = Array.from(new Set([...assignmentProgIds, ...managedProgIds]));
+
             const subjectsAssigned = t.teacherAssignments?.flatMap((a: any) => a.assignedSubjects?.map((s: any) => s.subjectId) || []) || [];
+
+            // Extract all real relational assignments
+            if (Array.isArray(t.teacherAssignments)) {
+              t.teacherAssignments.forEach((ta: any) => {
+                extractedAssignments.push({
+                  id: ta.id,
+                  teacherId: ta.teacherId,
+                  programmeId: ta.programmeId,
+                  classId: ta.classId,
+                  subjectIds: ta.assignedSubjects?.map((s: any) => s.subjectId) || [],
+                  createdAt: ta.createdAt,
+                  updatedAt: ta.updatedAt,
+                });
+              });
+            }
+
             return {
               id: t.id,
               userId: t.userId || null,
@@ -545,8 +597,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               avatar: t.avatar || undefined,
             };
           });
+
         setTeachers(mappedTeachers);
         safeLocalStorageSet('markazu_teachers', mappedTeachers);
+
+        if (extractedAssignments.length > 0) {
+          setTeacherAssignments((prev) => {
+            const assignmentMap = new Map<string, TeacherAssignment>();
+            prev.forEach((a) => assignmentMap.set(`${a.teacherId}-${a.classId}`, a));
+            extractedAssignments.forEach((a) => assignmentMap.set(`${a.teacherId}-${a.classId}`, a));
+            const merged = Array.from(assignmentMap.values());
+            safeLocalStorageSet('markazu_teacher_assignments', merged);
+            return merged;
+          });
+        }
       }
     } catch (e) {
       console.warn('[syncTeachersFromBackend] error:', e);
@@ -564,6 +628,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           .map((s: any) => ({
             id: s.id,
             userId: s.userId || null,
+            email: s.user?.email || s.email || undefined,
             admissionNo: s.admissionNo,
             fullName: s.fullName,
             gender: s.gender,
@@ -713,6 +778,46 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         type: 'error',
         title: 'Restoration Failed',
         message: err.message || 'Could not restore user account.',
+      });
+      throw err;
+    }
+  };
+
+  const permanentlyDeleteUserAccount = async (userId: string): Promise<any> => {
+    try {
+      const targetUser = users.find((u) => u.id === userId) || deactivatedUsers.find((u) => u.id === userId);
+      const headers = getAuthHeaders();
+      const res = await fetch(`/api/users/${encodeURIComponent(userId)}/permanent-delete`, {
+        method: 'POST',
+        headers,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to permanently delete user account.');
+      }
+
+      clearDeletedUserIdentifier(userId, targetUser?.email, targetUser?.username);
+
+      notify({
+        type: 'success',
+        title: 'Account Permanently Deleted',
+        message: `Account for "${data.user?.name || targetUser?.name || userId}" has been permanently removed from the system.`,
+      });
+
+      await Promise.all([
+        syncUsersFromBackend(),
+        syncStudentsFromBackend(),
+        syncTeachersFromBackend(),
+        syncParentsFromBackend(),
+        fetchDeactivatedUsers(),
+      ]);
+
+      return data;
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Permanent Deletion Failed',
+        message: err.message || 'Could not permanently delete user account.',
       });
       throw err;
     }
@@ -1068,7 +1173,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     notify({
       type: 'success',
       title: 'Profile Photo Updated',
-      message: `Profile image updated and saved to PostgreSQL successfully.`,
+      message: `Profile photo updated successfully.`,
     });
 
     return optimisticUser;
@@ -2200,7 +2305,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         notify({
           type: 'success',
-          title: 'User Account Created in Database',
+          title: 'User Account Created',
           message: `Account created for ${userData.name}. Username: ${created.username}, Temp Password: ${created.tempPassword}. Welcome email dispatched to ${cleanEmail}.`,
         });
 
@@ -2655,9 +2760,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
   const addStudent = async (studentData: Omit<Student, 'id'>, customPassword?: string) => {
     const studentId = `usr-student-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
+    const rawEmail = studentData.email ? studentData.email.trim().toLowerCase() : '';
+    const hasEmail = rawEmail.length > 0;
+
     const newStudent: Student = {
       ...studentData,
       id: studentId,
+      email: hasEmail ? rawEmail : undefined,
     };
 
     setStudents((prev) => {
@@ -2666,28 +2775,31 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return next;
     });
 
-    // Create User account credentials with mandatory first login flag
     const tempPass = customPassword || generateTemporaryPassword();
-    const tempHash = hashPassword(tempPass);
-    const newUser: User = {
-      id: studentId,
-      name: studentData.fullName,
-      email: (studentData.email || `${studentData.admissionNo.toLowerCase()}@markazuumar.edu.ng`),
-      role: 'STUDENT',
-      passwordHash: tempHash,
-      isFirstLogin: true,
-      mustChangePassword: true,
-      status: 'ACTIVE',
-      failedLoginAttempts: 0,
-      isLocked: false,
-      createdAt: new Date().toISOString(),
-    };
 
-    setUsers((prev) => {
-      const next = [newUser, ...prev];
-      safeLocalStorageSet('markazu_users', next);
-      return next;
-    });
+    // Create User account credentials ONLY if student email was provided
+    if (hasEmail) {
+      const tempHash = hashPassword(tempPass);
+      const newUser: User = {
+        id: studentId,
+        name: studentData.fullName,
+        email: rawEmail,
+        role: 'STUDENT',
+        passwordHash: tempHash,
+        isFirstLogin: true,
+        mustChangePassword: true,
+        status: 'ACTIVE',
+        failedLoginAttempts: 0,
+        isLocked: false,
+        createdAt: new Date().toISOString(),
+      };
+
+      setUsers((prev) => {
+        const next = [newUser, ...prev];
+        safeLocalStorageSet('markazu_users', next);
+        return next;
+      });
+    }
 
     // Sync to backend database
     try {
@@ -2703,37 +2815,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           classId: studentData.classId,
           guardianId: studentData.guardianId,
           programmeId: studentData.programmeId,
+          email: hasEmail ? rawEmail : undefined,
+          tempPassword: hasEmail ? tempPass : undefined,
         }),
       });
 
-      // 2. Create corresponding User Credentials in DB
-      await fetch('/api/users', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: studentData.admissionNo,
-          name: studentData.fullName,
-          email: newUser.email,
-          role: 'STUDENT',
-          tempPassword: tempPass,
-        }),
-      });
       await syncStudentsFromBackend();
     } catch (e) {
       console.warn('[addStudent] backend sync error:', e);
     }
 
-    // Send Welcome Email
-    sendSystemEmail({
-      to: newUser.email,
-      recipientName: newUser.name,
-      subject: `Welcome to Markazu Umar Portal - Student Account Created (${studentData.admissionNo || newUser.email})`,
-      template: 'WELCOME_NEW_ACCOUNT',
-      metadata: {
-        username: studentData.admissionNo || newUser.email,
-        tempPassword: tempPass,
-      },
-    });
+    // Send Welcome Email ONLY if student email was provided
+    if (hasEmail) {
+      sendSystemEmail({
+        to: rawEmail,
+        recipientName: studentData.fullName,
+        subject: `Welcome to Markazu Umar Portal - Student Account Created (${studentData.admissionNo})`,
+        template: 'WELCOME_NEW_ACCOUNT',
+        metadata: {
+          username: studentData.admissionNo,
+          tempPassword: tempPass,
+        },
+      });
+    }
 
     addAuditLog({
       action: 'STUDENT_CREATED',
@@ -2747,53 +2851,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateStudent = async (id: string, updated: Partial<Student>) => {
-    setStudents((prev) => {
-      const next = prev.map((s) => {
-        if (s.id === id) {
-          const newName = updated.fullName || s.fullName;
-          const newEmail = updated.email || s.email;
-          const newAvatar = updated.avatar !== undefined ? updated.avatar : s.avatar;
-
-          setUsers((uPrev) => {
-            const uNext = uPrev.map((u) => {
-              if (u.id === id || u.id === s.userId || (s.admissionNo && u.username === s.admissionNo)) {
-                return {
-                  ...u,
-                  name: newName,
-                  email: newEmail || u.email,
-                  avatar: newAvatar,
-                };
-              }
-              return u;
-            });
-            safeLocalStorageSet('markazu_users', uNext);
-            return uNext;
-          });
-
-          if (currentUser && (currentUser.id === id || currentUser.id === s.userId || (s.admissionNo && currentUser.username === s.admissionNo))) {
-            const updatedCurr = {
-              ...currentUser,
-              name: newName,
-              email: newEmail || currentUser.email,
-              avatar: newAvatar,
-            };
-            setCurrentUser(updatedCurr);
-            safeLocalStorageSet('markazu_current_user', updatedCurr);
-          }
-
-          return { ...s, ...updated, avatar: newAvatar };
-        }
-        return s;
-      });
-      safeLocalStorageSet('markazu_students', next);
-      return next;
-    });
-
-    // Sync to backend database
+    // 1. Send authenticated PUT request to backend PostgreSQL API first
+    let apiSuccess = false;
     try {
-      await fetch(`/api/students/${id}`, {
+      const headers = getAuthHeaders();
+      const res = await fetch(`/api/students/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           fullName: updated.fullName,
           admissionNo: updated.admissionNo,
@@ -2801,6 +2865,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           dob: updated.dob,
           classId: updated.classId,
           guardianId: updated.guardianId,
+          guardianName: updated.guardianName,
+          guardianPhone: updated.guardianPhone,
+          email: updated.email !== undefined ? updated.email : undefined,
           status: updated.status,
           // Sync Hifz Progress if updated
           currentJuz: updated.hifzProgress?.currentJuz,
@@ -2814,19 +2881,103 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           akhlaqRating: updated.akhlaqRating,
         }),
       });
-    } catch (e) {
-      console.warn('[updateStudent] backend sync error:', e);
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data.error || `HTTP ${res.status}: Failed to update student`);
+      }
+      apiSuccess = true;
+
+      // If a student portal account was activated during update, dispatch login credentials
+      if (data.userCreated && data.credentials?.email) {
+        sendSystemEmail({
+          to: data.credentials.email,
+          recipientName: updated.fullName || 'Student',
+          subject: `Welcome to Markazu Umar Portal - Student Account Activated (${data.credentials.username})`,
+          template: 'WELCOME_NEW_ACCOUNT',
+          metadata: {
+            username: data.credentials.username,
+            tempPassword: data.credentials.tempPassword || 'student123',
+          },
+        });
+      }
+    } catch (e: any) {
+      console.error('[updateStudent] backend sync error:', e);
+      throw e;
     }
 
-    addAuditLog({
-      action: 'STUDENT_UPDATED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Updated details for student ID: ${id}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Student/${id}`,
-      status: 'SUCCESS',
-    });
+    if (apiSuccess) {
+      setStudents((prev) => {
+        const next = prev.map((s) => {
+          if (s.id === id) {
+            const newName = updated.fullName || s.fullName;
+            const newEmail = updated.email || s.email;
+            const newAvatar = updated.avatar !== undefined ? updated.avatar : s.avatar;
+
+            setUsers((uPrev) => {
+              const uNext = uPrev.map((u) => {
+                if (u.id === id || u.id === s.userId || (s.admissionNo && u.username === s.admissionNo)) {
+                  return {
+                    ...u,
+                    name: newName,
+                    email: newEmail || u.email,
+                    avatar: newAvatar,
+                  };
+                }
+                return u;
+              });
+              safeLocalStorageSet('markazu_users', uNext);
+              return uNext;
+            });
+
+            if (currentUser && (currentUser.id === id || currentUser.id === s.userId || (s.admissionNo && currentUser.username === s.admissionNo))) {
+              const updatedCurr = {
+                ...currentUser,
+                name: newName,
+                email: newEmail || currentUser.email,
+                avatar: newAvatar,
+              };
+              setCurrentUser(updatedCurr);
+              safeLocalStorageSet('markazu_current_user', updatedCurr);
+            }
+
+            return { ...s, ...updated, avatar: newAvatar };
+          }
+          return s;
+        });
+        safeLocalStorageSet('markazu_students', next);
+        return next;
+      });
+
+      // Synchronize parent state in context if guardian details changed
+      if (updated.guardianPhone || updated.guardianName) {
+        setParents((pPrev) => {
+          const pNext = pPrev.map((p) => {
+            const targetStudent = students.find((st) => st.id === id);
+            if ((targetStudent && p.id === targetStudent.guardianId) || (updated.guardianId && p.id === updated.guardianId)) {
+              return {
+                ...p,
+                phone: updated.guardianPhone || p.phone,
+                fullName: updated.guardianName || p.fullName,
+              };
+            }
+            return p;
+          });
+          safeLocalStorageSet('markazu_parents', pNext);
+          return pNext;
+        });
+      }
+
+      addAuditLog({
+        action: 'STUDENT_UPDATED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Updated details for student ID: ${id}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Student/${id}`,
+        status: 'SUCCESS',
+      });
+    }
   };
   const deleteStudent = async (id: string) => {
     const targetStudent = students.find((s) => s.id === id);
@@ -2958,6 +3109,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           status: teacherData.status,
           dateJoined: teacherData.dateJoined,
           userId: teacherId,
+          classesAssigned: teacherData.classesAssigned,
+          programmeIds: teacherData.programmeIds,
         }),
       });
 
@@ -3066,8 +3219,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           specialization: updated.specialization,
           status: updated.status,
           dateJoined: updated.dateJoined,
+          classesAssigned: updated.classesAssigned,
+          programmeIds: updated.programmeIds,
         }),
       });
+      await syncTeachersFromBackend();
     } catch (e) {
       console.warn('[updateTeacher] backend sync error:', e);
     }
@@ -3130,28 +3286,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addSubject = async (subjectData: Omit<Subject, 'id'>) => {
-    const newSubject: Subject = {
-      ...subjectData,
-      id: `subj-${Date.now()}`,
-    };
-    setSubjects((prev) => {
-      const next = [...prev, newSubject];
-      safeLocalStorageSet('markazu_subjects', next);
-      return next;
-    });
-
-    // Sync to backend database
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      await fetch('/api/subjects', {
+      const headers = getAuthHeaders();
+      const res = await fetch('/api/subjects', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-        },
+        headers,
         body: JSON.stringify({
-          id: newSubject.id,
           name: subjectData.name,
           arabicName: subjectData.arabicName,
           code: subjectData.code,
@@ -3163,85 +3303,141 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           displayOrder: subjectData.displayOrder,
         }),
       });
-    } catch (e) {
-      console.warn('[addSubject] backend sync error:', e);
-    }
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to save subject to database.');
+      }
 
-    addAuditLog({
-      action: 'SUBJECT_ADDED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Added new subject ${subjectData.name} (${subjectData.code})`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Subject/${newSubject.id}`,
-      status: 'SUCCESS',
-    });
+      const createdSubject: Subject = {
+        id: data.subject?.id || `subj-${Date.now()}`,
+        name: data.subject?.name || subjectData.name,
+        nameEnglish: data.subject?.name || subjectData.name,
+        arabicName: data.subject?.arabicName || subjectData.arabicName,
+        code: data.subject?.code || subjectData.code,
+        category: data.subject?.category || subjectData.category,
+        description: data.subject?.description || subjectData.description,
+        programmeId: data.subject?.programmeId || subjectData.programmeId,
+        classId: data.subject?.classId || subjectData.classId,
+        status: data.subject?.status || subjectData.status,
+        displayOrder: data.subject?.displayOrder || subjectData.displayOrder,
+      };
+
+      setSubjects((prev) => {
+        const next = [...prev, createdSubject];
+        safeLocalStorageSet('markazu_subjects', next);
+        return next;
+      });
+
+      notify({
+        type: 'success',
+        title: 'Subject Saved',
+        message: `Subject "${createdSubject.name}" (${createdSubject.code}) saved successfully to database.`,
+      });
+
+      addAuditLog({
+        action: 'SUBJECT_ADDED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Added new subject ${createdSubject.name} (${createdSubject.code})`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Subject/${createdSubject.id}`,
+        status: 'SUCCESS',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Subject Persistence Failed',
+        message: err.message || 'Could not save subject to database.',
+      });
+      throw err;
+    }
   };
 
   const updateSubject = async (id: string, updated: Partial<Subject>) => {
-    setSubjects((prev) => {
-      const next = prev.map((s) => (s.id === id ? { ...s, ...updated } : s));
-      safeLocalStorageSet('markazu_subjects', next);
-      return next;
-    });
-
-    // Sync to backend database
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      await fetch(`/api/subjects/${id}`, {
+      const headers = getAuthHeaders();
+      const res = await fetch(`/api/subjects/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-        },
+        headers,
         body: JSON.stringify(updated),
       });
-    } catch (e) {
-      console.warn('[updateSubject] backend sync error:', e);
-    }
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to update subject in database.');
+      }
 
-    addAuditLog({
-      action: 'SUBJECT_ADDED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Updated subject details ID: ${id}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Subject/${id}`,
-      status: 'SUCCESS',
-    });
+      setSubjects((prev) => {
+        const next = prev.map((s) => (s.id === id ? { ...s, ...updated } : s));
+        safeLocalStorageSet('markazu_subjects', next);
+        return next;
+      });
+
+      notify({
+        type: 'success',
+        title: 'Subject Updated',
+        message: `Subject "${updated.name || id}" updated successfully.`,
+      });
+
+      addAuditLog({
+        action: 'SUBJECT_ADDED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Updated subject details ID: ${id}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Subject/${id}`,
+        status: 'SUCCESS',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Subject Update Failed',
+        message: err.message || 'Could not update subject in database.',
+      });
+      throw err;
+    }
   };
 
   const deleteSubject = async (id: string) => {
-    setSubjects((prev) => {
-      const next = prev.filter((s) => s.id !== id);
-      safeLocalStorageSet('markazu_subjects', next);
-      return next;
-    });
-
-    // Sync to backend database
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || '' : '';
-      await fetch(`/api/subjects/${id}`, {
+      const headers = getAuthHeaders();
+      const res = await fetch(`/api/subjects/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-        },
+        headers,
       });
-    } catch (e) {
-      console.warn('[deleteSubject] backend sync error:', e);
-    }
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to delete subject from database.');
+      }
 
-    addAuditLog({
-      action: 'SUBJECT_REMOVED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Removed subject ID: ${id}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Subject/${id}`,
-      status: 'WARNING',
-    });
+      setSubjects((prev) => {
+        const next = prev.filter((s) => s.id !== id);
+        safeLocalStorageSet('markazu_subjects', next);
+        return next;
+      });
+
+      notify({
+        type: 'info',
+        title: 'Subject Deleted',
+        message: `Subject ID ${id} removed successfully from database.`,
+      });
+
+      addAuditLog({
+        action: 'SUBJECT_REMOVED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Removed subject ID: ${id}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Subject/${id}`,
+        status: 'WARNING',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Subject Deletion Failed',
+        message: err.message || 'Could not delete subject from database.',
+      });
+      throw err;
+    }
   };
 
   const assignTeacher = (assignmentData: Omit<TeacherAssignment, 'id'>) => {
@@ -4109,62 +4305,63 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       throw new Error(`A Programme with the code "${progData.programme_code}" already exists.`);
     }
 
-    const tempId = `prog-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
-    const newProg: Programme = {
-      ...progData,
-      id: tempId,
-      programme_name_english: englishName,
-      programme_name_arabic: arabicName,
-      programme_name: englishName,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    setProgrammes((prev) => {
-      const next = [newProg, ...prev];
-      safeLocalStorageSet('markazu_programmes', next);
-      return next;
-    });
-
-    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      const headers = getAuthHeaders();
       const res = await fetch('/api/programmes', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-          'x-session-id': token,
-        },
+        headers,
         body: JSON.stringify({
-          ...newProg,
-          code: newProg.programme_code,
-          nameEnglish: newProg.programme_name_english,
-          nameArabic: newProg.programme_name_arabic,
-          name: newProg.programme_name_english,
+          ...progData,
+          code: progData.programme_code,
+          nameEnglish: englishName,
+          nameArabic: arabicName,
+          name: englishName,
         }),
       });
       const data = await res.json();
-      if (data && data.programme) {
-        setProgrammes((prev) => {
-          const next = prev.map((p) => (p.id === tempId ? { ...p, ...data.programme } : p));
-          safeLocalStorageSet('markazu_programmes', next);
-          return next;
-        });
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to save programme to database.');
       }
-    } catch (e) {
-      console.warn('[addProgramme] backend sync warning:', e);
-    }
 
-    addAuditLog({
-      action: 'PROGRAMME_CREATED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Created Programme: "${newProg.programme_name_english}" (${newProg.programme_code})`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Programme/${newProg.id}`,
-      status: 'SUCCESS',
-    });
+      const createdProg: Programme = {
+        ...progData,
+        id: data.programme?.id || `prog-${Date.now()}`,
+        programme_name_english: englishName,
+        programme_name_arabic: arabicName,
+        programme_name: englishName,
+        created_at: data.programme?.createdAt || new Date().toISOString(),
+        updated_at: data.programme?.updatedAt || new Date().toISOString(),
+      };
+
+      setProgrammes((prev) => {
+        const next = [createdProg, ...prev];
+        safeLocalStorageSet('markazu_programmes', next);
+        return next;
+      });
+
+      notify({
+        type: 'success',
+        title: 'Programme Created',
+        message: `Programme "${createdProg.programme_name_english}" saved successfully to database.`,
+      });
+
+      addAuditLog({
+        action: 'PROGRAMME_CREATED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Created Programme: "${createdProg.programme_name_english}" (${createdProg.programme_code})`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Programme/${createdProg.id}`,
+        status: 'SUCCESS',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Programme Creation Failed',
+        message: err.message || 'Could not save programme to database.',
+      });
+      throw err;
+    }
   };
 
   const updateProgramme = async (id: string, updated: Partial<Programme>) => {
@@ -4186,30 +4383,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         throw new Error(`A Programme with the code "${updated.programme_code}" already exists.`);
       }
     }
-    setProgrammes((prev) => {
-      const next = prev.map((p) => (p.id === id ? { 
-        ...p, 
-        ...updated, 
-        programme_name_english: updated.programme_name_english || p.programme_name_english,
-        programme_name_arabic: updated.programme_name_arabic !== undefined ? updated.programme_name_arabic : p.programme_name_arabic,
-        programme_name: updated.programme_name_english || p.programme_name_english,
-        updated_at: new Date().toISOString() 
-      } : p));
-      safeLocalStorageSet('markazu_programmes', next);
-      return next;
-    });
 
-    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      const headers = getAuthHeaders();
       const res = await fetch(`/api/programmes/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-          'x-session-id': token,
-        },
+        headers,
         body: JSON.stringify({
           ...updated,
           code: updated.programme_code,
@@ -4218,26 +4397,46 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }),
       });
       const data = await res.json();
-      if (data && data.programme) {
-        setProgrammes((prev) => {
-          const next = prev.map((p) => (p.id === id ? { ...p, ...data.programme } : p));
-          safeLocalStorageSet('markazu_programmes', next);
-          return next;
-        });
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to update programme in database.');
       }
-    } catch (e) {
-      console.warn('[updateProgramme] backend sync warning:', e);
-    }
 
-    addAuditLog({
-      action: 'PROGRAMME_UPDATED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Updated Programme ID: ${id}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Programme/${id}`,
-      status: 'SUCCESS',
-    });
+      setProgrammes((prev) => {
+        const next = prev.map((p) => (p.id === id ? { 
+          ...p, 
+          ...updated, 
+          programme_name_english: updated.programme_name_english || p.programme_name_english,
+          programme_name_arabic: updated.programme_name_arabic !== undefined ? updated.programme_name_arabic : p.programme_name_arabic,
+          programme_name: updated.programme_name_english || p.programme_name_english,
+          updated_at: new Date().toISOString() 
+        } : p));
+        safeLocalStorageSet('markazu_programmes', next);
+        return next;
+      });
+
+      notify({
+        type: 'success',
+        title: 'Programme Updated',
+        message: `Programme "${updated.programme_name_english || id}" updated successfully.`,
+      });
+
+      addAuditLog({
+        action: 'PROGRAMME_UPDATED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Updated Programme ID: ${id}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Programme/${id}`,
+        status: 'SUCCESS',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Programme Update Failed',
+        message: err.message || 'Could not update programme in database.',
+      });
+      throw err;
+    }
   };
 
   const toggleProgrammeStatus = (id: string) => {
@@ -4263,45 +4462,55 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const deleteProgramme = async (id: string) => {
-    setProgrammes((prev) => {
-      const next = prev.filter((p) => p.id !== id);
-      safeLocalStorageSet('markazu_programmes', next);
-      return next;
-    });
-
-    setClasses((prev) => {
-      const next = prev.filter((c) => c.programmeId !== id);
-      safeLocalStorageSet('markazu_classes', next);
-      return next;
-    });
-
-    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
-      await fetch(`/api/programmes/${id}`, {
+      const headers = getAuthHeaders();
+      const res = await fetch(`/api/programmes/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-          'x-session-id': token,
-        },
+        headers,
       });
-    } catch (e) {
-      console.warn('[deleteProgramme] backend sync warning:', e);
-    }
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to delete programme from database.');
+      }
 
-    addAuditLog({
-      action: 'PROGRAMME_DELETED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Deleted Programme ID: ${id}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `Programme/${id}`,
-      status: 'SUCCESS',
-    });
+      setProgrammes((prev) => {
+        const next = prev.filter((p) => p.id !== id);
+        safeLocalStorageSet('markazu_programmes', next);
+        return next;
+      });
+
+      setClasses((prev) => {
+        const next = prev.filter((c) => c.programmeId !== id);
+        safeLocalStorageSet('markazu_classes', next);
+        return next;
+      });
+
+      notify({
+        type: 'info',
+        title: 'Programme Deleted',
+        message: `Programme ID ${id} deleted successfully from database.`,
+      });
+
+      addAuditLog({
+        action: 'PROGRAMME_DELETED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Deleted Programme ID: ${id}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Programme/${id}`,
+        status: 'SUCCESS',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Programme Deletion Failed',
+        message: err.message || 'Could not delete programme from database.',
+      });
+      throw err;
+    }
   };
 
-  const addSubcategory = (programmeId: string, subcategoryName: string) => {
+  const addSubcategory = async (programmeId: string, subcategoryName: string) => {
     const trimmed = subcategoryName.trim();
     if (!trimmed) throw new Error('Subcategory name cannot be empty.');
 
@@ -4314,6 +4523,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     const updatedSubcategories = [...currentSubcategories, trimmed];
+
+    const headers = getAuthHeaders();
+    const res = await fetch(`/api/programmes/${programmeId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        hasSubcategories: true,
+        subcategories: updatedSubcategories,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}: Failed to save subcategory in database`);
+    }
+
     setProgrammes((prev) => {
       const next = prev.map((p) =>
         p.id === programmeId
@@ -4340,7 +4565,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const updateSubcategory = (programmeId: string, oldName: string, newName: string) => {
+  const updateSubcategory = async (programmeId: string, oldName: string, newName: string) => {
     const trimmedNew = newName.trim();
     if (!trimmedNew) throw new Error('Subcategory name cannot be empty.');
 
@@ -4356,6 +4581,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
 
     const updatedSubcategories = currentSubcategories.map((s) => (s === oldName ? trimmedNew : s));
+
+    const headers = getAuthHeaders();
+    const res = await fetch(`/api/programmes/${programmeId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        hasSubcategories: updatedSubcategories.length > 0,
+        subcategories: updatedSubcategories,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}: Failed to update subcategory in database`);
+    }
 
     setProgrammes((prev) => {
       const next = prev.map((p) =>
@@ -4392,12 +4632,39 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const deleteSubcategory = (programmeId: string, subcategoryName: string) => {
+  const deleteSubcategory = async (programmeId: string, subcategoryName: string) => {
     const prog = programmes.find((p) => p.id === programmeId);
     if (!prog) throw new Error('Programme not found.');
 
+    // DEPENDENCY CHECK: Prevent deletion if any class is assigned to this subcategory
+    const dependentClasses = classes.filter(
+      (c) => c.programmeId === programmeId && (c.subcategory === subcategoryName || c.subcategory?.toLowerCase() === subcategoryName.toLowerCase())
+    );
+
+    if (dependentClasses.length > 0) {
+      const classNames = dependentClasses.map((c) => c.name).join(', ');
+      throw new Error(
+        `Cannot delete subcategory "${subcategoryName}" because ${dependentClasses.length} active class(es) [${classNames}] depend on it. Please reassign or remove these classes first.`
+      );
+    }
+
     const updatedSubcategories = (prog.subcategories || []).filter((s) => s !== subcategoryName);
     const hasSubcats = updatedSubcategories.length > 0;
+
+    const headers = getAuthHeaders();
+    const res = await fetch(`/api/programmes/${programmeId}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        hasSubcategories: hasSubcats,
+        subcategories: updatedSubcategories,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}: Failed to delete subcategory from database`);
+    }
 
     setProgrammes((prev) => {
       const next = prev.map((p) =>
@@ -4435,7 +4702,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const assignHeadmasterProgramme = (headmasterUserId: string, programmeId: string, programmeName: string) => {
+  const assignHeadmasterProgramme = async (headmasterUserId: string, programmeId: string, programmeName: string) => {
+    const headers = getAuthHeaders();
+    const res = await fetch(`/api/users/${encodeURIComponent(headmasterUserId)}`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        assignedProgrammeId: programmeId || null,
+        assignedProgrammeName: programmeName || null,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${res.status}: Failed to assign Headmaster in database`);
+    }
+
     setUsers((prev) => {
       const next = prev.map((u) =>
         u.id === headmasterUserId
@@ -4449,6 +4731,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_users', next);
       return next;
     });
+
+    if (currentUser && currentUser.id === headmasterUserId) {
+      const updatedCurr = {
+        ...currentUser,
+        assignedProgrammeId: programmeId || undefined,
+        assignedProgrammeName: programmeName || undefined,
+      };
+      setCurrentUser(updatedCurr);
+      safeLocalStorageSet('markazu_current_user', updatedCurr);
+    }
 
     addAuditLog({
       action: 'HEADMASTER_PROGRAMME_ASSIGNED',
@@ -4464,34 +4756,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const addClass = async (newClassData: Omit<SchoolClass, 'id'>) => {
     const englishName = (newClassData.class_name_english || newClassData.name || '').trim();
     const arabicName = (newClassData.class_name_arabic || '').trim();
-    const tempId = `cls-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
-    const newClass: SchoolClass = {
-      ...newClassData,
-      id: tempId,
-      class_name_english: englishName,
-      class_name_arabic: arabicName,
-      name: englishName,
-    };
-    setClasses((prev) => {
-      const next = [...prev, newClass];
-      safeLocalStorageSet('markazu_classes', next);
-      return next;
-    });
-
-    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      const headers = getAuthHeaders();
       const res = await fetch('/api/classes', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-          'x-session-id': token,
-        },
+        headers,
         body: JSON.stringify({
-          id: tempId,
           name: englishName,
           category: newClassData.category || 'TAHFIZ',
           section: newClassData.section || newClassData.subcategory || 'Section A',
@@ -4502,59 +4773,58 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }),
       });
       const data = await res.json();
-      if (data && data.class) {
-        setClasses((prev) => {
-          const next = prev.map((c) => (c.id === tempId ? { ...c, ...data.class } : c));
-          safeLocalStorageSet('markazu_classes', next);
-          return next;
-        });
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to save class to database.');
       }
-    } catch (e) {
-      console.warn('[addClass] backend sync error:', e);
-    }
 
-    addAuditLog({
-      action: 'CLASS_CREATED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Created Class: ${newClass.class_name_english} under Programme ${newClass.programmeName || newClass.programmeId}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `SchoolClass/${newClass.id}`,
-      status: 'SUCCESS',
-    });
+      const createdClass: SchoolClass = {
+        ...newClassData,
+        id: data.class?.id || `cls-${Date.now()}`,
+        class_name_english: data.class?.name || englishName,
+        class_name_arabic: arabicName,
+        name: data.class?.name || englishName,
+        programmeId: data.class?.programmeId || newClassData.programmeId,
+        programmeName: data.class?.programmeName || newClassData.programmeName,
+        studentCount: data.class?.studentCount || 0,
+      };
+
+      setClasses((prev) => {
+        const next = [...prev, createdClass];
+        safeLocalStorageSet('markazu_classes', next);
+        return next;
+      });
+
+      notify({
+        type: 'success',
+        title: 'Class Created',
+        message: `Class "${createdClass.name}" saved successfully to database.`,
+      });
+
+      addAuditLog({
+        action: 'CLASS_CREATED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Created Class: ${createdClass.class_name_english} under Programme ${createdClass.programmeName || createdClass.programmeId}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `SchoolClass/${createdClass.id}`,
+        status: 'SUCCESS',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Class Creation Failed',
+        message: err.message || 'Could not save class to database.',
+      });
+      throw err;
+    }
   };
 
   const updateClass = async (id: string, updated: Partial<SchoolClass>) => {
-    setClasses((prev) => {
-      const next = prev.map((c) => {
-        if (c.id === id) {
-          const englishName = updated.class_name_english || updated.name || c.class_name_english || c.name;
-          const arabicName = updated.class_name_arabic !== undefined ? updated.class_name_arabic : c.class_name_arabic;
-          return {
-            ...c,
-            ...updated,
-            class_name_english: englishName,
-            class_name_arabic: arabicName,
-            name: englishName,
-          };
-        }
-        return c;
-      });
-      safeLocalStorageSet('markazu_classes', next);
-      return next;
-    });
-
-    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
+      const headers = getAuthHeaders();
       const res = await fetch(`/api/classes/${id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-          'x-session-id': token,
-        },
+        headers,
         body: JSON.stringify({
           name: updated.name || updated.class_name_english,
           category: updated.category,
@@ -4566,65 +4836,101 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }),
       });
       const data = await res.json();
-      if (data && data.class) {
-        setClasses((prev) => {
-          const next = prev.map((c) => (c.id === id ? { ...c, ...data.class } : c));
-          safeLocalStorageSet('markazu_classes', next);
-          return next;
-        });
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to update class in database.');
       }
-    } catch (e) {
-      console.warn('[updateClass] backend sync error:', e);
-    }
 
-    addAuditLog({
-      action: 'CLASS_UPDATED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Updated Class ID: ${id}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `SchoolClass/${id}`,
-      status: 'SUCCESS',
-    });
+      setClasses((prev) => {
+        const next = prev.map((c) => {
+          if (c.id === id) {
+            const englishName = updated.class_name_english || updated.name || c.class_name_english || c.name;
+            const arabicName = updated.class_name_arabic !== undefined ? updated.class_name_arabic : c.class_name_arabic;
+            return {
+              ...c,
+              ...updated,
+              class_name_english: englishName,
+              class_name_arabic: arabicName,
+              name: englishName,
+            };
+          }
+          return c;
+        });
+        safeLocalStorageSet('markazu_classes', next);
+        return next;
+      });
+
+      notify({
+        type: 'success',
+        title: 'Class Updated',
+        message: `Class "${updated.name || id}" updated successfully.`,
+      });
+
+      addAuditLog({
+        action: 'CLASS_UPDATED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Updated Class ID: ${id}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `SchoolClass/${id}`,
+        status: 'SUCCESS',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Class Update Failed',
+        message: err.message || 'Could not update class in database.',
+      });
+      throw err;
+    }
   };
 
   const deleteClass = async (id: string) => {
-    setClasses((prev) => {
-      const next = prev.filter((c) => c.id !== id);
-      safeLocalStorageSet('markazu_classes', next);
-      return next;
-    });
-
-    setTeacherAssignments((prev) => {
-      const next = prev.filter((ta) => ta.classId !== id);
-      safeLocalStorageSet('markazu_teacher_assignments', next);
-      return next;
-    });
-
-    // Sync to PostgreSQL backend
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('markazu_session_token') || currentUser?.id || currentUser?.email || '' : '';
-      await fetch(`/api/classes/${id}`, {
+      const headers = getAuthHeaders();
+      const res = await fetch(`/api/classes/${id}`, {
         method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'x-session-token': token,
-          'x-session-id': token,
-        },
+        headers,
       });
-    } catch (e) {
-      console.warn('[deleteClass] backend sync error:', e);
-    }
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to delete class from database.');
+      }
 
-    addAuditLog({
-      action: 'CLASS_DELETED',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Deleted Class ID: ${id}`,
-      ipAddress: '197.210.227.14',
-      affectedRecord: `SchoolClass/${id}`,
-      status: 'SUCCESS',
-    });
+      setClasses((prev) => {
+        const next = prev.filter((c) => c.id !== id);
+        safeLocalStorageSet('markazu_classes', next);
+        return next;
+      });
+
+      setTeacherAssignments((prev) => {
+        const next = prev.filter((ta) => ta.classId !== id);
+        safeLocalStorageSet('markazu_teacher_assignments', next);
+        return next;
+      });
+
+      notify({
+        type: 'info',
+        title: 'Class Deleted',
+        message: `Class ID ${id} removed successfully from database.`,
+      });
+
+      addAuditLog({
+        action: 'CLASS_DELETED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Deleted Class ID: ${id}`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `SchoolClass/${id}`,
+        status: 'WARNING',
+      });
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Class Deletion Failed',
+        message: err.message || 'Could not delete class from database.',
+      });
+      throw err;
+    }
   };
 
   const [academicEvents, setAcademicEvents] = useState<AcademicEvent[]>(() => {
@@ -4932,6 +5238,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         createUserAccount,
         deleteUserAccount,
         restoreUserAccount,
+        permanentlyDeleteUserAccount,
         deactivatedUsers,
         fetchDeactivatedUsers,
         updateUserAccount,

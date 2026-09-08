@@ -147,7 +147,7 @@ export default function HeadmasterPortalPage() {
                   </span>
                 </div>
                 <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/30">
-                  {programmes.length} Programmes in Database
+                  {programmes.length} Active Programmes
                 </span>
               </div>
 

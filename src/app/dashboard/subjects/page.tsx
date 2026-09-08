@@ -403,14 +403,19 @@ export default function SubjectsPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-slate-600 dark:text-emerald-300">Programme</label>
+                    <label className="text-slate-600 dark:text-emerald-300">
+                      Programme {isHeadmaster && <span className="text-[10px] text-emerald-500 font-bold">(Locked to assigned section)</span>}
+                    </label>
                     <select
+                      disabled={isHeadmaster}
                       value={programmeId}
                       onChange={(e) => {
-                        setProgrammeId(e.target.value);
-                        setClassId('');
+                        if (!isHeadmaster) {
+                          setProgrammeId(e.target.value);
+                          setClassId('');
+                        }
                       }}
-                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {!isHeadmaster && <option value="">-- Optional Programme --</option>}
                       {userProgrammes.map((p) => (

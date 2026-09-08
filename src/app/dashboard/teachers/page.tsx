@@ -50,8 +50,8 @@ export default function TeachersPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [customPassword, setCustomPassword] = useState('');
-  const [selectedProgrammes, setSelectedProgrammes] = useState<string[]>(['prog-02']);
-  const [selectedClasses, setSelectedClasses] = useState<string[]>(['cls-tahfiz-1']);
+  const [selectedProgrammes, setSelectedProgrammes] = useState<string[]>([]);
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>(["Qur'an"]);
 
   // Bulk CSV State
@@ -108,6 +108,15 @@ export default function TeachersPage() {
     e.preventDefault();
     if (!fullNameEnglish || !email || !phone) return;
 
+    // Automatically derive programmeIds from selected classes
+    const derivedProgrammeIds = Array.from(
+      new Set(
+        selectedClasses
+          .map((cId) => classes.find((c) => c.id === cId || c.name === cId)?.programmeId)
+          .filter(Boolean) as string[]
+      )
+    );
+
     addTeacher(
       {
         staffNo: staffNo || `TCH-${Math.floor(100 + Math.random() * 900)}`,
@@ -116,8 +125,8 @@ export default function TeachersPage() {
         fullName: fullNameEnglish.trim(),
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
-        programmeIds: selectedProgrammes.length ? selectedProgrammes : ['prog-02'],
-        classesAssigned: selectedClasses.length ? selectedClasses : ['cls-tahfiz-1'],
+        programmeIds: derivedProgrammeIds.length ? derivedProgrammeIds : selectedProgrammes,
+        classesAssigned: selectedClasses,
         subjectsAssigned: selectedSubjects.length ? selectedSubjects : ["Qur'an"],
         dateJoined: new Date().toISOString().split('T')[0],
         status: 'ACTIVE',
@@ -136,6 +145,8 @@ export default function TeachersPage() {
     setEmail('');
     setPhone('');
     setCustomPassword('');
+    setSelectedClasses([]);
+    setSelectedProgrammes([]);
     setShowAddModal(false);
   };
 
@@ -226,7 +237,7 @@ export default function TeachersPage() {
           staffId &&
           (seenStaffNos.has(staffId.toLowerCase()) || teachers.some((t) => t.staffNo && t.staffNo.toLowerCase() === staffId.toLowerCase()))
         ) {
-          rowErrors.push(`Duplicate Staff ID "${staffId}" (Already assigned in database or file)`);
+          rowErrors.push(`Duplicate Staff ID "${staffId}" (Already assigned in system or file)`);
         }
         if (staffId) seenStaffNos.add(staffId.toLowerCase());
 
@@ -297,7 +308,7 @@ export default function TeachersPage() {
             fullName: fullName,
             email: emailAddr,
             phone: phoneNo || '+234 800 000 0000',
-            qualification: 'Faculty Member',
+            qualification: 'Teaching Staff',
             specialization: validSubjs[0] || "Qur'an & Tajweed",
             programmeIds: validProgs.length ? validProgs : ['prog-01'],
             classesAssigned: validClasses.length ? validClasses : ['Tahfiz Halqa 1'],
@@ -364,6 +375,14 @@ export default function TeachersPage() {
     e.preventDefault();
     if (!editingTeacher) return;
 
+    const derivedProgrammeIds = Array.from(
+      new Set(
+        editSelectedClasses
+          .map((cId) => classes.find((c) => c.id === cId || c.name === cId)?.programmeId)
+          .filter(Boolean) as string[]
+      )
+    );
+
     updateTeacher(editingTeacher.id, {
       full_name_english: editFullNameEnglish.trim(),
       full_name_arabic: editFullNameArabic.trim(),
@@ -371,7 +390,7 @@ export default function TeachersPage() {
       staffNo: editStaffNo,
       email: editEmail,
       phone: editPhone,
-      programmeIds: editSelectedProgrammes,
+      programmeIds: derivedProgrammeIds.length ? derivedProgrammeIds : editSelectedProgrammes,
       classesAssigned: editSelectedClasses,
     });
 
@@ -624,7 +643,9 @@ export default function TeachersPage() {
 
                     {/* ASSIGNED CLASSES */}
                     <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 font-medium">
-                      {(teacher.classesAssigned || []).join(', ') || 'General'}
+                      {(teacher.classesAssigned || [])
+                        .map((cId) => classes.find((c) => c.id === cId || c.name === cId)?.name || cId)
+                        .join(', ') || 'General'}
                     </td>
 
                     {/* ACTIONS */}
@@ -702,7 +723,7 @@ export default function TeachersPage() {
                     <button
                       onClick={() => {
                         showConfirm({
-                          title: 'Remove Faculty Member',
+                          title: 'Remove Teacher Profile',
                           description: `Are you sure you want to remove teacher profile for ${teacher.fullName}? This action will revoke portal access.`,
                           confirmLabel: 'Remove Teacher',
                           onConfirm: () => deleteTeacher(teacher.id),
@@ -735,14 +756,17 @@ export default function TeachersPage() {
                 Assigned Classes / Halqas
               </span>
               <div className="flex flex-wrap gap-1">
-                {(teacher.classesAssigned || []).map((c: string) => (
-                  <span
-                    key={c}
-                    className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/30"
-                  >
-                    {c}
-                  </span>
-                ))}
+                {(teacher.classesAssigned || []).map((c: string) => {
+                  const resolvedClassName = classes.find((cls) => cls.id === c || cls.name === c)?.name || c;
+                  return (
+                    <span
+                      key={c}
+                      className="text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-500/30"
+                    >
+                      {resolvedClassName}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -835,58 +859,44 @@ export default function TeachersPage() {
                   </div>
                 </div>
 
-                {/* Programme Selection Cascade */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">
-                    Step 1: Select Programme(s) <span className="text-amber-500 font-normal">(Admin Assignment)</span>
-                  </label>
-                  <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30">
-                    {programmes.map((p) => {
-                      const isSelected = selectedProgrammes.includes(p.id);
+                {/* Direct Class Assignment Selector */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-slate-700 dark:text-gray-300 text-xs">
+                      Assigned Class(es) / Halqa <span className="text-emerald-500 font-normal">(Select class to assign this teacher)</span>
+                    </label>
+                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-medium">
+                      {selectedClasses.length} class(es) selected
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-44 overflow-y-auto">
+                    {classes.map((c) => {
+                      const isSelected = selectedClasses.includes(c.id) || selectedClasses.includes(c.name);
                       return (
                         <button
                           type="button"
-                          key={p.id}
-                          onClick={() => toggleArrayItem(p.id, selectedProgrammes, setSelectedProgrammes)}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold font-poppins transition-all ${
+                          key={c.id}
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedClasses(selectedClasses.filter((item) => item !== c.id && item !== c.name));
+                            } else {
+                              setSelectedClasses([...selectedClasses, c.id]);
+                            }
+                          }}
+                          className={`p-2.5 rounded-xl text-left transition-all border flex items-center justify-between ${
                             isSelected
-                              ? 'bg-amber-500 text-slate-950 shadow'
-                              : 'bg-slate-200 dark:bg-emerald-950/80 text-slate-700 dark:text-emerald-300'
+                              ? 'bg-emerald-600/15 border-emerald-500 text-emerald-900 dark:text-emerald-200 ring-1 ring-emerald-500'
+                              : 'bg-white dark:bg-emerald-950/40 border-slate-200 dark:border-emerald-800/40 text-slate-700 dark:text-emerald-300 hover:border-emerald-400'
                           }`}
                         >
-                          {p.programme_name} ({p.programme_code})
+                          <div>
+                            <p className="font-bold text-xs">{c.name}</p>
+                            <p className="text-[10px] opacity-75 font-mono">{c.programmeName || 'Academic Section'}</p>
+                          </div>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />}
                         </button>
                       );
                     })}
-                  </div>
-                </div>
-
-                {/* Class Selection Cascade */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">
-                    Step 2: Assign Class(es) Under Selected Programme(s)
-                  </label>
-                  <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-28 overflow-y-auto">
-                    {classes
-                      .filter((c) => selectedProgrammes.length === 0 || selectedProgrammes.includes(c.programmeId))
-                      .map((c) => {
-                        const isSelected = selectedClasses.includes(c.id) || selectedClasses.includes(c.name);
-                        return (
-                          <button
-                            type="button"
-                            key={c.id}
-                            onClick={() => toggleArrayItem(c.id, selectedClasses, setSelectedClasses)}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold font-poppins transition-all flex items-center gap-1 ${
-                              isSelected
-                                ? 'bg-emerald-600 text-white shadow'
-                                : 'bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300'
-                            }`}
-                          >
-                            <span>{c.name}</span>
-                            <span className="text-[9px] opacity-75 font-mono">({c.programmeName || 'General'})</span>
-                          </button>
-                        );
-                      })}
                   </div>
                 </div>
 
@@ -918,7 +928,7 @@ export default function TeachersPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md uppercase tracking-wider font-poppins"
                 >
-                  Save & Register Faculty Profile
+                  Save & Register Teacher Profile
                 </button>
               </div>
             </form>
@@ -1134,7 +1144,7 @@ export default function TeachersPage() {
                   <Edit className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Faculty Profile</h3>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Edit Teacher Profile</h3>
                   <p className="text-xs text-slate-500 dark:text-emerald-300/70">Modify teacher record, assignments, and credentials</p>
                 </div>
               </div>
@@ -1205,54 +1215,44 @@ export default function TeachersPage() {
                   </div>
                 </div>
 
-                {/* Edit Programme Selection Cascade */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Step 1: Select Programme(s)</label>
-                  <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30">
-                    {programmes.map((p) => {
-                      const isSelected = editSelectedProgrammes.includes(p.id);
+                {/* Edit Direct Class Assignment Selector */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-slate-700 dark:text-gray-300 text-xs">
+                      Assigned Class(es) / Halqa <span className="text-emerald-500 font-normal">(Direct Class Assignment)</span>
+                    </label>
+                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-medium">
+                      {editSelectedClasses.length} class(es) selected
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-44 overflow-y-auto">
+                    {classes.map((c) => {
+                      const isSelected = editSelectedClasses.includes(c.id) || editSelectedClasses.includes(c.name);
                       return (
                         <button
                           type="button"
-                          key={p.id}
-                          onClick={() => toggleArrayItem(p.id, editSelectedProgrammes, setEditSelectedProgrammes)}
-                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                          key={c.id}
+                          onClick={() => {
+                            if (isSelected) {
+                              setEditSelectedClasses(editSelectedClasses.filter((item) => item !== c.id && item !== c.name));
+                            } else {
+                              setEditSelectedClasses([...editSelectedClasses, c.id]);
+                            }
+                          }}
+                          className={`p-2.5 rounded-xl text-left transition-all border flex items-center justify-between ${
                             isSelected
-                              ? 'bg-amber-500 text-slate-950 shadow'
-                              : 'bg-slate-200 dark:bg-emerald-950/80 text-slate-700 dark:text-emerald-300'
+                              ? 'bg-emerald-600/15 border-emerald-500 text-emerald-900 dark:text-emerald-200 ring-1 ring-emerald-500'
+                              : 'bg-white dark:bg-emerald-950/40 border-slate-200 dark:border-emerald-800/40 text-slate-700 dark:text-emerald-300 hover:border-emerald-400'
                           }`}
                         >
-                          {p.programme_name} ({p.programme_code})
+                          <div>
+                            <p className="font-bold text-xs">{c.name}</p>
+                            <p className="text-[10px] opacity-75 font-mono">{c.programmeName || 'Academic Section'}</p>
+                          </div>
+                          {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />}
                         </button>
                       );
                     })}
-                  </div>
-                </div>
-
-                {/* Edit Class Selection Cascade */}
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700 dark:text-gray-300">Step 2: Assign Class(es)</label>
-                  <div className="flex flex-wrap gap-2 p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-36 overflow-y-auto">
-                    {classes
-                      .filter((c) => editSelectedProgrammes.length === 0 || editSelectedProgrammes.includes(c.programmeId))
-                      .map((c) => {
-                        const isSelected = editSelectedClasses.includes(c.id) || editSelectedClasses.includes(c.name);
-                        return (
-                          <button
-                            type="button"
-                            key={c.id}
-                            onClick={() => toggleArrayItem(c.id, editSelectedClasses, setEditSelectedClasses)}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 ${
-                              isSelected
-                                ? 'bg-emerald-600 text-white shadow'
-                                : 'bg-slate-200 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300'
-                            }`}
-                          >
-                            <span>{c.name}</span>
-                            <span className="text-[9px] opacity-75 font-mono">({c.programmeName || 'General'})</span>
-                          </button>
-                        );
-                      })}
                   </div>
                 </div>
               </div>
@@ -1270,7 +1270,7 @@ export default function TeachersPage() {
                   type="submit"
                   className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-md"
                 >
-                  Update Faculty Profile
+                  Update Teacher Profile
                 </button>
               </div>
             </form>

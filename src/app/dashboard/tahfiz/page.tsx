@@ -14,7 +14,7 @@ export default function TahfizPage() {
         <PortalHeroBanner
           title="Qur'an Memorization & Tahfiz Command Center"
           titleArabic="مركز متابعة حفظ القرآن الكريم والمراجعة"
-          description="Faculty Tahfiz Engine: Log daily new memorization (Hifz), recent revision (Sabki), and long-term consolidation (Manzil) with automated parent progress updates."
+          description="Tahfiz Management Engine: Log daily new memorization (Hifz), recent revision (Sabki), and long-term consolidation (Manzil) with automated parent progress updates."
           badgeText="Qur'an Memorization"
           badgeIcon={BookOpen}
         />

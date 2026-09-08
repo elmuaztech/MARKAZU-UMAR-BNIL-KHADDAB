@@ -18,6 +18,7 @@ import { ImportSchoolStructureModal } from '@/components/classes/ImportSchoolStr
 export default function ClassesPage() {
   const { currentUser, classes, programmes, teachers, students, addClass, updateClass, deleteClass } = useApp();
   const isAdmin = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN';
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
 
   const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>('ALL');
 
@@ -78,7 +79,9 @@ export default function ClassesPage() {
   };
 
   const handleOpenAdd = () => {
-    const defaultProgId = selectedProgrammeFilter !== 'ALL' ? selectedProgrammeFilter : programmes[0]?.id || '';
+    const defaultProgId = isHeadmaster && currentUser.assignedProgrammeId 
+      ? currentUser.assignedProgrammeId 
+      : (selectedProgrammeFilter !== 'ALL' ? selectedProgrammeFilter : programmes[0]?.id || '');
     const targetProg = programmes.find((p) => p.id === defaultProgId);
     setClassFormData({
       class_name_english: '',
@@ -405,20 +408,23 @@ export default function ClassesPage() {
                 <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-3.5 text-xs font-poppins">
                   <div>
                     <label className="block font-bold text-slate-700 dark:text-emerald-300 mb-1">
-                      Select Programme <span className="text-rose-500">*</span>
+                      Select Programme <span className="text-rose-500">*</span> {isHeadmaster && <span className="text-[10px] text-emerald-500 font-bold">(Locked to assigned section)</span>}
                     </label>
                     <select
+                      disabled={isHeadmaster}
                       value={classFormData.programmeId}
                       onChange={(e) => {
-                        const pId = e.target.value;
-                        const prog = programmes.find((p) => p.id === pId);
-                        setClassFormData({
-                          ...classFormData,
-                          programmeId: pId,
-                          subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
-                        });
+                        if (!isHeadmaster) {
+                          const pId = e.target.value;
+                          const prog = programmes.find((p) => p.id === pId);
+                          setClassFormData({
+                            ...classFormData,
+                            programmeId: pId,
+                            subcategory: (prog?.subcategories && prog.subcategories[0]) || '',
+                          });
+                        }
                       }}
-                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
+                      className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {programmes.map((p) => (
                         <option key={p.id} value={p.id}>

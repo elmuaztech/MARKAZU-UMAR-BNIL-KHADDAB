@@ -132,7 +132,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(
       {
-        message: 'Class created and saved permanently in database',
+        message: 'Class created successfully',
         class: {
           id: created.id,
           name: created.name,

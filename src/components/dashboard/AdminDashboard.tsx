@@ -132,8 +132,12 @@ export function AdminDashboard() {
   const totalTeachers = displayTeachers.length;
   const totalParents = displayParents.length;
   const totalClasses = displayClasses.length;
-  const totalAdmins = users.filter((u) => (u.role === 'SUPER_ADMIN' || u.role === 'ADMIN') && u.status === 'ACTIVE').length;
-  const totalActiveUsers = users.filter((u) => u.status === 'ACTIVE').length;
+  const totalSuperAdmins = users.filter((u) => u.role === 'SUPER_ADMIN' && u.status === 'ACTIVE' && !u.deletedAt).length;
+  const totalAdminsOnly = users.filter((u) => u.role === 'ADMIN' && u.status === 'ACTIVE' && !u.deletedAt).length;
+  const totalHeadmasters = users.filter((u) => u.role === 'HEADMASTER' && u.status === 'ACTIVE' && !u.deletedAt).length;
+  const totalAdmins = totalSuperAdmins + totalAdminsOnly + totalHeadmasters;
+  const totalActiveUsers = users.filter((u) => u.status === 'ACTIVE' && !u.deletedAt).length;
+  const totalDeactivatedUsers = users.filter((u) => u.status === 'DEACTIVATED' || u.deletedAt !== null).length;
   const totalJuzMemorized = displayStudents.reduce((acc, s) => acc + (s.hifzProgress?.juzCompleted || 0), 0);
 
   // Attendance Calculations
@@ -211,7 +215,7 @@ export function AdminDashboard() {
             <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
               {currentUser.role === 'SUPER_ADMIN'
                 ? 'Super Admin Institutional Command Center — Full System, Accounts & Security Management'
-                : 'School Administration Dashboard — Daily Operations, Admissions & Faculty Coordination'}
+                : 'School Administration Dashboard — Daily Operations, Admissions & Teacher Coordination'}
             </p>
           </div>
 
@@ -270,14 +274,14 @@ export function AdminDashboard() {
           </p>
         </Link>
 
-        {/* Admins */}
+        {/* Admins & Headmasters */}
         <Link
           href="/dashboard/security"
           className="p-5 rounded-3xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/40 shadow-sm hover:shadow-md transition-all group"
         >
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-purple-600 dark:text-purple-400">
-              Admins
+              Admin & Headmasters
             </span>
             <div className="w-10 h-10 rounded-2xl bg-purple-500 text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
               <ShieldCheck className="w-5 h-5" />
@@ -286,13 +290,16 @@ export function AdminDashboard() {
           <p suppressHydrationWarning className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
             {totalAdmins}
           </p>
+          <p className="text-[10px] text-purple-700 dark:text-purple-300 font-bold mt-1">
+            {totalHeadmasters} Headmasters • {totalAdminsOnly + totalSuperAdmins} System Admins
+          </p>
         </Link>
 
         {/* Active / Total Users */}
         <div className="p-5 rounded-3xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/40 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-              Active Users
+              Active Accounts
             </span>
             <div className="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md">
               <CheckCircle2 className="w-5 h-5" />
@@ -301,6 +308,39 @@ export function AdminDashboard() {
           <p suppressHydrationWarning className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mt-2">
             {totalActiveUsers}
           </p>
+          <p className="text-[10px] text-amber-700 dark:text-amber-300 font-bold mt-1">
+            {totalDeactivatedUsers} Deactivated in Archive
+          </p>
+        </div>
+      </div>
+
+      {/* Role Breakdown Bar */}
+      <div className="p-4 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-sm flex items-center justify-between flex-wrap gap-3">
+        <span className="text-xs font-black uppercase text-slate-700 dark:text-emerald-300 flex items-center gap-1.5">
+          <Users className="w-4 h-4 text-emerald-500" /> Account Directory Breakdown:
+        </span>
+        <div className="flex items-center gap-2 flex-wrap text-xs font-bold">
+          <span className="px-3 py-1 rounded-xl bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/20">
+            Super Admin: {totalSuperAdmins}
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-purple-500/10 text-purple-800 dark:text-purple-300 border border-purple-500/20">
+            Admin: {totalAdminsOnly}
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-indigo-500/10 text-indigo-800 dark:text-indigo-300 border border-indigo-500/20">
+            Headmasters: {totalHeadmasters}
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
+            Teachers: {totalTeachers}
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-sky-500/10 text-sky-800 dark:text-sky-300 border border-sky-500/20">
+            Parents: {totalParents}
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-blue-500/10 text-blue-800 dark:text-blue-300 border border-blue-500/20">
+            Students: {totalStudents}
+          </span>
+          <span className="px-3 py-1 rounded-xl bg-rose-500/10 text-rose-800 dark:text-rose-300 border border-rose-500/20">
+            Deactivated: {totalDeactivatedUsers}
+          </span>
         </div>
       </div>
 
@@ -778,7 +818,7 @@ export function AdminDashboard() {
                               <button
                                 onClick={() => {
                                   showConfirm({
-                                    title: 'Remove Faculty Member',
+                                    title: 'Remove Teacher Profile',
                                     description: `Are you sure you want to remove teacher profile for ${teacher.fullName}?`,
                                     confirmLabel: 'Remove Teacher',
                                     onConfirm: () => deleteTeacher(teacher.id),
@@ -1400,7 +1440,7 @@ export function AdminDashboard() {
                     {viewingReport === 'SECURITY' && '🛡️ Security & System Operational Report'}
                     {viewingReport === 'AUDIT' && '📋 Live Administrative Audit Trail Report'}
                     {viewingReport === 'STUDENT' && '🎓 Enrolled Students & Class Roster Report'}
-                    {viewingReport === 'TEACHER' && '👨‍🏫 Asatizah & Teaching Faculty Roster Report'}
+                    {viewingReport === 'TEACHER' && '👨‍🏫 Asatizah & Teaching Staff Roster Report'}
                     {viewingReport === 'ATTENDANCE' && '📊 Daily Attendance & Check-in Report'}
                     {viewingReport === 'ACADEMIC' && '📖 Tahfiz & Academic Progress Report'}
                   </h2>
@@ -1508,11 +1548,11 @@ export function AdminDashboard() {
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20">
-                        <p className="text-xs text-sky-700 dark:text-sky-300 font-bold uppercase">Teaching Faculty</p>
+                        <p className="text-xs text-sky-700 dark:text-sky-300 font-bold uppercase">Teaching Staff</p>
                         <p className="text-xl font-black text-sky-600 dark:text-sky-400 font-poppins">{teachers.length} Active Staff</p>
                       </div>
                       <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                        <p className="text-xs text-emerald-700 dark:text-emerald-300 font-bold uppercase">Faculty Verification</p>
+                        <p className="text-xs text-emerald-700 dark:text-emerald-300 font-bold uppercase">Staff Verification</p>
                         <p className="text-xl font-black text-emerald-600 dark:text-emerald-400 font-poppins">100% Certified Asatizah</p>
                       </div>
                     </div>

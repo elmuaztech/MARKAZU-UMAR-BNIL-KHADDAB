@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
-import { getAllServerSubjects, createServerSubject } from '@/lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -65,47 +64,25 @@ export async function POST(req: NextRequest) {
       body.programmeId = assignedProg;
     }
 
-    // 1. Save to persistent serverDb JSON database
-    const serverSubject = createServerSubject({
-      id: body.id,
-      name: body.name,
-      arabicName: body.arabicName,
-      code: body.code,
-      category: body.category,
-      description: body.description,
-      programmeId: body.programmeId,
-      classId: body.classId,
-      status: body.status,
-      displayOrder: body.displayOrder,
+    const prismaSubject = await prisma.subject.create({
+      data: {
+        id: body.id || undefined,
+        name: body.name,
+        arabicName: body.arabicName || null,
+        code: body.code,
+        category: body.category || 'GENERAL',
+        description: body.description || null,
+        programmeId: body.programmeId || null,
+        classId: body.classId || null,
+        status: body.status || 'ACTIVE',
+        displayOrder: Number(body.displayOrder || 1),
+      },
     });
-
-    // 2. Save to Postgres Prisma if connected
-    let prismaSubject: any = null;
-    try {
-      prismaSubject = await prisma.subject.create({
-        data: {
-          id: serverSubject.id,
-          name: body.name,
-          arabicName: body.arabicName || null,
-          code: body.code,
-          category: body.category || 'GENERAL',
-          description: body.description || null,
-          programmeId: body.programmeId || null,
-          classId: body.classId || null,
-          status: body.status || 'ACTIVE',
-          displayOrder: Number(body.displayOrder || 1),
-        },
-      });
-    } catch (dbErr) {
-      console.warn('[CREATE_SUBJECT] Postgres write warning, saved to serverDb:', dbErr);
-    }
-
-    const created = prismaSubject || serverSubject;
 
     return NextResponse.json(
       {
-        message: 'Subject created and saved permanently',
-        subject: created,
+        message: 'Subject created successfully',
+        subject: prismaSubject,
       },
       { status: 201 }
     );
@@ -114,3 +91,4 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: error.message || 'Failed to create subject' }, { status: 400 });
   }
 }
+

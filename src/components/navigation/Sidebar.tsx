@@ -199,7 +199,7 @@ export function Sidebar({
       notify({
         type: 'success',
         title: 'Avatar Updated!',
-        message: 'Your profile photo has been updated and saved to PostgreSQL successfully.',
+        message: 'Your profile photo has been updated successfully.',
       });
     } catch (err: any) {
       notify({

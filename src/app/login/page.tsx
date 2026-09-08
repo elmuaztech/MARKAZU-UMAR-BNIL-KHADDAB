@@ -191,7 +191,7 @@ export default function LoginPage() {
       case 'HEADMASTER':
         return 'Headmaster Staff ID (e.g. MUBK-HM-0001) or registered email';
       case 'TEACHER':
-        return 'Faculty Staff ID (e.g. TCH-101 / MUBK-TEA-0001) or teacher email';
+        return 'Teacher Staff ID (e.g. TCH-101 / MUBK-TEA-0001) or teacher email';
       case 'STUDENT':
         return 'Student Admission No (e.g. MUBK/2026/001) or student email';
       case 'PARENT':

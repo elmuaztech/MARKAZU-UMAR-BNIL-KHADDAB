@@ -7,7 +7,8 @@ export interface User {
   role: UserRole;
   avatar?: string;
   phone?: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'LOCKED' | 'SUSPENDED';
+  status: 'ACTIVE' | 'INACTIVE' | 'LOCKED' | 'SUSPENDED' | 'DEACTIVATED';
+  deletedAt?: string | null;
   passwordHash?: string;
   isFirstLogin?: boolean;
   isLocked?: boolean;
@@ -64,6 +65,7 @@ export interface Student {
   classId: string;
   className: string;
   classNameArabic?: string;
+  class_name?: string;
   guardianId: string;
   guardianName: string;
   guardianPhone: string;

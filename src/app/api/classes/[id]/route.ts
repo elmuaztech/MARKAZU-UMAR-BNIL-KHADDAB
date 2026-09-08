@@ -48,7 +48,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const updated = prismaClass || serverClass;
 
     return NextResponse.json({
-      message: 'Class updated successfully in database',
+      message: 'Class updated successfully',
       class: {
         id: updated.id,
         name: updated.name,
