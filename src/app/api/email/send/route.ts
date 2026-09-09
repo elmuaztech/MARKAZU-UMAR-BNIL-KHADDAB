@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
     const proto = req.headers.get('x-forwarded-proto') || (host && /^(localhost|\d+\.\d+\.\d+\.\d+)/.test(host) ? 'http' : 'https');
     const requestBaseUrl = origin || (host ? `${proto}://${host}` : undefined);
-    if (requestBaseUrl && (!payload.metadata?.portalUrl || payload.metadata.portalUrl.includes('vercel.app'))) {
+    if (requestBaseUrl) {
       if (!payload.metadata) payload.metadata = {};
       payload.metadata.portalUrl = requestBaseUrl.replace(/\/+$/, '');
     }

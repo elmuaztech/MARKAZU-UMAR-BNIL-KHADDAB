@@ -267,8 +267,8 @@ export async function POST(req: NextRequest) {
     const origin = req.headers.get('origin');
     const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
     const proto = req.headers.get('x-forwarded-proto') || (host && /^(localhost|\d+\.\d+\.\d+\.\d+)/.test(host) ? 'http' : 'https');
-    const detectedBaseUrl = origin || (host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || 'http://82.29.168.139:3000'));
-    const portalUrl = detectedBaseUrl.replace(/\/+$/, '');
+    const detectedBaseUrl = origin || (host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || ''));
+    const portalUrl = detectedBaseUrl ? detectedBaseUrl.replace(/\/+$/, '') : '';
     
     sendSystemEmail({
       to: email,

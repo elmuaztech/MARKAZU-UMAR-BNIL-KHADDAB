@@ -20,10 +20,27 @@ export interface EmailPayload {
   };
 }
 
-export function getAppBaseUrl(): string {
+export function getAppBaseUrl(req?: Request): string {
+  // 1. In browser environment: dynamically use current window location origin
   if (typeof window !== 'undefined' && window.location?.origin) {
-    return window.location.origin;
+    return window.location.origin.replace(/\/+$/, '');
   }
+
+  // 2. If Request headers are available: dynamically extract incoming host and protocol
+  if (req) {
+    const origin = req.headers.get('origin');
+    if (origin && !origin.includes('null')) {
+      return origin.replace(/\/+$/, '');
+    }
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
+    if (host) {
+      const forwardedProto = req.headers.get('x-forwarded-proto');
+      const proto = forwardedProto || (/^(localhost|\d+\.\d+\.\d+\.\d+)/.test(host) ? 'http' : 'https');
+      return `${proto}://${host}`.replace(/\/+$/, '');
+    }
+  }
+
+  // 3. User configured environment variable from .env (if provided)
   if (process.env.NEXT_PUBLIC_APP_URL) {
     let url = process.env.NEXT_PUBLIC_APP_URL.trim();
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -31,7 +48,8 @@ export function getAppBaseUrl(): string {
     }
     return url.replace(/\/+$/, '');
   }
-  return 'http://82.29.168.139:3000';
+
+  return '';
 }
 
 export function generateEmailHtml(payload: EmailPayload): string {
@@ -39,11 +57,11 @@ export function generateEmailHtml(payload: EmailPayload): string {
   const schoolNameArab = "مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج";
   const schoolMotto = "Knowledge and Discipline (العلم والتربية)";
   const schoolAddress = "NO. 32 DANEJI QTR., KANO, NIGERIA";
-  
+
   const rawPortalUrl = payload.metadata?.portalUrl || getAppBaseUrl();
-  let portalUrl = rawPortalUrl.replace(/\/+$/, '');
+  let portalUrl = rawPortalUrl ? rawPortalUrl.replace(/\/+$/, '') : '';
   if (portalUrl.includes('vercel.app')) {
-    const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://82.29.168.139:3000');
+    const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '');
     portalUrl = configuredUrl.replace(/\/+$/, '');
   }
   const supportEmail = 'markazuumarbnkhaddabdaneji@gmail.com';
@@ -126,7 +144,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
       break;
 
     case 'PASSWORD_RESET_REQUEST':
-      const resetLink = payload.metadata?.resetToken 
+      const resetLink = payload.metadata?.resetToken
         ? `${portalUrl.replace('/login', '')}/reset-password?token=${payload.metadata.resetToken}`
         : `${portalUrl.replace('/login', '')}/reset-password`;
 

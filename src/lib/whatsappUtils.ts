@@ -42,7 +42,7 @@ export function buildReportSheetWhatsAppPayload(
   students: Student[],
   baseUrl?: string
 ): WhatsAppPayload {
-  const defaultAppUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://82.29.168.139:3000');
+  const defaultAppUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '');
   let targetBaseUrl = baseUrl || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : defaultAppUrl);
   const formattedPhone = formatWhatsAppPhone(group.parentPhone);
 

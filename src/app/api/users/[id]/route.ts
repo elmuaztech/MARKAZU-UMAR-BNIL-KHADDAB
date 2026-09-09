@@ -80,7 +80,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         const origin = req.headers.get('origin');
         const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
         const proto = req.headers.get('x-forwarded-proto') || (host && /^(localhost|\d+\.\d+\.\d+\.\d+)/.test(host) ? 'http' : 'https');
-        const portalUrl = (origin || (host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || 'http://82.29.168.139:3000'))).replace(/\/+$/, '');
+        const detected = origin || (host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || ''));
+        const portalUrl = detected ? detected.replace(/\/+$/, '') : '';
 
         sendSystemEmail({
           to: targetEmail,
