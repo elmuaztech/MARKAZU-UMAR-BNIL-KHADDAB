@@ -75,11 +75,12 @@ export async function POST(req: NextRequest) {
 
     const origin = req.headers.get('origin');
     const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
-    const proto = req.headers.get('x-forwarded-proto') || 'https';
+    const proto = req.headers.get('x-forwarded-proto') || (host && /^(localhost|\d+\.\d+\.\d+\.\d+)/.test(host) ? 'http' : 'https');
     let portalUrl = origin || (host ? `${proto}://${host}` : undefined);
-    if (!portalUrl || portalUrl.includes('localhost')) {
-      portalUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://markazu-umar-bnil-khaddab-.vercel.app');
+    if (!portalUrl || portalUrl.includes('vercel.app')) {
+      portalUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://82.29.168.139:3000');
     }
+    portalUrl = portalUrl.replace(/\/+$/, '');
 
     // Send 4-digit OTP email using central email service
     await sendSystemEmail({

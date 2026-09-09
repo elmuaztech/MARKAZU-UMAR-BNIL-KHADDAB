@@ -32,13 +32,9 @@ export function getAppBaseUrl(): string {
     return url.replace(/\/+$/, '');
   }
   if (process.env.VERCEL_URL) {
-    let url = process.env.VERCEL_URL.trim();
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      url = `https://${url}`;
-    }
-    return url.replace(/\/+$/, '');
+    return `https://${process.env.VERCEL_URL.trim().replace(/\/+$/, '')}`;
   }
-  return 'https://markazu-umar-bnil-khaddab-.vercel.app';
+  return 'http://82.29.168.139:3000';
 }
 
 export function generateEmailHtml(payload: EmailPayload): string {
@@ -48,12 +44,10 @@ export function generateEmailHtml(payload: EmailPayload): string {
   const schoolAddress = "NO. 32 DANEJI QTR., KANO, NIGERIA";
   
   const rawPortalUrl = payload.metadata?.portalUrl || getAppBaseUrl();
-  let portalUrl = rawPortalUrl;
-  if (portalUrl.includes('localhost')) {
-    const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
-    if (configuredUrl && !configuredUrl.includes('localhost')) {
-      portalUrl = configuredUrl.replace(/\/+$/, '');
-    }
+  let portalUrl = rawPortalUrl.replace(/\/+$/, '');
+  if (portalUrl.includes('vercel.app')) {
+    const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://82.29.168.139:3000');
+    portalUrl = configuredUrl.replace(/\/+$/, '');
   }
   const supportEmail = 'markazuumarbnkhaddabdaneji@gmail.com';
   const logoUrl = `${portalUrl}/logo.png`;
@@ -264,6 +258,10 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
   // If running in browser (client-side), dispatch via Next.js backend API route /api/email/send
   if (typeof window !== 'undefined') {
     try {
+      if (!payload.metadata) payload.metadata = {};
+      if (!payload.metadata.portalUrl || payload.metadata.portalUrl.includes('vercel.app')) {
+        payload.metadata.portalUrl = window.location.origin;
+      }
       const response = await fetch('/api/email/send', {
         method: 'POST',
         headers: {

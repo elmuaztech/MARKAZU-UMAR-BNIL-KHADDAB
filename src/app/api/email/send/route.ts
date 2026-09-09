@@ -21,6 +21,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Recipient email and subject are required.' }, { status: 400 });
     }
 
+    // Dynamically detect caller's host / IP / domain from the incoming HTTP request
+    const origin = req.headers.get('origin');
+    const host = req.headers.get('x-forwarded-host') || req.headers.get('host');
+    const proto = req.headers.get('x-forwarded-proto') || (host && /^(localhost|\d+\.\d+\.\d+\.\d+)/.test(host) ? 'http' : 'https');
+    const requestBaseUrl = origin || (host ? `${proto}://${host}` : undefined);
+    if (requestBaseUrl && (!payload.metadata?.portalUrl || payload.metadata.portalUrl.includes('vercel.app'))) {
+      if (!payload.metadata) payload.metadata = {};
+      payload.metadata.portalUrl = requestBaseUrl.replace(/\/+$/, '');
+    }
+
     const htmlContent = generateEmailHtml(payload);
     const messageId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 
