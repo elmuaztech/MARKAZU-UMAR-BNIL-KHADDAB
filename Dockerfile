@@ -1,6 +1,7 @@
 # Multi-stage Dockerfile for Markazu Umar School Management System
 
 FROM node:20-alpine AS base
+RUN apk add --no-cache openssl libc6-compat
 
 # Stage 1: Install dependencies
 FROM base AS deps
