@@ -31,9 +31,6 @@ export function getAppBaseUrl(): string {
     }
     return url.replace(/\/+$/, '');
   }
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.trim().replace(/\/+$/, '')}`;
-  }
   return 'http://82.29.168.139:3000';
 }
 

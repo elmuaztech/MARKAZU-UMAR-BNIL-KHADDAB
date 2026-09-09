@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     const proto = req.headers.get('x-forwarded-proto') || (host && /^(localhost|\d+\.\d+\.\d+\.\d+)/.test(host) ? 'http' : 'https');
     let portalUrl = origin || (host ? `${proto}://${host}` : undefined);
     if (!portalUrl || portalUrl.includes('vercel.app')) {
-      portalUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://82.29.168.139:3000');
+      portalUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://82.29.168.139:3000';
     }
     portalUrl = portalUrl.replace(/\/+$/, '');
 

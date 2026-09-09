@@ -42,11 +42,8 @@ export function buildReportSheetWhatsAppPayload(
   students: Student[],
   baseUrl?: string
 ): WhatsAppPayload {
-  const defaultAppUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://markazu-umar-bnil-khaddab-.vercel.app';
-  let targetBaseUrl = baseUrl || (typeof window !== 'undefined' ? window.location.origin : defaultAppUrl);
-  if (targetBaseUrl.includes('localhost') || targetBaseUrl.includes('127.0.0.1')) {
-    targetBaseUrl = defaultAppUrl;
-  }
+  const defaultAppUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://82.29.168.139:3000');
+  let targetBaseUrl = baseUrl || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : defaultAppUrl);
   const formattedPhone = formatWhatsAppPhone(group.parentPhone);
 
   const wardLinksText = group.wardIds
