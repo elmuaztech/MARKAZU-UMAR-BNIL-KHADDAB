@@ -15,6 +15,14 @@ function getSanitizedDatabaseUrl(): string {
 
   // If valid, use it
   if (url.startsWith('postgresql://') || url.startsWith('postgres://')) {
+    // In production Docker container, if localhost/127.0.0.1 was provided from .env, map to postgres container
+    if (process.env.NODE_ENV === 'production') {
+      if (url.includes('@localhost:')) {
+        url = url.replace('@localhost:', '@postgres:');
+      } else if (url.includes('@127.0.0.1:')) {
+        url = url.replace('@127.0.0.1:', '@postgres:');
+      }
+    }
     process.env.DATABASE_URL = url;
     return url;
   }
