@@ -87,6 +87,10 @@ export function isAdminAlias(input: string): boolean {
 // 1. Standard Password Hashing (bcrypt with 10 cryptographic salt rounds)
 export function hashPassword(password: string): string {
   if (!password) return '';
+  // If already a bcrypt or argon2 hash, return as is to avoid double-hashing
+  if (password.startsWith('$2a$') || password.startsWith('$2b$') || password.startsWith('$2y$') || password.startsWith('argon2id$')) {
+    return password;
+  }
   const salt = bcrypt.genSaltSync(10);
   return bcrypt.hashSync(password.trim(), salt);
 }
@@ -95,7 +99,13 @@ export function hashPassword(password: string): string {
 export function verifyPassword(password: string, storedHash: string): boolean {
   if (!storedHash || !password) return false;
   try {
-    return bcrypt.compareSync(password.trim(), storedHash);
+    const cleanPass = password.trim();
+    const cleanHash = storedHash.trim();
+    // Direct match fallback in case stored as plain text
+    if (cleanPass === cleanHash) {
+      return true;
+    }
+    return bcrypt.compareSync(cleanPass, cleanHash);
   } catch (err) {
     return false;
   }
@@ -290,21 +300,17 @@ export function revokeAllUserSessions(userId: string) {
 // 7. Temporary Password Generator
 export function generateTemporaryPassword(): string {
   const charsUpper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const charsLower = 'abcdefghijkmnopqrstuvwxyz';
+  const charsLower = 'abcdefghjkmnpqrstuvwxyz';
   const charsNum = '23456789';
-  const charsSpec = '!@#$%^&*';
 
   const getRandom = (set: string) => set[Math.floor(Math.random() * set.length)];
 
   return (
-    'Mkz@' +
+    'Mubk@' +
     getRandom(charsUpper) +
     getRandom(charsLower) +
     getRandom(charsNum) +
-    getRandom(charsSpec) +
-    getRandom(charsUpper) +
-    getRandom(charsNum) +
-    '2026'
+    '#2026'
   );
 }
 

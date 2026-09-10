@@ -270,19 +270,24 @@ export async function POST(req: NextRequest) {
     const detectedBaseUrl = origin || (host ? `${proto}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || ''));
     const portalUrl = detectedBaseUrl ? detectedBaseUrl.replace(/\/+$/, '') : '';
     
-    sendSystemEmail({
-      to: email,
-      recipientName: name,
-      subject: `Welcome to Markazu Umar bn Al-Khattab Centre for Islamic Studies Portal - Your Account Credentials (${generatedUsername})`,
-      template: 'WELCOME_NEW_ACCOUNT',
-      metadata: {
-        username: generatedUsername,
-        tempPassword,
-        portalUrl: `${portalUrl}/login`,
-        role: role,
-        assignedProgramme: assignedProgrammeName || undefined,
-      },
-    }).catch(() => {});
+    try {
+      await sendSystemEmail({
+        to: email,
+        recipientName: name,
+        subject: `Welcome to Markazu Umar bn Al-Khattab Centre for Islamic Studies Portal - Your Account Credentials (${generatedUsername})`,
+        template: 'WELCOME_NEW_ACCOUNT',
+        metadata: {
+          username: generatedUsername,
+          tempPassword,
+          portalUrl: `${portalUrl}/login`,
+          role: role,
+          assignedProgramme: assignedProgrammeName || undefined,
+        },
+      });
+      console.log(`[USERS_API] Welcome email sent successfully to ${email}`);
+    } catch (emailErr: any) {
+      console.error('[USERS_API] Failed to send welcome email:', emailErr?.message);
+    }
 
     return NextResponse.json(
       {

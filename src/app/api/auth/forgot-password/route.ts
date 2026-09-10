@@ -21,9 +21,9 @@ export async function POST(req: NextRequest) {
       user = await prisma.user.findFirst({
         where: {
           OR: [
-            { email: input },
-            { username: input },
-            { id: input },
+            { email: { equals: input, mode: 'insensitive' } },
+            { username: { equals: input, mode: 'insensitive' } },
+            { id: { equals: input, mode: 'insensitive' } },
           ],
           deletedAt: null,
         },

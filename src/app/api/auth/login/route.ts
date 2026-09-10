@@ -23,29 +23,20 @@ export async function POST(req: NextRequest) {
       user = await prisma.user.findFirst({
         where: {
           OR: [
-            { email: identifier },
-            { username: identifier },
-            { id: identifier },
+            { email: { equals: identifier, mode: 'insensitive' } },
+            { username: { equals: identifier, mode: 'insensitive' } },
+            { id: { equals: identifier, mode: 'insensitive' } },
           ],
           deletedAt: null,
         },
       });
 
-      if (!user) {
-        user = await prisma.user.findFirst({
-          where: {
-            email: { equals: identifier, mode: 'insensitive' },
-            deletedAt: null,
-          },
-        });
-      }
-
       const deletedUser = await prisma.user.findFirst({
         where: {
           OR: [
-            { email: identifier },
-            { username: identifier },
-            { id: identifier },
+            { email: { equals: identifier, mode: 'insensitive' } },
+            { username: { equals: identifier, mode: 'insensitive' } },
+            { id: { equals: identifier, mode: 'insensitive' } },
           ],
           NOT: { deletedAt: null },
         },
