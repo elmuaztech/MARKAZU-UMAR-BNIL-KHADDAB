@@ -281,7 +281,7 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-system-api-key': 'MARKAZU_UMAR_INTERNAL_SECRET_2026',
+          'x-system-api-key': process.env.SYSTEM_API_SECRET || 'MARKAZU_UMAR_INTERNAL_SECRET_2026',
         },
         body: JSON.stringify(payload),
       });
@@ -304,15 +304,15 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
   const htmlContent = generateEmailHtml(payload);
   const smtpHost = process.env.SMTP_HOST || process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com';
   const smtpPort = Number(process.env.SMTP_PORT || process.env.EMAIL_SERVER_PORT || 587);
-  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'elmuaztechnologiesltd@gmail.com';
-  const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD || '';
+  const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'markazuumarbnkhaddabdaneji@gmail.com';
+  const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD || 'dfws rewu nzjv chxg';
   const smtpPass = rawPass.replace(/\s+/g, '');
 
   let targetRecipient = payload.to.trim().toLowerCase();
   const emailMode = (process.env.EMAIL_MODE || 'production').toLowerCase();
 
   if (emailMode === 'development' && (targetRecipient.endsWith('@example.com') || targetRecipient.endsWith('@test.com'))) {
-    const devRecipient = process.env.DEVELOPMENT_EMAIL_RECIPIENT || process.env.SMTP_USER || 'elmuazdesignservices@gmail.com';
+    const devRecipient = process.env.DEVELOPMENT_EMAIL_RECIPIENT || process.env.SMTP_USER || 'markazuumarbnkhaddabdaneji@gmail.com';
     console.log(`[DEV TEST MODE] Dummy recipient: ${payload.to} -> Redirected to dev test address: ${devRecipient}`);
     targetRecipient = devRecipient;
   }
@@ -328,12 +328,13 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
         pass: smtpPass,
       },
       tls: {
-        rejectUnauthorized: process.env.NODE_ENV === 'production',
+        rejectUnauthorized: false,
       },
     });
 
     await transporter.sendMail({
       from: SYSTEM_EMAIL_FROM,
+      replyTo: 'markazuumarbnkhaddabdaneji@gmail.com',
       to: targetRecipient,
       subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
       html: htmlContent,

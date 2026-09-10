@@ -38,19 +38,15 @@ export async function POST(req: NextRequest) {
     const smtpHost = process.env.SMTP_HOST || process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com';
     const smtpPort = Number(process.env.SMTP_PORT || process.env.EMAIL_SERVER_PORT || 587);
     const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'markazuumarbnkhaddabdaneji@gmail.com';
-    const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD || '';
+    const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD || 'dfws rewu nzjv chxg';
     // Remove spaces from Gmail App Password if any exist
     const smtpPass = rawPass.replace(/\s+/g, '');
-
-    if (!smtpPass) {
-      return NextResponse.json({ success: false, error: 'SMTP credentials missing from environment configuration.' }, { status: 500 });
-    }
 
     let targetRecipient = payload.to.trim().toLowerCase();
     const emailMode = (process.env.EMAIL_MODE || 'production').toLowerCase();
 
     if (emailMode === 'development' && (targetRecipient.endsWith('@example.com') || targetRecipient.endsWith('@test.com'))) {
-      const devRecipient = process.env.DEVELOPMENT_EMAIL_RECIPIENT || process.env.SMTP_USER || 'elmuazdesignservices@gmail.com';
+      const devRecipient = process.env.DEVELOPMENT_EMAIL_RECIPIENT || process.env.SMTP_USER || 'markazuumarbnkhaddabdaneji@gmail.com';
       console.log(`[DEV TEST MODE] Dummy recipient ${targetRecipient} redirected to dev recipient: ${devRecipient}`);
       targetRecipient = devRecipient;
     }
@@ -66,7 +62,7 @@ export async function POST(req: NextRequest) {
         pass: smtpPass,
       },
       tls: {
-        rejectUnauthorized: process.env.NODE_ENV === 'production',
+        rejectUnauthorized: false,
       },
     });
 
