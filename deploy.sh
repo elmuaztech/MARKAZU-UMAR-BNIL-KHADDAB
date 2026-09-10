@@ -17,16 +17,23 @@ if ! command -v docker &> /dev/null; then
     sh get-docker.sh
 fi
 
-# 3. Pull latest code & rebuild containers
-echo "Rebuilding MSSMS containers..."
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
+# 3. Detect docker compose command
+if docker compose version &> /dev/null; then
+    COMPOSE="docker compose"
+else
+    COMPOSE="docker-compose"
+fi
 
-# 4. Synchronize Database Schema (Prisma Db Push) & Seed Defaults
+# 4. Pull latest code & rebuild containers
+echo "Rebuilding MSSMS containers using $COMPOSE..."
+$COMPOSE down
+$COMPOSE build --no-cache
+$COMPOSE up -d
+
+# 5. Synchronize Database Schema (Prisma Db Push) & Seed Defaults
 echo "Synchronizing PostgreSQL database schema & seeding records..."
-docker-compose exec -T app npx prisma db push --accept-data-loss
-docker-compose exec -T app npx prisma db seed
+$COMPOSE exec -T app npx prisma db push --accept-data-loss
+$COMPOSE exec -T app npx prisma db seed
 
 echo "=========================================================="
 echo " MSSMS Successfully Deployed on Hostinger VPS! "

@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     env_file:
       - .env
     environment:
@@ -28,8 +28,7 @@ services:
       POSTGRES_USER: mssms_user
       POSTGRES_PASSWORD: mssms_secure_pass_1447
       POSTGRES_DB: mssms_db
-    ports:
-      - "5432:5432"
+    # PostgreSQL is accessed internally by app via docker network, no public host port needed
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: always
