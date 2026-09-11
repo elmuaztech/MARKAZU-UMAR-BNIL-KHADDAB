@@ -1,0 +1,23 @@
+name: Automated Deployment to Hostinger VPS
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 82.29.168.139
+          username: root
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            cd /var/www/MARKAZU-UMAR-BNIL-KHADDAB
+            git pull origin main
+            docker compose down
+            docker compose build --no-cache
+            docker compose up -d
+            docker compose exec -T app npx prisma@5 db push --accept-data-loss
