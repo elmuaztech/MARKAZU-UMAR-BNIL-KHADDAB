@@ -16,6 +16,7 @@ jobs:
           username: root
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
+            set -e
             cd /var/www/MARKAZU-UMAR-BNIL-KHADDAB
             git fetch origin main
             git reset --hard origin/main
