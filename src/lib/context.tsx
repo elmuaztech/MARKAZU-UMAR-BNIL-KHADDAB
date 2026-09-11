@@ -44,7 +44,7 @@ import {
   CURRENT_SESSION,
 } from './mockData';
 import { AuditEntry, INITIAL_AUDIT_LOGS, createAuditLogEntry } from './audit';
-import { sendSystemEmail } from './emailService';
+import { sendSystemEmail } from './emailClient';
 import { UserSession, ACTIVE_SESSIONS, revokeSession, revokeAllUserSessions, hashPassword, generateTemporaryPassword } from './security';
 import { NotificationService } from '../services/notificationService';
 
