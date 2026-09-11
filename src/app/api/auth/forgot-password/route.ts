@@ -51,6 +51,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Disallow password reset for new accounts pending required first-time password change
+    if (user.isFirstLogin || user.mustChangePassword) {
+      return NextResponse.json(
+        {
+          error: 'An initial temporary password was already dispatched to your email in your Welcome message. Please sign in using your temporary password to complete your required password setup.',
+        },
+        { status: 403 }
+      );
+    }
+
     // Generate 4-Digit Numeric OTP Code (e.g., "4819")
     const otpCode = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes

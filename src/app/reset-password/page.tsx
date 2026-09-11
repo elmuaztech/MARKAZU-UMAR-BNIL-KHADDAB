@@ -21,6 +21,16 @@ function ResetPasswordForm() {
   const [successMsg, setSuccessMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const tokenParam = searchParams.get('token') || searchParams.get('otp');
+    if (tokenParam) {
+      const clean = tokenParam.trim();
+      if (/^\d{4}$/.test(clean)) {
+        setToken(clean);
+      }
+    }
+  }, [searchParams]);
+
   const policy = validatePasswordPolicy(newPassword);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -157,8 +167,8 @@ function ResetPasswordForm() {
             <Sparkles className="w-8 h-8" />
           </div>
         )}
-        <h1 className="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">
-          Markazu Umar School
+        <h1 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-white uppercase leading-snug">
+          MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI
         </h1>
         <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
           Account Password Reset
@@ -201,19 +211,22 @@ function ResetPasswordForm() {
       )}
 
       {!successMsg && (
-        <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4 text-xs">
           {/* Reset 4-Digit OTP Input */}
           <div className="space-y-1">
             <label className="block text-slate-700 dark:text-gray-300 font-bold">4-Digit Reset OTP Code</label>
             <div className="relative">
-              <KeyRound className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400" />
+              <KeyRound className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400 pointer-events-none" />
               <input
                 type="text"
+                name="otp"
+                inputMode="numeric"
+                autoComplete="one-time-code"
                 required
                 maxLength={4}
                 value={token}
-                onChange={(e) => setToken(e.target.value)}
-                placeholder="Enter 4-digit OTP code (e.g. 4819)"
+                onChange={(e) => setToken(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="Enter 4-digit OTP code"
                 className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-base tracking-widest font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
@@ -226,6 +239,8 @@ function ResetPasswordForm() {
               <Lock className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
+                name="new-password"
+                autoComplete="new-password"
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
@@ -295,6 +310,8 @@ function ResetPasswordForm() {
               <Lock className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400" />
               <input
                 type={showPassword ? 'text' : 'password'}
+                name="confirm-password"
+                autoComplete="new-password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}

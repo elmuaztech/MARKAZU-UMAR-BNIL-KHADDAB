@@ -98,6 +98,8 @@ export async function POST(req: NextRequest) {
             role: 'PARENT',
             phone: phone,
             status: 'ACTIVE',
+            isFirstLogin: true,
+            mustChangePassword: true,
           },
         });
         targetUserId = createdUser.id;

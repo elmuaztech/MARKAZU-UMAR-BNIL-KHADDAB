@@ -17,6 +17,8 @@ import {
   Download,
   Baby,
   HeartHandshake,
+  Camera,
+  Sparkles,
 } from 'lucide-react';
 
 import { filterStudentsForUser } from '../../../lib/rbac';
@@ -26,6 +28,8 @@ import { EnterpriseTable, Column } from '@/components/ui/EnterpriseTable';
 import { Modal } from '@/components/ui/Modal';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Card } from '@/components/ui/Card';
+import { StudentPhotoCaptureModal } from '@/components/students/StudentPhotoCaptureModal';
+import { BulkStudentGridModal } from '@/components/students/BulkStudentGridModal';
 
 export default function StudentsPage() {
   const { students, parents, classes, programmes, teacherAssignments, addStudent, bulkImportStudents, updateStudent, deleteStudent, currentUser, showConfirm, notify } = useApp();
@@ -35,6 +39,8 @@ export default function StudentsPage() {
   const [classFilter, setClassFilter] = useState('ALL');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
+  const [showGridBulkModal, setShowGridBulkModal] = useState(false);
+  const [photoModalStudent, setPhotoModalStudent] = useState<Student | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
 
@@ -407,11 +413,37 @@ export default function StudentsPage() {
       accessorKey: 'fullName',
       cell: (student) => (
         <div className="font-extrabold text-slate-900 dark:text-white flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black flex items-center justify-center text-xs border border-emerald-500/30">
-            {student.fullName[0]}
+          <div
+            className="relative group/avatar cursor-pointer"
+            onClick={() => canManageStudents && setPhotoModalStudent(student)}
+            title={canManageStudents ? 'Click to capture or change student passport photo' : undefined}
+          >
+            {student.avatar ? (
+              <img
+                src={student.avatar}
+                alt={student.fullName}
+                className="w-9 h-9 rounded-full object-cover border-2 border-emerald-500/40 shadow-sm group-hover/avatar:border-amber-400 transition-all"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-black flex items-center justify-center text-xs border border-emerald-500/30 group-hover/avatar:border-amber-400 transition-all">
+                {student.fullName[0]}
+              </div>
+            )}
+            {canManageStudents && (
+              <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md border border-white dark:border-[#042419] opacity-0 group-hover/avatar:opacity-100 transition-opacity">
+                <Camera className="w-2.5 h-2.5" />
+              </div>
+            )}
           </div>
           <div>
-            <div className="text-xs">{student.fullName}</div>
+            <div className="text-xs flex items-center gap-1.5">
+              <span>{student.fullName}</span>
+              {student.avatar && (
+                <span className="text-[9px] text-amber-500 font-bold bg-amber-500/10 px-1 py-0.2 rounded border border-amber-500/20">
+                  Photo
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="text-[10px] text-slate-400 font-mono">{student.admissionNo}</span>
               {student.email ? (
@@ -469,15 +501,25 @@ export default function StudentsPage() {
       header: 'Actions',
       cell: (student) => (
         <div className="flex items-center justify-end gap-1">
-          <Button variant="ghost" size="sm" onClick={() => setSelectedStudent(student)}>
+          {canManageStudents && (
+            <Button
+              variant="ghost"
+              size="sm"
+              title="Capture / Upload Passport Photo"
+              onClick={() => setPhotoModalStudent(student)}
+            >
+              <Camera className="w-3.5 h-3.5 text-amber-500 hover:text-amber-400" />
+            </Button>
+          )}
+          <Button variant="ghost" size="sm" title="View Profile" onClick={() => setSelectedStudent(student)}>
             <Eye className="w-3.5 h-3.5 text-emerald-500" />
           </Button>
           {canManageStudents && (
             <>
-              <Button variant="ghost" size="sm" onClick={() => handleOpenEdit(student)}>
+              <Button variant="ghost" size="sm" title="Edit Student" onClick={() => handleOpenEdit(student)}>
                 <Edit className="w-3.5 h-3.5 text-sky-500" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => {
+              <Button variant="ghost" size="sm" title="Delete Student" onClick={() => {
                 showConfirm({
                   title: 'Delete Student Profile',
                   description: `Are you sure you want to remove student profile for ${student.fullName} (${student.admissionNo})?`,
@@ -520,6 +562,15 @@ export default function StudentsPage() {
 
           {canManageStudents && (
             <>
+              <Button
+                variant="outline"
+                size="md"
+                className="bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 border-amber-400/40 font-bold"
+                leftIcon={<Users className="w-4 h-4 text-amber-300" />}
+                onClick={() => setShowGridBulkModal(true)}
+              >
+                Quick Grid Enrol
+              </Button>
               {isAdmin && (
                 <Button
                   variant="outline"
@@ -1054,9 +1105,43 @@ export default function StudentsPage() {
 
             {/* Body (Scrollable) */}
             <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
-              <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-emerald-950/80 border border-slate-200 dark:border-emerald-800/40">
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">{selectedStudent.fullName}</h4>
-                <p className="text-emerald-600 dark:text-emerald-300 font-mono mt-0.5">{selectedStudent.admissionNo} • {selectedStudent.className}</p>
+              {/* Profile Card with Passport Photo */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-emerald-950/80 border border-slate-200 dark:border-emerald-800/40 flex items-center gap-4">
+                <div className="relative group/photo shrink-0">
+                  {selectedStudent.avatar ? (
+                    <img
+                      src={selectedStudent.avatar}
+                      alt={selectedStudent.fullName}
+                      className="w-16 h-16 rounded-2xl object-cover border-2 border-emerald-500 shadow-md"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-black text-xl flex items-center justify-center border-2 border-dashed border-emerald-500/40">
+                      {selectedStudent.fullName[0]}
+                    </div>
+                  )}
+                  {canManageStudents && (
+                    <button
+                      onClick={() => setPhotoModalStudent(selectedStudent)}
+                      title="Update Passport Photo"
+                      className="absolute -bottom-1 -right-1 p-1.5 rounded-xl bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-lg transition-transform hover:scale-110"
+                    >
+                      <Camera className="w-3.5 h-3.5 font-bold" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">{selectedStudent.fullName}</h4>
+                  <p className="text-emerald-600 dark:text-emerald-300 font-mono mt-0.5">{selectedStudent.admissionNo} • {selectedStudent.className}</p>
+                  {canManageStudents && (
+                    <button
+                      onClick={() => setPhotoModalStudent(selectedStudent)}
+                      className="mt-2 text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1"
+                    >
+                      <Camera className="w-3 h-3" />
+                      {selectedStudent.avatar ? 'Change Passport Photo' : 'Capture / Upload Photo'}
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -1248,6 +1333,33 @@ export default function StudentsPage() {
           </div>
         </div>
       )}
+
+      {/* Student Passport Photo Webcam Capture & Upload Modal */}
+      {photoModalStudent && (
+        <StudentPhotoCaptureModal
+          isOpen={!!photoModalStudent}
+          onClose={() => setPhotoModalStudent(null)}
+          studentId={photoModalStudent.id}
+          studentName={photoModalStudent.fullName}
+          admissionNo={photoModalStudent.admissionNo}
+          currentAvatar={photoModalStudent.avatar}
+          onPhotoSaved={(avatarUrl) => {
+            updateStudent(photoModalStudent.id, { avatar: avatarUrl });
+            if (selectedStudent && selectedStudent.id === photoModalStudent.id) {
+              setSelectedStudent({ ...selectedStudent, avatar: avatarUrl });
+            }
+            setPhotoModalStudent(null);
+          }}
+        />
+      )}
+
+      {/* Bulk Fast Data Grid Enrollment Modal */}
+      <BulkStudentGridModal
+        isOpen={showGridBulkModal}
+        onClose={() => setShowGridBulkModal(false)}
+        availableProgrammes={availableProgrammes}
+        availableClasses={classes}
+      />
     </div>
   );
 }

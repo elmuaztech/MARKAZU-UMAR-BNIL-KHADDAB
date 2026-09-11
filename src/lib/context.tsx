@@ -2851,7 +2851,49 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           username: studentData.admissionNo,
           tempPassword: tempPass,
         },
+      }).catch((err) => console.warn('[SEND_STUDENT_WELCOME_WARN]', err));
+    }
+
+    // Send Welcome Email to Parent if parentEmail was provided
+    if (studentData.parentEmail) {
+      const cleanParentEmail = studentData.parentEmail.trim().toLowerCase();
+      const parentName = studentData.parentName || studentData.guardianName || 'Parent / Guardian';
+      const parentTempPass = generateTemporaryPassword();
+      const parentTempHash = hashPassword(parentTempPass);
+
+      setUsers((prev) => {
+        const existing = prev.find((u) => u.email.toLowerCase() === cleanParentEmail);
+        if (!existing) {
+          const newParentUser: User = {
+            id: studentData.guardianId || `usr-parent-${Date.now()}`,
+            name: parentName,
+            email: cleanParentEmail,
+            role: 'PARENT',
+            passwordHash: parentTempHash,
+            isFirstLogin: true,
+            mustChangePassword: true,
+            status: 'ACTIVE',
+            failedLoginAttempts: 0,
+            isLocked: false,
+            createdAt: new Date().toISOString(),
+          };
+          const next = [newParentUser, ...prev];
+          safeLocalStorageSet('markazu_users', next);
+          return next;
+        }
+        return prev;
       });
+
+      sendSystemEmail({
+        to: cleanParentEmail,
+        recipientName: parentName,
+        subject: `Welcome to Markazu Umar Portal - Parent Account Created`,
+        template: 'WELCOME_NEW_ACCOUNT',
+        metadata: {
+          username: cleanParentEmail,
+          tempPassword: parentTempPass,
+        },
+      }).catch((err) => console.warn('[SEND_PARENT_WELCOME_WARN]', err));
     }
 
     addAuditLog({
@@ -3513,11 +3555,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       createdAt: new Date().toISOString(),
     };
 
+    setUsers((prev) => {
+      const next = [newUser, ...prev];
+      safeLocalStorageSet('markazu_users', next);
+      return next;
+    });
+
     // Sync to backend database
     try {
+      const headers = getAuthHeaders();
       await fetch('/api/parents', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           id: parentId,
           fullName: parentData.fullName,
@@ -3525,6 +3574,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           phone: parentData.phone,
           occupation: parentData.occupation,
           address: parentData.address,
+          tempPassword: tempPass,
+          passwordHash: tempHash,
         }),
       });
       syncParentsFromBackend();

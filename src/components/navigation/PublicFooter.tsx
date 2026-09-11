@@ -116,10 +116,11 @@ export function PublicFooter() {
               <div className="flex items-center gap-2 pt-1">
                 <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <a
-                  href="mailto:markazuumarbndaneji@gmail.com"
+                  href="mailto:markazuumarbnkhaddabdaneji@gmail.com"
                   className="hover:text-amber-300 truncate font-mono text-[11px] text-emerald-300"
+                  title="Official School Email"
                 >
-                  markazuumarbndaneji@gmail.com
+                  markazuumarbnkhaddabdaneji@gmail.com
                 </a>
               </div>
             </div>
@@ -147,22 +148,22 @@ export function PublicFooter() {
         </div>
 
         {/* Bottom Professional Copyright Bar with Clean Developer & Email Alignment */}
-        <div className="max-w-7xl mx-auto pt-6 border-t border-emerald-900/60 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left text-xs text-emerald-400/80">
-          <p>
-            © 2026 Markazu Umar bn Al-Khattab Centre for Qur'an Memorization, Kano, Nigeria.
+        <div className="max-w-7xl mx-auto pt-6 border-t border-emerald-900/60 flex flex-col xl:flex-row items-center justify-between gap-4 text-center xl:text-left text-xs text-emerald-400/80">
+          <p className="whitespace-normal xl:whitespace-nowrap tracking-tight font-medium">
+            © 2026 Markazu Umar bn Al-Khattab Centre for Qur'an Memorization & Islamic Studies - Daneji, Kano, Nigeria.
           </p>
-          <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 text-xs">
+          <div className="flex flex-wrap items-center justify-center xl:justify-end gap-3 text-xs shrink-0">
             <span className="font-semibold text-emerald-200">
               Powered by <span className="text-amber-300 font-bold">Elmuaz Technologies Limited</span>
             </span>
             <span className="text-emerald-700">|</span>
             <a
-              href="mailto:Elmuaz technologieslimited@gmail.com"
+              href="mailto:info@elmuaztech.com.ng"
               className="font-mono text-amber-400 hover:underline flex items-center gap-1 font-semibold"
               title="Contact Developer"
             >
               <Mail className="w-3.5 h-3.5 text-amber-400" />
-              <span>elmuaztechnologiesltd@gmail.com</span>
+              <span>info@elmuaztech.com.ng</span>
             </a>
           </div>
         </div>
