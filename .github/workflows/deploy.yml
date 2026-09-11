@@ -20,7 +20,8 @@ jobs:
             cd /var/www/MARKAZU-UMAR-BNIL-KHADDAB
             git fetch origin main
             git reset --hard origin/main
-            docker compose down
-            docker compose build --no-cache
-            docker compose up -d
+            docker compose build
+            docker compose up -d --remove-orphans
             docker compose exec -T app npx prisma@5 db push --accept-data-loss --skip-generate
+            docker builder prune -f
+            docker image prune -f

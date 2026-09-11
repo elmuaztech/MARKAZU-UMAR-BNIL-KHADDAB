@@ -26,14 +26,18 @@ fi
 
 # 4. Pull latest code & rebuild containers
 echo "Rebuilding MSSMS containers using $COMPOSE..."
-$COMPOSE down
-$COMPOSE build --no-cache
-$COMPOSE up -d
+$COMPOSE build
+$COMPOSE up -d --remove-orphans
 
 # 5. Synchronize Database Schema (Prisma Db Push) & Seed Defaults
 echo "Synchronizing PostgreSQL database schema & seeding records..."
 $COMPOSE exec -T app npx prisma@5 db push --accept-data-loss --skip-generate
 $COMPOSE exec -T app npx prisma@5 db seed
+
+# 6. Safely prune unused builder cache & dangling images
+echo "Pruning unused builder cache & dangling images..."
+docker builder prune -f
+docker image prune -f
 
 echo "=========================================================="
 echo " MSSMS Successfully Deployed on Hostinger VPS! "
