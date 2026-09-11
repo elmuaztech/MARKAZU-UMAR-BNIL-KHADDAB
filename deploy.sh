@@ -32,8 +32,8 @@ $COMPOSE up -d
 
 # 5. Synchronize Database Schema (Prisma Db Push) & Seed Defaults
 echo "Synchronizing PostgreSQL database schema & seeding records..."
-$COMPOSE exec -T app npx prisma db push --accept-data-loss
-$COMPOSE exec -T app npx prisma db seed
+$COMPOSE exec -T app npx prisma@5 db push --accept-data-loss --skip-generate
+$COMPOSE exec -T app npx prisma@5 db seed
 
 echo "=========================================================="
 echo " MSSMS Successfully Deployed on Hostinger VPS! "
