@@ -260,10 +260,10 @@ export function StudentPhotoCaptureModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="relative w-full max-w-md rounded-3xl bg-white dark:bg-[#06241a] border border-slate-200 dark:border-emerald-500/30 shadow-2xl overflow-hidden text-slate-900 dark:text-gray-100">
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-emerald-800/40">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm animate-fadeIn overflow-hidden">
+      <div className="relative w-full max-w-[520px] max-h-[88vh] rounded-3xl bg-white dark:bg-[#06241a] border border-slate-200 dark:border-emerald-500/30 shadow-2xl overflow-hidden flex flex-col text-slate-900 dark:text-gray-100">
+        {/* 1. Fixed Header */}
+        <div className="shrink-0 flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-emerald-800/40">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
               <Camera className="w-5 h-5" />
@@ -272,33 +272,36 @@ export function StudentPhotoCaptureModal({
               <h3 className="text-sm font-black uppercase tracking-tight text-slate-900 dark:text-white">
                 Student Profile Photo
               </h3>
-              <p className="text-[11px] text-slate-500 dark:text-emerald-300/80 truncate max-w-[240px]">
+              <p className="text-[11px] text-slate-500 dark:text-emerald-300/80 truncate max-w-[200px] sm:max-w-[280px]">
                 {studentName} ({admissionNo})
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={() => {
               stopCameraStream();
               onClose();
             }}
+            aria-label="Close modal"
             className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-emerald-900/40 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab Switcher (Live Camera vs Gallery Upload) */}
+        {/* 2. Fixed Tab Switcher (Live Camera vs Gallery Upload) */}
         {!previewDataUrl && (
-          <div className="grid grid-cols-2 p-2 bg-slate-50 dark:bg-emerald-950/40 border-b border-slate-100 dark:border-emerald-800/40 text-xs font-bold">
+          <div className="shrink-0 grid grid-cols-2 p-1.5 sm:p-2 bg-slate-50 dark:bg-emerald-950/40 border-b border-slate-100 dark:border-emerald-800/40 text-xs font-bold gap-1.5">
             <button
+              type="button"
               onClick={() => {
                 setActiveTab('CAMERA');
                 setErrorMsg(null);
               }}
-              className={`py-2 rounded-xl flex items-center justify-center gap-2 transition-all ${
+              className={`py-2 rounded-xl flex items-center justify-center gap-1.5 sm:gap-2 transition-all ${
                 activeTab === 'CAMERA'
-                  ? 'bg-white dark:bg-emerald-600 text-slate-950 dark:text-white shadow-sm'
+                  ? 'bg-white dark:bg-emerald-600 text-slate-950 dark:text-white shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 dark:text-emerald-300/80 dark:hover:text-white'
               }`}
             >
@@ -306,33 +309,34 @@ export function StudentPhotoCaptureModal({
               <span>Live Camera</span>
             </button>
             <button
+              type="button"
               onClick={() => {
                 setActiveTab('UPLOAD');
                 stopCameraStream();
                 setErrorMsg(null);
               }}
-              className={`py-2 rounded-xl flex items-center justify-center gap-2 transition-all ${
+              className={`py-2 rounded-xl flex items-center justify-center gap-1.5 sm:gap-2 transition-all ${
                 activeTab === 'UPLOAD'
-                  ? 'bg-white dark:bg-emerald-600 text-slate-950 dark:text-white shadow-sm'
+                  ? 'bg-white dark:bg-emerald-600 text-slate-950 dark:text-white shadow-xs'
                   : 'text-slate-500 hover:text-slate-900 dark:text-emerald-300/80 dark:hover:text-white'
               }`}
             >
               <Upload className="w-4 h-4" />
-              <span>Upload File (Max 5MB)</span>
+              <span>Upload File</span>
             </button>
           </div>
         )}
 
-        {/* Error Alert Banner */}
-        {errorMsg && (
-          <div className="m-4 p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2 font-medium">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{errorMsg}</span>
-          </div>
-        )}
+        {/* 3. Scrollable Content Body */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-h-0 p-4 sm:p-5 space-y-3.5 divide-y-0">
+          {/* Error Alert Banner */}
+          {errorMsg && (
+            <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-xs flex items-center gap-2 font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
-        {/* Modal Body */}
-        <div className="p-5 sm:p-6 space-y-4">
           {/* Active Camera Indicator & Switch Button */}
           {activeTab === 'CAMERA' && !previewDataUrl && isCameraActive && (
             <div className="flex items-center justify-between gap-2 px-1">
@@ -354,7 +358,7 @@ export function StudentPhotoCaptureModal({
           )}
 
           {/* Viewfinder or Captured Preview */}
-          <div className="relative aspect-square max-w-[280px] mx-auto rounded-3xl overflow-hidden border-2 border-dashed border-emerald-500/40 bg-slate-100 dark:bg-[#041a13] flex items-center justify-center shadow-inner">
+          <div className="relative aspect-square max-w-[240px] sm:max-w-[260px] mx-auto rounded-3xl overflow-hidden border-2 border-dashed border-emerald-500/40 bg-slate-100 dark:bg-[#041a13] flex items-center justify-center shadow-inner">
             {previewDataUrl ? (
               // Captured / Uploaded Image Preview
               <img
@@ -414,15 +418,15 @@ export function StudentPhotoCaptureModal({
               // File Upload Drop Area
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="p-6 text-center space-y-3 cursor-pointer hover:opacity-90 transition-opacity"
+                className="p-5 sm:p-6 text-center space-y-2.5 cursor-pointer hover:opacity-90 transition-opacity"
               >
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-sm">
-                  <ImageIcon className="w-7 h-7" />
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center shadow-sm">
+                  <ImageIcon className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-800 dark:text-white">Click to Select Student Photo</p>
-                  <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 pt-1">
-                    PNG, JPG, WEBP, or HEIC (Maximum 5MB limit)
+                  <p className="text-xs font-bold text-slate-800 dark:text-white">Click to Select Photo</p>
+                  <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 pt-0.5">
+                    PNG, JPG, WEBP, or HEIC (Max 5MB)
                   </p>
                 </div>
                 <input
@@ -437,8 +441,8 @@ export function StudentPhotoCaptureModal({
 
             {/* Passport Frame Alignment Guide */}
             {!previewDataUrl && (
-              <div className="absolute inset-4 pointer-events-none rounded-2xl border border-white/20 flex items-center justify-center">
-                <span className="text-[10px] font-mono uppercase font-bold text-white/50 tracking-wider bg-black/30 px-2 py-0.5 rounded backdrop-blur-xs">
+              <div className="absolute inset-3.5 pointer-events-none rounded-2xl border border-white/20 flex items-center justify-center">
+                <span className="text-[9px] sm:text-[10px] font-mono uppercase font-bold text-white/50 tracking-wider bg-black/30 px-2 py-0.5 rounded backdrop-blur-xs">
                   Passport Frame
                 </span>
               </div>
@@ -447,63 +451,89 @@ export function StudentPhotoCaptureModal({
 
           {/* WebP Compression Info Badge */}
           {compressedKb !== null && (
-            <div className="flex items-center justify-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 py-1.5 px-3 rounded-xl border border-emerald-500/20">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Compressed to WebP: {compressedKb} KB (Storage-Optimized)</span>
+            <div className="flex items-center justify-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 py-1.5 px-3 rounded-xl border border-emerald-500/20 max-w-[280px] mx-auto">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span className="truncate">Compressed to WebP: {compressedKb} KB</span>
             </div>
           )}
+        </div>
 
-          {/* Action Buttons */}
-          <div className="pt-2">
-            {previewDataUrl ? (
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={handleRetake}
-                  disabled={isProcessing}
-                  className="py-2.5 rounded-xl border border-slate-200 dark:border-emerald-800/40 hover:bg-slate-100 dark:hover:bg-emerald-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all text-slate-700 dark:text-emerald-200"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  <span>Retake / Change</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSavePhoto}
-                  disabled={isProcessing}
-                  className="py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
-                >
-                  {isProcessing ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4" />
-                      <span>Save & Apply</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            ) : activeTab === 'CAMERA' ? (
+        {/* 4. Fixed Action Footer */}
+        <div className="shrink-0 p-3.5 sm:p-4 border-t border-slate-100 dark:border-emerald-800/40 bg-slate-50/70 dark:bg-emerald-950/40">
+          {previewDataUrl ? (
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={handleRetake}
+                disabled={isProcessing}
+                className="py-2.5 px-3 rounded-xl border border-slate-200 dark:border-emerald-800/40 hover:bg-slate-100 dark:hover:bg-emerald-900/50 font-bold text-xs flex items-center justify-center gap-1.5 transition-all text-slate-700 dark:text-emerald-200"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Retake / Change</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSavePhoto}
+                disabled={isProcessing}
+                className="py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
+              >
+                {isProcessing ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Check className="w-4 h-4" />
+                    <span>Save & Apply</span>
+                  </>
+                )}
+              </button>
+            </div>
+          ) : activeTab === 'CAMERA' ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  stopCameraStream();
+                  onClose();
+                }}
+                disabled={isProcessing}
+                className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-emerald-800/40 hover:bg-slate-100 dark:hover:bg-emerald-900/50 font-bold text-xs text-slate-700 dark:text-emerald-200 transition-all"
+              >
+                Cancel
+              </button>
               <button
                 type="button"
                 onClick={handleCaptureSnapshot}
                 disabled={!isCameraActive || isProcessing}
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all disabled:opacity-50"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all disabled:opacity-50"
               >
                 <Camera className="w-4 h-4" />
                 <span>Capture Photo</span>
               </button>
-            ) : (
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  stopCameraStream();
+                  onClose();
+                }}
+                disabled={isProcessing}
+                className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-emerald-800/40 hover:bg-slate-100 dark:hover:bg-emerald-900/50 font-bold text-xs text-slate-700 dark:text-emerald-200 transition-all"
+              >
+                Cancel
+              </button>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing}
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 transition-all"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all"
               >
                 <Upload className="w-4 h-4" />
                 <span>Choose Image from Device</span>
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
