@@ -4,6 +4,7 @@ import {
   GetObjectCommand,
   DeleteObjectCommand,
   HeadObjectCommand,
+  HeadBucketCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -12,30 +13,58 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
  * Designed for Markazu Umar Bn Al-Khattab Centre and extensible for Swanford Academy.
  */
 
+// Helper to sanitize environment variables (trim whitespace & remove accidental quotes)
+function cleanEnvVar(val: string | undefined): string {
+  if (!val) return '';
+  return val
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .trim();
+}
+
+export function getCleanStorageConfig() {
+  const accountId = cleanEnvVar(process.env.R2_ACCOUNT_ID);
+  const accessKeyId = cleanEnvVar(process.env.R2_ACCESS_KEY_ID);
+  const secretAccessKey = cleanEnvVar(process.env.R2_SECRET_ACCESS_KEY);
+  const rawEndpoint = cleanEnvVar(process.env.R2_ENDPOINT);
+  const bucketName = cleanEnvVar(process.env.R2_BUCKET_NAME) || 'school-files';
+
+  let endpoint = rawEndpoint;
+  if (!endpoint && accountId) {
+    endpoint = `https://${accountId}.r2.cloudflarestorage.com`;
+  }
+  if (endpoint) {
+    // Strip trailing slashes
+    endpoint = endpoint.replace(/\/+$/, '');
+  }
+
+  return {
+    accountId,
+    accessKeyId,
+    secretAccessKey,
+    endpoint,
+    bucketName,
+  };
+}
+
 // Global cached client instance
 let cachedS3Client: S3Client | null = null;
 
 function getS3Client(): S3Client | null {
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const endpoint =
-    process.env.R2_ENDPOINT ||
-    (accountId ? `https://${accountId}.r2.cloudflarestorage.com` : undefined);
+  const config = getCleanStorageConfig();
 
-  if (!accessKeyId || !secretAccessKey || !endpoint) {
+  if (!config.accessKeyId || !config.secretAccessKey || !config.endpoint) {
     return null;
   }
 
   if (!cachedS3Client) {
     cachedS3Client = new S3Client({
       region: 'auto',
-      endpoint,
+      endpoint: config.endpoint,
       credentials: {
-        accessKeyId,
-        secretAccessKey,
+        accessKeyId: config.accessKeyId,
+        secretAccessKey: config.secretAccessKey,
       },
-      forcePathStyle: true,
     });
   }
 
@@ -43,15 +72,123 @@ function getS3Client(): S3Client | null {
 }
 
 export function isStorageConfigured(): boolean {
+  const config = getCleanStorageConfig();
   return !!(
-    process.env.R2_ACCESS_KEY_ID &&
-    process.env.R2_SECRET_ACCESS_KEY &&
-    (process.env.R2_ENDPOINT || process.env.R2_ACCOUNT_ID)
+    config.accessKeyId &&
+    config.secretAccessKey &&
+    config.endpoint
   );
 }
 
 export function getBucketName(): string {
-  return process.env.R2_BUCKET_NAME || 'school-files';
+  return getCleanStorageConfig().bucketName;
+}
+
+/**
+ * Safe server-side error logger that never exposes credentials
+ */
+export function logSafeStorageError(action: string, err: any, keyPattern?: string) {
+  const config = getCleanStorageConfig();
+  let endpointHost = 'unconfigured';
+  try {
+    if (config.endpoint) {
+      endpointHost = new URL(config.endpoint).hostname;
+    }
+  } catch {}
+
+  console.error(`[R2_STORAGE_ERROR] Action: ${action}`, {
+    errorName: err?.name || 'UnknownError',
+    errorCode: err?.Code || err?.code || err?.$metadata?.httpStatusCode?.toString(),
+    httpStatus: err?.$metadata?.httpStatusCode,
+    requestId: err?.$metadata?.requestId,
+    extendedRequestId: err?.$metadata?.extendedRequestId,
+    endpointHost,
+    bucket: config.bucketName,
+    keyPattern: keyPattern || 'n/a',
+    message: err instanceof Error ? err.message : String(err),
+  });
+}
+
+/**
+ * Safe, harmless R2 connectivity & authentication diagnostic check
+ * Verifies bucket existence and credentials without modifying any student data.
+ */
+export async function testStorageConnection(): Promise<{
+  configured: boolean;
+  endpointHost: string;
+  bucket: string;
+  authenticated: boolean;
+  error?: {
+    name: string;
+    code?: string;
+    httpStatus?: number;
+    requestId?: string;
+    message: string;
+  };
+}> {
+  const config = getCleanStorageConfig();
+  let endpointHost = 'unconfigured';
+  try {
+    if (config.endpoint) {
+      endpointHost = new URL(config.endpoint).hostname;
+    }
+  } catch {}
+
+  if (!isStorageConfigured()) {
+    return {
+      configured: false,
+      endpointHost,
+      bucket: config.bucketName,
+      authenticated: false,
+      error: {
+        name: 'UnconfiguredError',
+        message: 'R2 environment variables are missing or incomplete in environment.',
+      },
+    };
+  }
+
+  const client = getS3Client();
+  if (!client) {
+    return {
+      configured: false,
+      endpointHost,
+      bucket: config.bucketName,
+      authenticated: false,
+      error: {
+        name: 'ClientInitError',
+        message: 'Failed to initialize S3Client with provided credentials.',
+      },
+    };
+  }
+
+  try {
+    const command = new HeadBucketCommand({ Bucket: config.bucketName });
+    await client.send(command);
+    return {
+      configured: true,
+      endpointHost,
+      bucket: config.bucketName,
+      authenticated: true,
+    };
+  } catch (err: any) {
+    const errorDetails = {
+      name: err?.name || 'UnknownS3Error',
+      code: err?.Code || err?.code,
+      httpStatus: err?.$metadata?.httpStatusCode,
+      requestId: err?.$metadata?.requestId,
+      message: err instanceof Error ? err.message : String(err),
+    };
+
+    logSafeStorageError('testStorageConnection', err);
+
+    return {
+      configured: true,
+      endpointHost,
+      bucket: config.bucketName,
+      authenticated: false,
+      error: errorDetails,
+    };
+  }
 }
 
 /**
@@ -125,7 +262,12 @@ export async function uploadToStorage(options: UploadOptions): Promise<UploadRes
     Metadata: options.metadata,
   });
 
-  await client.send(command);
+  try {
+    await client.send(command);
+  } catch (err: any) {
+    logSafeStorageError('uploadToStorage', err, cleanKey);
+    throw err;
+  }
 
   return {
     success: true,
