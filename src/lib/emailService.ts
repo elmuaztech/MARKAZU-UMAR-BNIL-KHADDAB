@@ -324,7 +324,12 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
     html: htmlContent,
   };
 
-  const nodemailer = eval('require')('nodemailer');
+  let nodemailer: any;
+  try {
+    nodemailer = require('nodemailer');
+  } catch {
+    nodemailer = eval('require')('nodemailer');
+  }
 
   // Attempt 1: Port 465 (Direct SSL) - Most reliable on cloud VPS
   try {

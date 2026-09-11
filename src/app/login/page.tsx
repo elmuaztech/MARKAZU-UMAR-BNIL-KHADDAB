@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useApp, getDeletedUserIdentifiers } from '../../lib/context';
 import { UserRole, User } from '../../types';
 import { verifyPassword, checkLockoutStatus, generatePasswordResetToken, createNewSession, verifyResetToken, markResetTokenUsed, validatePasswordPolicy, isPasswordInHistory } from '../../lib/security';
-import { sendSystemEmail } from '../../lib/emailService';
 import { ThemeToggle } from '../../components/navigation/ThemeToggle';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';

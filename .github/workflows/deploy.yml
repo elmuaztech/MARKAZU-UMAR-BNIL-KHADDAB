@@ -3,6 +3,7 @@ name: Automated Deployment to Hostinger VPS
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -16,7 +17,8 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           script: |
             cd /var/www/MARKAZU-UMAR-BNIL-KHADDAB
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             docker compose down
             docker compose build --no-cache
             docker compose up -d
