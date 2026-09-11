@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, X, Check, RefreshCw, AlertCircle, ShieldAlert, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Camera, Upload, X, Check, RefreshCw, AlertCircle, ShieldAlert, Sparkles, Image as ImageIcon, SwitchCamera } from 'lucide-react';
 import { compressStudentPhotoToWebP, MAX_STUDENT_PHOTO_SIZE_BYTES } from '@/lib/imageUtils';
+import { getAuthHeaders } from '@/lib/context';
 
 interface StudentPhotoCaptureModalProps {
   isOpen: boolean;
@@ -31,6 +32,11 @@ export function StudentPhotoCaptureModal({
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Camera switching state
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('user');
+  const [availableVideoDevices, setAvailableVideoDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,21 +50,43 @@ export function StudentPhotoCaptureModal({
     setIsCameraActive(false);
   };
 
+  // Enumerate available video input devices safely
+  const updateAvailableDevices = async () => {
+    try {
+      if (navigator.mediaDevices?.enumerateDevices) {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputs = devices.filter((d) => d.kind === 'videoinput');
+        setAvailableVideoDevices(videoInputs);
+      }
+    } catch {
+      // Best-effort enumeration
+    }
+  };
+
   // Start live camera stream
-  const startCamera = async () => {
+  const startCamera = async (targetFacing = facingMode, targetDeviceId = selectedDeviceId) => {
+    stopCameraStream();
     setCameraError(null);
     setErrorMsg(null);
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('Camera device access is not supported on this browser or connection.');
+        throw new Error('Camera access is not supported on this browser or device.');
+      }
+
+      // Build video constraints
+      const videoConstraints: MediaTrackConstraints = {
+        width: { ideal: 640 },
+        height: { ideal: 480 },
+      };
+
+      if (targetDeviceId) {
+        videoConstraints.deviceId = { exact: targetDeviceId };
+      } else {
+        videoConstraints.facingMode = { ideal: targetFacing };
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          width: { ideal: 640 },
-          height: { ideal: 480 },
-          facingMode: 'user',
-        },
+        video: videoConstraints,
         audio: false,
       });
 
@@ -68,14 +96,60 @@ export function StudentPhotoCaptureModal({
         await videoRef.current.play();
       }
       setIsCameraActive(true);
+
+      // Detect actual facing mode from active track
+      const activeTrack = stream.getVideoTracks()[0];
+      const settings = activeTrack?.getSettings?.();
+      if (settings?.facingMode === 'environment' || settings?.facingMode === 'user') {
+        setFacingMode(settings.facingMode);
+      } else {
+        setFacingMode(targetFacing);
+      }
+
+      await updateAvailableDevices();
     } catch (err: any) {
       console.error('[CAMERA_STREAM_ERROR]', err);
+      const isPermissionDenied =
+        err.name === 'NotAllowedError' ||
+        err.name === 'PermissionDeniedError' ||
+        err.name === 'SecurityError';
+
       setCameraError(
-        err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError'
-          ? 'Camera permission denied. Please allow camera access in your browser address bar.'
+        isPermissionDenied
+          ? 'Camera access is needed to take a photo.'
           : err.message || 'Unable to access camera.'
       );
       setIsCameraActive(false);
+    }
+  };
+
+  // Switch between Front and Back camera
+  const handleSwitchCamera = async () => {
+    if (isProcessing) return;
+
+    if (availableVideoDevices.length > 1) {
+      // If we have multiple enumerated devices, cycle to next device
+      const currentIndex = availableVideoDevices.findIndex(
+        (d) => d.deviceId === selectedDeviceId
+      );
+      const nextIndex = (currentIndex + 1) % availableVideoDevices.length;
+      const nextDevice = availableVideoDevices[nextIndex];
+      setSelectedDeviceId(nextDevice.deviceId);
+
+      // Infer facing mode from device label if available
+      const label = (nextDevice.label || '').toLowerCase();
+      const nextFacing = label.includes('back') || label.includes('rear') || label.includes('environment')
+        ? 'environment'
+        : 'user';
+      setFacingMode(nextFacing);
+
+      await startCamera(nextFacing, nextDevice.deviceId);
+    } else {
+      // Toggle facingMode directly
+      const nextFacing = facingMode === 'user' ? 'environment' : 'user';
+      setFacingMode(nextFacing);
+      setSelectedDeviceId(null);
+      await startCamera(nextFacing, null);
     }
   };
 
@@ -156,11 +230,14 @@ export function StudentPhotoCaptureModal({
     setErrorMsg(null);
 
     try {
+      const headers = {
+        ...getAuthHeaders(),
+        'Content-Type': 'application/json',
+      };
+
       const res = await fetch('/api/students/photo', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           studentId,
           imageBase64: previewDataUrl,
@@ -169,14 +246,14 @@ export function StudentPhotoCaptureModal({
 
       const data = await res.json();
       if (!res.ok || data.error) {
-        throw new Error(data.error || 'Failed to upload student photo to server.');
+        throw new Error(data.error || 'Photo could not be uploaded. Please try again.');
       }
 
       onPhotoSaved(data.avatarUrl);
       stopCameraStream();
       onClose();
     } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to save student photo.');
+      setErrorMsg(err.message || 'Photo could not be saved. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -255,7 +332,27 @@ export function StudentPhotoCaptureModal({
         )}
 
         {/* Modal Body */}
-        <div className="p-6 space-y-4">
+        <div className="p-5 sm:p-6 space-y-4">
+          {/* Active Camera Indicator & Switch Button */}
+          {activeTab === 'CAMERA' && !previewDataUrl && isCameraActive && (
+            <div className="flex items-center justify-between gap-2 px-1">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 dark:text-emerald-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>{facingMode === 'environment' ? 'Back camera' : 'Front camera'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleSwitchCamera}
+                disabled={!isCameraActive || isProcessing}
+                aria-label="Switch camera"
+                className="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-emerald-800/50 bg-slate-50 dark:bg-emerald-950/80 text-slate-800 dark:text-emerald-200 hover:bg-slate-100 dark:hover:bg-emerald-900/60 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs disabled:opacity-50"
+              >
+                <SwitchCamera className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span>Switch camera</span>
+              </button>
+            </div>
+          )}
+
           {/* Viewfinder or Captured Preview */}
           <div className="relative aspect-square max-w-[280px] mx-auto rounded-3xl overflow-hidden border-2 border-dashed border-emerald-500/40 bg-slate-100 dark:bg-[#041a13] flex items-center justify-center shadow-inner">
             {previewDataUrl ? (
@@ -276,18 +373,33 @@ export function StudentPhotoCaptureModal({
                   className={`w-full h-full object-cover ${isCameraActive ? 'block' : 'hidden'}`}
                 />
                 {!isCameraActive && (
-                  <div className="p-4 text-center space-y-2">
+                  <div className="p-4 text-center space-y-3">
                     {cameraError ? (
                       <>
                         <ShieldAlert className="w-8 h-8 text-amber-500 mx-auto" />
                         <p className="text-xs text-amber-600 dark:text-amber-400 font-semibold">{cameraError}</p>
-                        <button
-                          onClick={startCamera}
-                          className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs inline-flex items-center gap-1.5 shadow-sm"
-                        >
-                          <RefreshCw className="w-3.5 h-3.5" />
-                          <span>Retry Camera</span>
-                        </button>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => startCamera()}
+                            className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs inline-flex items-center justify-center gap-1.5 shadow-sm"
+                          >
+                            <RefreshCw className="w-3.5 h-3.5" />
+                            <span>Retry Camera</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveTab('UPLOAD');
+                              stopCameraStream();
+                              setErrorMsg(null);
+                            }}
+                            className="w-full sm:w-auto px-3 py-1.5 rounded-xl border border-slate-300 dark:border-emerald-800 text-slate-700 dark:text-emerald-300 hover:bg-slate-50 dark:hover:bg-emerald-950 font-bold text-xs inline-flex items-center justify-center gap-1.5"
+                          >
+                            <Upload className="w-3.5 h-3.5" />
+                            <span>Upload File</span>
+                          </button>
+                        </div>
                       </>
                     ) : (
                       <div className="flex flex-col items-center gap-2">
