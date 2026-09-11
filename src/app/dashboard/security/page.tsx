@@ -135,10 +135,11 @@ export default function SecurityDashboardPage() {
         throw new Error(resData.error || 'Failed to create user account');
       }
 
+      const createdUser = resData.user;
       notify({
         type: 'success',
-        title: 'User Account Created',
-        message: `System account created for ${newName} (${newRole}). Login credentials configured successfully.`,
+        title: 'User Account Created Successfully',
+        message: `User: ${newName} | Username: ${createdUser?.username || 'Auto-assigned'} | Temp Password: ${createdUser?.tempPassword}. Welcome email dispatched to ${newEmail}.`,
       });
 
       setShowCreateModal(false);

@@ -303,7 +303,6 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
   // If running on server side (Node.js context)
   const htmlContent = generateEmailHtml(payload);
   const smtpHost = process.env.SMTP_HOST || process.env.EMAIL_SERVER_HOST || 'smtp.gmail.com';
-  const smtpPort = Number(process.env.SMTP_PORT || process.env.EMAIL_SERVER_PORT || 587);
   const smtpUser = process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'markazuumarbnkhaddabdaneji@gmail.com';
   const rawPass = process.env.SMTP_PASS || process.env.SMTP_PASSWORD || process.env.EMAIL_SERVER_PASSWORD || 'dfws rewu nzjv chxg';
   const smtpPass = rawPass.replace(/\s+/g, '');
@@ -317,33 +316,51 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
     targetRecipient = devRecipient;
   }
 
+  const mailOptions = {
+    from: SYSTEM_EMAIL_FROM,
+    replyTo: 'markazuumarbnkhaddabdaneji@gmail.com',
+    to: targetRecipient,
+    subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
+    html: htmlContent,
+  };
+
+  const nodemailer = eval('require')('nodemailer');
+
+  // Attempt 1: Port 465 (Direct SSL) - Most reliable on cloud VPS
   try {
-    const nodemailer = eval('require')('nodemailer');
-    const transporter = nodemailer.createTransport({
+    const transporter465 = nodemailer.createTransport({
       host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
+      port: 465,
+      secure: true,
+      auth: { user: smtpUser, pass: smtpPass },
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 12000,
     });
-
-    await transporter.sendMail({
-      from: SYSTEM_EMAIL_FROM,
-      replyTo: 'markazuumarbnkhaddabdaneji@gmail.com',
-      to: targetRecipient,
-      subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
-      html: htmlContent,
-    });
-
-    console.log(`[REAL EMAIL DISPATCH SUCCESS] -> Delivered to ${targetRecipient} (Original: ${payload.to}) via SMTP ${smtpHost}`);
-    return { success: true, messageId };
-  } catch (err: any) {
-    console.error(`[SMTP EMAIL DISPATCH FAILED] -> ${err.message}`);
-    return { success: false, messageId, error: err.message };
+    const info = await transporter465.sendMail(mailOptions);
+    console.log(`[REAL EMAIL DISPATCH SUCCESS via Port 465] -> Delivered to ${targetRecipient}. MessageId: ${info?.messageId || messageId}`);
+    return { success: true, messageId: info?.messageId || messageId };
+  } catch (err465: any) {
+    console.warn(`[SMTP Port 465 Notice] ${err465?.message || err465}. Retrying on Port 587 (STARTTLS)...`);
+    // Attempt 2: Port 587 (STARTTLS) - Secondary fallback
+    try {
+      const transporter587 = nodemailer.createTransport({
+        host: smtpHost,
+        port: 587,
+        secure: false,
+        auth: { user: smtpUser, pass: smtpPass },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 12000,
+      });
+      const info = await transporter587.sendMail(mailOptions);
+      console.log(`[REAL EMAIL DISPATCH SUCCESS via Port 587] -> Delivered to ${targetRecipient}. MessageId: ${info?.messageId || messageId}`);
+      return { success: true, messageId: info?.messageId || messageId };
+    } catch (err587: any) {
+      console.error(`[SMTP EMAIL DISPATCH FAILED on both 465 and 587] -> 465: ${err465?.message} | 587: ${err587?.message}`);
+      return { success: false, messageId, error: `Port 465: ${err465?.message}; Port 587: ${err587?.message}` };
+    }
   }
 }

@@ -82,8 +82,8 @@ export async function POST(req: NextRequest) {
     }
     portalUrl = portalUrl ? portalUrl.replace(/\/+$/, '') : '';
 
-    // Send 4-digit OTP email using central email service
-    await sendSystemEmail({
+    // Send 4-digit OTP email using central email service with dual-port retry
+    const emailResult = await sendSystemEmail({
       to: user.email,
       recipientName: user.name,
       subject: 'MARKAZU UMAR - Password Reset 4-Digit OTP Code',
@@ -93,6 +93,14 @@ export async function POST(req: NextRequest) {
         portalUrl,
       },
     });
+
+    if (!emailResult.success) {
+      console.error('[FORGOT_PASSWORD_EMAIL_FAILED]', emailResult.error);
+      return NextResponse.json(
+        { error: `Unable to dispatch OTP email: ${emailResult.error || 'SMTP transport failure'}. Please contact administrator.` },
+        { status: 502 }
+      );
+    }
 
     return NextResponse.json({
       message: `4-Digit OTP dispatched to ${user.email}. Valid for 10 minutes.`,

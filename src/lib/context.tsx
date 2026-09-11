@@ -2646,7 +2646,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const resetUserPassword = (userId: string, newPass: string) => {
+  const resetUserPassword = async (userId: string, newPass: string) => {
     const targetUser = users.find((u) => u.id === userId);
     const newHash = hashPassword(newPass);
     setUsers((prev) => {
@@ -2654,6 +2654,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       safeLocalStorageSet('markazu_users', updated);
       return updated;
     });
+
+    // Persist directly to PostgreSQL database so login with temp password works immediately
+    try {
+      await fetch(`/api/users/${encodeURIComponent(userId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          resetPassword: true,
+          newTempPassword: newPass,
+        }),
+      });
+    } catch (apiErr) {
+      console.warn('[RESET_PASSWORD] Backend update error:', apiErr);
+    }
+
     if (targetUser) {
       sendSystemEmail({
         to: targetUser.email,
@@ -2661,10 +2676,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         subject: 'Password Reset - Markazu Umar School Management Portal',
         template: 'WELCOME_NEW_ACCOUNT',
         metadata: {
-          username: targetUser.email,
+          username: targetUser.username || targetUser.email,
           tempPassword: newPass,
         },
-      });
+      }).catch(() => {});
     }
     addAuditLog({
       action: 'PASSWORD_RESET_BY_ADMIN',

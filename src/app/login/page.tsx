@@ -243,37 +243,10 @@ export default function LoginPage() {
 
       const authUser = data.user;
 
-      // Client-side Strict Role Portal Verification
-      const userRole = (authUser.role || '').toUpperCase();
-      if (activeTab === 'SUPER_ADMIN' && userRole !== 'SUPER_ADMIN') {
-        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}. Please select the ${userRole === 'ADMIN' ? 'Admin' : userRole === 'HEADMASTER' ? 'Headmaster' : userRole === 'TEACHER' ? 'Teacher' : userRole === 'STUDENT' ? 'Student' : 'Parent'} portal tab.`);
-        setIsSubmitting(false);
-        return;
-      }
-      if (activeTab === 'ADMIN' && userRole !== 'ADMIN' && userRole !== 'SUPER_ADMIN') {
-        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not an Administrator. Please select the correct portal tab.`);
-        setIsSubmitting(false);
-        return;
-      }
-      if (activeTab === 'HEADMASTER' && userRole !== 'HEADMASTER') {
-        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Headmaster. Please select the correct portal tab.`);
-        setIsSubmitting(false);
-        return;
-      }
-      if (activeTab === 'TEACHER' && userRole !== 'TEACHER') {
-        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Teacher. Please select the correct portal tab.`);
-        setIsSubmitting(false);
-        return;
-      }
-      if (activeTab === 'STUDENT' && userRole !== 'STUDENT') {
-        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Student. Please select the correct portal tab.`);
-        setIsSubmitting(false);
-        return;
-      }
-      if (activeTab === 'PARENT' && userRole !== 'PARENT') {
-        setErrorMsg(`Access Denied: This account is registered as ${userRole.replace('_', ' ')}, not a Parent. Please select the correct portal tab.`);
-        setIsSubmitting(false);
-        return;
+      // Seamless portal login: sync activeTab to user's registered role
+      const userRole = (authUser.role || '').toUpperCase() as UserRole;
+      if (activeTab !== userRole) {
+        setActiveTab(userRole);
       }
 
       const fullUserRecord: User = {

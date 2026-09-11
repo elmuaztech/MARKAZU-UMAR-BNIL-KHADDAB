@@ -53,24 +53,11 @@ export async function POST(req: NextRequest) {
 
     console.log(`[EMAIL API] Dispatching real email to ${targetRecipient} via SMTP ${smtpHost}:${smtpPort}...`);
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpPort === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-      tls: {
-        rejectUnauthorized: false,
-      },
-    });
-
     const logoPngPath = path.join(process.cwd(), 'public', 'logo.png');
     const logoJpgPath = path.join(process.cwd(), 'public', 'logo.jpg');
     const actualLogoPath = fs.existsSync(logoPngPath) ? logoPngPath : (fs.existsSync(logoJpgPath) ? logoJpgPath : null);
 
-    const info = await transporter.sendMail({
+    const mailOptions = {
       from: SYSTEM_EMAIL_FROM,
       replyTo: 'markazuumarbnkhaddabdaneji@gmail.com',
       to: targetRecipient,
@@ -85,13 +72,41 @@ export async function POST(req: NextRequest) {
             },
           ]
         : [],
-    });
+    };
 
-    console.log(`[EMAIL DISPATCH SUCCESS] Real email sent to ${payload.to}. MessageId: ${info.messageId || messageId}`);
+    let info: any = null;
+    try {
+      const transporter465 = nodemailer.createTransport({
+        host: smtpHost,
+        port: 465,
+        secure: true,
+        auth: { user: smtpUser, pass: smtpPass },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 12000,
+      });
+      info = await transporter465.sendMail(mailOptions);
+      console.log(`[EMAIL API SUCCESS via Port 465] Real email sent to ${payload.to}. MessageId: ${info?.messageId || messageId}`);
+    } catch (err465: any) {
+      console.warn(`[EMAIL API Port 465 Notice] ${err465?.message || err465}. Retrying on Port 587...`);
+      const transporter587 = nodemailer.createTransport({
+        host: smtpHost,
+        port: 587,
+        secure: false,
+        auth: { user: smtpUser, pass: smtpPass },
+        tls: { rejectUnauthorized: false },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 12000,
+      });
+      info = await transporter587.sendMail(mailOptions);
+      console.log(`[EMAIL API SUCCESS via Port 587] Real email sent to ${payload.to}. MessageId: ${info?.messageId || messageId}`);
+    }
 
     return NextResponse.json({
       success: true,
-      messageId: info.messageId || messageId,
+      messageId: info?.messageId || messageId,
       recipient: payload.to,
     });
   } catch (error: any) {
