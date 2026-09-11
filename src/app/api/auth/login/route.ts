@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         isLocalhost: (process.env.DATABASE_URL || '').includes('localhost') || (process.env.DATABASE_URL || '').includes('127.0.0.1'),
       });
-      return NextResponse.json({ error: 'Database connection error. Please try again.' }, { status: 500 });
+      return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 });
     }
 
     // Distinguish "User not found"

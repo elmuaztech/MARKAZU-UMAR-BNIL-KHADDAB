@@ -40,7 +40,7 @@ function ResetPasswordForm() {
     }
 
     if (!policy.isValid) {
-      setErrorMsg('Password does not meet enterprise security requirements.');
+      setErrorMsg(policy.errors[0] || 'Please choose a stronger password with at least 6 characters.');
       return;
     }
 
@@ -73,7 +73,7 @@ function ResetPasswordForm() {
       // If API returns specific token verification failure, fallback to security helper
       const tokenCheck = verifyResetToken(cleanToken);
       if (!tokenCheck.isValid || !tokenCheck.userId) {
-        setErrorMsg(tokenCheck.error || data.error || 'Invalid or expired 5-minute reset token.');
+        setErrorMsg(tokenCheck.error || data.error || 'The code is invalid or has expired. Please request a new one.');
         setIsSubmitting(false);
         return;
       }
@@ -81,7 +81,7 @@ function ResetPasswordForm() {
       const targetEmail = (tokenCheck.email || 'markazuumarbnkhaddabdaneji@gmail.com').toLowerCase();
       const targetUser = users.find((u) => u.id === tokenCheck.userId || u.email.toLowerCase() === targetEmail);
       if (!targetUser) {
-        setErrorMsg('Associated user account was not found.');
+        setErrorMsg('We could not find an account with those details.');
         setIsSubmitting(false);
         return;
       }
@@ -229,13 +229,15 @@ function ResetPasswordForm() {
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="At least 12 chars with upper, lower, number, special"
-                className="w-full pl-9 pr-10 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="At least 6 characters with upper, lower, number, special"
+                className="w-full pl-9 pr-12 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3.5 text-slate-400 hover:text-emerald-500"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+                className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>

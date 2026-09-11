@@ -60,14 +60,14 @@ export async function POST(req: NextRequest) {
     // 2. Verify current/temporary password
     const isCurrentValid = verifyPassword(currentPassword, user.password);
     if (!isCurrentValid && !user.isFirstLogin && !user.mustChangePassword) {
-      return NextResponse.json({ error: 'Current password verified incorrect' }, { status: 401 });
+      return NextResponse.json({ error: 'Current password is incorrect.' }, { status: 401 });
     }
 
     // 3. Validate Password Policy
     const policyResult = validatePasswordPolicy(newPassword);
     if (!policyResult.isValid) {
       return NextResponse.json(
-        { error: 'New password does not meet security policy requirements', details: policyResult.errors },
+        { error: 'Please choose a stronger password with at least 6 characters', details: policyResult.errors },
         { status: 400 }
       );
     }

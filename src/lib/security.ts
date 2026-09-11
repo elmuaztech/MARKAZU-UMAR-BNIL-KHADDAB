@@ -116,10 +116,10 @@ export function validatePasswordPolicy(password: string): PasswordPolicyResult {
   const errors: string[] = [];
   let score = 0;
 
-  if (password.length >= 12) {
+  if (password.length >= 6) {
     score += 30;
   } else {
-    errors.push('Must be at least 12 characters long');
+    errors.push('Must be at least 6 characters long');
   }
 
   if (/[A-Z]/.test(password)) {

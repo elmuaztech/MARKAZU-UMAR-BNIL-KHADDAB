@@ -97,17 +97,17 @@ export async function POST(req: NextRequest) {
     if (!emailResult.success) {
       console.error('[FORGOT_PASSWORD_EMAIL_FAILED]', emailResult.error);
       return NextResponse.json(
-        { error: `Unable to dispatch OTP email: ${emailResult.error || 'SMTP transport failure'}. Please contact administrator.` },
+        { error: 'Unable to send the code to your email right now. Please try again or contact the school administrator.' },
         { status: 502 }
       );
     }
 
     return NextResponse.json({
-      message: `4-Digit OTP dispatched to ${user.email}. Valid for 10 minutes.`,
+      message: `A 4-digit code has been sent to ${user.email}.`,
       email: user.email,
     });
   } catch (error: any) {
     console.error('[FORGOT_PASSWORD_ERROR]', error);
-    return NextResponse.json({ error: error.message || 'Failed to process forgot password request' }, { status: 400 });
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 400 });
   }
 }

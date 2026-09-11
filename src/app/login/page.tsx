@@ -17,6 +17,7 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<UserRole>('SUPER_ADMIN');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -100,7 +101,7 @@ export default function LoginPage() {
 
     const policy = validatePasswordPolicy(newResetPassword);
     if (!policy.isValid) {
-      setResetErrorMsg('Password must be at least 8 characters with numbers & special characters.');
+      setResetErrorMsg(policy.errors[0] || 'Password must be at least 6 characters with numbers & special characters.');
       return;
     }
 
@@ -227,7 +228,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok || data.error) {
-        setErrorMsg(data.error || 'Authentication failed. Please check your credentials.');
+        setErrorMsg(data.error || 'Email or password is incorrect. Please try again.');
         setIsSubmitting(false);
         addAuditLog({
           action: 'FAILED_LOGIN_ATTEMPT',
@@ -296,7 +297,7 @@ export default function LoginPage() {
 
       window.location.href = targetUrl;
     } catch (err: any) {
-      setErrorMsg(err.message || 'Login failed due to a network connection issue.');
+      setErrorMsg('Unable to sign in. Please check your connection and try again.');
       setIsSubmitting(false);
     }
   };
@@ -465,16 +466,25 @@ export default function LoginPage() {
                   Forgot Password?
                 </button>
               </div>
-              <div className="relative">
-                <Lock className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400" />
+              <div className="relative flex items-center">
+                <Lock className="w-4 h-4 absolute left-3 text-emerald-600 dark:text-emerald-400 pointer-events-none" />
                 <input
-                  type="password"
+                  type={showLoginPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter strong account password"
-                  className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Enter your account password"
+                  className="w-full pl-9 pr-12 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                  title={showLoginPassword ? 'Hide password' : 'Show password'}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg"
+                >
+                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -486,7 +496,7 @@ export default function LoginPage() {
               {isSubmitting ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Authenticating Portal Access...</span>
+                  <span>Signing in...</span>
                 </>
               ) : (
                 <>
@@ -614,13 +624,15 @@ export default function LoginPage() {
                       required
                       value={newResetPassword}
                       onChange={(e) => setNewResetPassword(e.target.value)}
-                      placeholder="At least 8 chars with numbers & special"
-                      className="w-full pl-9 pr-10 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="At least 6 characters with numbers & special"
+                      className="w-full pl-9 pr-12 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                     <button
                       type="button"
                       onClick={() => setShowResetPassToggle(!showResetPassToggle)}
-                      className="absolute right-3 top-3.5 text-slate-400 hover:text-emerald-500"
+                      aria-label={showResetPassToggle ? 'Hide password' : 'Show password'}
+                      title={showResetPassToggle ? 'Hide password' : 'Show password'}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-slate-400 hover:text-emerald-500 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg"
                     >
                       {showResetPassToggle ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>

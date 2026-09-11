@@ -28,7 +28,7 @@ export default function ChangePasswordPage() {
     setSuccessMsg('');
 
     if (!policy.isValid) {
-      setErrorMsg('New password does not meet the security policy requirements.');
+      setErrorMsg(policy.errors[0] || 'Please choose a stronger password with at least 6 characters.');
       return;
     }
 
@@ -55,7 +55,7 @@ export default function ChangePasswordPage() {
       setIsSubmitting(false);
 
       if (!res.ok || data.error) {
-        setErrorMsg(data.error || 'Failed to update password. Please verify current password.');
+        setErrorMsg(data.error || 'Could not update password. Please check your current password and try again.');
         return;
       }
 
@@ -87,7 +87,7 @@ export default function ChangePasswordPage() {
       }, 1200);
     } catch (err: any) {
       setIsSubmitting(false);
-      setErrorMsg(err.message || 'Network error while updating password.');
+      setErrorMsg('Unable to update password. Please try again.');
     }
   };
 
@@ -158,9 +158,11 @@ export default function ChangePasswordPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
+                  aria-label={showPass ? 'Hide password' : 'Show password'}
+                  title={showPass ? 'Hide password' : 'Show password'}
                   className="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
                 >
-                  {showPass ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                  {showPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   <span>{showPass ? 'Hide' : 'Show'}</span>
                 </button>
               </div>
@@ -169,7 +171,7 @@ export default function ChangePasswordPage() {
                 required
                 value={newPass}
                 onChange={(e) => setNewPass(e.target.value)}
-                placeholder="Minimum 12 characters"
+                placeholder="Minimum 6 characters"
                 className="w-full px-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>

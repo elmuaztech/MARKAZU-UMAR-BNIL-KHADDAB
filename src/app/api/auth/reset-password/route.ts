@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     const policyResult = validatePasswordPolicy(newPassword);
     if (!policyResult.isValid) {
       return NextResponse.json(
-        { error: 'Password does not meet enterprise security requirements', details: policyResult.errors },
+        { error: 'Please choose a stronger password with at least 6 characters', details: policyResult.errors },
         { status: 400 }
       );
     }
