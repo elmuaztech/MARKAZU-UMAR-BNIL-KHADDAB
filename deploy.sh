@@ -29,9 +29,10 @@ echo "Rebuilding MSSMS containers using $COMPOSE..."
 $COMPOSE build
 $COMPOSE up -d --remove-orphans
 
-# 5. Synchronize Database Schema Safely (Prisma Migrate Deploy)
-echo "Synchronizing PostgreSQL database schema safely via migrations..."
-$COMPOSE exec -T app npx prisma@5 migrate deploy
+# 5. Synchronize Database Schema Safely (Prisma Db Push Without Data Loss) & Backfill
+echo "Synchronizing PostgreSQL database schema safely without data loss..."
+$COMPOSE exec -T app npx prisma@5 db push --skip-generate
+cat prisma/backfill.sql | $COMPOSE exec -T postgres psql -U mssms_user -d mssms_db
 
 # 6. Safely prune unused builder cache & dangling images
 echo "Pruning unused builder cache & dangling images..."

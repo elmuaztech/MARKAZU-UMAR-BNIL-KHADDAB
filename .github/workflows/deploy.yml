@@ -22,6 +22,7 @@ jobs:
             git reset --hard origin/main
             docker compose build
             docker compose up -d --remove-orphans
-            docker compose exec -T app npx prisma@5 migrate deploy
+            docker compose exec -T app npx prisma@5 db push --skip-generate
+            cat prisma/backfill.sql | docker compose exec -T postgres psql -U mssms_user -d mssms_db
             docker builder prune -f
             docker image prune -f
