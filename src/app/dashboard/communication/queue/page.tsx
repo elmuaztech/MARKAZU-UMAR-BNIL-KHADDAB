@@ -33,12 +33,12 @@ export default function DeliveryQueuePage() {
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/communication"
-            className="p-2.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-slate-700 dark:text-emerald-300 hover:text-emerald-600 transition-colors"
+            className="p-2.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-slate-700 dark:text-emerald-300 hover:text-emerald-600 transition-colors shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Delivery Queue Monitor</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Delivery Queue Monitor</h1>
             <p className="text-xs text-slate-500 dark:text-emerald-300/70">Real-time status monitor of background communication dispatches</p>
           </div>
         </div>
@@ -46,7 +46,7 @@ export default function DeliveryQueuePage() {
         {failedCount > 0 && (
           <button
             onClick={() => retryAllFailedDeliveries()}
-            className="px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs shadow-lg flex items-center gap-2 transition-all hover:scale-105"
+            className="w-full sm:w-auto justify-center px-5 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-black text-xs shadow-lg flex items-center gap-2 transition-all hover:scale-105 shrink-0"
           >
             <RotateCcw className="w-4 h-4" />
             <span>Retry All {failedCount} Failed Deliveries</span>
@@ -55,41 +55,41 @@ export default function DeliveryQueuePage() {
       </div>
 
       {/* Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-        <div onClick={() => setFilterStatus('QUEUED')} className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md cursor-pointer space-y-1">
-          <span className="text-slate-400 font-extrabold uppercase">Queued</span>
-          <p className="text-2xl font-black text-amber-500">{queuedCount}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 text-xs">
+        <div onClick={() => setFilterStatus('QUEUED')} className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md cursor-pointer space-y-1">
+          <span className="text-slate-400 font-extrabold uppercase text-[10px] sm:text-xs">Queued</span>
+          <p className="text-xl sm:text-2xl font-black text-amber-500">{queuedCount}</p>
         </div>
 
-        <div onClick={() => setFilterStatus('PROCESSING')} className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md cursor-pointer space-y-1">
-          <span className="text-slate-400 font-extrabold uppercase">Processing</span>
-          <p className="text-2xl font-black text-sky-500">{processingCount}</p>
+        <div onClick={() => setFilterStatus('PROCESSING')} className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md cursor-pointer space-y-1">
+          <span className="text-slate-400 font-extrabold uppercase text-[10px] sm:text-xs">Processing</span>
+          <p className="text-xl sm:text-2xl font-black text-sky-500">{processingCount}</p>
         </div>
 
-        <div onClick={() => setFilterStatus('COMPLETED')} className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md cursor-pointer space-y-1">
-          <span className="text-slate-400 font-extrabold uppercase">Completed</span>
-          <p className="text-2xl font-black text-emerald-500">{completedCount}</p>
+        <div onClick={() => setFilterStatus('COMPLETED')} className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md cursor-pointer space-y-1">
+          <span className="text-slate-400 font-extrabold uppercase text-[10px] sm:text-xs">Completed</span>
+          <p className="text-xl sm:text-2xl font-black text-emerald-500">{completedCount}</p>
         </div>
 
-        <div onClick={() => setFilterStatus('FAILED')} className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md cursor-pointer space-y-1">
-          <span className="text-slate-400 font-extrabold uppercase">Failed</span>
-          <p className="text-2xl font-black text-rose-500">{failedCount}</p>
+        <div onClick={() => setFilterStatus('FAILED')} className="p-3.5 sm:p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md cursor-pointer space-y-1">
+          <span className="text-slate-400 font-extrabold uppercase text-[10px] sm:text-xs">Failed</span>
+          <p className="text-xl sm:text-2xl font-black text-rose-500">{failedCount}</p>
         </div>
       </div>
 
       {/* Queue Table */}
-      <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-4 sm:p-6 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <h2 className="text-base font-black text-slate-900 dark:text-white">Active Queue Monitor</h2>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 max-w-full no-scrollbar">
             {['ALL', 'QUEUED', 'PROCESSING', 'COMPLETED', 'FAILED'].map((st) => (
               <button
                 key={st}
                 onClick={() => setFilterStatus(st)}
-                className={`px-3 py-1 rounded-xl text-[10px] font-black uppercase transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase whitespace-nowrap shrink-0 transition-all ${
                   filterStatus === st
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 dark:bg-emerald-950 text-slate-600 dark:text-emerald-300'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-emerald-950 text-slate-600 dark:text-emerald-300 hover:bg-emerald-500/20'
                 }`}
               >
                 {st}
@@ -98,8 +98,10 @@ export default function DeliveryQueuePage() {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+        <div className="sm:hidden text-[10px] text-slate-400 italic">👉 Swipe horizontally to view full queue log →</div>
+
+        <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+          <table className="w-full min-w-[750px] text-left border-collapse text-xs">
             <thead>
               <tr className="border-b border-slate-200 dark:border-emerald-500/20 text-slate-400 font-extrabold uppercase text-[10px]">
                 <th className="py-3 px-4">Message Title</th>

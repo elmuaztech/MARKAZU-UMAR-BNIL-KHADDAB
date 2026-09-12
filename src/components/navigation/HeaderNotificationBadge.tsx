@@ -40,7 +40,7 @@ export function HeaderNotificationBadge() {
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="fixed sm:absolute inset-x-2 sm:inset-x-auto right-auto sm:right-0 top-16 sm:top-auto sm:mt-3 w-auto sm:w-96 max-w-[calc(100vw-1rem)] rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl z-50 p-3.5 sm:p-4 space-y-3 font-poppins text-xs"
+              className="fixed sm:absolute inset-x-3 sm:inset-x-auto right-auto sm:right-0 top-16 sm:top-auto sm:mt-3 w-auto sm:w-96 max-w-sm sm:max-w-md mx-auto sm:mx-0 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl z-50 p-3.5 sm:p-4 space-y-3 font-poppins text-xs"
             >
               <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-emerald-500/20">
                 <div className="flex items-center gap-2">
@@ -74,15 +74,15 @@ export function HeaderNotificationBadge() {
                     <div
                       key={notif.id}
                       onClick={() => markNotificationAsRead(notif.id)}
-                      className={`p-3 rounded-2xl border transition-all cursor-pointer space-y-1.5 ${
+                      className={`p-3 rounded-2xl border transition-all cursor-pointer space-y-1.5 overflow-hidden ${
                         !notif.read
                           ? 'bg-emerald-500/10 border-emerald-500/30 text-slate-900 dark:text-white'
                           : 'bg-slate-50 dark:bg-[#021810] border-slate-200 dark:border-emerald-500/10 text-slate-600 dark:text-emerald-200/80'
                       }`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <span
-                          className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${
+                          className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 ${
                             notif.priority === 'URGENT'
                               ? 'bg-rose-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/30'
                               : notif.priority === 'IMPORTANT'
@@ -93,13 +93,13 @@ export function HeaderNotificationBadge() {
                           {notif.priority}
                         </span>
 
-                        <span className="text-[10px] text-slate-400 font-mono" suppressHydrationWarning>
+                        <span className="text-[10px] text-slate-400 font-mono shrink-0" suppressHydrationWarning>
                           {new Date(notif.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
 
-                      <p className="font-bold text-slate-900 dark:text-white text-xs leading-snug">{notif.title}</p>
-                      <p className="text-[11px] text-slate-600 dark:text-emerald-200/75 line-clamp-2">{notif.body}</p>
+                      <p className="font-bold text-slate-900 dark:text-white text-xs leading-snug break-words">{notif.title}</p>
+                      <p className="text-[11px] text-slate-600 dark:text-emerald-200/75 line-clamp-2 break-words">{notif.body}</p>
 
                       {notif.attachments && notif.attachments.length > 0 && (
                         <div className="pt-1 flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-bold">

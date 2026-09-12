@@ -136,16 +136,16 @@ export function AdminApprovalQueue() {
   return (
     <div className="space-y-6 font-poppins">
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-emerald-800/40 pb-3">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-emerald-800/40 pb-3 overflow-x-auto no-scrollbar max-w-full -mx-1 px-1">
         {(['PENDING', 'APPROVED', 'RETURNED', 'REJECTED'] as const).map((tab) => {
           const count = resultSubmissions.filter((s) => s.status === tab).length;
           return (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
+              className={`px-3.5 sm:px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border shrink-0 whitespace-nowrap ${
                 activeTab === tab
-                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md scale-105'
+                  ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md'
                   : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-300 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
               }`}
             >
@@ -158,7 +158,7 @@ export function AdminApprovalQueue() {
                   ? 'Returned for Correction'
                   : 'Rejected Results'}
               </span>
-              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-900/10 font-mono">
+              <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-900/10 dark:bg-white/10 font-mono">
                 {count}
               </span>
             </button>

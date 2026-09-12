@@ -444,10 +444,10 @@ export default function StudentsPage() {
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="text-[10px] text-slate-400 font-mono">{student.admissionNo}</span>
+            <div className="flex flex-wrap items-center gap-1.5 mt-0.5 min-w-0">
+              <span className="text-[10px] text-slate-400 font-mono shrink-0">{student.admissionNo}</span>
               {student.email ? (
-                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans" title={student.email}>
+                <span className="text-[9px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20 font-sans truncate max-w-[150px] sm:max-w-[220px]" title={student.email}>
                   {student.email}
                 </span>
               ) : (
@@ -553,9 +553,15 @@ export default function StudentsPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-initial">
           {canManageStudents && (
-            <Button variant="secondary" size="md" onClick={handleExportCSV} leftIcon={<Download className="w-4 h-4" />}>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={handleExportCSV}
+              leftIcon={<Download className="w-4 h-4" />}
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 whitespace-nowrap"
+            >
               Export CSV
             </Button>
           )}
@@ -563,19 +569,19 @@ export default function StudentsPage() {
           {canManageStudents && (
             <>
               <Button
-                variant="outline"
+                variant="warning"
                 size="md"
-                className="bg-amber-500/20 text-amber-200 hover:bg-amber-500/30 border-amber-400/40 font-bold"
-                leftIcon={<Users className="w-4 h-4 text-amber-300" />}
+                className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black shadow-md whitespace-nowrap"
+                leftIcon={<Users className="w-4 h-4 text-slate-950" />}
                 onClick={() => setShowGridBulkModal(true)}
               >
                 Quick Grid Enrol
               </Button>
               {isAdmin && (
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="md"
-                  className="bg-emerald-500/20 text-white hover:bg-emerald-500/30 border-emerald-400/40"
+                  className="bg-emerald-900/70 hover:bg-emerald-800 text-white border border-emerald-400/40 whitespace-nowrap"
                   onClick={() => setShowBulkModal(true)}
                 >
                   Upload CSV
@@ -585,6 +591,7 @@ export default function StudentsPage() {
                 variant="primary"
                 size="md"
                 leftIcon={<UserPlus className="w-4 h-4" />}
+                className="whitespace-nowrap"
                 onClick={() => {
                   setAdmissionNo(`MU-${new Date().getFullYear()}-0${Math.floor(100 + Math.random() * 900)}`);
                   setShowAddModal(true);

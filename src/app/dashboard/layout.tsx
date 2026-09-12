@@ -42,7 +42,7 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-all duration-200">
         <Header mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto space-y-6">
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 pb-24 sm:pb-12 max-w-7xl w-full mx-auto space-y-6">
           <RBACGuard>{children}</RBACGuard>
         </main>
       </div>

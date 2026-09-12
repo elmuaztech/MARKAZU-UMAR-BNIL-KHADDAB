@@ -198,10 +198,10 @@ export function AssessmentDashboard() {
 
       {/* Admin Mode Tab Switcher */}
       {isAdmin && (
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3 font-poppins">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3 font-poppins">
           <button
             onClick={() => setActiveTab('ENTRY')}
-            className={`flex-1 sm:flex-initial px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
+            className={`px-3.5 sm:px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
               activeTab === 'ENTRY'
                 ? 'bg-emerald-600 text-white border-emerald-500 shadow-md'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
@@ -213,7 +213,7 @@ export function AssessmentDashboard() {
 
           <button
             onClick={() => setActiveTab('APPROVALS')}
-            className={`flex-1 sm:flex-initial px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
+            className={`px-3.5 sm:px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
               activeTab === 'APPROVALS'
                 ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
@@ -225,7 +225,7 @@ export function AssessmentDashboard() {
 
           <button
             onClick={() => setActiveTab('SETTINGS')}
-            className={`flex-1 sm:flex-initial px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
+            className={`col-span-2 sm:col-span-1 px-3.5 sm:px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
               activeTab === 'SETTINGS'
                 ? 'bg-purple-600 text-white border-purple-500 shadow-md'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'

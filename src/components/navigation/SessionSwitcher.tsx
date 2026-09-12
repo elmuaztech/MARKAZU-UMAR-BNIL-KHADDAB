@@ -181,12 +181,12 @@ export function SessionSwitcher() {
       {/* Modal: Create Academic Session */}
       <AnimatePresence>
         {mounted && showCreateModal && createPortal(
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm font-poppins overflow-y-auto">
+          <div className="fixed inset-0 z-[100] flex items-start sm:items-center justify-center p-3 sm:p-4 pt-12 sm:pt-4 bg-slate-950/80 backdrop-blur-sm font-poppins overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-emerald-500/30 shadow-2xl overflow-hidden my-auto"
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-emerald-500/30 shadow-2xl overflow-hidden my-auto shrink-0"
             >
               <div className="p-5 bg-gradient-to-r from-emerald-950 via-[#042f1e] to-emerald-900 text-white border-b border-emerald-500/30 flex items-center justify-between">
                 <div>
