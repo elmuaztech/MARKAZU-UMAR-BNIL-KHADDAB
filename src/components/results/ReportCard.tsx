@@ -276,14 +276,8 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4 border-t border-gray-300">
-            <div className="text-center space-y-1.5 w-full sm:w-1/2">
-              <p className="font-bold text-gray-800">Ustaz Abubakar Sadiq</p>
-              <div className="border-b border-gray-400 w-36 sm:w-40 mx-auto" />
-              <p className="text-[10px] text-gray-500 uppercase font-semibold">Class Teacher Signature</p>
-            </div>
-
-            <div className="text-center space-y-1.5 flex flex-col items-center justify-end w-full sm:w-1/2">
+          <div className="flex justify-center sm:justify-end pt-4 border-t border-gray-300">
+            <div className="text-center space-y-1.5 flex flex-col items-center justify-end w-full sm:w-auto min-w-[220px]">
               {defaultSignatureUrl ? (
                 <div className="h-12 flex items-center justify-center">
                   <img
@@ -293,10 +287,10 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
                   />
                 </div>
               ) : (
-                <div className="border-b border-gray-400 w-36 sm:w-40 mx-auto h-8" />
+                <div className="border-b border-gray-400 w-40 sm:w-48 mx-auto h-8" />
               )}
               <p className="font-bold text-gray-800">{principalName}</p>
-              <div className="border-b border-gray-400 w-40 sm:w-44 mx-auto" />
+              <div className="border-b border-gray-400 w-40 sm:w-48 mx-auto" />
               <p className="text-[10px] text-gray-500 uppercase font-semibold">{principalTitle}</p>
             </div>
           </div>

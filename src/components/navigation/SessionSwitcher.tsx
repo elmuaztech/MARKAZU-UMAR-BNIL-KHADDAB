@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '@/lib/context';
 import { Calendar, ChevronDown, Check, Plus, Sparkles, X, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -18,12 +19,17 @@ export function SessionSwitcher() {
     notify,
   } = useApp();
 
+  const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newSessionName, setNewSessionName] = useState('');
   const [newActiveTerm, setNewActiveTerm] = useState('Term 1');
   const [setAsCurrent, setSetAsCurrent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -174,13 +180,13 @@ export function SessionSwitcher() {
 
       {/* Modal: Create Academic Session */}
       <AnimatePresence>
-        {showCreateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm font-poppins">
+        {mounted && showCreateModal && createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm font-poppins overflow-y-auto">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-emerald-500/30 shadow-2xl overflow-hidden"
+              className="w-full max-w-md rounded-3xl bg-white dark:bg-[#042419] border border-emerald-500/30 shadow-2xl overflow-hidden my-auto"
             >
               <div className="p-5 bg-gradient-to-r from-emerald-950 via-[#042f1e] to-emerald-900 text-white border-b border-emerald-500/30 flex items-center justify-between">
                 <div>
@@ -261,7 +267,8 @@ export function SessionSwitcher() {
                 </div>
               </form>
             </motion.div>
-          </div>
+          </div>,
+          document.body
         )}
       </AnimatePresence>
     </div>
