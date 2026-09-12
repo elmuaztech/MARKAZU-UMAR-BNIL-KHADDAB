@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import { getAuthenticatedUser, enforceRoleAndProgramme, resolveTeacherScope } from '@/lib/auth';
 import { getAllServerClasses, createServerClass } from '@/lib/serverDb';
 
 export const dynamic = 'force-dynamic';
@@ -15,8 +15,30 @@ export async function GET(req: NextRequest) {
     const whereClause: any = {};
     if (programmeId) {
       whereClause.programmeId = programmeId;
-    } else if (authUser?.role === 'HEADMASTER' && authUser.assignedProgrammeId) {
+    }
+
+    if (authUser?.role === 'HEADMASTER') {
+      if (!authUser.assignedProgrammeId) {
+        return NextResponse.json({ error: 'Headmaster has no assigned programme.' }, { status: 403 });
+      }
       whereClause.programmeId = authUser.assignedProgrammeId;
+    } else if (authUser?.role === 'TEACHER') {
+      const scope = await resolveTeacherScope(authUser.id);
+      const allowedClassIds = Array.from(new Set([...scope.teachingClassIds, ...scope.attendanceClassIds]));
+      whereClause.id = { in: allowedClassIds.length > 0 ? allowedClassIds : ['__NO_CLASSES__'] };
+    } else if (authUser?.role === 'STUDENT') {
+      const student = await prisma.student.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], status: 'ACTIVE', deletedAt: null },
+        select: { classId: true },
+      });
+      whereClause.id = student?.classId ? student.classId : '__NO_CLASSES__';
+    } else if (authUser?.role === 'PARENT') {
+      const parent = await prisma.parent.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], deletedAt: null },
+        include: { wards: { select: { classId: true } } },
+      });
+      const classIds = parent?.wards.map((w) => w.classId).filter(Boolean) || [];
+      whereClause.id = { in: classIds.length > 0 ? classIds : ['__NO_CLASSES__'] };
     }
 
     const classes = await prisma.schoolClass.findMany({
@@ -24,6 +46,7 @@ export async function GET(req: NextRequest) {
       include: {
         programme: true,
         classTeacher: true,
+        subjects: true,
         _count: {
           select: { students: { where: { deletedAt: null } } },
         },

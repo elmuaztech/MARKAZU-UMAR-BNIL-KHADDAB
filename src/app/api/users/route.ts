@@ -43,10 +43,113 @@ export async function GET(req: NextRequest) {
         lastLoginAt: true,
         createdAt: true,
         deletedAt: true,
+        teacher: {
+          select: {
+            id: true,
+            staffNo: true,
+            teacherAssignments: {
+              select: {
+                programmeId: true,
+                classId: true,
+                canMarkAttendance: true,
+                assignedSubjects: {
+                  select: { subjectId: true },
+                },
+              },
+            },
+            classesManaged: {
+              select: { id: true },
+            },
+          },
+        },
+        student: {
+          select: {
+            id: true,
+            admissionNo: true,
+            schoolClass: {
+              select: {
+                name: true,
+                programme: {
+                  select: { nameEnglish: true },
+                },
+              },
+            },
+          },
+        },
+        parent: {
+          select: {
+            id: true,
+            wards: {
+              select: { id: true },
+            },
+          },
+        },
       },
     });
 
-    return NextResponse.json({ users, total: users.length });
+    const mappedUsers = users.map((u) => {
+      let assignmentSummary = 'Unassigned';
+
+      if (u.role === 'SUPER_ADMIN' || u.role === 'ADMIN') {
+        assignmentSummary = 'Global — All Programmes';
+      } else if (u.role === 'HEADMASTER') {
+        assignmentSummary = u.assignedProgrammeName ? u.assignedProgrammeName : 'Unassigned — No Access';
+      } else if (u.role === 'TEACHER') {
+        if (u.teacher && u.teacher.teacherAssignments && u.teacher.teacherAssignments.length > 0) {
+          const distinctProg = new Set(u.teacher.teacherAssignments.map((a) => a.programmeId));
+          const distinctClass = new Set(u.teacher.teacherAssignments.map((a) => a.classId));
+          const distinctSubj = new Set();
+          u.teacher.teacherAssignments.forEach((a) => {
+            a.assignedSubjects?.forEach((s) => distinctSubj.add(s.subjectId));
+          });
+
+          const pCount = distinctProg.size;
+          const cCount = distinctClass.size;
+          const sCount = distinctSubj.size;
+
+          assignmentSummary = `${pCount} Programme${pCount !== 1 ? 's' : ''} · ${cCount} Class${cCount !== 1 ? 'es' : ''} · ${sCount} Subject${sCount !== 1 ? 's' : ''}`;
+        } else if (u.teacher && u.teacher.classesManaged && u.teacher.classesManaged.length > 0) {
+          const cCount = u.teacher.classesManaged.length;
+          assignmentSummary = `Class Teacher (${cCount} Class${cCount !== 1 ? 'es' : ''})`;
+        } else {
+          assignmentSummary = 'Unassigned — No Access';
+        }
+      } else if (u.role === 'STUDENT') {
+        if (u.student?.schoolClass) {
+          const progName = u.student.schoolClass.programme?.nameEnglish || '';
+          const clsName = u.student.schoolClass.name;
+          assignmentSummary = progName ? `${progName} — ${clsName}` : clsName;
+        } else {
+          assignmentSummary = 'Unassigned Class';
+        }
+      } else if (u.role === 'PARENT') {
+        const wardCount = u.parent?.wards?.length || 0;
+        assignmentSummary = `${wardCount} Linked Child${wardCount !== 1 ? 'ren' : ''}`;
+      }
+
+      return {
+        id: u.id,
+        username: u.username,
+        name: u.name,
+        email: u.email,
+        role: u.role,
+        phone: u.phone,
+        avatar: u.avatar,
+        assignedProgrammeId: u.assignedProgrammeId,
+        assignedProgrammeName: u.assignedProgrammeName,
+        assignmentSummary,
+        teacherId: u.teacher?.id || null,
+        teacherStaffNo: u.teacher?.staffNo || null,
+        status: u.status,
+        isFirstLogin: u.isFirstLogin,
+        isLocked: u.isLocked,
+        lastLoginAt: u.lastLoginAt,
+        createdAt: u.createdAt,
+        deletedAt: u.deletedAt,
+      };
+    });
+
+    return NextResponse.json({ users: mappedUsers, total: mappedUsers.length });
   } catch (error: any) {
     console.error('[GET_USERS_ERROR]', error);
     return NextResponse.json({ error: error.message || 'Failed to fetch users' }, { status: 500 });

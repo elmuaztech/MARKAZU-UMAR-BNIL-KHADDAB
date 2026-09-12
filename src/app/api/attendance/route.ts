@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import {
+  getAuthenticatedUser,
+  enforceRoleAndProgramme,
+  verifyTeacherAttendanceAccess,
+  resolveTeacherScope,
+  getCurrentSchoolSession,
+} from '@/lib/auth';
 import { getAllServerAttendance, saveServerAttendanceBatch } from '@/lib/serverDb';
 
 export const dynamic = 'force-dynamic';
@@ -17,24 +23,72 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date');
     const classId = searchParams.get('classId');
     const requestedProgId = searchParams.get('programmeId');
-
-    // PBAC Check for Headmaster
-    if (authUser?.role === 'HEADMASTER') {
-      const assignedProg = authUser.assignedProgrammeId;
-      if (requestedProgId && assignedProg && requestedProgId !== assignedProg) {
-        return NextResponse.json(
-          { success: false, error: `Access Forbidden (HTTP 403): Headmaster is restricted to programme ID "${assignedProg}" and cannot access attendance for another section.` },
-          { status: 403 }
-        );
-      }
-    }
-
-    const targetProgId = authUser?.role === 'HEADMASTER' ? authUser.assignedProgrammeId : requestedProgId;
+    const sessionIdParam = searchParams.get('sessionId');
+    const studentIdParam = searchParams.get('studentId');
 
     const whereClause: any = {};
+
     if (date) whereClause.date = new Date(date);
-    if (classId) whereClause.classId = classId;
-    if (targetProgId) whereClause.programmeId = targetProgId;
+    if (sessionIdParam) {
+      whereClause.sessionId = sessionIdParam;
+    }
+
+    // Role-based scoping
+    if (authUser?.role === 'HEADMASTER') {
+      if (!authUser.assignedProgrammeId) {
+        return NextResponse.json({ success: false, error: 'Headmaster has no assigned programme.' }, { status: 403 });
+      }
+      whereClause.programmeId = authUser.assignedProgrammeId;
+      if (classId) whereClause.classId = classId;
+      if (studentIdParam) whereClause.studentId = studentIdParam;
+    } else if (authUser?.role === 'STUDENT') {
+      const student = await prisma.student.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], status: 'ACTIVE', deletedAt: null },
+        select: { id: true },
+      });
+      if (!student) {
+        return NextResponse.json({ success: false, error: 'Student profile not found.' }, { status: 404 });
+      }
+      whereClause.studentId = student.id;
+    } else if (authUser?.role === 'PARENT') {
+      const parent = await prisma.parent.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], deletedAt: null },
+        include: { wards: { select: { id: true } } },
+      });
+      if (!parent) {
+        return NextResponse.json({ success: false, error: 'Parent record not found.' }, { status: 404 });
+      }
+      const linkedWards = parent.wards.map((w) => w.id);
+      if (studentIdParam) {
+        if (!linkedWards.includes(studentIdParam)) {
+          return NextResponse.json({ success: false, error: 'Access forbidden: You may only view attendance for your linked children.' }, { status: 403 });
+        }
+        whereClause.studentId = studentIdParam;
+      } else {
+        whereClause.studentId = { in: linkedWards };
+      }
+    } else if (authUser?.role === 'TEACHER') {
+      const scope = await resolveTeacherScope(authUser.id, sessionIdParam || undefined);
+      if (!scope.isTeacher) {
+        return NextResponse.json({ success: false, error: 'Teacher record not found.' }, { status: 403 });
+      }
+      // Allowed to view attendance only for classes where they teach or have attendance permission
+      const allowedClasses = Array.from(new Set([...scope.teachingClassIds, ...scope.attendanceClassIds]));
+      if (classId) {
+        if (!allowedClasses.includes(classId)) {
+          return NextResponse.json({ success: false, error: 'Access forbidden: You are not assigned to this class.' }, { status: 403 });
+        }
+        whereClause.classId = classId;
+      } else {
+        whereClause.classId = { in: allowedClasses.length > 0 ? allowedClasses : ['__NO_CLASSES__'] };
+      }
+      if (studentIdParam) whereClause.studentId = studentIdParam;
+    } else {
+      // Global Admins
+      if (requestedProgId) whereClause.programmeId = requestedProgId;
+      if (classId) whereClause.classId = classId;
+      if (studentIdParam) whereClause.studentId = studentIdParam;
+    }
 
     const records = await prisma.attendanceRecord.findMany({
       where: whereClause,
@@ -61,20 +115,48 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { records, isDraft } = body;
+    const { records, isDraft, sessionId } = body;
 
     if (!Array.isArray(records) || records.length === 0) {
       return NextResponse.json({ success: false, error: 'Records array is required' }, { status: 400 });
     }
 
+    // Resolve active session
+    let targetSessionId = sessionId;
+    if (!targetSessionId) {
+      const activeSession = await getCurrentSchoolSession();
+      targetSessionId = activeSession?.id || null;
+    }
+
+    // Headmaster check
     if (authUser?.role === 'HEADMASTER') {
       const assignedProg = authUser.assignedProgrammeId;
-      const hasOtherProg = records.some((r) => r.programmeId && assignedProg && r.programmeId !== assignedProg);
+      if (!assignedProg) {
+        return NextResponse.json({ success: false, error: 'Headmaster has no assigned programme.' }, { status: 403 });
+      }
+      const hasOtherProg = records.some((r) => r.programmeId && r.programmeId !== assignedProg);
       if (hasOtherProg) {
         return NextResponse.json(
           { success: false, error: 'Access Forbidden (HTTP 403): Headmaster cannot submit attendance for another programme section.' },
           { status: 403 }
         );
+      }
+    }
+
+    // Backend verification of Attendance Permission for Teachers
+    if (authUser?.role === 'TEACHER') {
+      const distinctClassIds = Array.from(new Set(records.map((r: any) => r.classId).filter(Boolean)));
+      for (const clsId of distinctClassIds) {
+        const check = await verifyTeacherAttendanceAccess(authUser, clsId, targetSessionId || undefined);
+        if (!check.authorized) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: `Access Forbidden (HTTP 403): ${check.reason || 'You do not have attendance permission for class ' + clsId}`,
+            },
+            { status: 403 }
+          );
+        }
       }
     }
 
@@ -103,6 +185,7 @@ export async function POST(request: NextRequest) {
             id: attendanceId,
           },
           update: {
+            sessionId: targetSessionId,
             status: validStatus as any,
             statusEnum: validStatus,
             remarks: item.remarks || '',
@@ -112,6 +195,7 @@ export async function POST(request: NextRequest) {
           },
           create: {
             id: attendanceId,
+            sessionId: targetSessionId,
             date: recordDate,
             studentId: item.studentId,
             classId: item.classId,

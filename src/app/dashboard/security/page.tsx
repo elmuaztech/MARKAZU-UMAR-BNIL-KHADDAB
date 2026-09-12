@@ -24,12 +24,14 @@ import {
   Activity,
   Plus,
   Building2,
+  BookOpen,
 } from 'lucide-react';
 import { StatCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { PermanentDeleteModal } from '@/components/users/PermanentDeleteModal';
+import { TeacherAssignmentModal } from '@/components/teachers/TeacherAssignmentModal';
 
 export default function SecurityDashboardPage() {
   const {
@@ -62,6 +64,12 @@ export default function SecurityDashboardPage() {
   const [resetNotice, setResetNotice] = useState('');
   const [deactivatedCollisionUser, setDeactivatedCollisionUser] = useState<any | null>(null);
   const [permanentDeleteTarget, setPermanentDeleteTarget] = useState<User | null>(null);
+  const [selectedTeacherForAssignments, setSelectedTeacherForAssignments] = useState<{
+    id: string;
+    name: string;
+    staffNo?: string;
+    email?: string;
+  } | null>(null);
 
   // Create User Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -484,7 +492,7 @@ export default function SecurityDashboardPage() {
                           <th className="p-4">User Name</th>
                           <th className="p-4">Email / Username</th>
                           <th className="p-4">Role</th>
-                          <th className="p-4">Assigned Section</th>
+                          <th className="p-4">Assigned Scope / Programmes</th>
                           <th className="p-4">Lockout Status</th>
                           <th className="p-4">Password Status</th>
                           <th className="p-4 text-right">Actions</th>
@@ -516,12 +524,32 @@ export default function SecurityDashboardPage() {
                               </span>
                             </td>
                             <td className="p-4 text-slate-600 dark:text-gray-300 font-medium">
-                              {u.assignedProgrammeName ? (
-                                <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold text-[10px] border border-emerald-500/20">
-                                  {u.assignedProgrammeName}
+                              {u.assignmentSummary ? (
+                                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-bold text-[10px] border border-emerald-500/20 inline-block">
+                                  {u.assignmentSummary}
+                                </span>
+                              ) : u.role === 'SUPER_ADMIN' || u.role === 'ADMIN' ? (
+                                <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-700 dark:text-purple-300 font-bold text-[10px] border border-purple-500/20 inline-block">
+                                  Global — All Programmes
+                                </span>
+                              ) : u.role === 'HEADMASTER' ? (
+                                u.assignedProgrammeName ? (
+                                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold text-[10px] border border-amber-500/20 inline-block">
+                                    {u.assignedProgrammeName}
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-700 dark:text-rose-300 font-bold text-[10px] border border-rose-500/20 inline-block">
+                                    Unassigned — No Access
+                                  </span>
+                                )
+                              ) : u.role === 'TEACHER' ? (
+                                <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold text-[10px] border border-emerald-500/20 inline-block">
+                                  Teaching & Attendance
                                 </span>
                               ) : (
-                                <span className="text-slate-400 text-[10px]">All Programs</span>
+                                <span className="text-slate-400 text-[10px]">
+                                  {u.assignedProgrammeName || 'Standard Access'}
+                                </span>
                               )}
                             </td>
                             <td className="p-4">
@@ -564,6 +592,24 @@ export default function SecurityDashboardPage() {
                                 <KeyRound className="w-3 h-3" />
                                 <span>Reset Pass</span>
                               </button>
+
+                              {u.role === 'TEACHER' && (
+                                <button
+                                  onClick={() =>
+                                    setSelectedTeacherForAssignments({
+                                      id: u.id,
+                                      name: u.name,
+                                      staffNo: u.username,
+                                      email: u.email,
+                                    })
+                                  }
+                                  className="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white font-bold text-[10px] hover:bg-emerald-500 transition-all inline-flex items-center gap-1 shadow-xs"
+                                  title="Assign Teaching Programmes, Classes, Subjects & Attendance"
+                                >
+                                  <BookOpen className="w-3 h-3" />
+                                  <span>Assignments</span>
+                                </button>
+                              )}
 
                               {u.role !== 'SUPER_ADMIN' && (
                                 <button
@@ -902,6 +948,16 @@ export default function SecurityDashboardPage() {
           fetchDeactivatedUsers();
         }}
       />
+
+      {selectedTeacherForAssignments && (
+        <TeacherAssignmentModal
+          teacher={selectedTeacherForAssignments}
+          onClose={() => setSelectedTeacherForAssignments(null)}
+          onSaved={() => {
+            fetchDeactivatedUsers();
+          }}
+        />
+      )}
     </div>
   );
 }

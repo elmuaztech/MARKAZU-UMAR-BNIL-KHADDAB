@@ -5,7 +5,8 @@ import { useApp } from '../../lib/context';
 import { RoleSwitcher } from './RoleSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { HeaderNotificationBadge } from './HeaderNotificationBadge';
-import { Menu, Calendar, Bell } from 'lucide-react';
+import { SessionSwitcher } from './SessionSwitcher';
+import { Menu, Bell } from 'lucide-react';
 
 export function Header({
   mobileOpen,
@@ -26,14 +27,8 @@ export function Header({
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Academic Session Indicator */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/90 border border-emerald-300/60 dark:border-emerald-700/50 text-xs font-bold text-slate-900 dark:text-white transition-colors shadow-xs shrink-0 whitespace-nowrap">
-          <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span className="font-poppins">{currentSession.sessionName}</span>
-          <span className="bg-emerald-600 text-white dark:bg-emerald-500/30 dark:text-emerald-300 px-2 py-0.5 rounded-lg text-[10px] font-extrabold uppercase font-poppins shrink-0">
-            {currentSession.activeTerm}
-          </span>
-        </div>
+        {/* Academic Session Switcher */}
+        <SessionSwitcher />
       </div>
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0 whitespace-nowrap">

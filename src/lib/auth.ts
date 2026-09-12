@@ -144,11 +144,18 @@ export function enforceRoleAndProgramme(
   }
 
   // Check Programme Scoping for Headmasters
-  if (user.role === 'HEADMASTER' && targetProgrammeId) {
-    if (user.assignedProgrammeId && user.assignedProgrammeId !== targetProgrammeId) {
+  if (user.role === 'HEADMASTER') {
+    if (!user.assignedProgrammeId) {
       return {
         authorized: false,
-        reason: `Access forbidden: You are assigned to "${user.assignedProgrammeName}" and cannot access data for other programmes.`,
+        reason: 'Access forbidden: Headmaster has no assigned programme. Global access is not permitted.',
+        status: 403,
+      };
+    }
+    if (targetProgrammeId && user.assignedProgrammeId !== targetProgrammeId) {
+      return {
+        authorized: false,
+        reason: `Access forbidden: You are assigned to "${user.assignedProgrammeName || 'your assigned programme'}" and cannot access data for other programmes.`,
         status: 403,
       };
     }
@@ -156,3 +163,305 @@ export function enforceRoleAndProgramme(
 
   return { authorized: true, status: 200 };
 }
+
+/**
+ * Fetch the current active SchoolSession record from the database.
+ */
+export async function getCurrentSchoolSession() {
+  try {
+    return await prisma.schoolSession.findFirst({
+      where: { isCurrent: true },
+    });
+  } catch (error) {
+    console.error('[AUTH_SESSION_LOOKUP_ERROR]', error);
+    return null;
+  }
+}
+
+export interface TeacherScope {
+  isTeacher: boolean;
+  teacherId: string | null;
+  staffNo?: string;
+  teachingClassIds: string[];
+  attendanceClassIds: string[];
+  subjectMap: Record<string, string[]>; // classId -> subjectIds[]
+  programmeIds: string[];
+  isClassTeacherOf: string[];
+}
+
+/**
+ * Resolves a teacher's exact teaching assignments, managed classes, and attendance permissions.
+ * Session-aware: checks assignments for the given sessionId or active session.
+ */
+export async function resolveTeacherScope(teacherUserId: string, sessionId?: string): Promise<TeacherScope> {
+  try {
+    const teacher = await prisma.teacher.findFirst({
+      where: {
+        OR: [{ userId: teacherUserId }, { id: teacherUserId }],
+        status: 'ACTIVE',
+        deletedAt: null,
+      },
+      include: {
+        classesManaged: true,
+      },
+    });
+
+    if (!teacher) {
+      return {
+        isTeacher: false,
+        teacherId: null,
+        teachingClassIds: [],
+        attendanceClassIds: [],
+        subjectMap: {},
+        programmeIds: [],
+        isClassTeacherOf: [],
+      };
+    }
+
+    // Determine target session
+    let targetSessionId = sessionId;
+    if (!targetSessionId) {
+      const activeSession = await getCurrentSchoolSession();
+      if (activeSession) {
+        targetSessionId = activeSession.id;
+      }
+    }
+
+    // Query teacher assignments
+    // If sessionId is provided/active, match that session or historical/unspecified sessions
+    const assignmentWhere: any = { teacherId: teacher.id };
+    if (targetSessionId) {
+      assignmentWhere.OR = [{ sessionId: targetSessionId }, { sessionId: null }];
+    }
+
+    const assignments = await prisma.teacherAssignment.findMany({
+      where: assignmentWhere,
+      include: {
+        assignedSubjects: true,
+      },
+    });
+
+    const isClassTeacherOf = teacher.classesManaged.map((c) => c.id);
+    const teachingClassIdsSet = new Set<string>();
+    const attendanceClassIdsSet = new Set<string>(isClassTeacherOf); // Class teachers automatically have attendance permission
+    const programmeIdsSet = new Set<string>();
+    const subjectMap: Record<string, string[]> = {};
+
+    for (const a of assignments) {
+      teachingClassIdsSet.add(a.classId);
+      programmeIdsSet.add(a.programmeId);
+
+      if (a.canMarkAttendance) {
+        attendanceClassIdsSet.add(a.classId);
+      }
+
+      if (!subjectMap[a.classId]) {
+        subjectMap[a.classId] = [];
+      }
+      for (const s of a.assignedSubjects) {
+        subjectMap[a.classId].push(s.subjectId);
+      }
+    }
+
+    return {
+      isTeacher: true,
+      teacherId: teacher.id,
+      staffNo: teacher.staffNo,
+      teachingClassIds: Array.from(teachingClassIdsSet),
+      attendanceClassIds: Array.from(attendanceClassIdsSet),
+      subjectMap,
+      programmeIds: Array.from(programmeIdsSet),
+      isClassTeacherOf,
+    };
+  } catch (err) {
+    console.error('[RESOLVE_TEACHER_SCOPE_ERROR]', err);
+    return {
+      isTeacher: false,
+      teacherId: null,
+      teachingClassIds: [],
+      attendanceClassIds: [],
+      subjectMap: {},
+      programmeIds: [],
+      isClassTeacherOf: [],
+    };
+  }
+}
+
+/**
+ * Backend verification for Academic Record Access (Grades / Results / Assessments).
+ * Verifies exact teacher + class + subject authorization.
+ */
+export async function verifyTeacherAcademicAccess(
+  authUser: AuthenticatedUser,
+  classId: string,
+  subjectId: string,
+  sessionId?: string
+): Promise<{ authorized: boolean; reason?: string }> {
+  // Global administrators have full access
+  if (authUser.role === 'SUPER_ADMIN' || authUser.role === 'ADMIN') {
+    return { authorized: true };
+  }
+
+  // Headmasters are restricted to classes within their assigned programme
+  if (authUser.role === 'HEADMASTER') {
+    if (!authUser.assignedProgrammeId) {
+      return { authorized: false, reason: 'Headmaster has no assigned programme.' };
+    }
+    const schoolClass = await prisma.schoolClass.findUnique({
+      where: { id: classId },
+      select: { programmeId: true },
+    });
+    if (!schoolClass || schoolClass.programmeId !== authUser.assignedProgrammeId) {
+      return { authorized: false, reason: 'Class does not belong to your assigned programme.' };
+    }
+    return { authorized: true };
+  }
+
+  // Teachers must have exact class + subject assignment
+  if (authUser.role === 'TEACHER') {
+    const scope = await resolveTeacherScope(authUser.id, sessionId);
+    if (!scope.isTeacher || !scope.teacherId) {
+      return { authorized: false, reason: 'Teacher profile not found or inactive.' };
+    }
+
+    const assignedSubjectIds = scope.subjectMap[classId] || [];
+    if (!assignedSubjectIds.includes(subjectId)) {
+      return {
+        authorized: false,
+        reason: 'You are not authorized to manage academic records for this subject in this class.',
+      };
+    }
+
+    return { authorized: true };
+  }
+
+  return { authorized: false, reason: 'Insufficient privileges for academic record management.' };
+}
+
+/**
+ * Backend verification for Attendance Operations.
+ * Enforces rule:
+ * 1. Official Class Teacher (SchoolClass.classTeacherId === teacher.id)
+ * OR
+ * 2. TeacherAssignment.canMarkAttendance === true
+ * Subject assignment alone is NOT sufficient.
+ */
+export async function verifyTeacherAttendanceAccess(
+  authUser: AuthenticatedUser,
+  classId: string,
+  sessionId?: string
+): Promise<{ authorized: boolean; reason?: string }> {
+  if (authUser.role === 'SUPER_ADMIN' || authUser.role === 'ADMIN') {
+    return { authorized: true };
+  }
+
+  if (authUser.role === 'HEADMASTER') {
+    if (!authUser.assignedProgrammeId) {
+      return { authorized: false, reason: 'Headmaster has no assigned programme.' };
+    }
+    const schoolClass = await prisma.schoolClass.findUnique({
+      where: { id: classId },
+      select: { programmeId: true },
+    });
+    if (!schoolClass || schoolClass.programmeId !== authUser.assignedProgrammeId) {
+      return { authorized: false, reason: 'Class does not belong to your assigned programme.' };
+    }
+    return { authorized: true };
+  }
+
+  if (authUser.role === 'TEACHER') {
+    const scope = await resolveTeacherScope(authUser.id, sessionId);
+    if (!scope.isTeacher || !scope.teacherId) {
+      return { authorized: false, reason: 'Teacher profile not found or inactive.' };
+    }
+
+    if (!scope.attendanceClassIds.includes(classId)) {
+      return {
+        authorized: false,
+        reason: 'You do not have permission to mark or manage attendance for this class. Subject assignment alone does not grant attendance rights.',
+      };
+    }
+
+    return { authorized: true };
+  }
+
+  return { authorized: false, reason: 'Insufficient privileges for attendance management.' };
+}
+
+/**
+ * Backend verification for Student Data Access.
+ * Enforces student self-scoping (cannot view other students by swapping ID).
+ */
+export async function verifyStudentAccess(
+  authUser: AuthenticatedUser,
+  targetStudentId: string
+): Promise<{ authorized: boolean; reason?: string; student?: any }> {
+  if (authUser.role === 'SUPER_ADMIN' || authUser.role === 'ADMIN') {
+    return { authorized: true };
+  }
+
+  if (authUser.role === 'STUDENT') {
+    const student = await prisma.student.findFirst({
+      where: {
+        OR: [{ userId: authUser.id }, { id: authUser.id }],
+        status: 'ACTIVE',
+        deletedAt: null,
+      },
+    });
+
+    if (!student || student.id !== targetStudentId) {
+      return {
+        authorized: false,
+        reason: 'Access forbidden: Students may only access their own records.',
+      };
+    }
+
+    return { authorized: true, student };
+  }
+
+  return { authorized: true };
+}
+
+/**
+ * Backend verification for Parent Data Access.
+ * Enforces parent ward-scoping (can only access their linked children).
+ */
+export async function verifyParentAccess(
+  authUser: AuthenticatedUser,
+  targetStudentId: string
+): Promise<{ authorized: boolean; reason?: string }> {
+  if (authUser.role === 'SUPER_ADMIN' || authUser.role === 'ADMIN') {
+    return { authorized: true };
+  }
+
+  if (authUser.role === 'PARENT') {
+    const parent = await prisma.parent.findFirst({
+      where: {
+        OR: [{ userId: authUser.id }, { id: authUser.id }],
+        deletedAt: null,
+      },
+      include: {
+        wards: {
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!parent) {
+      return { authorized: false, reason: 'Parent record not found.' };
+    }
+
+    const linkedStudentIds = parent.wards.map((w) => w.id);
+    if (!linkedStudentIds.includes(targetStudentId)) {
+      return {
+        authorized: false,
+        reason: 'Access forbidden: Parents may only access records for their registered children.',
+      };
+    }
+
+    return { authorized: true };
+  }
+
+  return { authorized: true };
+}
+

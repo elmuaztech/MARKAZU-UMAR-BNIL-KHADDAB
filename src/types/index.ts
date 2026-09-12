@@ -20,6 +20,7 @@ export interface User {
   username?: string;
   assignedProgrammeId?: string;
   assignedProgrammeName?: string;
+  assignmentSummary?: string;
 }
 
 export interface Programme {
@@ -168,6 +169,8 @@ export interface TeacherAssignment {
   programmeId: string;
   classId: string;
   subjectIds: string[];
+  canMarkAttendance?: boolean;
+  sessionId?: string;
   createdAt?: string;
   updatedAt?: string;
 }

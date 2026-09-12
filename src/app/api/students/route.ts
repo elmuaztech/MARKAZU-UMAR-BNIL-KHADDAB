@@ -7,17 +7,21 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const authUser = await getAuthenticatedUser(req);
-    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'PARENT']);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'PARENT', 'STUDENT']);
     if (!authCheck.authorized) {
       return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
     }
 
     const { searchParams } = new URL(req.url);
     const requestedProgId = searchParams.get('programmeId');
+    const sessionIdParam = searchParams.get('sessionId');
 
     // Headmaster Programme Scoping Check
     if (authUser?.role === 'HEADMASTER') {
       const assignedProg = authUser.assignedProgrammeId;
+      if (!assignedProg) {
+        return NextResponse.json({ error: 'Headmaster has no assigned programme.' }, { status: 403 });
+      }
       if (requestedProgId && assignedProg && requestedProgId !== assignedProg) {
         return NextResponse.json(
           { error: `Access Forbidden (HTTP 403): Headmaster is restricted to programme ID "${assignedProg}" and cannot access another section.` },
@@ -35,8 +39,28 @@ export async function GET(req: NextRequest) {
       };
     }
 
-    // Teacher Class Scoping Check: Teachers only have access to students in their assigned classes
-    if (authUser?.role === 'TEACHER') {
+    // Session filter: if sessionId requested, filter by enrollment
+    if (sessionIdParam) {
+      whereClause.enrollments = {
+        some: { sessionId: sessionIdParam },
+      };
+    }
+
+    // Student self-scoping
+    if (authUser?.role === 'STUDENT') {
+      whereClause.OR = [
+        { userId: authUser.id },
+        { id: authUser.id },
+      ];
+    } else if (authUser?.role === 'PARENT') {
+      const parent = await prisma.parent.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], deletedAt: null },
+        include: { wards: { select: { id: true } } },
+      });
+      const wardIds = parent?.wards.map((w) => w.id) || [];
+      whereClause.id = { in: wardIds.length > 0 ? wardIds : ['__NO_WARDS__'] };
+    } else if (authUser?.role === 'TEACHER') {
+      // Teacher Class Scoping Check: Teachers only have access to students in their assigned classes
       const teacherRecord = await prisma.teacher.findFirst({
         where: {
           OR: [
@@ -59,7 +83,7 @@ export async function GET(req: NextRequest) {
       }
       const uniqueTeacherClassIds = Array.from(new Set(teacherClassIds));
 
-      whereClause.classId = { in: uniqueTeacherClassIds };
+      whereClause.classId = { in: uniqueTeacherClassIds.length > 0 ? uniqueTeacherClassIds : ['__NO_CLASSES__'] };
     }
 
     const students = await prisma.student.findMany({
@@ -68,6 +92,12 @@ export async function GET(req: NextRequest) {
         schoolClass: true,
         parent: true,
         user: true,
+        enrollments: {
+          include: {
+            session: true,
+            schoolClass: true,
+          },
+        },
       },
       orderBy: { fullName: 'asc' },
     });
@@ -251,7 +281,7 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      return await tx.student.create({
+      const student = await tx.student.create({
         data: {
           userId: resolvedUserId,
           admissionNo: admissionNo,
@@ -268,6 +298,23 @@ export async function POST(req: NextRequest) {
           user: true,
         },
       });
+
+      // Automatically create initial StudentEnrollment for active session
+      const activeSession = await tx.schoolSession.findFirst({
+        where: { isCurrent: true },
+      });
+      if (activeSession) {
+        await tx.studentEnrollment.create({
+          data: {
+            studentId: student.id,
+            sessionId: activeSession.id,
+            classId: targetClass.id,
+            programmeId: targetClass.programmeId || null,
+          },
+        });
+      }
+
+      return student;
     });
 
     return NextResponse.json(

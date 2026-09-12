@@ -22,6 +22,6 @@ jobs:
             git reset --hard origin/main
             docker compose build
             docker compose up -d --remove-orphans
-            docker compose exec -T app npx prisma@5 db push --accept-data-loss --skip-generate
+            docker compose exec -T app npx prisma@5 migrate deploy
             docker builder prune -f
             docker image prune -f

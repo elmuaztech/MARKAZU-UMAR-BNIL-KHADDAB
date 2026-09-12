@@ -128,6 +128,12 @@ interface AppContextType {
   grades: GradeRecord[];
   announcements: Announcement[];
   currentSession: SchoolSession;
+  sessions: SchoolSession[];
+  selectedSessionId: string;
+  setSelectedSessionId: (id: string) => void;
+  fetchSessions: () => Promise<void>;
+  createSession: (sessionName: string, activeTerm: string, isCurrent?: boolean) => Promise<SchoolSession | null>;
+  activateSession: (sessionId: string) => Promise<boolean>;
   assessmentConfig: AssessmentConfig;
   resultSubmissions: ResultApprovalSubmission[];
   reportCardTemplate: ReportCardTemplate;
@@ -2196,7 +2202,69 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [schoolSessions, setSchoolSessions] = useState<SchoolSession[]>([]);
   const [currentSession, setCurrentSession] = useState<SchoolSession>(CURRENT_SESSION);
+  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
+
+  const fetchSessions = async () => {
+    try {
+      const res = await fetch('/api/sessions');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.sessions && data.sessions.length > 0) {
+          setSchoolSessions(data.sessions);
+          const curr = data.sessions.find((s: any) => s.isCurrent) || data.sessions[0];
+          setCurrentSession(curr);
+          setSelectedSessionId((prev) => prev || curr.id);
+        }
+      }
+    } catch (err) {
+      console.warn('[fetchSessions error]:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  const createSession = async (sessionName: string, activeTerm: string, isCurrent?: boolean): Promise<SchoolSession | null> => {
+    try {
+      const res = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionName, activeTerm, isCurrent }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to create academic session.');
+      }
+      await fetchSessions();
+      return data.session;
+    } catch (err: any) {
+      console.error('[createSession error]:', err);
+      throw err;
+    }
+  };
+
+  const activateSession = async (sessionId: string): Promise<boolean> => {
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isCurrent: true }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) {
+        throw new Error(data.error || 'Failed to activate academic session.');
+      }
+      await fetchSessions();
+      setSelectedSessionId(sessionId);
+      return true;
+    } catch (err: any) {
+      console.error('[activateSession error]:', err);
+      throw err;
+    }
+  };
 
   // Enterprise Communication Center States
   const [communications, setCommunications] = useState<CommunicationMessage[]>([]);
@@ -5410,6 +5478,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         markAttendance,
         addGradeRecord,
         addAnnouncement,
+        sessions: schoolSessions,
+        selectedSessionId,
+        setSelectedSessionId,
+        fetchSessions,
+        createSession,
+        activateSession,
       }}
     >
       {children}

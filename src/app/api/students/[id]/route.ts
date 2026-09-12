@@ -1,6 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import {
+  getAuthenticatedUser,
+  enforceRoleAndProgramme,
+  verifyStudentAccess,
+  verifyParentAccess,
+  resolveTeacherScope,
+} from '@/lib/auth';
+
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const authUser = await getAuthenticatedUser(req);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT']);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+    }
+
+    const studentId = params.id;
+
+    // Student self-scoping check
+    if (authUser?.role === 'STUDENT') {
+      const studentCheck = await verifyStudentAccess(authUser, studentId);
+      if (!studentCheck.authorized) {
+        return NextResponse.json({ error: studentCheck.reason }, { status: 403 });
+      }
+    }
+
+    // Parent ward-scoping check
+    if (authUser?.role === 'PARENT') {
+      const parentCheck = await verifyParentAccess(authUser, studentId);
+      if (!parentCheck.authorized) {
+        return NextResponse.json({ error: parentCheck.reason }, { status: 403 });
+      }
+    }
+
+    const student = await prisma.student.findFirst({
+      where: {
+        id: studentId,
+        deletedAt: null,
+      },
+      include: {
+        schoolClass: {
+          include: {
+            programme: true,
+          },
+        },
+        parent: true,
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            avatar: true,
+          },
+        },
+        enrollments: {
+          include: {
+            session: true,
+            schoolClass: true,
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!student) {
+      return NextResponse.json({ error: 'Student not found.' }, { status: 404 });
+    }
+
+    // Headmaster scope check
+    if (authUser?.role === 'HEADMASTER') {
+      const assignedProg = authUser.assignedProgrammeId;
+      if (!assignedProg || student.schoolClass?.programmeId !== assignedProg) {
+        return NextResponse.json({ error: 'Access Forbidden (HTTP 403): Student does not belong to your assigned programme section.' }, { status: 403 });
+      }
+    }
+
+    // Teacher class scope check
+    if (authUser?.role === 'TEACHER') {
+      const scope = await resolveTeacherScope(authUser.id);
+      const allowedClasses = Array.from(new Set([...scope.teachingClassIds, ...scope.attendanceClassIds]));
+      if (!allowedClasses.includes(student.classId)) {
+        return NextResponse.json({ error: 'Access Forbidden (HTTP 403): Student does not belong to your assigned classes.' }, { status: 403 });
+      }
+    }
+
+    return NextResponse.json({ student });
+  } catch (error: any) {
+    console.error('[GET_STUDENT_BY_ID_ERROR]', error);
+    return NextResponse.json({ error: error.message || 'Failed to fetch student' }, { status: 500 });
+  }
+}
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {

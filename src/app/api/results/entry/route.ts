@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import {
+  getAuthenticatedUser,
+  enforceRoleAndProgramme,
+  verifyTeacherAcademicAccess,
+  getCurrentSchoolSession,
+  resolveTeacherScope,
+} from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,12 +23,55 @@ export async function GET(req: NextRequest) {
     const subjectId = searchParams.get('subjectId');
     const term = searchParams.get('term');
     const session = searchParams.get('session');
+    const sessionId = searchParams.get('sessionId');
+
+    // Role-based verification
+    if (authUser?.role === 'TEACHER' && classId && subjectId) {
+      const accessCheck = await verifyTeacherAcademicAccess(authUser, classId, subjectId, sessionId || undefined);
+      if (!accessCheck.authorized) {
+        return NextResponse.json(
+          { status: 403, message: accessCheck.reason || 'You are not authorized to view results for this subject and class.', data: [] },
+          { status: 403 }
+        );
+      }
+    } else if (authUser?.role === 'HEADMASTER' && classId) {
+      if (!authUser.assignedProgrammeId) {
+        return NextResponse.json({ status: 403, message: 'Headmaster has no assigned programme.', data: [] }, { status: 403 });
+      }
+      const schoolClass = await prisma.schoolClass.findUnique({
+        where: { id: classId },
+        select: { programmeId: true },
+      });
+      if (schoolClass?.programmeId !== authUser.assignedProgrammeId) {
+        return NextResponse.json({ status: 403, message: 'Class does not belong to your assigned programme.', data: [] }, { status: 403 });
+      }
+    }
 
     const whereClause: any = {};
     if (classId) whereClause.classId = classId;
     if (subjectId) whereClause.subjectId = subjectId;
     if (term) whereClause.term = term;
-    if (session) whereClause.session = session;
+
+    if (sessionId) {
+      whereClause.OR = [{ sessionId }, { session: sessionId }];
+    } else if (session) {
+      whereClause.session = session;
+    }
+
+    if (authUser?.role === 'STUDENT') {
+      const student = await prisma.student.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], status: 'ACTIVE', deletedAt: null },
+        select: { id: true },
+      });
+      whereClause.studentId = student?.id || '__NO_STUDENT__';
+    } else if (authUser?.role === 'PARENT') {
+      const parent = await prisma.parent.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], deletedAt: null },
+        include: { wards: { select: { id: true } } },
+      });
+      const wardIds = parent?.wards.map((w) => w.id) || [];
+      whereClause.studentId = { in: wardIds.length > 0 ? wardIds : ['__NO_STUDENTS__'] };
+    }
 
     const grades = await prisma.gradeRecord.findMany({
       where: whereClause,
@@ -54,7 +103,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { teacherId, teacherName, programmeId, programmeName, classId, className, subjectId, subjectName, term, session, grades } = body;
+    const { teacherId, teacherName, programmeId, programmeName, classId, className, subjectId, subjectName, term, session, sessionId, grades } = body;
 
     if (!classId || !subjectId || !Array.isArray(grades)) {
       return NextResponse.json(
@@ -63,9 +112,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Resolve active session dynamically from database
+    let targetSessionId = sessionId;
+    let activeSessionName = session;
+    if (!targetSessionId || !activeSessionName) {
+      const currentSession = await getCurrentSchoolSession();
+      if (currentSession) {
+        if (!targetSessionId) targetSessionId = currentSession.id;
+        if (!activeSessionName) activeSessionName = currentSession.sessionName;
+      }
+    }
+
+    // Backend authorization for Teacher
+    const accessCheck = await verifyTeacherAcademicAccess(authUser!, classId, subjectId, targetSessionId);
+    if (!accessCheck.authorized) {
+      return NextResponse.json(
+        { status: 403, message: accessCheck.reason || 'You are not authorized to submit grades for this subject in this class.' },
+        { status: 403 }
+      );
+    }
+
     const submissionId = `sub-${Date.now()}`;
     const activeTerm = term || 'Term 1';
-    const activeSession = session || '1447/1448 AH (2025/2026 AD)';
+    const finalSession = activeSessionName || '2026/2027';
 
     // Persist or update grade records in PostgreSQL
     for (const g of grades) {
@@ -89,8 +158,9 @@ export async function POST(req: NextRequest) {
           classId,
           subjectId,
           teacherId: teacherId || authUser?.id || null,
+          sessionId: targetSessionId,
           term: activeTerm,
-          session: activeSession,
+          session: finalSession,
           assignmentScore: Number(g.assignmentScore) || 0,
           ca1Score: Number(g.ca1Score) || 0,
           ca2Score: Number(g.ca2Score) || 0,
@@ -106,6 +176,7 @@ export async function POST(req: NextRequest) {
           submittedAt: new Date(),
         },
         update: {
+          sessionId: targetSessionId,
           assignmentScore: Number(g.assignmentScore) || 0,
           ca1Score: Number(g.ca1Score) || 0,
           ca2Score: Number(g.ca2Score) || 0,
@@ -136,7 +207,7 @@ export async function POST(req: NextRequest) {
         subjectId,
         subjectName: subjectName || 'Subject',
         term: activeTerm,
-        session: activeSession,
+        session: finalSession,
         totalStudents: grades.length,
         completedRecords: grades.length,
         status: 'PENDING',

@@ -19,6 +19,7 @@ import {
   Download,
   CheckCircle2,
   ShieldAlert,
+  GraduationCap,
 } from 'lucide-react';
 import { Teacher } from '../../../types';
 import { filterTeachersForUser } from '../../../lib/rbac';
@@ -28,9 +29,24 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { Modal } from '@/components/ui/Modal';
 import { FormField, Input, Select } from '@/components/ui/FormField';
+import { TeacherAssignmentModal } from '@/components/teachers/TeacherAssignmentModal';
 
 export default function TeachersPage() {
-  const { teachers, users, classes, programmes, subjects, addTeacher, bulkImportTeachers, updateTeacher, deleteTeacher, currentUser, showConfirm, notify } = useApp();
+  const {
+    teachers,
+    users,
+    classes,
+    programmes,
+    subjects,
+    addTeacher,
+    bulkImportTeachers,
+    updateTeacher,
+    deleteTeacher,
+    currentUser,
+    showConfirm,
+    notify,
+    syncTeachersFromBackend,
+  } = useApp();
 
   const [mounted, setMounted] = useState(false);
   React.useEffect(() => {
@@ -42,6 +58,12 @@ export default function TeachersPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [editingTeacher, setEditingTeacher] = useState<Teacher | null>(null);
+  const [assignmentTeacher, setAssignmentTeacher] = useState<{
+    id: string;
+    name: string;
+    staffNo?: string;
+    email?: string;
+  } | null>(null);
 
   // Add Form State
   const [fullNameEnglish, setFullNameEnglish] = useState('');
@@ -660,6 +682,22 @@ export default function TeachersPage() {
                         </button>
                         {isAdmin && (
                           <button
+                            onClick={() =>
+                              setAssignmentTeacher({
+                                id: teacher.id,
+                                name: teacher.full_name_english || teacher.fullName,
+                                staffNo: teacher.staffNo,
+                                email: teacher.email,
+                              })
+                            }
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 transition-colors"
+                            title="Teaching & Attendance Assignments"
+                          >
+                            <GraduationCap className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {isAdmin && (
+                          <button
                             onClick={() => {
                               showConfirm({
                                 title: 'Remove Staff Member',
@@ -713,6 +751,20 @@ export default function TeachersPage() {
 
                 {isAdmin && (
                   <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() =>
+                        setAssignmentTeacher({
+                          id: teacher.id,
+                          name: teacher.full_name_english || teacher.fullName,
+                          staffNo: teacher.staffNo,
+                          email: teacher.email,
+                        })
+                      }
+                      className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 transition-colors"
+                      title="Teaching & Attendance Assignments"
+                    >
+                      <GraduationCap className="w-3.5 h-3.5" />
+                    </button>
                     <button
                       onClick={() => handleOpenEdit(teacher)}
                       className="p-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white dark:text-emerald-400 transition-colors"
@@ -1276,6 +1328,15 @@ export default function TeachersPage() {
             </form>
           </div>
         </div>
+      )}
+      {assignmentTeacher && (
+        <TeacherAssignmentModal
+          teacher={assignmentTeacher}
+          onClose={() => setAssignmentTeacher(null)}
+          onSaved={() => {
+            syncTeachersFromBackend?.();
+          }}
+        />
       )}
     </div>
   );
