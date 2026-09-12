@@ -58,7 +58,7 @@ export function EnterpriseTable<T extends { id?: string }>({
   }, [filteredData, currentPage, pageSize]);
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-6 shadow-xl space-y-5">
+    <div className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-3.5 sm:p-6 shadow-xl space-y-4 sm:space-y-5">
       {/* Top Header & Search Bar */}
       {(title || actions || searchFilter) && (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -69,7 +69,7 @@ export function EnterpriseTable<T extends { id?: string }>({
             </div>
           )}
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <div className="relative w-full sm:w-64">
               <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400 dark:text-emerald-400/70" />
               <input
@@ -148,14 +148,14 @@ export function EnterpriseTable<T extends { id?: string }>({
             ) : (
               <div
                 key={item.id || rowIdx}
-                className="p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2 text-xs"
+                className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2 text-xs"
               >
                 {columns.map((col, colIdx) => (
-                  <div key={colIdx} className="flex justify-between items-center py-1">
-                    <span className="font-extrabold text-slate-500 dark:text-emerald-400/80 uppercase text-[10px]">
+                  <div key={colIdx} className="flex flex-wrap justify-between items-start gap-1 py-1">
+                    <span className="font-extrabold text-slate-500 dark:text-emerald-400/80 uppercase text-[10px] shrink-0">
                       {col.header}:
                     </span>
-                    <span className="font-medium text-slate-900 dark:text-white">
+                    <span className="font-medium text-slate-900 dark:text-white text-right max-w-[70%] break-words">
                       {col.cell ? col.cell(item) : col.accessorKey ? String(item[col.accessorKey] ?? '') : null}
                     </span>
                   </div>
@@ -168,12 +168,12 @@ export function EnterpriseTable<T extends { id?: string }>({
 
       {/* Pagination Footer */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-emerald-500/20 text-xs font-bold text-slate-600 dark:text-emerald-300">
-          <span>
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-emerald-500/20 text-xs font-bold text-slate-600 dark:text-emerald-300">
+          <span className="text-center sm:text-left text-[11px] sm:text-xs">
             Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, filteredData.length)} of {filteredData.length} entries
           </span>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               disabled={currentPage === 1}
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}

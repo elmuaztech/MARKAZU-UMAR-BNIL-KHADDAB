@@ -45,9 +45,13 @@ export function RoleSwitcher() {
   const Icon = config.icon;
 
   return (
-    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold shrink-0 whitespace-nowrap shadow-xs ${config.colorClass}`}>
+    <div
+      title={config.label}
+      aria-label={config.label}
+      className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-bold shrink-0 whitespace-nowrap shadow-xs ${config.colorClass}`}
+    >
       <Icon className="w-4 h-4 flex-shrink-0" />
-      <span>{config.label}</span>
+      <span className="hidden sm:inline">{config.label}</span>
     </div>
   );
 }

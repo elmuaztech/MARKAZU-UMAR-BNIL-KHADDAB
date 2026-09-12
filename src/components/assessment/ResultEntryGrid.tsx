@@ -160,7 +160,7 @@ export function ResultEntryGrid({
   return (
     <div className="space-y-4 font-poppins">
       {/* Header Controls Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
             <FileSpreadsheet className="w-4 h-4" /> Score Entry Grid • {subjectName}
@@ -173,7 +173,7 @@ export function ResultEntryGrid({
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-initial">
           <Button
             variant="outline"
             size="sm"
@@ -233,8 +233,8 @@ export function ResultEntryGrid({
       )}
 
       {/* Interactive Spreadsheet Data Table */}
-      <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse">
+      <div className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl overflow-x-auto">
+        <table className="w-full min-w-[850px] text-left text-xs border-collapse">
           <thead>
             <tr className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 uppercase tracking-wider font-bold border-b border-slate-200 dark:border-emerald-800/40">
               <th className="p-3 text-center">#</th>

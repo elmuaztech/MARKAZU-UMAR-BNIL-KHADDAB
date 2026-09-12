@@ -466,7 +466,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                   </div>
                 </div>
 
-                <div className="flex justify-between pt-2">
+                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 [&>*]:w-full sm:[&>*]:w-auto">
                   <button
                     type="button"
                     onClick={() => setCurrentStep(1)}
@@ -553,7 +553,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                   />
                 </div>
 
-                <div className="flex justify-between pt-2">
+                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 [&>*]:w-full sm:[&>*]:w-auto">
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
@@ -613,7 +613,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                   By submitting this application, you declare that all candidate information provided is authentic and correct.
                 </div>
 
-                <div className="flex justify-between pt-2">
+                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-2 pt-2 [&>*]:w-full sm:[&>*]:w-auto">
                   <button
                     type="button"
                     onClick={() => setCurrentStep(3)}

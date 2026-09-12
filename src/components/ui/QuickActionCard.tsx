@@ -21,7 +21,7 @@ interface QuickActionGridProps {
 
 export function QuickActionGrid({ items, columns = 'grid-cols-2 sm:grid-cols-3 md:grid-cols-5' }: QuickActionGridProps) {
   return (
-    <div className={`grid ${columns} gap-4`}>
+    <div className={`grid ${columns} gap-3 sm:gap-4`}>
       {items.map((item, index) => {
         const Icon = item.icon;
 
@@ -29,7 +29,7 @@ export function QuickActionGrid({ items, columns = 'grid-cols-2 sm:grid-cols-3 m
           <motion.div
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`p-4 rounded-2xl bg-gradient-to-br ${item.color} text-white font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all text-center cursor-pointer h-full border border-white/10`}
+            className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${item.color} text-white font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all text-center cursor-pointer h-full border border-white/10`}
           >
             <Icon className="w-5 h-5" />
             <div className="flex flex-col items-center">

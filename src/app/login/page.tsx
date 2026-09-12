@@ -307,8 +307,8 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200">
       <PublicNavbar />
 
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 py-12 md:py-16">
-        <div className="w-full max-w-md glass-panel border border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+      <main className="flex-1 flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 md:py-16">
+        <div className="w-full max-w-md glass-panel border border-emerald-500/30 rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-5 sm:space-y-6 shadow-2xl relative overflow-hidden">
 
           {/* Brand Header */}
           <div className="text-center space-y-2">

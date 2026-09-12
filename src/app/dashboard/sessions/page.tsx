@@ -198,7 +198,7 @@ export default function SessionsPage() {
         </h3>
 
         <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-500/20">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full min-w-[450px] text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-100 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 text-slate-700 dark:text-emerald-300 font-bold uppercase text-[10px]">
                 <th className="py-3.5 px-4">Session Name</th>

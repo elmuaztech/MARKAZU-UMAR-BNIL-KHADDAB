@@ -527,9 +527,9 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
           </div>
 
           {/* Interactive Roster Table */}
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl overflow-hidden shadow-lg">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table className="w-full min-w-[650px] text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-100 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 text-[11px] font-black text-slate-600 dark:text-emerald-300 uppercase tracking-wider">
                     <th className="p-4">#</th>
@@ -631,8 +631,8 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
 
       {/* Preview Summary Modal */}
       {isPreviewOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-500/20 p-5 shrink-0">
               <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
                 <FileCheck className="w-5 h-5 text-emerald-500" />
@@ -667,7 +667,7 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 p-5 border-t border-slate-200 dark:border-emerald-500/20 shrink-0 bg-slate-50/50 dark:bg-[#021810]">
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 shrink-0 bg-slate-50/50 dark:bg-[#021810] [&>*]:w-full sm:[&>*]:w-auto">
               <button
                 onClick={() => setIsPreviewOpen(false)}
                 className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 font-bold text-xs"
@@ -676,7 +676,7 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
               </button>
               <button
                 onClick={handleSubmitFinal}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-900/30 flex items-center gap-2"
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2"
               >
                 <Send className="w-4 h-4" />
                 Submit Final Attendance
@@ -688,8 +688,8 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
 
       {/* Success Modal */}
       {isSuccessModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#042419] border border-emerald-500/30 rounded-3xl w-full max-w-md shadow-2xl p-6 text-center space-y-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
+          <div className="bg-white dark:bg-[#042419] border border-emerald-500/30 rounded-2xl sm:rounded-3xl w-full max-w-md shadow-2xl p-5 sm:p-6 text-center space-y-4">
             <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>

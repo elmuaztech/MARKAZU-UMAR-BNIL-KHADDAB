@@ -198,40 +198,40 @@ export function AssessmentDashboard() {
 
       {/* Admin Mode Tab Switcher */}
       {isAdmin && (
-        <div className="flex items-center gap-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3 font-poppins">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3 font-poppins">
           <button
             onClick={() => setActiveTab('ENTRY')}
-            className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
+            className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 border ${
               activeTab === 'ENTRY'
                 ? 'bg-emerald-600 text-white border-emerald-500 shadow-md scale-105'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
             }`}
           >
-            <FileSpreadsheet className="w-4 h-4" />
+            <FileSpreadsheet className="w-4 h-4 shrink-0" />
             <span>Score Entry Grid</span>
           </button>
 
           <button
             onClick={() => setActiveTab('APPROVALS')}
-            className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
+            className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 border ${
               activeTab === 'APPROVALS'
                 ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md scale-105'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
             }`}
           >
-            <Clock className="w-4 h-4" />
+            <Clock className="w-4 h-4 shrink-0" />
             <span>Admin Review Queue ({resultSubmissions.filter((s) => s.status === 'PENDING').length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('SETTINGS')}
-            className={`px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
+            className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 border ${
               activeTab === 'SETTINGS'
                 ? 'bg-purple-600 text-white border-purple-500 shadow-md scale-105'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
             }`}
           >
-            <Sliders className="w-4 h-4" />
+            <Sliders className="w-4 h-4 shrink-0" />
             <span>Assessment Configurations</span>
           </button>
         </div>

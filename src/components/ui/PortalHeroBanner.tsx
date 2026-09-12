@@ -35,7 +35,7 @@ export function PortalHeroBanner({
       initial={{ opacity: 0, y: -15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`relative overflow-hidden rounded-3xl bg-gradient-to-r ${gradientStyles[variant]} border p-6 sm:p-8 text-white shadow-2xl`}
+      className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r ${gradientStyles[variant]} border p-4 sm:p-8 text-white shadow-2xl`}
     >
       <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -45,7 +45,7 @@ export function PortalHeroBanner({
             <BadgeIcon className="w-3.5 h-3.5" /> {badgeText}
           </div>
           <div className="flex flex-wrap items-baseline gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-poppins">{title}</h1>
+            <h1 className="text-xl sm:text-3xl font-black tracking-tight text-white font-poppins">{title}</h1>
             {titleArabic && (
               <span className="font-arabic text-lg sm:text-xl text-amber-300 font-semibold dir-rtl">
                 {titleArabic}
@@ -55,7 +55,7 @@ export function PortalHeroBanner({
           <p className="text-sm text-emerald-200/80 max-w-2xl font-medium leading-relaxed">{description}</p>
         </div>
 
-        {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
+        {actions && <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">{actions}</div>}
       </div>
     </motion.div>
   );

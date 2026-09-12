@@ -9,7 +9,7 @@ export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'o
 
 export function Card({ children, className = '', hoverEffect = false, ...props }: CardProps) {
   const baseClasses =
-    'rounded-3xl bg-white dark:bg-[#042419] border border-slate-200/90 dark:border-emerald-500/30 p-5 sm:p-6 shadow-xl transition-all duration-200';
+    'rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200/90 dark:border-emerald-500/30 p-4 sm:p-6 shadow-xl transition-all duration-200';
 
   if (hoverEffect) {
     return (
@@ -56,7 +56,7 @@ export function CardContent({ children, className = '' }: { children: React.Reac
 }
 
 export function CardFooter({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`pt-4 border-t border-slate-100 dark:border-emerald-500/20 flex items-center justify-between ${className}`}>{children}</div>;
+  return <div className={`pt-4 border-t border-slate-100 dark:border-emerald-500/20 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 ${className}`}>{children}</div>;
 }
 
 export interface StatCardProps {

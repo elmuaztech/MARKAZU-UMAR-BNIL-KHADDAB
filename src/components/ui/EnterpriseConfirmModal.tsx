@@ -41,13 +41,13 @@ export function EnterpriseConfirmModal({ options, onClose }: EnterpriseConfirmMo
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.92, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.92, y: 10 }}
           transition={{ duration: 0.2, ease: 'easeOut' }}
-          className="max-w-md w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-7 space-y-5 shadow-2xl relative text-slate-900 dark:text-white font-poppins"
+          className="max-w-md w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl p-4 sm:p-7 space-y-4 sm:space-y-5 shadow-2xl relative text-slate-900 dark:text-white font-poppins"
         >
           <button
             onClick={onClose}
@@ -78,7 +78,7 @@ export function EnterpriseConfirmModal({ options, onClose }: EnterpriseConfirmMo
             {modalText}
           </p>
 
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-emerald-500/20">
+          <div className="pt-3 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 border-t border-slate-100 dark:border-emerald-500/20 [&>*]:w-full sm:[&>*]:w-auto">
             <Button variant="secondary" size="md" onClick={onClose}>
               {cancelBtnText}
             </Button>

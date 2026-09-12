@@ -10,7 +10,7 @@ import { BookOpen, Sparkles, Award } from 'lucide-react';
 export default function TahfizPage() {
   return (
     <PortalTheme>
-      <div className="space-y-6 font-poppins">
+      <div className="space-y-6 font-poppins max-w-full overflow-hidden">
         <PortalHeroBanner
           title="Qur'an Memorization & Tahfiz Command Center"
           titleArabic="مركز متابعة حفظ القرآن الكريم والمراجعة"

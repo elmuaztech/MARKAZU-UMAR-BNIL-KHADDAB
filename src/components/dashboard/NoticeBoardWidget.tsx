@@ -23,8 +23,8 @@ export function NoticeBoardWidget() {
   });
 
   return (
-    <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-5 shadow-lg space-y-4 font-poppins">
-      <div className="flex items-center justify-between">
+    <div className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-3.5 sm:p-5 shadow-lg space-y-4 font-poppins">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
             <Megaphone className="w-5 h-5" />
@@ -77,7 +77,7 @@ export function NoticeBoardWidget() {
               <h3 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{comm.title}</h3>
               <p className="text-xs text-slate-600 dark:text-emerald-100/80 line-clamp-2">{comm.subject || comm.content}</p>
 
-              <div className="pt-2 flex items-center justify-between border-t border-slate-100 dark:border-emerald-500/10 text-[10px] text-slate-500 dark:text-emerald-400">
+              <div className="pt-2 flex flex-wrap items-center justify-between gap-1 border-t border-slate-100 dark:border-emerald-500/10 text-[10px] text-slate-500 dark:text-emerald-400">
                 <span className="font-medium">By: {comm.senderName}</span>
                 <span className="font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300">
                   Target: {comm.recipientType.replace('_', ' ')}

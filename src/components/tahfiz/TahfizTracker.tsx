@@ -141,18 +141,18 @@ export function TahfizTracker() {
 
     return (
       <div className="space-y-6 font-poppins">
-        <div className="p-6 bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-md space-y-4">
-          <div className="flex items-center justify-between">
+        <div className="p-4 sm:p-6 bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl shadow-md space-y-4 overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-              <BookOpen className="w-4 h-4" />
-              <span>Personal Hifz Progress & Historical Record</span>
+              <BookOpen className="w-4 h-4 shrink-0" />
+              <span className="truncate">Personal Hifz Progress & Historical Record</span>
             </div>
-            <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase">
+            <span className="self-start sm:self-auto px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase shrink-0">
               {currentUser.role} Read-Only View
             </span>
           </div>
 
-          <h2 className="text-xl font-black text-slate-900 dark:text-white">
+          <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
             Qur'an Memorization Summary: {primaryStudent?.fullName || 'Student'}
           </h2>
 
@@ -179,12 +179,12 @@ export function TahfizTracker() {
             </div>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-4 overflow-hidden">
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-emerald-300 pb-2">
               Teacher Logging History & Daily Feedback
             </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+            <div className="overflow-x-auto w-full -mx-4 sm:mx-0 px-4 sm:px-0">
+              <table className="w-full text-left text-xs min-w-[500px]">
                 <thead className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 uppercase font-bold border-b border-emerald-500/20">
                   <tr>
                     <th className="p-3">Date</th>

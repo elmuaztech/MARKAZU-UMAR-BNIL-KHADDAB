@@ -148,16 +148,16 @@ export function ParentDashboard() {
       {/* Child Switcher Bar */}
       {childrenList.length > 0 ? (
         <>
-          <div className="flex items-center gap-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3 font-poppins">
-            <span className="text-xs font-bold text-slate-800 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3 font-poppins">
+            <span className="text-xs font-bold text-slate-800 dark:text-emerald-300 uppercase tracking-wider flex items-center gap-1.5 shrink-0">
               <Baby className="w-4 h-4 text-amber-500" /> Select Child:
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {childrenList.map((child) => (
                 <button
                   key={child.id}
                   onClick={() => setSelectedChildId(child.id)}
-                  className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
+                  className={`px-3 sm:px-4 py-2 rounded-xl sm:rounded-2xl text-xs font-bold transition-all flex items-center gap-2 border ${
                     activeChild?.id === child.id
                       ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md scale-105'
                       : 'bg-white dark:bg-emerald-950/60 text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'

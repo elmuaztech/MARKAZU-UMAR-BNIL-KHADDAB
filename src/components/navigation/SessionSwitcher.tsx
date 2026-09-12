@@ -91,12 +91,12 @@ export function SessionSwitcher() {
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/90 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-300/60 dark:border-emerald-700/50 text-xs font-bold text-slate-900 dark:text-white transition-all shadow-xs shrink-0 max-w-[200px] sm:max-w-[280px]"
+        className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/90 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-300/60 dark:border-emerald-700/50 text-xs font-bold text-slate-900 dark:text-white transition-all shadow-xs shrink-0 max-w-[110px] sm:max-w-[180px] xl:max-w-[280px]"
         title="Switch Academic Session"
       >
         <Calendar className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
         <span className="truncate font-poppins">{activeSelected?.sessionName || 'Session'}</span>
-        <span className="hidden sm:inline-block bg-emerald-600 text-white dark:bg-emerald-500/30 dark:text-emerald-300 px-1.5 py-0.2 rounded-md text-[10px] font-extrabold uppercase shrink-0">
+        <span className="hidden md:inline-block bg-emerald-600 text-white dark:bg-emerald-500/30 dark:text-emerald-300 px-1.5 py-0.2 rounded-md text-[10px] font-extrabold uppercase shrink-0">
           {activeSelected?.activeTerm || 'Term 1'}
         </span>
         <ChevronDown className={`w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
@@ -110,7 +110,7 @@ export function SessionSwitcher() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 sm:right-0 sm:left-auto top-full mt-2 w-72 sm:w-80 rounded-2xl bg-white dark:bg-[#032015] border border-emerald-500/30 shadow-2xl z-50 overflow-hidden font-poppins"
+            className="absolute left-0 sm:right-0 sm:left-auto top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white dark:bg-[#032015] border border-emerald-500/30 shadow-2xl z-50 overflow-hidden font-poppins"
           >
             <div className="p-3 bg-gradient-to-r from-emerald-900 to-[#021810] text-white border-b border-emerald-500/20 flex items-center justify-between">
               <div>

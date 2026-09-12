@@ -21,8 +21,8 @@ export function FormField({ label, labelArabic, error, helperText, children, cla
         </div>
       )}
       {children}
-      {error && <p className="text-[11px] font-bold text-rose-600 dark:text-rose-400">{error}</p>}
-      {helperText && !error && <p className="text-[11px] font-medium text-slate-400 dark:text-emerald-300/60">{helperText}</p>}
+      {error && <p className="text-[11px] font-bold text-rose-600 dark:text-rose-400 break-words">{error}</p>}
+      {helperText && !error && <p className="text-[11px] font-medium text-slate-400 dark:text-emerald-300/60 break-words">{helperText}</p>}
     </div>
   );
 }
@@ -37,7 +37,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ className
       ref={ref}
       className={`w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border ${
         error ? 'border-rose-500' : 'border-slate-200 dark:border-emerald-500/30'
-      } text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition-colors ${className}`}
+      } text-[16px] sm:text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition-colors ${className}`}
       {...props}
     />
   );
@@ -54,7 +54,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(({ classN
       ref={ref}
       className={`w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border ${
         error ? 'border-rose-500' : 'border-slate-200 dark:border-emerald-500/30'
-      } text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors ${className}`}
+      } text-[16px] sm:text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 transition-colors ${className}`}
       {...props}
     >
       {children}
@@ -73,7 +73,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(({ 
       ref={ref}
       className={`w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border ${
         error ? 'border-rose-500' : 'border-slate-200 dark:border-emerald-500/30'
-      } text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition-colors ${className}`}
+      } text-[16px] sm:text-xs font-medium text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-emerald-500 transition-colors ${className}`}
       {...props}
     />
   );

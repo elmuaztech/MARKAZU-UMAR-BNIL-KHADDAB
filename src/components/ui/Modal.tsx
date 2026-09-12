@@ -92,11 +92,11 @@ export function Modal({
             </div>
 
             {/* Body (Scrolls Independently) */}
-            <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 scrollbar-thin scrollbar-thumb-emerald-600">{children}</div>
+            <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 scrollbar-thin scrollbar-thumb-emerald-600">{children}</div>
 
             {/* Footer (Fixed / Pinned Action Area) */}
             {footer && (
-              <div className="shrink-0 p-4 sm:p-6 border-t border-slate-100 dark:border-emerald-500/20 bg-slate-50/50 dark:bg-[#021810] flex items-center justify-end gap-3">
+              <div className="shrink-0 p-3.5 sm:p-6 border-t border-slate-100 dark:border-emerald-500/20 bg-slate-50/50 dark:bg-[#021810] flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-2 sm:gap-3 [&>*]:w-full sm:[&>*]:w-auto">
                 {footer}
               </div>
             )}

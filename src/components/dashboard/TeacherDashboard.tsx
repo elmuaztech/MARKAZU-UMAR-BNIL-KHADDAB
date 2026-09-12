@@ -241,7 +241,7 @@ export function TeacherDashboard() {
       </div>
 
       {/* Section E: Teacher Portal Scoped Programme & Class Selector */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-4 font-poppins">
+      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-4 font-poppins">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
             <Layers className="w-4 h-4 text-emerald-500" /> My Assigned Academic Load

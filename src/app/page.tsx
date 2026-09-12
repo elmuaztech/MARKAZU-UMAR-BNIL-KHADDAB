@@ -152,10 +152,10 @@ export default function HomePage() {
               Fostering spiritual growth, 30-Juz Qur'an memorization, and classical Islamic education across 1,000+ students and 40+ Huffaz educators in Kano, Nigeria.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">
               <button
                 onClick={() => setAdmissionModalOpen(true)}
-                className="px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/30 transition-all scale-105 whitespace-nowrap shrink-0 hover:scale-110"
+                className="px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/30 transition-all hover:scale-105 text-center"
               >
                 <FileText className="w-4 h-4 shrink-0" />
                 <span>Enroll Your Child</span>
@@ -163,7 +163,7 @@ export default function HomePage() {
 
               <Link
                 href="/login"
-                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/40 transition-all scale-105 whitespace-nowrap shrink-0 hover:scale-110 border border-emerald-400/30"
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/40 transition-all hover:scale-105 border border-emerald-400/30 text-center"
               >
                 <span>Portal Login</span>
                 <ArrowRight className="w-4 h-4 shrink-0" />
@@ -173,7 +173,7 @@ export default function HomePage() {
         </section>
 
         {/* KEY STATISTICAL COUNTERS (ANIMATED) */}
-        <section className="p-8 rounded-3xl bg-gradient-to-r from-[#032417] via-[#043322] to-[#022c1d] border border-emerald-500/40 shadow-2xl text-white">
+        <section className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#032417] via-[#043322] to-[#022c1d] border border-emerald-500/40 shadow-2xl text-white">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-y md:divide-y-0 md:divide-x divide-emerald-800/60">
             <div className="p-4 space-y-1">
               <Users className="w-7 h-7 text-emerald-400 mx-auto" />

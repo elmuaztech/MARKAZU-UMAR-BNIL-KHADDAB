@@ -70,7 +70,7 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
       </div>
 
       {/* Official Report Card Sheet */}
-      <div className="print-container bg-white text-slate-900 p-6 sm:p-8 rounded-2xl shadow-2xl border border-gray-200 max-w-4xl mx-auto font-sans">
+      <div className="print-container bg-white text-slate-900 p-3.5 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 max-w-4xl mx-auto font-sans">
         {/* Header Crest Container */}
         <div
           className="text-center rounded-2xl p-5 mb-5 shadow-sm text-white space-y-2"
@@ -172,7 +172,7 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
         {/* Academic Subject Scores Table */}
         <div className="mb-5 overflow-x-auto">
           <h3 className="text-xs font-bold uppercase text-emerald-950 mb-2">Subject Performance Breakdown</h3>
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full min-w-[550px] text-left text-xs border-collapse">
             <thead>
               <tr className="uppercase text-[10px] text-white" style={{ backgroundColor: tableHeaderBgColor }}>
                 <th className="p-2.5 border border-emerald-900/30">Subject Name</th>

@@ -486,7 +486,7 @@ export default function SecurityDashboardPage() {
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
+                    <table className="w-full min-w-[750px] text-left text-xs">
                       <thead className="bg-slate-50 dark:bg-[#032015] text-slate-700 dark:text-emerald-400 uppercase font-bold border-b border-emerald-500/20">
                         <tr>
                           <th className="p-4">User Name</th>
@@ -659,7 +659,7 @@ export default function SecurityDashboardPage() {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs">
+                      <table className="w-full min-w-[650px] text-left text-xs">
                         <thead className="bg-slate-50 dark:bg-[#032015] text-slate-700 dark:text-rose-400 uppercase font-bold border-b border-rose-500/20">
                           <tr>
                             <th className="p-4">User Name</th>
@@ -869,7 +869,7 @@ export default function SecurityDashboardPage() {
                       </div>
 
                       {/* Footer (Fixed) */}
-                      <div className="shrink-0 p-4 sm:p-5 border-t border-emerald-500/20 flex justify-end gap-2 bg-slate-50/50 dark:bg-[#021810]">
+                      <div className="shrink-0 p-3.5 sm:p-5 border-t border-emerald-500/20 flex flex-col-reverse sm:flex-row sm:justify-end gap-2 bg-slate-50/50 dark:bg-[#021810] [&>*]:w-full sm:[&>*]:w-auto">
                         <button
                           type="button"
                           onClick={() => setShowCreateModal(false)}
