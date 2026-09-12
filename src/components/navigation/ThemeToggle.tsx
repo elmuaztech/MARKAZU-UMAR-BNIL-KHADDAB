@@ -92,19 +92,19 @@ export function ThemeToggle({ variant = 'dropdown', className = '' }: ThemeToggl
       <button
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Select theme mode"
-        className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all duration-200 ${
+        className={`px-2 sm:px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 sm:gap-2 border transition-all duration-200 shrink-0 ${
           resolvedTheme === 'dark'
             ? 'bg-emerald-950/80 border-emerald-800/60 text-emerald-200 hover:bg-emerald-900/60 hover:text-white'
             : 'bg-white border-emerald-200 text-emerald-900 hover:bg-emerald-50 shadow-sm'
         }`}
       >
-        <CurrentIcon className={`w-4 h-4 ${theme === 'light' ? 'text-amber-500' : 'text-emerald-400'}`} />
+        <CurrentIcon className={`w-4 h-4 shrink-0 ${theme === 'light' ? 'text-amber-500' : 'text-emerald-400'}`} />
         <span className="capitalize hidden sm:inline">{theme} Mode</span>
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className={`absolute right-0 mt-2 w-40 rounded-2xl border shadow-xl z-50 overflow-hidden py-1 transition-all animate-in fade-in zoom-in-95 duration-150 ${
+        <div className={`absolute right-0 mt-2 w-40 max-w-[calc(100vw-1rem)] rounded-2xl border shadow-xl z-50 overflow-hidden py-1 transition-all animate-in fade-in zoom-in-95 duration-150 ${
           resolvedTheme === 'dark'
             ? 'bg-[#032417] border-emerald-700/50 text-emerald-100 shadow-emerald-950/80'
             : 'bg-white border-emerald-200 text-slate-800 shadow-emerald-950/10'

@@ -61,13 +61,13 @@ export default function NotificationCenterPage() {
       </div>
 
       {/* Tabs & Search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 shrink-0">
           {(['ALL', 'UNREAD', 'PINNED', 'ARCHIVED'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setFilterTab(tab)}
-              className={`px-4 py-2 rounded-2xl text-xs font-black transition-all ${
+              className={`px-3.5 sm:px-4 py-2 rounded-2xl text-xs font-black transition-all whitespace-nowrap shrink-0 ${
                 filterTab === tab
                   ? 'bg-emerald-600 text-white shadow-md'
                   : 'bg-white dark:bg-[#042419] text-slate-600 dark:text-emerald-300 border border-slate-200 dark:border-emerald-500/30'
@@ -78,7 +78,7 @@ export default function NotificationCenterPage() {
           ))}
         </div>
 
-        <div className="relative w-full sm:w-64">
+        <div className="relative w-full sm:w-64 shrink-0">
           <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
           <input
             type="text"
@@ -102,14 +102,14 @@ export default function NotificationCenterPage() {
               key={notif.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`p-5 rounded-3xl border transition-all space-y-3 ${
+              className={`p-4 sm:p-5 rounded-2xl sm:rounded-3xl border transition-all space-y-3 ${
                 !notif.read
                   ? 'bg-emerald-500/10 border-emerald-500/40 text-slate-900 dark:text-white shadow-md'
                   : 'bg-white dark:bg-[#042419] border-slate-200 dark:border-emerald-500/20 text-slate-700 dark:text-emerald-200'
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2.5">
+                <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={`text-[9px] font-black uppercase px-2.5 py-0.5 rounded-full ${
                       notif.priority === 'URGENT'
@@ -122,7 +122,7 @@ export default function NotificationCenterPage() {
                   <span className="text-xs font-bold text-slate-500">From: {notif.senderName}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 ml-auto sm:ml-0">
                   <span className="text-[10px] text-slate-400 font-mono">
                     {new Date(notif.createdAt).toLocaleDateString()}
                   </span>

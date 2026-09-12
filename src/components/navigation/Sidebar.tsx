@@ -533,7 +533,10 @@ export function Sidebar({
 
               <Link
                 href="/dashboard/settings"
-                onClick={() => setProfileMenuOpen(false)}
+                onClick={() => {
+                  setProfileMenuOpen(false);
+                  setMobileOpen?.(false);
+                }}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 font-semibold"
               >
                 <UserIcon className="w-4 h-4 text-sky-500" />

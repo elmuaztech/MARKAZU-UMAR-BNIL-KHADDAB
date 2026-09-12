@@ -52,17 +52,17 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
       {/* Action Bar (hidden on print) */}
       <div className="no-print flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl glass-card border border-emerald-500/30">
         <div>
-          <h3 className="text-sm font-bold text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Award className="w-4 h-4 text-amber-400" />
             Official Terminal Report Card Preview
           </h3>
-          <p className="text-xs text-emerald-300/70">
+          <p className="text-xs text-slate-600 dark:text-emerald-300/70">
             Rendered with Admin Default Report Sheet Template & Signature.
           </p>
         </div>
         <button
           onClick={handlePrint}
-          className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all scale-105"
+          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
         >
           <Printer className="w-4 h-4" />
           <span>Print / Save as PDF</span>
@@ -70,19 +70,19 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
       </div>
 
       {/* Official Report Card Sheet */}
-      <div className="print-container bg-white text-slate-900 p-3.5 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 max-w-4xl mx-auto font-sans">
+      <div className="print-container bg-white text-slate-900 p-3 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 max-w-4xl mx-auto font-sans">
         {/* Header Crest Container */}
         <div
-          className="text-center rounded-2xl p-5 mb-5 shadow-sm text-white space-y-2"
+          className="text-center rounded-2xl p-4 sm:p-5 mb-5 shadow-sm text-white space-y-2"
           style={{ backgroundColor: headerBgColor, color: headerTextColor }}
         >
           <div className="flex flex-col items-center justify-center text-center gap-2">
             {showLogo && (
               schoolLogo ? (
-                <img src={schoolLogo} alt="School Crest Logo" className="w-16 h-16 rounded-full object-cover border-2 border-white p-0.5 shadow-md bg-white" />
+                <img src={schoolLogo} alt="School Crest Logo" className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white p-0.5 shadow-md bg-white" />
               ) : (
-                <div className="w-16 h-16 rounded-full bg-emerald-800 flex items-center justify-center text-amber-300 border-2 border-white shadow-md">
-                  <Sparkles className="w-8 h-8" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-800 flex items-center justify-center text-amber-300 border-2 border-white shadow-md">
+                  <Sparkles className="w-7 h-7 sm:w-8 sm:h-8" />
                 </div>
               )
             )}
@@ -93,17 +93,17 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
               </div>
             )}
 
-            <h1 className="text-sm sm:text-base md:text-lg font-black uppercase tracking-tight leading-snug max-w-2xl text-white">
+            <h1 className="text-xs sm:text-base md:text-lg font-black uppercase tracking-tight leading-snug max-w-2xl text-white">
               {titleEnglish}
             </h1>
           </div>
 
-          <p className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-emerald-100/90 pt-1 border-t border-white/20">
+          <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-emerald-100/90 pt-1 border-t border-white/20">
             {subTitleEnglish}
           </p>
 
           <div
-            className="mt-2 inline-block font-black text-xs px-3.5 py-1 rounded-md shadow-sm"
+            className="mt-2 inline-block font-black text-[11px] sm:text-xs px-3 py-1 rounded-md shadow-sm"
             style={{ backgroundColor: accentColor, color: '#0f172a' }}
           >
             SESSION: {session.sessionName} • {session.activeTerm.toUpperCase()}
@@ -111,7 +111,7 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
         </div>
 
         {/* Student Biodata Box */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-emerald-50/80 p-3.5 rounded-xl border border-emerald-200 text-xs mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 bg-emerald-50/90 p-3.5 rounded-xl border border-emerald-200 text-xs mb-5">
           <div>
             <span className="text-[10px] text-gray-500 uppercase font-bold block">Student Name</span>
             <span className="font-extrabold text-emerald-950 block truncate">{student.fullName}</span>
@@ -170,38 +170,43 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
         )}
 
         {/* Academic Subject Scores Table */}
-        <div className="mb-5 overflow-x-auto">
-          <h3 className="text-xs font-bold uppercase text-emerald-950 mb-2">Subject Performance Breakdown</h3>
-          <table className="w-full min-w-[550px] text-left text-xs border-collapse">
-            <thead>
-              <tr className="uppercase text-[10px] text-white" style={{ backgroundColor: tableHeaderBgColor }}>
-                <th className="p-2.5 border border-emerald-900/30">Subject Name</th>
-                <th className="p-2.5 border border-emerald-900/30 text-center">CA1 (20)</th>
-                <th className="p-2.5 border border-emerald-900/30 text-center">CA2 (20)</th>
-                <th className="p-2.5 border border-emerald-900/30 text-center">Exam (60)</th>
-                <th className="p-2.5 border border-emerald-900/30 text-center">Total (100)</th>
-                <th className="p-2.5 border border-emerald-900/30 text-center">Grade</th>
-                <th className="p-2.5 border border-emerald-900/30">Remarks</th>
-              </tr>
-            </thead>
-            <tbody>
-              {grades.map((g, idx) => (
-                <tr key={g.id} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                  <td className="p-2 border border-gray-300 font-bold text-emerald-950">{g.subjectName}</td>
-                  <td className="p-2 border border-gray-300 text-center font-mono">{g.ca1Score}</td>
-                  <td className="p-2 border border-gray-300 text-center font-mono">{g.ca2Score}</td>
-                  <td className="p-2 border border-gray-300 text-center font-mono">{g.examScore}</td>
-                  <td className="p-2 border border-gray-300 text-center font-black text-emerald-900">{g.totalScore}%</td>
-                  <td className="p-2 border border-gray-300 text-center font-black">
-                    <span className={`px-2 py-0.5 rounded text-[10px] ${g.grade === 'A' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
-                      {g.grade}
-                    </span>
-                  </td>
-                  <td className="p-2 border border-gray-300 text-[11px] text-gray-700 italic">{g.remarks}</td>
+        <div className="mb-5 space-y-1.5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase text-emerald-950">Subject Performance Breakdown</h3>
+            <span className="text-[10px] text-emerald-700 font-semibold sm:hidden no-print">← Swipe horizontally →</span>
+          </div>
+          <div className="overflow-x-auto rounded-xl border border-gray-200 mobile-table-wrapper">
+            <table className="w-full min-w-[560px] text-left text-xs border-collapse">
+              <thead>
+                <tr className="uppercase text-[10px] text-white" style={{ backgroundColor: tableHeaderBgColor }}>
+                  <th className="p-2.5 border border-emerald-900/30">Subject Name</th>
+                  <th className="p-2.5 border border-emerald-900/30 text-center">CA1 (20)</th>
+                  <th className="p-2.5 border border-emerald-900/30 text-center">CA2 (20)</th>
+                  <th className="p-2.5 border border-emerald-900/30 text-center">Exam (60)</th>
+                  <th className="p-2.5 border border-emerald-900/30 text-center">Total (100)</th>
+                  <th className="p-2.5 border border-emerald-900/30 text-center">Grade</th>
+                  <th className="p-2.5 border border-emerald-900/30">Remarks</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {grades.map((g, idx) => (
+                  <tr key={g.id} className={idx % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
+                    <td className="p-2 border border-gray-300 font-bold text-emerald-950">{g.subjectName}</td>
+                    <td className="p-2 border border-gray-300 text-center font-mono">{g.ca1Score}</td>
+                    <td className="p-2 border border-gray-300 text-center font-mono">{g.ca2Score}</td>
+                    <td className="p-2 border border-gray-300 text-center font-mono">{g.examScore}</td>
+                    <td className="p-2 border border-gray-300 text-center font-black text-emerald-900">{g.totalScore}%</td>
+                    <td className="p-2 border border-gray-300 text-center font-black">
+                      <span className={`px-2 py-0.5 rounded text-[10px] ${g.grade === 'A' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {g.grade}
+                      </span>
+                    </td>
+                    <td className="p-2 border border-gray-300 text-[11px] text-gray-700 italic">{g.remarks}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Summary Statistics & Akhlaq Assessment */}
@@ -247,7 +252,7 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
         {showGradeLegend && (
           <div className="p-2.5 rounded-xl border border-gray-200 bg-slate-50 mb-6 text-[10px]">
             <span className="font-bold text-gray-700 uppercase block mb-1">Grading Scale Legend & Key:</span>
-            <div className="flex flex-wrap gap-3 font-semibold text-gray-600">
+            <div className="flex flex-wrap gap-2 sm:gap-3 font-semibold text-gray-600">
               <span><strong>A:</strong> 75 - 100% (Distinction)</span>
               <span><strong>B:</strong> 60 - 74.99% (Very Good)</span>
               <span><strong>C:</strong> 50 - 59.99% (Good)</span>
@@ -271,14 +276,14 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-8 pt-4 border-t border-gray-300">
-            <div className="text-center space-y-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-4 border-t border-gray-300">
+            <div className="text-center space-y-1.5 w-full sm:w-1/2">
               <p className="font-bold text-gray-800">Ustaz Abubakar Sadiq</p>
-              <div className="border-b border-gray-400 w-40 mx-auto" />
+              <div className="border-b border-gray-400 w-36 sm:w-40 mx-auto" />
               <p className="text-[10px] text-gray-500 uppercase font-semibold">Class Teacher Signature</p>
             </div>
 
-            <div className="text-center space-y-2 flex flex-col items-center justify-end">
+            <div className="text-center space-y-1.5 flex flex-col items-center justify-end w-full sm:w-1/2">
               {defaultSignatureUrl ? (
                 <div className="h-12 flex items-center justify-center">
                   <img
@@ -288,10 +293,10 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
                   />
                 </div>
               ) : (
-                <div className="border-b border-gray-400 w-40 mx-auto h-8" />
+                <div className="border-b border-gray-400 w-36 sm:w-40 mx-auto h-8" />
               )}
               <p className="font-bold text-gray-800">{principalName}</p>
-              <div className="border-b border-gray-400 w-44 mx-auto" />
+              <div className="border-b border-gray-400 w-40 sm:w-44 mx-auto" />
               <p className="text-[10px] text-gray-500 uppercase font-semibold">{principalTitle}</p>
             </div>
           </div>

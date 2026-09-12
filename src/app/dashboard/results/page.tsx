@@ -58,11 +58,11 @@ export default function ResultsPage() {
         title="Terminal Report Card Generator"
         description="Official terminal report card generator for Markazu Umar School. Displays verified and administrator-approved assessment results for student academic transcripts."
         actions={
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
             {isAdminUser && (
               <button
                 onClick={() => setIsTemplateModalOpen(true)}
-                className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
+                className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
               >
                 <Palette className="w-4 h-4" />
                 <span>Customize Template & Signature</span>
@@ -72,7 +72,7 @@ export default function ResultsPage() {
             {(isAdminUser || currentUser.role === 'TEACHER') && (
               <Link
                 href="/dashboard/assessment"
-                className="px-5 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold text-xs flex items-center gap-2 shadow-lg transition-all hover:scale-105"
+                className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg transition-all hover:scale-105"
               >
                 <FileSpreadsheet className="w-4 h-4" />
                 <span>Assessment & Score Entry Engine</span>
@@ -154,11 +154,11 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-emerald-800/40">
-          <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-emerald-800/40">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <button
               onClick={() => setViewMode('SINGLE')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-center ${
                 viewMode === 'SINGLE'
                   ? 'bg-emerald-600 text-white shadow-md font-black'
                   : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
@@ -170,7 +170,7 @@ export default function ResultsPage() {
             {isAdminUser && (
               <button
                 onClick={() => setViewMode('ALL_BATCH')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`flex-1 sm:flex-initial px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-center ${
                   viewMode === 'ALL_BATCH'
                     ? 'bg-amber-500 text-slate-950 shadow-md font-black'
                     : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
@@ -181,10 +181,10 @@ export default function ResultsPage() {
             )}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={handlePrint}
-              className="px-4 py-2 rounded-xl bg-slate-900 text-white dark:bg-emerald-600 hover:bg-slate-800 font-bold text-xs flex items-center gap-1.5 shadow-md transition-all"
+              className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-900 text-white dark:bg-emerald-600 hover:bg-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print Transcripts</span>

@@ -129,12 +129,12 @@ export default function SessionsPage() {
   return (
     <div className="space-y-6 text-slate-900 dark:text-gray-100 selection:bg-emerald-500 selection:text-white">
       {/* Top Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064e3b] to-[#0284c7] text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-emerald-500/30">
+      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064e3b] to-[#0284c7] text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-emerald-500/30">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300 uppercase tracking-widest mb-1">
             <Calendar className="w-4 h-4 text-emerald-400" /> Academic Session & Term Control Center
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Academic Sessions & Terms</h1>
+          <h1 className="text-xl sm:text-3xl font-black tracking-tight">Academic Sessions & Terms</h1>
           <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 max-w-2xl">
             Manage Gregorian & Hijri academic calendars, term activations, examination readiness, and session archiving for Markazu Umar.
           </p>
@@ -146,6 +146,7 @@ export default function SessionsPage() {
             size="md"
             leftIcon={<Plus className="w-4 h-4" />}
             onClick={() => setShowAddModal(true)}
+            className="w-full sm:w-auto"
           >
             Create Academic Session
           </Button>
@@ -160,45 +161,45 @@ export default function SessionsPage() {
       )}
 
       {/* Active Session Display Card */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-emerald-500/40 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-emerald-500/40 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
             <h3 className="text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider">
               Currently Active School Session
             </h3>
           </div>
-          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/30">
+          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/30 self-start sm:self-auto">
             Active School Calendar
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-xs">
           <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
             <span className="text-[10px] font-bold uppercase block text-emerald-600 dark:text-emerald-400">Academic Year</span>
-            <p className="text-lg font-black mt-1">{currentSession.sessionName || 'Not Set'}</p>
+            <p className="text-base sm:text-lg font-black mt-1">{currentSession.sessionName || 'Not Set'}</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-900 dark:text-sky-200">
             <span className="text-[10px] font-bold uppercase block text-sky-600 dark:text-sky-400">Active Term</span>
-            <p className="text-lg font-black mt-1">{currentSession.activeTerm || 'Term 1'}</p>
+            <p className="text-base sm:text-lg font-black mt-1">{currentSession.activeTerm || 'Term 1'}</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-900 dark:text-purple-200">
             <span className="text-[10px] font-bold uppercase block text-purple-600 dark:text-purple-400">Examination Status</span>
-            <p className="text-lg font-black mt-1">Normal Academic Period</p>
+            <p className="text-base sm:text-lg font-black mt-1">Normal Academic Period</p>
           </div>
         </div>
       </div>
 
       {/* Academic Sessions Table */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
+      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
         <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
           All Academic Session Records
         </h3>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-500/20">
-          <table className="w-full min-w-[450px] text-left border-collapse text-xs">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-500/20 mobile-table-wrapper">
+          <table className="w-full min-w-[480px] text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-100 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 text-slate-700 dark:text-emerald-300 font-bold uppercase text-[10px]">
                 <th className="py-3.5 px-4">Session Name</th>
@@ -380,7 +381,7 @@ function AcademicCalendarManager() {
   };
 
   return (
-    <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
+    <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-emerald-500/20 pb-4">
         <div>
           <span className="text-[10px] font-bold text-amber-500 uppercase tracking-widest block">
@@ -398,7 +399,7 @@ function AcademicCalendarManager() {
         {isAdmin && (
           <button
             onClick={openAddModal}
-            className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shrink-0"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Add Event</span>
@@ -406,7 +407,7 @@ function AcademicCalendarManager() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-xs">
         {academicEvents.map((evt) => (
           <div
             key={evt.id}

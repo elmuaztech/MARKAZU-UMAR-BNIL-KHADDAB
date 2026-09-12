@@ -201,9 +201,9 @@ export function AssessmentDashboard() {
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3 font-poppins">
           <button
             onClick={() => setActiveTab('ENTRY')}
-            className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 border ${
+            className={`flex-1 sm:flex-initial px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
               activeTab === 'ENTRY'
-                ? 'bg-emerald-600 text-white border-emerald-500 shadow-md scale-105'
+                ? 'bg-emerald-600 text-white border-emerald-500 shadow-md'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
             }`}
           >
@@ -213,26 +213,26 @@ export function AssessmentDashboard() {
 
           <button
             onClick={() => setActiveTab('APPROVALS')}
-            className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 border ${
+            className={`flex-1 sm:flex-initial px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
               activeTab === 'APPROVALS'
-                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md scale-105'
+                ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-md'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
             }`}
           >
             <Clock className="w-4 h-4 shrink-0" />
-            <span>Admin Review Queue ({resultSubmissions.filter((s) => s.status === 'PENDING').length})</span>
+            <span>Review Queue ({resultSubmissions.filter((s) => s.status === 'PENDING').length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('SETTINGS')}
-            className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 sm:gap-2 border ${
+            className={`flex-1 sm:flex-initial px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
               activeTab === 'SETTINGS'
-                ? 'bg-purple-600 text-white border-purple-500 shadow-md scale-105'
+                ? 'bg-purple-600 text-white border-purple-500 shadow-md'
                 : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
             }`}
           >
             <Sliders className="w-4 h-4 shrink-0" />
-            <span>Assessment Configurations</span>
+            <span>Configurations</span>
           </button>
         </div>
       )}
@@ -248,7 +248,7 @@ export function AssessmentDashboard() {
           <QuickActionGrid items={assessmentQuickActions} />
 
           {/* 6-Step Cascading Selector Bar */}
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-4 font-poppins">
+          <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-4 font-poppins">
             <div className="flex items-center gap-2 border-b border-slate-200 dark:border-emerald-800/40 pb-3">
               <Filter className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-wider">

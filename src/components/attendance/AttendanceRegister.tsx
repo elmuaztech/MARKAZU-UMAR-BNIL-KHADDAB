@@ -324,21 +324,21 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-initial">
             <button
               onClick={handleSaveDraft}
-              className="px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-emerald-950 text-slate-800 dark:text-emerald-100 hover:bg-slate-200 font-extrabold text-xs flex items-center gap-2 transition-all"
+              className="justify-center px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-emerald-950 text-slate-800 dark:text-emerald-100 hover:bg-slate-200 font-extrabold text-xs flex items-center gap-2 transition-all"
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 shrink-0" />
               <span>Save Draft</span>
             </button>
 
             <button
               onClick={() => setIsPreviewOpen(true)}
-              className="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all hover:scale-105"
+              className="justify-center px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/20 flex items-center gap-2 transition-all hover:scale-105"
             >
-              <Eye className="w-4 h-4" />
-              <span>Preview & Submit ({stats.total})</span>
+              <Eye className="w-4 h-4 shrink-0" />
+              <span className="truncate">Preview & Submit ({stats.total})</span>
             </button>
           </div>
         </div>
@@ -527,8 +527,12 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
           </div>
 
           {/* Interactive Roster Table */}
+          <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-emerald-300/80 px-2 sm:hidden">
+            <span className="flex items-center gap-1">👉 Swipe horizontally to access status buttons & remarks →</span>
+          </div>
+
           <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
               <table className="w-full min-w-[650px] text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-100 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 text-[11px] font-black text-slate-600 dark:text-emerald-300 uppercase tracking-wider">

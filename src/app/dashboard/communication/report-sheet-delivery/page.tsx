@@ -116,16 +116,16 @@ export default function ReportSheetDeliveryPage() {
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-8 font-poppins">
       {/* Top Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
             href="/dashboard/communication"
-            className="p-2.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-slate-700 dark:text-emerald-300 hover:text-emerald-600 transition-colors"
+            className="p-2.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-slate-700 dark:text-emerald-300 hover:text-emerald-600 transition-colors shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-white">Report Sheet Delivery Engine</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">Report Sheet Delivery Engine</h1>
             <p className="text-xs text-slate-500 dark:text-emerald-300/70">
               Targeted Parent Dispatch: Entire School, By Programme, By Class, or By Individual Student
             </p>
@@ -135,10 +135,10 @@ export default function ReportSheetDeliveryPage() {
         {/* Master One-Click Dispatch Button */}
         <button
           onClick={handleMasterOneClickWhatsAppDispatch}
-          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/20 flex items-center gap-2 transition-all hover:scale-105"
+          className="w-full sm:w-auto justify-center px-4 sm:px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/20 flex items-center gap-2 transition-all hover:scale-105 shrink-0"
         >
-          <Zap className="w-4 h-4 fill-slate-950" />
-          <span>⚡ One-Time Click: Send All School Report Sheets (WhatsApp)</span>
+          <Zap className="w-4 h-4 fill-slate-950 shrink-0" />
+          <span className="text-center">⚡ Send All School Report Sheets (WhatsApp)</span>
         </button>
       </div>
 
@@ -313,22 +313,22 @@ export default function ReportSheetDeliveryPage() {
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">
             <button
               onClick={handleOpenWhatsAppModal}
               disabled={targetedStudents.length === 0}
-              className="px-5 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-xl flex items-center gap-2 disabled:opacity-50 transition-all hover:scale-105"
+              className="justify-center px-5 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-xl flex items-center gap-2 disabled:opacity-50 transition-all hover:scale-105"
             >
-              <MessageSquare className="w-4 h-4" />
-              <span>📱 Open 1-Click WhatsApp Gateway ({parentGroups.length} Parents)</span>
+              <MessageSquare className="w-4 h-4 shrink-0" />
+              <span className="truncate">📱 Open WhatsApp Gateway ({parentGroups.length} Parents)</span>
             </button>
 
             <button
               onClick={handlePublishBatch}
               disabled={isPublishing || targetedStudents.length === 0}
-              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-black text-xs shadow-xl flex items-center gap-2 disabled:opacity-50 transition-all hover:scale-105"
+              className="justify-center px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-black text-xs shadow-xl flex items-center gap-2 disabled:opacity-50 transition-all hover:scale-105"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 shrink-0" />
               <span>{isPublishing ? 'Publishing & Sending...' : 'Publish & Dispatch Selection'}</span>
             </button>
           </div>
@@ -345,12 +345,17 @@ export default function ReportSheetDeliveryPage() {
       </div>
 
       {/* SMART PARENT GROUPING PREVIEW TABLE */}
-      <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-6 shadow-xl space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-4 sm:p-6 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
           <h3 className="text-base font-black text-slate-900 dark:text-white">Smart Parent Target Roster & WhatsApp Preview</h3>
-          <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-            {parentGroups.length} Target Parent Accounts
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+              {parentGroups.length} Target Parent Accounts
+            </span>
+            <span className="sm:hidden text-[10px] text-slate-400 dark:text-emerald-400/70 italic">
+              (Swipe horizontally →)
+            </span>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

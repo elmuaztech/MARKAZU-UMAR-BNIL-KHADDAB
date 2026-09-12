@@ -18,7 +18,7 @@ export function Header({
   const { currentSession, currentUser, announcements } = useApp();
 
   return (
-    <header className="sticky top-0 z-30 h-16 bg-white/95 dark:bg-[#032015]/95 backdrop-blur-md border-b border-emerald-200/80 dark:border-emerald-800/50 px-2.5 sm:px-6 flex items-center justify-between transition-colors duration-200 shadow-sm w-full max-w-full overflow-hidden sm:overflow-visible shrink-0">
+    <header className="sticky top-0 z-30 h-16 bg-white/95 dark:bg-[#032015]/95 backdrop-blur-md border-b border-emerald-200/80 dark:border-emerald-800/50 px-2 sm:px-6 flex items-center justify-between transition-colors duration-200 shadow-sm w-full max-w-full overflow-visible shrink-0">
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
         <button
           onClick={() => setMobileOpen(!mobileOpen)}

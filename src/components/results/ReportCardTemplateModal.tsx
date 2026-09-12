@@ -69,11 +69,13 @@ export function ReportCardTemplateModal({ isOpen, onClose }: ReportCardTemplateM
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = ('touches' in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = ('touches' in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    const scaleX = canvas.width / (rect.width || 1);
+    const scaleY = canvas.height / (rect.height || 1);
+    const rawX = ('touches' in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const rawY = ('touches' in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
 
     ctx.beginPath();
-    ctx.moveTo(x, y);
+    ctx.moveTo(rawX * scaleX, rawY * scaleY);
   };
 
   const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
@@ -84,10 +86,12 @@ export function ReportCardTemplateModal({ isOpen, onClose }: ReportCardTemplateM
     if (!ctx) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = ('touches' in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
-    const y = ('touches' in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    const scaleX = canvas.width / (rect.width || 1);
+    const scaleY = canvas.height / (rect.height || 1);
+    const rawX = ('touches' in e) ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const rawY = ('touches' in e) ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
 
-    ctx.lineTo(x, y);
+    ctx.lineTo(rawX * scaleX, rawY * scaleY);
     ctx.stroke();
     setHasCanvasSignature(true);
   };
@@ -150,31 +154,31 @@ export function ReportCardTemplateModal({ isOpen, onClose }: ReportCardTemplateM
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 font-poppins">
       <div className="max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden bg-white dark:bg-[#032015] border border-emerald-500/30 rounded-3xl shadow-2xl">
         {/* Header Bar */}
-        <div className="p-5 sm:p-6 bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white flex items-center justify-between border-b border-emerald-500/30 shrink-0">
+        <div className="p-4 sm:p-6 bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white flex items-center justify-between border-b border-emerald-500/30 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-amber-300 shadow-md">
-              <Sparkles className="w-6 h-6" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-amber-300 shadow-md shrink-0">
+              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <h2 className="text-lg font-black tracking-tight text-white flex items-center gap-2">
-                Official Report Sheet Template Builder & Signature Engine
+              <h2 className="text-sm sm:text-lg font-black tracking-tight text-white flex items-center gap-2">
+                Official Report Sheet Template Builder
               </h2>
-              <p className="text-xs text-emerald-200/90 font-medium">
-                Admin Customization: School Titles, Color Schemes, Active Sections & Default Signature
+              <p className="text-[11px] sm:text-xs text-emerald-200/90 font-medium">
+                Admin Customization: Titles, Colors, Sections & Signatures
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-emerald-900/60 hover:bg-emerald-800 text-emerald-300 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-emerald-900/60 hover:bg-emerald-800 text-emerald-300 hover:text-white transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 px-6 py-3 bg-slate-100 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-800/40 overflow-x-auto text-xs font-bold shrink-0">
+        <div className="flex items-center gap-2 px-3 sm:px-6 py-2.5 sm:py-3 bg-slate-100 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-800/40 overflow-x-auto text-xs font-bold shrink-0">
           <button
             onClick={() => setActiveTab('content')}
             className={`px-4 py-2 rounded-xl flex items-center gap-2 transition-all whitespace-nowrap ${

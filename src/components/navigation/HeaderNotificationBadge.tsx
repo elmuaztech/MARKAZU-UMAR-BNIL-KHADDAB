@@ -40,7 +40,7 @@ export function HeaderNotificationBadge() {
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute right-0 mt-3 w-80 sm:w-96 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl z-50 p-4 space-y-3 font-poppins text-xs"
+              className="fixed sm:absolute inset-x-2 sm:inset-x-auto right-auto sm:right-0 top-16 sm:top-auto sm:mt-3 w-auto sm:w-96 max-w-[calc(100vw-1rem)] rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/40 shadow-2xl z-50 p-3.5 sm:p-4 space-y-3 font-poppins text-xs"
             >
               <div className="flex items-center justify-between pb-2.5 border-b border-slate-200 dark:border-emerald-500/20">
                 <div className="flex items-center gap-2">

@@ -110,7 +110,7 @@ export function SessionSwitcher() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 sm:right-0 sm:left-auto top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white dark:bg-[#032015] border border-emerald-500/30 shadow-2xl z-50 overflow-hidden font-poppins"
+            className="fixed sm:absolute inset-x-2 sm:inset-x-auto left-2 sm:left-0 top-16 sm:top-full mt-1 sm:mt-2 w-auto sm:w-80 max-w-[calc(100vw-1rem)] rounded-2xl bg-white dark:bg-[#032015] border border-emerald-500/30 shadow-2xl z-50 overflow-hidden font-poppins"
           >
             <div className="p-3 bg-gradient-to-r from-emerald-900 to-[#021810] text-white border-b border-emerald-500/20 flex items-center justify-between">
               <div>

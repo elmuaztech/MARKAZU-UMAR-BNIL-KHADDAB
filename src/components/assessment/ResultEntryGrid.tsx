@@ -233,7 +233,11 @@ export function ResultEntryGrid({
       )}
 
       {/* Interactive Spreadsheet Data Table */}
-      <div className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl overflow-x-auto">
+      <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-emerald-300/80 px-2 sm:hidden">
+        <span className="flex items-center gap-1">👉 Swipe horizontally to view/enter all assessment columns →</span>
+      </div>
+
+      <div className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
         <table className="w-full min-w-[850px] text-left text-xs border-collapse">
           <thead>
             <tr className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 uppercase tracking-wider font-bold border-b border-slate-200 dark:border-emerald-800/40">

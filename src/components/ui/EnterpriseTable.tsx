@@ -142,27 +142,61 @@ export function EnterpriseTable<T extends { id?: string }>({
             No records found.
           </div>
         ) : (
-          paginatedData.map((item, rowIdx) =>
-            mobileCardRender ? (
-              <div key={item.id || rowIdx}>{mobileCardRender(item)}</div>
-            ) : (
+          paginatedData.map((item, rowIdx) => {
+            if (mobileCardRender) {
+              return <div key={item.id || rowIdx}>{mobileCardRender(item)}</div>;
+            }
+
+            const actionCol = columns.find(
+              (c) => c.header.toLowerCase().includes('action') || c.header.toLowerCase() === 'options'
+            );
+            const contentCols = columns.filter((c) => c !== actionCol);
+
+            return (
               <div
                 key={item.id || rowIdx}
-                className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2 text-xs"
+                className="p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2.5 text-xs shadow-xs"
               >
-                {columns.map((col, colIdx) => (
-                  <div key={colIdx} className="flex flex-wrap justify-between items-start gap-1 py-1">
-                    <span className="font-extrabold text-slate-500 dark:text-emerald-400/80 uppercase text-[10px] shrink-0">
-                      {col.header}:
-                    </span>
-                    <span className="font-medium text-slate-900 dark:text-white text-right max-w-[70%] break-words">
-                      {col.cell ? col.cell(item) : col.accessorKey ? String(item[col.accessorKey] ?? '') : null}
-                    </span>
+                {/* Primary item header (First column) */}
+                {contentCols.length > 0 && (
+                  <div className="border-b border-slate-200/80 dark:border-emerald-500/15 pb-2">
+                    <div className="font-extrabold text-sm text-slate-900 dark:text-white">
+                      {contentCols[0].cell
+                        ? contentCols[0].cell(item)
+                        : contentCols[0].accessorKey
+                        ? String(item[contentCols[0].accessorKey] ?? '')
+                        : null}
+                    </div>
                   </div>
-                ))}
+                )}
+
+                {/* Remaining content fields */}
+                <div className="space-y-1.5 pt-0.5">
+                  {contentCols.slice(1).map((col, colIdx) => (
+                    <div key={colIdx} className="flex justify-between items-start gap-2 py-0.5">
+                      <span className="font-bold text-slate-500 dark:text-emerald-400/80 uppercase text-[10px] shrink-0 pt-0.5">
+                        {col.header}:
+                      </span>
+                      <span className="font-medium text-slate-900 dark:text-white text-right break-words min-w-0">
+                        {col.cell ? col.cell(item) : col.accessorKey ? String(item[col.accessorKey] ?? '') : null}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Dedicated full-width Action buttons */}
+                {actionCol && (
+                  <div className="pt-2.5 mt-1 border-t border-slate-200 dark:border-emerald-500/20 flex flex-wrap items-center justify-end gap-2">
+                    {actionCol.cell
+                      ? actionCol.cell(item)
+                      : actionCol.accessorKey
+                      ? String(item[actionCol.accessorKey] ?? '')
+                      : null}
+                  </div>
+                )}
               </div>
-            )
-          )
+            );
+          })
         )}
       </div>
 
