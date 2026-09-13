@@ -104,8 +104,8 @@ export interface InAppNotification {
   title: string;
   body: string;
   priority: MessagePriority;
-  category: CommunicationType;
-  channels: DeliveryChannel[];
+  category: CommunicationType | string;
+  channels?: DeliveryChannel[];
   senderName: string;
   read: boolean;
   pinned: boolean;
@@ -113,6 +113,7 @@ export interface InAppNotification {
   createdAt: string;
   readAt?: string;
   attachments?: CommunicationAttachment[];
+  metadata?: string | null;
 }
 
 export interface SmartParentGroup {

@@ -9,12 +9,16 @@ export const dynamic = 'force-dynamic';
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+    }
+
     const userId = params.id;
     const body = await req.json();
 
     // 1. Locate user in PostgreSQL Prisma database
     let dbUser: any = null;
-    if (userId === 'me' && authUser) {
+    if (userId === 'me') {
       dbUser = await prisma.user.findFirst({
         where: {
           OR: [
@@ -53,15 +57,35 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: `User with ID "${userId}" was not found.` }, { status: 404 });
     }
 
+    const isAdmin = authUser.role === 'SUPER_ADMIN' || authUser.role === 'ADMIN';
+    const isSelf = dbUser.id === authUser.id;
+
+    if (!isAdmin && !isSelf) {
+      return NextResponse.json({ error: 'Access Denied: You do not have permission to modify other user accounts.' }, { status: 403 });
+    }
+
+    // Normal users cannot elevate their own role, status, or assigned programme
+    if (!isAdmin) {
+      if (body.role !== undefined && body.role !== dbUser.role) {
+        return NextResponse.json({ error: 'Access Denied: You cannot modify your own role.' }, { status: 403 });
+      }
+      if (body.status !== undefined && body.status !== dbUser.status) {
+        return NextResponse.json({ error: 'Access Denied: You cannot modify your account status.' }, { status: 403 });
+      }
+      if (body.assignedProgrammeId !== undefined || body.assignedProgrammeName !== undefined) {
+        return NextResponse.json({ error: 'Access Denied: You cannot modify assigned programmes.' }, { status: 403 });
+      }
+    }
+
     const updateData: any = {};
     if (body.name !== undefined) updateData.name = body.name.trim();
     if (body.avatar !== undefined) updateData.avatar = body.avatar;
     if (body.phone !== undefined) updateData.phone = body.phone.trim();
     if (body.email !== undefined) updateData.email = body.email.trim().toLowerCase();
-    if (body.role !== undefined) updateData.role = body.role;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.assignedProgrammeId !== undefined) updateData.assignedProgrammeId = body.assignedProgrammeId;
-    if (body.assignedProgrammeName !== undefined) updateData.assignedProgrammeName = body.assignedProgrammeName;
+    if (isAdmin && body.role !== undefined) updateData.role = body.role;
+    if (isAdmin && body.status !== undefined) updateData.status = body.status;
+    if (isAdmin && body.assignedProgrammeId !== undefined) updateData.assignedProgrammeId = body.assignedProgrammeId;
+    if (isAdmin && body.assignedProgrammeName !== undefined) updateData.assignedProgrammeName = body.assignedProgrammeName;
 
     // Reset password request
     let tempPassSent: string | undefined;
@@ -157,6 +181,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 });
+    }
+    if (authUser.role !== 'SUPER_ADMIN') {
+      return NextResponse.json({ error: 'Access Denied: Only Super Administrators can deactivate user accounts.' }, { status: 403 });
+    }
+
     const userId = params.id;
 
     // Locate user in PostgreSQL

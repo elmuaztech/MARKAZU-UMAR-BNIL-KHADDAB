@@ -32,8 +32,8 @@ export interface WhatsAppPayload {
 }
 
 /**
- * Build Personalized WhatsApp Payload for Report Sheet Delivery
- * ENFORCES: Each parent receives ONLY their own child's/children's report sheet link!
+ * Build Personalized WhatsApp Payload for Report Card Delivery
+ * ENFORCES: Each parent receives ONLY their own child's/children's report card link!
  */
 export function buildReportSheetWhatsAppPayload(
   group: SmartParentGroup,
@@ -46,29 +46,29 @@ export function buildReportSheetWhatsAppPayload(
   let targetBaseUrl = baseUrl || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : defaultAppUrl);
   const formattedPhone = formatWhatsAppPhone(group.parentPhone);
 
-  const wardLinksText = group.wardIds
+  const childLinksText = group.wardIds
     .map((wardId) => {
       const student = students.find((s) => s.id === wardId);
       const studentName = student ? student.fullName : 'Student';
       const admissionNo = student ? student.admissionNo : wardId;
-      const reportUrl = `${baseUrl}/dashboard/results?studentId=${wardId}`;
+      const reportUrl = `${targetBaseUrl}/dashboard/results?studentId=${wardId}`;
 
-      return `• *${studentName}* (${admissionNo})\n  📄 View Report Sheet: ${reportUrl}`;
+      return `• *${studentName}* (${admissionNo})\n  📄 View Report: ${reportUrl}`;
     })
     .join('\n\n');
 
   const text = `Assalamu Alaikum Mallam/Hajiya *${group.parentName}*,
 
-Official Student Evaluation Report Sheet from:
+Official Report Card from:
 *Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School* Kano
 
 📌 *Session:* ${sessionName}
 📌 *Term:* ${term}
 
-*Assigned Ward(s) Evaluation Link:*
-${wardLinksText}
+*Child Report Card Link:*
+${childLinksText}
 
-_Note: This evaluation link is strictly confidential and generated for ${group.parentName} only._
+_Note: This report link is strictly confidential and generated for ${group.parentName} only._
 
 Management Office
 Markazu Umar Islamiyyah, Kano`;
@@ -97,15 +97,15 @@ export function buildAnnouncementWhatsAppPayload(
   students: Student[]
 ): WhatsAppPayload {
   const formattedPhone = formatWhatsAppPhone(parent.phone);
-  const wards = students.filter(
+  const children = students.filter(
     (s) => s.guardianId === parent.id || s.guardianName.toLowerCase() === parent.fullName.toLowerCase()
   );
-  const wardNames = wards.map((w) => w.fullName);
-  const wardsLabel = wardNames.length > 0 ? ` (Ward: ${wardNames.join(', ')})` : '';
+  const childNames = children.map((w) => w.fullName);
+  const childLabel = childNames.length > 0 ? ` (Child: ${childNames.join(', ')})` : '';
 
   const plainContent = content.replace(/<[^>]*>?/gm, '').trim();
 
-  const text = `Assalamu Alaikum *${parent.fullName}*${wardsLabel},
+  const text = `Assalamu Alaikum *${parent.fullName}*${childLabel},
 
 Important School Notice from:
 *Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School* Kano
@@ -124,7 +124,7 @@ _Markazu Umar Islamiyyah Office_`;
     parentName: parent.fullName,
     parentPhone: parent.phone,
     formattedPhone,
-    wardNames: wardNames.length > 0 ? wardNames : ['Enrolled Ward'],
+    wardNames: childNames.length > 0 ? childNames : ['Enrolled Child'],
     messageText: text,
     whatsappUrl,
   };

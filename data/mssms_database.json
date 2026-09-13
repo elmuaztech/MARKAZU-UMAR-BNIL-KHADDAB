@@ -201,7 +201,17 @@
       "updated_at": "2026-08-14T18:00:22.016Z"
     }
   ],
-  "attendance": [],
+  "attendance": [
+    {
+      "studentId": "0362071b-632e-4ba2-99a4-70d03d222922",
+      "status": "PRESENT",
+      "isDraft": false,
+      "created_at": "2026-09-13T12:58:19.466Z",
+      "updated_at": "2026-09-13T13:56:10.165Z",
+      "classId": "cls-1786929579618",
+      "date": "2026-10-20"
+    }
+  ],
   "tahfizRecords": [],
   "announcements": [],
   "deletedIdentifiers": {

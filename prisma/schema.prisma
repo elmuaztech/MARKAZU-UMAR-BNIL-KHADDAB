@@ -107,6 +107,7 @@ model User {
   sessions          UserSession[]
   passwordHistories PasswordHistory[]
   resetTokens       PasswordResetToken[]
+  inAppNotifications InAppNotification[]
 
   @@map("users")
 }
@@ -504,12 +505,16 @@ model GradeRecord {
   submittedAt     DateTime?
   approvedAt      DateTime?
   approvedBy      String?
+  isReleased      Boolean        @default(false)
+  releasedAt      DateTime?
+  releasedBy      String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
   @@index([studentId, term, session])
   @@index([programmeId, classId, subjectId])
   @@index([sessionId, classId, subjectId])
+  @@index([isReleased, classId, term, session])
   @@map("grade_records")
 }
 
@@ -559,6 +564,8 @@ model ResultApprovalSubmission {
   lowestScore      Float     @default(0)
   status           String    @default("PENDING") // PENDING, APPROVED, REJECTED, RETURNED
   adminComments    String?
+  isReleased       Boolean   @default(false)
+  releasedAt       DateTime?
   submittedAt      DateTime  @default(now())
   reviewedAt       DateTime?
   reviewedBy       String?
@@ -617,4 +624,26 @@ model AuditLog {
 
   @@index([userId])
   @@map("audit_logs")
+}
+
+model InAppNotification {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messageId   String?
+  title       String
+  body        String
+  priority    String    @default("NORMAL") // NORMAL, IMPORTANT, URGENT
+  category    String    @default("GENERAL_NOTICE") // REPORT_CARD, ATTENDANCE_COMPLETED, GENERAL_NOTICE
+  senderName  String    @default("System")
+  read        Boolean   @default(false)
+  readAt      DateTime?
+  pinned      Boolean   @default(false)
+  isArchived  Boolean   @default(false)
+  metadata    String?   // JSON string with contextual attributes & deduplication keys
+  createdAt   DateTime  @default(now())
+
+  @@index([userId, read, isArchived])
+  @@index([category, metadata])
+  @@map("in_app_notifications")
 }

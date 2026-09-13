@@ -321,6 +321,9 @@ export interface GradeRecord {
   submittedAt?: string;
   approvedAt?: string;
   approvedBy?: string;
+  isReleased?: boolean;
+  releasedAt?: string | null;
+  releasedBy?: string | null;
 }
 
 export interface GradeScaleItem {

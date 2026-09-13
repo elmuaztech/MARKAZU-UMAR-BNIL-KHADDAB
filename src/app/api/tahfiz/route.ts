@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getAuthenticatedUser, enforceRoleAndProgramme } from '@/lib/auth';
+import { getAuthenticatedUser, enforceRoleAndProgramme, resolveTeacherScope } from '@/lib/auth';
 import { getAllServerTahfiz, createServerTahfizRecord } from '@/lib/serverDb';
 
 export const dynamic = 'force-dynamic';
@@ -34,6 +34,45 @@ export async function GET(request: NextRequest) {
     if (studentId) whereClause.studentId = studentId;
     if (classId) whereClause.classId = classId;
     if (targetProgId) whereClause.programmeId = targetProgId;
+
+    if (authUser?.role === 'PARENT') {
+      const parent = await prisma.parent.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], deletedAt: null },
+        include: { wards: { select: { id: true } } },
+      });
+      const allowedStudentIds = parent?.wards.map((w) => w.id) || [];
+      if (studentId && !allowedStudentIds.includes(studentId)) {
+        return NextResponse.json(
+          { success: false, error: 'Access Denied: You are not authorized to view Tahfiz records for this child.' },
+          { status: 403 }
+        );
+      }
+      whereClause.studentId = { in: allowedStudentIds };
+    } else if (authUser?.role === 'STUDENT') {
+      const student = await prisma.student.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], deletedAt: null },
+        select: { id: true },
+      });
+      if (studentId && (!student || student.id !== studentId)) {
+        return NextResponse.json(
+          { success: false, error: 'Access Denied: You can only view your own Tahfiz records.' },
+          { status: 403 }
+        );
+      }
+      whereClause.studentId = student?.id || '__NO_STUDENT__';
+    } else if (authUser?.role === 'TEACHER') {
+      const scope = await resolveTeacherScope(authUser.id);
+      const allowedClasses = Array.from(new Set([...scope.teachingClassIds, ...scope.attendanceClassIds]));
+      if (classId && !allowedClasses.includes(classId)) {
+        return NextResponse.json(
+          { success: false, error: 'Access Denied: You are not assigned to this class.' },
+          { status: 403 }
+        );
+      }
+      if (!classId) {
+        whereClause.classId = { in: allowedClasses.length > 0 ? allowedClasses : ['__NO_CLASSES__'] };
+      }
+    }
 
     const records = await prisma.tahfizRecord.findMany({
       where: whereClause,

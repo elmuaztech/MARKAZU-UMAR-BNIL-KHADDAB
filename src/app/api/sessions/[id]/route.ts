@@ -35,7 +35,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await getAuthenticatedUser(req);
-    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN']);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN']);
     if (!authCheck.authorized) {
       return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
     }
@@ -79,5 +79,62 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   } catch (error: any) {
     console.error('[UPDATE_SESSION_ERROR]', error);
     return NextResponse.json({ error: error.message || 'Failed to update session' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const authUser = await getAuthenticatedUser(req);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN']);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+    }
+
+    const sessionId = params.id;
+
+    const existingSession = await prisma.schoolSession.findUnique({
+      where: { id: sessionId },
+    });
+
+    if (!existingSession) {
+      return NextResponse.json({ error: 'Session not found.' }, { status: 404 });
+    }
+
+    // Historical dependency protection
+    const [enrollments, attendance, grades, assignments] = await Promise.all([
+      prisma.studentEnrollment.count({ where: { sessionId } }),
+      prisma.attendanceRecord.count({ where: { sessionId } }),
+      prisma.gradeRecord.count({ where: { sessionId } }),
+      prisma.teacherAssignment.count({ where: { sessionId } }),
+    ]);
+
+    const totalHistorical = enrollments + attendance + grades + assignments;
+    if (totalHistorical > 0) {
+      return NextResponse.json(
+        {
+          error: 'Cannot delete academic session: Active students, attendance records, or academic results depend on this session.',
+          details: {
+            enrollments,
+            attendanceRecords: attendance,
+            gradeRecords: grades,
+            teacherAssignments: assignments,
+          },
+        },
+        { status: 400 }
+      );
+    }
+
+    // Safe deletion: No historical dependencies exist
+    await prisma.schoolSession.delete({
+      where: { id: sessionId },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Academic session deleted successfully.',
+    });
+  } catch (error: any) {
+    console.error('[DELETE_SESSION_ERROR]', error);
+    return NextResponse.json({ error: error.message || 'Failed to delete session' }, { status: 500 });
   }
 }

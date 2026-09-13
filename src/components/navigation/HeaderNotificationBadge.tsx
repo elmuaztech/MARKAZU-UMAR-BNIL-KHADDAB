@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/lib/context';
-import { Bell, Check, Pin, Trash2, ArrowUpRight, Sparkles, ShieldAlert, FileText, Calendar } from 'lucide-react';
+import { Bell, Check, Pin, Trash2, ArrowUpRight, Sparkles, ShieldAlert, FileText, Calendar, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function HeaderNotificationBadge() {
@@ -100,6 +100,28 @@ export function HeaderNotificationBadge() {
 
                       <p className="font-bold text-slate-900 dark:text-white text-xs leading-snug break-words">{notif.title}</p>
                       <p className="text-[11px] text-slate-600 dark:text-emerald-200/75 line-clamp-2 break-words">{notif.body}</p>
+
+                      {(() => {
+                        let meta: any = null;
+                        try {
+                          meta = notif.metadata ? (typeof notif.metadata === 'string' ? JSON.parse(notif.metadata) : notif.metadata) : null;
+                        } catch (e) {}
+                        if (meta?.deepLink || meta?.action === 'VIEW_REPORT' || notif.category === 'REPORT_CARD') {
+                          return (
+                            <div className="pt-1.5">
+                              <Link
+                                href={meta?.deepLink || (meta?.studentId ? `/dashboard/results?studentId=${meta.studentId}` : '/dashboard/results')}
+                                onClick={() => setIsOpen(false)}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[10px] shadow-sm transition-all"
+                              >
+                                <Eye className="w-3 h-3" />
+                                <span>View Report</span>
+                              </Link>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
 
                       {notif.attachments && notif.attachments.length > 0 && (
                         <div className="pt-1 flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400 font-bold">

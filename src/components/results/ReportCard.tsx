@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useRef, useState } from 'react';
 import { Student, GradeRecord, SchoolSession } from '../../types';
 import { useApp } from '../../lib/context';
-import { Printer, Award, BookOpen, ShieldCheck } from 'lucide-react';
+import { Printer, Award, BookOpen, ShieldCheck, Download, Image as ImageIcon, FileText, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { BilingualText } from '../ui/BilingualText';
+import html2canvas from 'html2canvas';
 
 interface ReportCardProps {
   student: Student;
@@ -17,8 +18,72 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
 
   const currentClass = classes.find((c) => c.id === student.classId || c.name === student.className);
 
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
+  const [downloadError, setDownloadError] = useState<string | null>(null);
+
   const handlePrint = () => {
     window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloadingPdf(true);
+      setDownloadError(null);
+      const url = `/api/reports/download?studentId=${student.id}&sessionId=${session.id || ''}&term=${encodeURIComponent(session.activeTerm || '')}&format=pdf`;
+      const res = await fetch(url);
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || data.error || 'Failed to download PDF report');
+      }
+      const blob = await res.blob();
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = downloadUrl;
+      const safeName = student.fullName.replace(/[^a-zA-Z0-9]/g, '_');
+      a.download = `Report_Card_${safeName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (err: any) {
+      setDownloadError(err.message || 'Error downloading PDF');
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  };
+
+  const handleDownloadImage = async () => {
+    if (!reportRef.current) return;
+    try {
+      setIsDownloadingImage(true);
+      setDownloadError(null);
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      const dataUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = dataUrl;
+      const safeName = student.fullName.replace(/[^a-zA-Z0-9]/g, '_');
+      a.download = `Report_Card_${safeName}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (err: any) {
+      setDownloadError(err.message || 'Error downloading image');
+    } finally {
+      setIsDownloadingImage(false);
+    }
+  };
+
+  const handleViewReport = () => {
+    if (reportRef.current) {
+      reportRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   const totalPossible = grades.length * 100;
@@ -50,27 +115,71 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
   return (
     <div className="space-y-4">
       {/* Action Bar (hidden on print) */}
-      <div className="no-print flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl glass-card border border-emerald-500/30">
+      <div className="no-print flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-4 rounded-2xl glass-card border border-emerald-500/30">
         <div>
           <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <Award className="w-4 h-4 text-amber-400" />
-            Official Terminal Report Card Preview
+            Official Terminal Report Card
           </h3>
           <p className="text-xs text-slate-600 dark:text-emerald-300/70">
-            Rendered with Admin Default Report Sheet Template & Signature.
+            Certified Academic & Tahfiz Performance Record
           </p>
         </div>
-        <button
-          onClick={handlePrint}
-          className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
-        >
-          <Printer className="w-4 h-4" />
-          <span>Print / Save as PDF</span>
-        </button>
+
+        <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+          <button
+            onClick={handleViewReport}
+            className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 text-slate-700 dark:text-emerald-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>View Report</span>
+          </button>
+
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isDownloadingPdf}
+            className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all hover:scale-105 disabled:opacity-50"
+          >
+            {isDownloadingPdf ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <FileText className="w-3.5 h-3.5" />
+            )}
+            <span>{isDownloadingPdf ? 'Generating...' : 'Download PDF'}</span>
+          </button>
+
+          <button
+            onClick={handleDownloadImage}
+            disabled={isDownloadingImage}
+            className="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all hover:scale-105 disabled:opacity-50"
+          >
+            {isDownloadingImage ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <ImageIcon className="w-3.5 h-3.5" />
+            )}
+            <span>{isDownloadingImage ? 'Processing...' : 'Download Image'}</span>
+          </button>
+
+          <button
+            onClick={handlePrint}
+            className="hidden sm:flex px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs items-center justify-center gap-1.5 shadow-md transition-all hover:scale-105"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Print</span>
+          </button>
+        </div>
       </div>
 
+      {downloadError && (
+        <div className="no-print p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs font-semibold flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-500" />
+          <span>{downloadError}</span>
+        </div>
+      )}
+
       {/* Official Report Card Sheet */}
-      <div className="print-container bg-white text-slate-900 p-3 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 max-w-4xl mx-auto font-sans">
+      <div ref={reportRef} className="print-container bg-white text-slate-900 p-3 sm:p-8 rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 max-w-4xl mx-auto font-sans">
         {/* Header Crest Container */}
         <div
           className="text-center rounded-2xl p-4 sm:p-5 mb-5 shadow-sm text-white space-y-2"
@@ -113,7 +222,7 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
         {/* Student Biodata Box */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3 bg-emerald-50/90 p-3.5 rounded-xl border border-emerald-200 text-xs mb-5">
           <div>
-            <span className="text-[10px] text-gray-500 uppercase font-bold block">Student Name</span>
+            <span className="text-[10px] text-gray-500 uppercase font-bold block">Child Name</span>
             <span className="font-extrabold text-emerald-950 block truncate">{student.fullName}</span>
           </div>
           <div>

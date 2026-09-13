@@ -1,5 +1,3 @@
-'use client';
-
 import { UserRole, User, Student, Parent, Teacher, SchoolClass, Subject, AdmissionApplication, AttendanceRecord, TahfizRecord, GradeRecord, TeacherAssignment, Programme } from '../types';
 
 export type ExtendedRole = 'SUPER_ADMIN' | 'ADMIN' | 'HEADMASTER' | 'TEACHER' | 'STUDENT' | 'PARENT';
@@ -164,7 +162,7 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/assessment': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/results': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/communication': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
-  '/dashboard/communication/notifications': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard/communication/notifications': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/communication/history': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/communication/new': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/communication/templates': ['SUPER_ADMIN', 'ADMIN'],
@@ -174,20 +172,41 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/communication/scheduled': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/communication/settings': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/messages': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
-  '/dashboard/sessions': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard/sessions': ['SUPER_ADMIN'], // Strictly Super Admin authority
   '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
-  '/dashboard/backup': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard/backup': ['SUPER_ADMIN'],
   '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
-  '/dashboard/security': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard/security': ['SUPER_ADMIN'], // Strictly Super Admin authority
   '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'],
 };
 
 export function hasPageAccess(role: UserRole | string, pathname: string): boolean {
+  if (!role || role === 'GUEST') return false;
+
   // Normalize path if trailing slash
   const cleanPath = pathname.endsWith('/') && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
-  const allowedRoles = PAGE_ROLE_ACCESS[cleanPath];
-  if (!allowedRoles) return true; // Default allow if route is unlisted or sub-route
+  let allowedRoles = PAGE_ROLE_ACCESS[cleanPath];
+
+  if (!allowedRoles) {
+    for (const [routePattern, roles] of Object.entries(PAGE_ROLE_ACCESS)) {
+      if (cleanPath.startsWith(routePattern) && routePattern !== '/dashboard') {
+        allowedRoles = roles;
+        break;
+      }
+    }
+  }
+
+  if (!allowedRoles) {
+    if (cleanPath.startsWith('/headmaster')) {
+      allowedRoles = ['SUPER_ADMIN', 'HEADMASTER'];
+    } else if (cleanPath.startsWith('/dashboard')) {
+      allowedRoles = ['SUPER_ADMIN', 'ADMIN'];
+    } else {
+      return false;
+    }
+  }
+
   return allowedRoles.includes(role as ExtendedRole);
 }
 

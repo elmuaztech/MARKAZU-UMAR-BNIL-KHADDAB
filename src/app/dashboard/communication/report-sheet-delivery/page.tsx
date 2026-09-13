@@ -148,7 +148,7 @@ export default function ReportSheetDeliveryPage() {
           <Sparkles className="w-5 h-5" /> Smart Parent Isolation & Deduplication Engine Active
         </div>
         <p className="text-xs text-slate-700 dark:text-emerald-100/90 leading-relaxed">
-          Each parent receives <strong>ONLY their own child's report sheet link or targeted notice</strong>. Parents with multiple children automatically receive <strong>ONE consolidated WhatsApp</strong> containing links for all their wards.
+          Each parent receives <strong>ONLY their own child's report card link or targeted notice</strong>. Parents with multiple children automatically receive <strong>ONE consolidated WhatsApp</strong> containing links for all their children.
         </p>
       </div>
 
@@ -363,7 +363,7 @@ export default function ReportSheetDeliveryPage() {
             <thead>
               <tr className="border-b border-slate-200 dark:border-emerald-500/20 text-slate-400 font-extrabold uppercase text-[10px]">
                 <th className="py-3 px-4">Parent Name</th>
-                <th className="py-3 px-4">Wards / Students</th>
+                <th className="py-3 px-4">Children / Students</th>
                 <th className="py-3 px-4">WhatsApp Phone</th>
                 <th className="py-3 px-4">Attached PDF Cards</th>
                 <th className="py-3 px-4 text-right">Direct WhatsApp Dispatch</th>

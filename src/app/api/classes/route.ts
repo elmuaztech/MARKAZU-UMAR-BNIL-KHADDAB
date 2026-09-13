@@ -8,6 +8,10 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   try {
     const authUser = await getAuthenticatedUser(req);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'PARENT', 'STUDENT']);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+    }
 
     const { searchParams } = new URL(req.url);
     const programmeId = searchParams.get('programmeId');

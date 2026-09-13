@@ -1,51 +1,23 @@
-'use client';
+import React from 'react';
+import { requireServerPageAuth } from '@/lib/serverAuth';
+import DashboardClientShell from './DashboardClientShell';
 
-import React, { useState } from 'react';
-import { Sidebar } from '../../components/navigation/Sidebar';
-import { Header } from '../../components/navigation/Header';
-import { RBACGuard } from '../../components/auth/RBACGuard';
+export const dynamic = 'force-dynamic';
 
-export default function DashboardLayout({
+/**
+ * Authoritative Server Layout for /dashboard
+ * Evaluates session validity and user status server-side BEFORE any HTML or client bundle is rendered.
+ */
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
-      </div>
-    );
-  }
+  const sessionUser = await requireServerPageAuth();
 
   return (
-    <div className="min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-slate-100 flex transition-colors duration-200 portal-theme relative">
-      {/* Mobile Drawer Backdrop Overlay */}
-      {mobileOpen && (
-        <div
-          onClick={() => setMobileOpen(false)}
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-30 lg:hidden transition-opacity duration-200 animate-in fade-in"
-          aria-label="Close Sidebar Overlay"
-        />
-      )}
-
-      {/* Sidebar Navigation */}
-      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-all duration-200">
-        <Header mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 pb-24 sm:pb-12 max-w-7xl w-full mx-auto space-y-6">
-          <RBACGuard>{children}</RBACGuard>
-        </main>
-      </div>
-    </div>
+    <DashboardClientShell sessionUser={sessionUser}>
+      {children}
+    </DashboardClientShell>
   );
 }

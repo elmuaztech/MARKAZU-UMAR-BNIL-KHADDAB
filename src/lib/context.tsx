@@ -88,10 +88,10 @@ interface AppContextType {
   setSchoolLogo: (logo: string | null) => void;
   schoolName: string;
   setSchoolName: (name: string) => void;
-  
+
   switchRole: (role: UserRole) => void;
   setCurrentUser: (user: User) => void;
-  
+
   // Security & Account Management
   createUserAccount: (userData: {
     name: string;
@@ -192,7 +192,7 @@ interface AppContextType {
   testSendCommunication: (comm: Partial<CommunicationMessage>, channel: string) => Promise<void>;
   retryFailedDelivery: (queueItemId: string) => void;
   retryAllFailedDeliveries: (messageId?: string) => void;
-  
+
   createTemplate: (template: Omit<MessageTemplate, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTemplate: (id: string, updated: Partial<MessageTemplate>) => void;
   deleteTemplate: (id: string) => void;
@@ -429,7 +429,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     id: '',
     name: '',
     email: '',
-    role: 'SUPER_ADMIN',
+    role: 'GUEST' as any,
     username: '',
     avatar: '',
     status: 'ACTIVE',
@@ -3104,7 +3104,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       });
     }
   };
-  const deleteStudent = async (id: string) => {
+
+  const deleteStudent = async (id: string) => {
     const targetStudent = students.find((s) => s.id === id);
     const updatedStudents = students.filter((s) => s.id !== id);
     setStudents(updatedStudents);
@@ -4347,37 +4348,35 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const newQueue: QueueItem[] = [];
 
     parentGroups.forEach((pg) => {
-      const wardsList = pg.wardNames.join(', ');
+      const childNames = pg.wardNames.join(', ');
+      const firstStudentId = pg.wardIds[0];
       newNotifs.push({
         id: `notif-report-${Date.now()}-${pg.parentId}`,
         userId: pg.parentId,
         messageId: commId,
-        title: `Report Sheet Published: ${wardsList}`,
-        body: `Official Terminal Progress Report for ${wardsList} (${pg.reportCardsCount} card${pg.reportCardsCount > 1 ? 's' : ''}) has been published.`,
-        priority: 'URGENT',
-        category: 'REPORT_SHEET',
+        title: `Report Ready`,
+        body: `Your child's ${term} report for ${currentSession?.sessionName || 'the current academic session'} is ready.`,
+        priority: 'NORMAL',
+        category: 'REPORT_CARD' as any,
         channels: channels as any,
         senderName: 'Management Office',
         read: false,
         pinned: true,
         isArchived: false,
         createdAt: new Date().toISOString(),
-        attachments: [
-          {
-            id: `att-${pg.parentId}`,
-            name: `Terminal_Report_${wardsList.replace(/\s+/g, '_')}.pdf`,
-            size: '1.8 MB',
-            type: 'PDF',
-            url: '#',
-          },
-        ],
+        metadata: JSON.stringify({
+          studentId: firstStudentId,
+          childName: childNames,
+          action: 'VIEW_REPORT',
+          deepLink: `/dashboard/results?studentId=${firstStudentId}`,
+        }),
       });
 
       channels.forEach((ch) => {
         newQueue.push({
           id: `q-report-${Date.now()}-${pg.parentId}-${ch}`,
           messageId: commId,
-          messageTitle: `Report Sheet: ${wardsList}`,
+          messageTitle: `Report Card: ${childNames}`,
           channel: ch as any,
           recipientId: pg.parentId,
           recipientName: pg.parentName,
@@ -4536,13 +4535,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
 
       setProgrammes((prev) => {
-        const next = prev.map((p) => (p.id === id ? { 
-          ...p, 
-          ...updated, 
+        const next = prev.map((p) => (p.id === id ? {
+          ...p,
+          ...updated,
           programme_name_english: updated.programme_name_english || p.programme_name_english,
           programme_name_arabic: updated.programme_name_arabic !== undefined ? updated.programme_name_arabic : p.programme_name_arabic,
           programme_name: updated.programme_name_english || p.programme_name_english,
-          updated_at: new Date().toISOString() 
+          updated_at: new Date().toISOString()
         } : p));
         safeLocalStorageSet('markazu_programmes', next);
         return next;

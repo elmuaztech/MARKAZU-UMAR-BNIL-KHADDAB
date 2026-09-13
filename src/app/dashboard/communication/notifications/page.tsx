@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/lib/context';
-import { Bell, CheckCircle2, Pin, Archive, Trash2, ArrowLeft, Search, Filter, Sparkles, FileText } from 'lucide-react';
+import { Bell, CheckCircle2, Pin, Archive, Trash2, ArrowLeft, Search, Filter, Sparkles, FileText, Eye } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function NotificationCenterPage() {
   const {
+    currentUser,
     inAppNotifications,
     markNotificationAsRead,
     markAllNotificationsAsRead,
@@ -15,6 +16,9 @@ export default function NotificationCenterPage() {
     archiveNotification,
     deleteNotification,
   } = useApp();
+
+  const isStaff = currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN';
+  const backHref = isStaff ? '/dashboard/communication' : '/dashboard';
 
   const [filterTab, setFilterTab] = useState<'ALL' | 'UNREAD' | 'PINNED' | 'ARCHIVED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -38,7 +42,7 @@ export default function NotificationCenterPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <Link
-            href="/dashboard/communication"
+            href={backHref}
             className="p-2.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-slate-700 dark:text-emerald-300 hover:text-emerald-600 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -140,6 +144,29 @@ export default function NotificationCenterPage() {
 
               <h3 className="font-extrabold text-base text-slate-900 dark:text-white">{notif.title}</h3>
               <p className="text-xs text-slate-600 dark:text-emerald-100/90 leading-relaxed">{notif.body}</p>
+
+              {(() => {
+                let meta: any = null;
+                try {
+                  meta = notif.metadata ? (typeof notif.metadata === 'string' ? JSON.parse(notif.metadata) : notif.metadata) : null;
+                } catch (e) {}
+
+                if (meta?.deepLink || meta?.action === 'VIEW_REPORT' || notif.category === 'REPORT_CARD') {
+                  const targetLink = meta?.deepLink || (meta?.studentId ? `/dashboard/results?studentId=${meta.studentId}` : '/dashboard/results');
+                  return (
+                    <div className="pt-2">
+                      <Link
+                        href={targetLink}
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all hover:scale-105"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>View Report</span>
+                      </Link>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               {notif.attachments && notif.attachments.length > 0 && (
                 <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex items-center gap-3">

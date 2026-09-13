@@ -66,8 +66,8 @@ export function ParentDashboard() {
       color: 'from-emerald-600 to-emerald-700',
     },
     {
-      label: 'Report Sheet Center',
-      labelArabic: 'مركز كشوف الدرجات',
+      label: 'Report Cards',
+      labelArabic: 'بطاقات التقرير',
       href: '/dashboard/results',
       icon: Award,
       color: 'from-amber-600 to-amber-700',
@@ -136,7 +136,7 @@ export function ParentDashboard() {
             className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
           >
             <Award className="w-4 h-4" />
-            <span>View Approved Report Sheets</span>
+            <span>View Report Cards</span>
           </Link>
         }
       />
@@ -203,7 +203,7 @@ export function ParentDashboard() {
       ) : (
         <div className="p-8 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/20 text-center space-y-2">
           <Baby className="w-10 h-10 text-amber-500/50 mx-auto" />
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white">No Linked Ward Profiles Yet</h3>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white">No Enrolled Children Found</h3>
           <p className="text-xs text-slate-500 dark:text-emerald-300/70 max-w-md mx-auto">
             Once your child is enrolled by the administration and linked to your guardian account, their Tahfiz and academic progress will appear here.
           </p>

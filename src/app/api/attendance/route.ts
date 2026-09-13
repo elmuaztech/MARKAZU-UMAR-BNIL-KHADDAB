@@ -20,20 +20,43 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const date = searchParams.get('date');
+    const dateParam = searchParams.get('date');
     const classId = searchParams.get('classId');
     const requestedProgId = searchParams.get('programmeId');
     const sessionIdParam = searchParams.get('sessionId');
     const studentIdParam = searchParams.get('studentId');
+    const monthParam = searchParams.get('month'); // 1 - 12
+    const yearParam = searchParams.get('year');   // e.g. 2026
+    const dayOfWeekParam = searchParams.get('dayOfWeek'); // 0-6 or MONDAY...
 
     const whereClause: any = {};
 
-    if (date) whereClause.date = new Date(date);
+    // 1. Cooperative Date / Month / Year Filtering
+    if (dateParam) {
+      const targetDate = new Date(dateParam);
+      const startOfDay = new Date(targetDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(targetDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      whereClause.date = { gte: startOfDay, lte: endOfDay };
+    } else if (monthParam && yearParam) {
+      const m = parseInt(monthParam, 10) - 1;
+      const y = parseInt(yearParam, 10);
+      const startOfMonth = new Date(y, m, 1);
+      const endOfMonth = new Date(y, m + 1, 0, 23, 59, 59, 999);
+      whereClause.date = { gte: startOfMonth, lte: endOfMonth };
+    } else if (yearParam) {
+      const y = parseInt(yearParam, 10);
+      const startOfYear = new Date(y, 0, 1);
+      const endOfYear = new Date(y, 11, 31, 23, 59, 59, 999);
+      whereClause.date = { gte: startOfYear, lte: endOfYear };
+    }
+
     if (sessionIdParam) {
       whereClause.sessionId = sessionIdParam;
     }
 
-    // Role-based scoping
+    // 2. Role-based scoping
     if (authUser?.role === 'HEADMASTER') {
       if (!authUser.assignedProgrammeId) {
         return NextResponse.json({ success: false, error: 'Headmaster has no assigned programme.' }, { status: 403 });
@@ -65,14 +88,13 @@ export async function GET(request: NextRequest) {
         }
         whereClause.studentId = studentIdParam;
       } else {
-        whereClause.studentId = { in: linkedWards };
+        whereClause.studentId = { in: linkedWards.length > 0 ? linkedWards : ['__NO_CHILDREN__'] };
       }
     } else if (authUser?.role === 'TEACHER') {
       const scope = await resolveTeacherScope(authUser.id, sessionIdParam || undefined);
       if (!scope.isTeacher) {
         return NextResponse.json({ success: false, error: 'Teacher record not found.' }, { status: 403 });
       }
-      // Allowed to view attendance only for classes where they teach or have attendance permission
       const allowedClasses = Array.from(new Set([...scope.teachingClassIds, ...scope.attendanceClassIds]));
       if (classId) {
         if (!allowedClasses.includes(classId)) {
@@ -160,7 +182,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 1. Save to persistent serverDb JSON database
+    // 1. Mirror write to serverDb (fallback/offline persistence)
     const savedServerRecords = saveServerAttendanceBatch(records, !!isDraft);
 
     // 2. Postgres Prisma upsert
@@ -219,6 +241,83 @@ export async function POST(request: NextRequest) {
     }
 
     const finalRecords = createdRecords.length > 0 ? createdRecords : savedServerRecords;
+
+    // 3. Deduplicated Attendance Notification Dispatch to Headmaster + Admins
+    if (!isDraft && finalRecords.length > 0) {
+      try {
+        const sampleRecord = finalRecords[0];
+        const classId = sampleRecord.classId;
+        const recordDateStr = sampleRecord.date ? new Date(sampleRecord.date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+
+        // Retrieve Class & Programme info if classId is present
+        const schoolClass = classId ? await prisma.schoolClass.findUnique({
+          where: { id: classId },
+          include: { programme: true },
+        }) : null;
+
+        if (schoolClass && schoolClass.programmeId) {
+          const deduplicationToken = `ATTENDANCE_${classId}_${recordDateStr}_${targetSessionId || 'CURR'}`;
+
+          // Find active Headmaster for this programme
+          const headmaster = await prisma.user.findFirst({
+            where: {
+              role: 'HEADMASTER',
+              assignedProgrammeId: schoolClass.programmeId,
+              status: 'ACTIVE',
+              deletedAt: null,
+            },
+          });
+
+          // Find active Admin and Super Admin accounts
+          const admins = await prisma.user.findMany({
+            where: {
+              role: { in: ['ADMIN', 'SUPER_ADMIN'] },
+              status: 'ACTIVE',
+              deletedAt: null,
+            },
+            take: 2, // Up to 2 operational Admins
+          });
+
+          const recipientsToNotify = [
+            ...(headmaster ? [headmaster] : []),
+            ...admins,
+          ];
+
+          for (const recipient of recipientsToNotify) {
+            // Check deduplication
+            const existingNotif = await prisma.inAppNotification.findFirst({
+              where: {
+                userId: recipient.id,
+                category: 'ATTENDANCE_COMPLETED',
+                metadata: { contains: deduplicationToken },
+              },
+            });
+
+            if (!existingNotif) {
+              await prisma.inAppNotification.create({
+                data: {
+                  userId: recipient.id,
+                  title: 'Attendance Submitted',
+                  body: `Attendance for ${schoolClass.name} on ${recordDateStr} was submitted by ${authUser?.name || 'Staff'}.`,
+                  category: 'ATTENDANCE_COMPLETED',
+                  priority: 'NORMAL',
+                  senderName: authUser?.name || 'Staff',
+                  metadata: JSON.stringify({
+                    deduplicationToken,
+                    classId,
+                    className: schoolClass.name,
+                    programmeId: schoolClass.programmeId,
+                    date: recordDateStr,
+                  }),
+                },
+              });
+            }
+          }
+        }
+      } catch (notifErr) {
+        console.warn('[ATTENDANCE_NOTIFICATION_WARNING]', notifErr);
+      }
+    }
 
     return NextResponse.json({ success: true, count: finalRecords.length, data: finalRecords });
   } catch (error: any) {

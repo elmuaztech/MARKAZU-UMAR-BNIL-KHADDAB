@@ -8,6 +8,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(req: NextRequest) {
   try {
+    const authUser = await getAuthenticatedUser(req);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN']);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+    }
+
     const { searchParams } = new URL(req.url);
     const statusParam = searchParams.get('status');
     const includeDeactivated = searchParams.get('includeDeactivated') === 'true';
@@ -158,6 +164,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const authUser = await getAuthenticatedUser(req);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN']);
+    if (!authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+    }
+
     const body = await req.json();
     const name = (body.name || '').trim();
     const email = (body.email || '').trim().toLowerCase();

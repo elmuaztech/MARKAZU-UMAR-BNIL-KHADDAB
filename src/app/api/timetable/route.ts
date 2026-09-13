@@ -54,6 +54,21 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Class, Subject, Teacher, and Day are required.' }, { status: 400 });
     }
 
+    if (authUser?.role === 'HEADMASTER') {
+      const assignedProg = authUser.assignedProgrammeId;
+      if (!assignedProg) {
+        return NextResponse.json({ error: 'Headmaster has no assigned section.' }, { status: 403 });
+      }
+      const schoolClass = await prisma.schoolClass.findUnique({ where: { id: body.classId } });
+      if (!schoolClass || schoolClass.programmeId !== assignedProg) {
+        return NextResponse.json(
+          { error: 'Access Forbidden (HTTP 403): Headmaster cannot create timetable periods for another programme section.' },
+          { status: 403 }
+        );
+      }
+      body.programmeId = assignedProg;
+    }
+
     const created = await prisma.timetablePeriod.create({
       data: {
         id: body.id,

@@ -641,7 +641,7 @@ export default function ParentsPage() {
                     </div>
                   ))}
                 {students.filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId).length === 0 && (
-                  <p className="text-slate-400 text-xs italic">No active wards currently linked.</p>
+                  <p className="text-slate-400 text-xs italic">No active children currently linked.</p>
                 )}
               </div>
             </div>
