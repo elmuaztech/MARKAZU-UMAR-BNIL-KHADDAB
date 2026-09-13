@@ -1779,6 +1779,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       });
     }
+
+    if (isDraft) {
+      notify({
+        type: 'info',
+        title: 'Attendance Draft Saved',
+        message: `Draft roster of ${newRecords.length} students saved successfully.`,
+      });
+    } else {
+      notify({
+        type: 'success',
+        title: 'Attendance Submitted',
+        message: `Daily attendance for ${newRecords.length} students recorded and parent alerts dispatched.`,
+      });
+    }
   };
 
   const adminOverrideAttendance = (attendanceId: string, newStatus: AttendanceStatusType, reason: string) => {
@@ -1805,6 +1819,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       details: `Administrator override attendance record ${attendanceId} to ${newStatus}. Reason: ${reason}`,
       ipAddress: '197.210.227.14',
       status: 'SUCCESS',
+    });
+
+    notify({
+      type: 'success',
+      title: 'Attendance Overridden',
+      message: `Record status updated to ${newStatus}.`,
     });
   };
 
@@ -1879,6 +1899,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ]);
       }
     }
+
+    notify({
+      type: 'success',
+      title: 'Tahfiz Record Saved',
+      message: `Progress recorded for ${newRecord.studentName} (${newRecord.hifzSurah}). Parent alert dispatched.`,
+    });
   };
 
   const sendTeacherDirectMessage = (msg: Omit<DirectMessage, 'id' | 'createdAt' | 'isRead'>) => {
@@ -1918,6 +1944,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       },
       ...prev,
     ]);
+
+    notify({
+      type: 'success',
+      title: 'Direct Message Sent',
+      message: `Message dispatched to ${msg.studentName} (${msg.subject}).`,
+    });
   };
 
   const markDirectMessageRead = (messageId: string) => {
@@ -1966,6 +1998,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       details: `Saved draft marks for ${draftGrades.length} students`,
       ipAddress: '197.210.227.14',
       status: 'SUCCESS',
+    });
+
+    notify({
+      type: 'success',
+      title: 'Marks Draft Saved',
+      message: `Draft grades saved for ${draftGrades.length} students.`,
     });
   };
 
@@ -2037,6 +2075,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ipAddress: '197.210.227.14',
       status: 'SUCCESS',
     });
+
+    notify({
+      type: 'success',
+      title: 'Results Submitted',
+      message: `Result batch for ${params.subjectName} (${params.className}) submitted for administrator approval.`,
+    });
   };
 
   const approveResultSubmission = (submissionId: string, comments?: string) => {
@@ -2091,6 +2135,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       affectedRecord: `ResultApprovalSubmission/${submissionId}`,
       ipAddress: '197.210.227.14',
       status: 'SUCCESS',
+    });
+
+    notify({
+      type: 'success',
+      title: 'Results Approved',
+      message: `Result batch for ${targetSub.subjectName} (${targetSub.className}) approved for report card generation.`,
     });
   };
 
@@ -2147,6 +2197,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ipAddress: '197.210.227.14',
       status: 'WARNING',
     });
+
+    notify({
+      type: 'warning',
+      title: 'Results Rejected',
+      message: `Result batch for ${targetSub.subjectName} rejected. Teacher has been notified.`,
+    });
   };
 
   const returnResultSubmission = (submissionId: string, comments: string) => {
@@ -2200,7 +2256,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       details: `Returned result batch for ${targetSub.subjectName} (${targetSub.className}) with comments: ${comments}`,
       affectedRecord: `ResultApprovalSubmission/${submissionId}`,
       ipAddress: '197.210.227.14',
-      status: 'WARNING',
+      status: 'SUCCESS',
+    });
+
+    notify({
+      type: 'info',
+      title: 'Results Returned for Correction',
+      message: `Result batch for ${targetSub.subjectName} returned to teacher for revisions.`,
     });
   };
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
@@ -2975,6 +3037,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       affectedRecord: `Student/${newStudent.id}`,
       status: 'SUCCESS',
     });
+
+    notify({
+      type: 'success',
+      title: 'Student Enrolled',
+      message: `Student "${studentData.fullName}" (${studentData.admissionNo}) enrolled successfully.`,
+    });
   };
 
   const updateStudent = async (id: string, updated: Partial<Student>) => {
@@ -3103,6 +3171,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         ipAddress: '197.210.227.14',
         affectedRecord: `Student/${id}`,
         status: 'SUCCESS',
+      });
+
+      notify({
+        type: 'success',
+        title: 'Student Updated',
+        message: `Student profile details saved successfully.`,
       });
     }
   };
@@ -3280,6 +3354,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       affectedRecord: `Teacher/${newTeacher.id}`,
       status: 'SUCCESS',
     });
+
+    notify({
+      type: 'success',
+      title: 'Teacher Registered',
+      message: `Faculty member "${newTeacher.full_name_english}" (${newTeacher.staffNo}) registered successfully.`,
+    });
   };
 
   const updateTeacher = async (id: string, updated: Partial<Teacher>) => {
@@ -3364,6 +3444,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ipAddress: '197.210.227.14',
       affectedRecord: `Teacher/${id}`,
       status: 'SUCCESS',
+    });
+
+    notify({
+      type: 'success',
+      title: 'Teacher Updated',
+      message: `Faculty member profile updated successfully.`,
     });
   };
 
@@ -3675,6 +3761,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       affectedRecord: `Parent/${newParent.id}`,
       status: 'SUCCESS',
     });
+
+    notify({
+      type: 'success',
+      title: 'Parent Registered',
+      message: `Parent profile for "${parentData.fullName}" registered successfully.`,
+    });
   };
 
   const updateParent = (id: string, updated: Partial<Parent>) => {
@@ -3721,6 +3813,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       ipAddress: '197.210.227.14',
       affectedRecord: `Parent/${id}`,
       status: 'SUCCESS',
+    });
+
+    notify({
+      type: 'success',
+      title: 'Parent Updated',
+      message: `Parent/guardian profile updated successfully.`,
     });
   };
 
@@ -5323,6 +5421,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       details: `Imported school structure via Excel: ${classesImported} classes, ${subcategoriesCount} subcategories, ${teacherAssignmentsCreated} teacher assignments.`,
       ipAddress: '197.210.227.14',
       status: 'SUCCESS',
+    });
+
+    notify({
+      type: 'success',
+      title: 'Structure Imported',
+      message: `Imported ${classesImported} classes, ${subcategoriesCount} subcategories, ${teacherAssignmentsCreated} assignments.`,
     });
 
     return {

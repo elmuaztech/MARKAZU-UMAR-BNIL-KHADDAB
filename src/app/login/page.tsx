@@ -228,8 +228,16 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok || data.error) {
-        setErrorMsg(data.error || 'Email or password is incorrect. Please try again.');
+        const errorText = data.error || 'Email or password is incorrect. Please try again.';
+        setErrorMsg(errorText);
         setIsSubmitting(false);
+        if (notify) {
+          notify({
+            type: 'error',
+            title: 'Sign In Failed',
+            message: errorText,
+          });
+        }
         addAuditLog({
           action: 'FAILED_LOGIN_ATTEMPT',
           performedBy: email,
@@ -277,6 +285,15 @@ export default function LoginPage() {
       setCurrentUser(fullUserRecord);
       createNewSession(fullUserRecord.id, fullUserRecord.name, fullUserRecord.role);
 
+      if (notify) {
+        notify({
+          type: 'success',
+          title: 'Sign In Successful',
+          message: `Welcome, ${authUser.name}! Redirecting to portal...`,
+          duration: 3000,
+        });
+      }
+
       addAuditLog({
         action: 'AUTHENTICATION_SUCCESS',
         performedBy: fullUserRecord.name,
@@ -297,8 +314,16 @@ export default function LoginPage() {
 
       window.location.href = targetUrl;
     } catch (err: any) {
-      setErrorMsg('Unable to sign in. Please check your connection and try again.');
+      const netError = 'Unable to sign in. Please check your connection and try again.';
+      setErrorMsg(netError);
       setIsSubmitting(false);
+      if (notify) {
+        notify({
+          type: 'error',
+          title: 'Connection Error',
+          message: netError,
+        });
+      }
     }
   };
 

@@ -29,7 +29,7 @@ interface ReportCardProps {
 }
 
 export function ReportCard({ student, grades, session }: ReportCardProps) {
-  const { schoolLogo, classes, reportCardTemplate } = useApp();
+  const { schoolLogo, classes, reportCardTemplate, notify } = useApp();
 
   const currentClass = classes.find((c) => c.id === student.classId || c.name === student.className);
 
@@ -39,6 +39,12 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
   const handlePrint = () => {
+    notify({
+      type: 'info',
+      title: 'Opening Print Dialog',
+      message: 'Preparing print preview for official report card...',
+      duration: 3000,
+    });
     window.print();
   };
 
@@ -46,6 +52,12 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
     try {
       setIsDownloadingPdf(true);
       setDownloadError(null);
+      notify({
+        type: 'info',
+        title: 'Generating PDF',
+        message: `Compiling official report card for ${student.fullName}...`,
+        duration: 2500,
+      });
       const url = `/api/reports/download?studentId=${student.id}&sessionId=${session.id || ''}&term=${encodeURIComponent(session.activeTerm || '')}&format=pdf`;
       const res = await fetch(url);
       if (!res.ok) {
@@ -62,8 +74,20 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
       a.click();
       document.body.removeChild(a);
       window.URL.revokeObjectURL(downloadUrl);
+
+      notify({
+        type: 'success',
+        title: 'PDF Downloaded',
+        message: `Official Report Card for ${student.fullName} downloaded successfully.`,
+      });
     } catch (err: any) {
-      setDownloadError(err.message || 'Error downloading PDF');
+      const errMsg = err.message || 'Error downloading PDF';
+      setDownloadError(errMsg);
+      notify({
+        type: 'error',
+        title: 'Download Failed',
+        message: errMsg,
+      });
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -74,6 +98,12 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
     try {
       setIsDownloadingImage(true);
       setDownloadError(null);
+      notify({
+        type: 'info',
+        title: 'Exporting Image',
+        message: 'Rendering high-resolution report card image...',
+        duration: 2500,
+      });
       const canvas = await html2canvas(reportRef.current, {
         scale: 2,
         useCORS: true,
@@ -88,8 +118,20 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
+
+      notify({
+        type: 'success',
+        title: 'Image Exported',
+        message: `Report card image for ${student.fullName} exported successfully.`,
+      });
     } catch (err: any) {
-      setDownloadError(err.message || 'Error downloading image');
+      const errMsg = err.message || 'Error downloading image';
+      setDownloadError(errMsg);
+      notify({
+        type: 'error',
+        title: 'Export Failed',
+        message: errMsg,
+      });
     } finally {
       setIsDownloadingImage(false);
     }
@@ -98,6 +140,12 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
   const handleViewReport = () => {
     if (reportRef.current) {
       reportRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      notify({
+        type: 'info',
+        title: 'Viewing Report Card',
+        message: 'Scrolled to official terminal report card.',
+        duration: 2000,
+      });
     }
   };
 

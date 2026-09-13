@@ -27,7 +27,7 @@ function ResultsContent() {
   const searchParams = useSearchParams();
   const deepLinkStudentId = searchParams.get('studentId');
 
-  const { students, parents, grades, programmes, classes, currentSession, currentUser, teacherAssignments } = useApp();
+  const { students, parents, grades, programmes, classes, currentSession, currentUser, teacherAssignments, notify } = useApp();
 
   const isHeadmaster = currentUser.role === 'HEADMASTER';
   const isAdminUser = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
@@ -168,13 +168,25 @@ function ResultsContent() {
         throw new Error(data.error || 'Failed to release report cards.');
       }
 
-      setReleaseSuccessMessage(data.message || 'Report cards officially released to parents.');
+      const releaseMsg = data.message || 'Report cards officially released to parents.';
+      setReleaseSuccessMessage(releaseMsg);
+      notify({
+        type: 'success',
+        title: 'Report Cards Released',
+        message: releaseMsg,
+      });
       // Update local state to reflect release
       approvedStudentGrades.forEach((g) => {
         g.isReleased = true;
       });
     } catch (err: any) {
-      setReleaseErrorMessage(err.message || 'Error releasing report cards.');
+      const errMsg = err.message || 'Error releasing report cards.';
+      setReleaseErrorMessage(errMsg);
+      notify({
+        type: 'error',
+        title: 'Release Failed',
+        message: errMsg,
+      });
     } finally {
       setIsReleasing(false);
     }

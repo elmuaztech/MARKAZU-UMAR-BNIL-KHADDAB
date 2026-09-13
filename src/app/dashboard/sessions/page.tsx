@@ -11,7 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 
 export default function SessionsPage() {
-  const { currentSession, currentUser, addAuditLog } = useApp();
+  const { currentSession, currentUser, addAuditLog, notify } = useApp();
 
   const [sessionList, setSessionList] = useState<SchoolSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +68,12 @@ export default function SessionsPage() {
         setNotice(`Academic Session ${newSessionName} created!`);
       }
 
+      notify({
+        type: 'success',
+        title: 'Session Created',
+        message: `Academic Session "${newSessionName}" (${activeTerm}) created successfully.`,
+      });
+
       addAuditLog({
         action: 'ACADEMIC_SESSION_CREATED',
         performedBy: currentUser.name,
@@ -82,7 +88,13 @@ export default function SessionsPage() {
       setShowAddModal(false);
     } catch (e: any) {
       console.error('[createSession] error:', e);
-      setNotice(`Error: ${e.message || 'Failed to create academic session'}`);
+      const errMsg = e.message || 'Failed to create academic session';
+      setNotice(`Error: ${errMsg}`);
+      notify({
+        type: 'error',
+        title: 'Session Creation Failed',
+        message: errMsg,
+      });
     }
     setTimeout(() => setNotice(''), 4000);
   };
@@ -117,10 +129,22 @@ export default function SessionsPage() {
         status: 'SUCCESS',
       });
 
-      setNotice(`Academic session ${activated?.sessionName || id} is now active school-wide!`);
+      const successMsg = `Academic session ${activated?.sessionName || id} is now active school-wide!`;
+      setNotice(successMsg);
+      notify({
+        type: 'success',
+        title: 'Session Activated',
+        message: successMsg,
+      });
     } catch (e: any) {
       console.error('[activateSession] error:', e);
-      setNotice(`Error: ${e.message || 'Failed to activate session'}`);
+      const errMsg = e.message || 'Failed to activate session';
+      setNotice(`Error: ${errMsg}`);
+      notify({
+        type: 'error',
+        title: 'Activation Failed',
+        message: errMsg,
+      });
     }
     setTimeout(() => setNotice(''), 4000);
   };

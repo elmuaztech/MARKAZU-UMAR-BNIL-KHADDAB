@@ -22,6 +22,7 @@ import {
   Layers,
   BookOpen,
   CalendarCheck,
+  Loader2,
 } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { AttendanceRecord, AttendanceStatusType, SchoolClass, Student } from '@/types';
@@ -42,6 +43,7 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
     teacherAssignments,
     attendance,
     saveAttendanceBatch,
+    notify,
   } = useApp();
 
   // Cascading Selection State
@@ -59,6 +61,8 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
   const [rosterState, setRosterState] = useState<Record<string, { status: AttendanceStatusType; remarks: string }>>({});
   const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
+  const [isSavingDraft, setIsSavingDraft] = useState<boolean>(false);
+  const [isSubmittingFinal, setIsSubmittingFinal] = useState<boolean>(false);
 
   const availableProgrammes = useMemo(() => {
     return filterProgrammesForUser(currentUser, programmes);
@@ -229,16 +233,37 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
     return { total, present, absent, late, excused, percentage };
   }, [attendancePayload]);
 
-  const handleSaveDraft = () => {
-    saveAttendanceBatch(attendancePayload, true);
-    alert('Attendance register draft saved successfully!');
+  const handleSaveDraft = async () => {
+    try {
+      setIsSavingDraft(true);
+      await saveAttendanceBatch(attendancePayload, true);
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Draft Save Failed',
+        message: err?.message || 'Could not save attendance draft.',
+      });
+    } finally {
+      setIsSavingDraft(false);
+    }
   };
 
-  const handleSubmitFinal = () => {
-    saveAttendanceBatch(attendancePayload, false);
-    setIsPreviewOpen(false);
-    setIsSuccessModalOpen(true);
-    if (onSuccess) onSuccess();
+  const handleSubmitFinal = async () => {
+    try {
+      setIsSubmittingFinal(true);
+      await saveAttendanceBatch(attendancePayload, false);
+      setIsPreviewOpen(false);
+      setIsSuccessModalOpen(true);
+      if (onSuccess) onSuccess();
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Submission Failed',
+        message: err?.message || 'Could not submit attendance.',
+      });
+    } finally {
+      setIsSubmittingFinal(false);
+    }
   };
 
   const getStatusBadge = (status: AttendanceStatusType) => {
@@ -342,10 +367,11 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
           <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-initial">
             <button
               onClick={handleSaveDraft}
-              className="justify-center px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-emerald-950 text-slate-800 dark:text-emerald-100 hover:bg-slate-200 font-extrabold text-xs flex items-center gap-2 transition-all"
+              disabled={isSavingDraft}
+              className="justify-center px-4 py-2.5 rounded-2xl bg-slate-100 dark:bg-emerald-950 text-slate-800 dark:text-emerald-100 hover:bg-slate-200 font-extrabold text-xs flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save className="w-4 h-4 shrink-0" />
-              <span>Save Draft</span>
+              {isSavingDraft ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Save className="w-4 h-4 shrink-0" />}
+              <span>{isSavingDraft ? 'Saving Draft...' : 'Save Draft'}</span>
             </button>
 
             <button
@@ -695,10 +721,11 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
               </button>
               <button
                 onClick={handleSubmitFinal}
-                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2"
+                disabled={isSubmittingFinal}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="w-4 h-4" />
-                Submit Final Attendance
+                {isSubmittingFinal ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                <span>{isSubmittingFinal ? 'Submitting...' : 'Submit Final Attendance'}</span>
               </button>
             </div>
           </div>

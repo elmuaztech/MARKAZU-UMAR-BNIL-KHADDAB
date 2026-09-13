@@ -13,13 +13,14 @@ import {
   AlertCircle,
   FileText,
   ShieldCheck,
+  Loader2,
 } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { TahfizRecord, Student } from '@/types';
 import { filterStudentsForUser, filterTahfizForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
 
 export function TahfizTracker() {
-  const { students, parents, classes, teachers, teacherAssignments, currentUser, tahfizRecords, saveTahfizRecord } = useApp();
+  const { students, parents, classes, teachers, teacherAssignments, currentUser, tahfizRecords, saveTahfizRecord, notify } = useApp();
 
   // Scope available classes for HEADMASTER and TEACHER
   const availableClasses = useMemo(() => {
@@ -78,8 +79,14 @@ export function TahfizTracker() {
   const [memorizationStatus, setMemorizationStatus] = useState<string>('ACTIVE_PROGRESS');
   const [studentBehaviour, setStudentBehaviour] = useState<'EXCELLENT' | 'VERY_GOOD' | 'GOOD' | 'NEEDS_IMPROVEMENT'>('EXCELLENT');
   const [teacherNotes, setTeacherNotes] = useState<string>('Masha-Allah! Excellent recitation with clear Makharij and strong Hifz retention.');
+  const [logDate, setLogDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [tajweedRating, setTajweedRating] = useState<1 | 2 | 3 | 4 | 5>(5);
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
+  const targetClass = useMemo(() => {
+    return classes.find((c) => c.id === selectedClassId);
+  }, [classes, selectedClassId]);
 
   // Class Roster Students
   const classStudents = useMemo(() => {
@@ -96,39 +103,50 @@ export function TahfizTracker() {
     const juzCompleted = Math.min(30, Math.max(0, currentJuz - 1));
     const remainingJuz = Math.max(0, 30 - juzCompleted);
     const completionPercentage = Math.round((juzCompleted / 30) * 100);
-    return { juzCompleted, remainingJuz, completionPercentage };
+    return { currentJuz, juzCompleted, remainingJuz, completionPercentage, surahsCompleted: 0 };
   }, [currentJuz]);
 
-  const handleSaveProgress = (e: React.FormEvent) => {
+  const handleSaveProgress = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!targetStudent) return;
+    if (!selectedStudentId) return;
 
-    const newRecord: Omit<TahfizRecord, 'id'> = {
-      date: new Date().toISOString().split('T')[0],
-      studentId: targetStudent.id,
-      studentName: targetStudent.fullName,
-      classId: selectedClassId,
-      className: classes.find((c) => c.id === selectedClassId)?.name || 'Tahfiz Halqa',
-      teacherId: currentUser.id,
-      teacherName: currentUser.name,
-      hifzSurah,
-      hifzFromAyah,
-      hifzToAyah,
-      hifzPages,
-      currentJuz,
-      sabkiSurah,
-      sabkiRating,
-      manzilJuz,
-      manzilRating,
-      revisionStatus,
-      memorizationStatus,
-      studentBehaviour,
-      completionPercentage: calculatedStats.completionPercentage,
-      teacherNotes,
-    };
+    try {
+      setIsSaving(true);
+      const newRecord: Omit<TahfizRecord, 'id'> = {
+        studentId: selectedStudentId,
+        studentName: targetStudent?.fullName || 'Student',
+        classId: selectedClassId,
+        className: targetClass?.name || 'Class',
+        date: logDate,
+        teacherId: currentUser.id,
+        teacherName: currentUser.name,
+        hifzSurah,
+        hifzFromAyah,
+        hifzToAyah,
+        hifzPages: hifzPages || 1,
+        currentJuz: calculatedStats.currentJuz,
+        sabkiSurah,
+        sabkiRating,
+        manzilJuz,
+        manzilRating,
+        revisionStatus,
+        memorizationStatus,
+        studentBehaviour,
+        completionPercentage: calculatedStats.completionPercentage,
+        teacherNotes,
+      };
 
-    saveTahfizRecord(newRecord);
-    setIsSuccessModalOpen(true);
+      await saveTahfizRecord(newRecord);
+      setIsSuccessModalOpen(true);
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Save Failed',
+        message: err?.message || 'Could not save Tahfiz progress record.',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const studentLogs = useMemo(() => {
@@ -539,10 +557,11 @@ export function TahfizTracker() {
 
           <button
             type="submit"
-            className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01]"
+            disabled={isSaving}
+            className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs shadow-lg shadow-emerald-900/30 flex items-center justify-center gap-2 transition-all hover:scale-[1.01] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Save className="w-4 h-4" />
-            <span>Save Tahfiz Progress & Notify Parent</span>
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin shrink-0" /> : <Save className="w-4 h-4" />}
+            <span>{isSaving ? 'Saving Progress...' : 'Save Tahfiz Progress & Notify Parent'}</span>
           </button>
         </form>
 
