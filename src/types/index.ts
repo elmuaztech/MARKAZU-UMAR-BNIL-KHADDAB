@@ -193,6 +193,8 @@ export interface AttendanceRecord {
   classId: string;
   className?: string;
   teacherId?: string;
+  sessionId?: string;
+  term?: string;
   status: AttendanceStatusType;
   remarks?: string;
   isDraft?: boolean;

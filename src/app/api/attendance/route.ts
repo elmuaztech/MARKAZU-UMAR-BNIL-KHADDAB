@@ -21,17 +21,21 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const dateParam = searchParams.get('date');
+    const startDateParam = searchParams.get('startDate');
+    const endDateParam = searchParams.get('endDate');
     const classId = searchParams.get('classId');
     const requestedProgId = searchParams.get('programmeId');
     const sessionIdParam = searchParams.get('sessionId');
     const studentIdParam = searchParams.get('studentId');
     const monthParam = searchParams.get('month'); // 1 - 12
     const yearParam = searchParams.get('year');   // e.g. 2026
-    const dayOfWeekParam = searchParams.get('dayOfWeek'); // 0-6 or MONDAY...
+    const dayOfWeekParam = searchParams.get('dayOfWeek'); // 0-6 or MONDAY, TUESDAY...
+    const statusParam = searchParams.get('status');
+    const termParam = searchParams.get('term');
 
     const whereClause: any = {};
 
-    // 1. Cooperative Date / Month / Year Filtering
+    // 1. Cooperative Date / Month / Year / Date Range Filtering
     if (dateParam) {
       const targetDate = new Date(dateParam);
       const startOfDay = new Date(targetDate);
@@ -39,6 +43,20 @@ export async function GET(request: NextRequest) {
       const endOfDay = new Date(targetDate);
       endOfDay.setHours(23, 59, 59, 999);
       whereClause.date = { gte: startOfDay, lte: endOfDay };
+    } else if (startDateParam && endDateParam) {
+      const start = new Date(startDateParam);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(endDateParam);
+      end.setHours(23, 59, 59, 999);
+      whereClause.date = { gte: start, lte: end };
+    } else if (startDateParam) {
+      const start = new Date(startDateParam);
+      start.setHours(0, 0, 0, 0);
+      whereClause.date = { gte: start };
+    } else if (endDateParam) {
+      const end = new Date(endDateParam);
+      end.setHours(23, 59, 59, 999);
+      whereClause.date = { lte: end };
     } else if (monthParam && yearParam) {
       const m = parseInt(monthParam, 10) - 1;
       const y = parseInt(yearParam, 10);
@@ -52,8 +70,18 @@ export async function GET(request: NextRequest) {
       whereClause.date = { gte: startOfYear, lte: endOfYear };
     }
 
-    if (sessionIdParam) {
+    if (sessionIdParam && sessionIdParam !== 'ALL') {
       whereClause.sessionId = sessionIdParam;
+    }
+
+    if (statusParam && statusParam !== 'ALL') {
+      whereClause.statusEnum = statusParam;
+    }
+
+    if (termParam && termParam !== 'ALL') {
+      whereClause.session = {
+        activeTerm: termParam,
+      };
     }
 
     // 2. Role-based scoping
@@ -112,14 +140,30 @@ export async function GET(request: NextRequest) {
       if (studentIdParam) whereClause.studentId = studentIdParam;
     }
 
-    const records = await prisma.attendanceRecord.findMany({
+    let records = await prisma.attendanceRecord.findMany({
       where: whereClause,
       include: {
         student: true,
         schoolClass: true,
+        session: true,
       },
       orderBy: { date: 'desc' },
     });
+
+    // Optional Day of Week filtering (0=Sunday ... 6=Saturday, or day name)
+    if (dayOfWeekParam && dayOfWeekParam !== 'ALL') {
+      const DAYS = ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
+      const targetDay = isNaN(Number(dayOfWeekParam))
+        ? dayOfWeekParam.toUpperCase()
+        : DAYS[Number(dayOfWeekParam)];
+
+      if (targetDay) {
+        records = records.filter((rec) => {
+          const d = new Date(rec.date);
+          return DAYS[d.getDay()] === targetDay;
+        });
+      }
+    }
 
     return NextResponse.json({ success: true, data: records });
   } catch (error: any) {
