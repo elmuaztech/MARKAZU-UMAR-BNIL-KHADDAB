@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
 import { AdmissionFormModal } from '../../components/public/AdmissionFormModal';
-import { Sparkles, CheckCircle2, ShieldCheck, BookOpen, GraduationCap, ArrowRight } from 'lucide-react';
+import { CheckCircle2, ShieldCheck, BookOpen, GraduationCap, ArrowRight } from 'lucide-react';
 
 export default function EnrollPage() {
   const [modalOpen, setModalOpen] = useState(true);
@@ -16,7 +16,7 @@ export default function EnrollPage() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-12 md:py-16 space-y-12">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/20 border border-amber-500/40 text-amber-600 dark:text-amber-300 font-bold text-xs shadow-inner">
-            <Sparkles className="w-4 h-4" /> Official Online Student Enrollment
+            <GraduationCap className="w-4 h-4" /> Official Online Student Enrollment
           </div>
 
           <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
@@ -34,7 +34,7 @@ export default function EnrollPage() {
             onClick={() => setModalOpen(true)}
             className="px-8 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs md:text-sm flex items-center gap-2 shadow-2xl transition-all scale-105 mx-auto"
           >
-            <Sparkles className="w-5 h-5" />
+            <CheckCircle2 className="w-5 h-5" />
             <span>Open Online Admission Application Form</span>
           </button>
         </div>

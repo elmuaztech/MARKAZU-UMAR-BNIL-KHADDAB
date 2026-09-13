@@ -19,7 +19,6 @@ import {
   Users,
   CheckCircle2,
   Clock,
-  Sparkles,
   UserCheck,
   FilePlus,
   ArrowUpRight,
@@ -204,7 +203,7 @@ export function TeacherDashboard() {
             href="/dashboard/tahfiz"
             className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
           >
-            <Sparkles className="w-4 h-4" />
+            <BookOpen className="w-4 h-4" />
             <span>Log Daily Hifz & Sabki</span>
           </Link>
         }

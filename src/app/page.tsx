@@ -10,7 +10,6 @@ import { AnimatedCounter } from '../components/ui/AnimatedCounter';
 import { GalleryLightbox } from '../components/public/GalleryLightbox';
 import { FloatingWhatsApp } from '../components/ui/FloatingWhatsApp';
 import {
-  Sparkles,
   BookOpen,
   Users,
   Award,
@@ -24,7 +23,7 @@ import {
   ChevronDown,
   FileText,
   HelpCircle,
-  Star,
+  Eye,
   UserCheck,
   GraduationCap,
 } from 'lucide-react';
@@ -134,7 +133,7 @@ export default function HomePage() {
           {/* Content Layer */}
           <div className="relative z-10 space-y-5 max-w-4xl mx-auto px-2">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/40 text-amber-300 font-semibold text-xs shadow-lg backdrop-blur-md">
-              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" /> Welcome to
+              <BookOpen className="w-4 h-4 text-amber-400" /> Welcome to
             </div>
 
             <h1 className="text-xl sm:text-3xl md:text-5xl font-black tracking-tight leading-snug sm:leading-tight text-white max-w-full sm:max-w-4xl mx-auto drop-shadow-md text-center px-1">
@@ -352,7 +351,7 @@ export default function HomePage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <span className="px-3 py-1.5 rounded-full bg-emerald-500/90 text-white font-bold text-xs shadow-lg flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5" /> View Photo
+                      <Eye className="w-3.5 h-3.5" /> View Photo
                     </span>
                   </div>
                   <span className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-950/70 text-amber-300 text-[10px] font-bold backdrop-blur-md border border-amber-400/30">
@@ -421,13 +420,13 @@ export default function HomePage() {
               {
                 title: 'Modern Learning Environment',
                 desc: 'Structured classrooms, digitized student logs, and spacious campus.',
-                icon: Sparkles,
+                icon: GraduationCap,
                 color: 'text-amber-400',
               },
               {
                 title: 'Excellent Discipline',
                 desc: 'Strict code of conduct ensuring safety, respect, and focus.',
-                icon: Star,
+                icon: ShieldCheck,
                 color: 'text-rose-500',
               },
               {

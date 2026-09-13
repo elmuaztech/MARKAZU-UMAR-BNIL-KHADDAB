@@ -21,7 +21,8 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
-  Sparkles,
+  UserPlus,
+  Bookmark,
   LogOut,
   MessageSquare,
   Calendar,
@@ -33,7 +34,6 @@ import {
   FileSpreadsheet,
   Camera,
   Search,
-  Star,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -226,7 +226,7 @@ export function Sidebar({
       id: 'admissions',
       label: 'Admissions',
       href: '/dashboard/admissions',
-      icon: Sparkles,
+      icon: UserPlus,
       badge: mounted && pendingAdmissionsCount > 0 ? `${pendingAdmissionsCount}` : undefined,
       group: 'ADMISSIONS',
     },
@@ -417,7 +417,7 @@ export function Sidebar({
           <div className="space-y-1">
             {!isCollapsed && (
               <div className="px-2 font-poppins text-[9px] font-extrabold uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
-                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                <Bookmark className="w-3 h-3 fill-amber-500 text-amber-500" />
                 <span>FAVOURITES</span>
               </div>
             )}
@@ -612,7 +612,7 @@ export function Sidebar({
                 className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 hover:text-amber-400 transition-opacity"
                 title={isFav ? 'Remove from Favourites' : 'Add to Favourites'}
               >
-                <Star className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-400 text-amber-400 opacity-100' : ''}`} />
+                <Bookmark className={`w-3.5 h-3.5 ${isFav ? 'fill-amber-400 text-amber-400 opacity-100' : ''}`} />
               </button>
             </div>
           )}

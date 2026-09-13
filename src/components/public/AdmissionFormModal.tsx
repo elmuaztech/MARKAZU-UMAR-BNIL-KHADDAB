@@ -6,7 +6,7 @@ import {
   X,
   FileText,
   CheckCircle2,
-  Sparkles,
+  BookOpen,
   User,
   HeartHandshake,
   ShieldAlert,
@@ -149,7 +149,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
             </div>
           ) : (
             <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-sky-500 text-white mx-auto flex items-center justify-center border-2 border-emerald-400/40 shadow-md">
-              <Sparkles className="w-6 h-6" />
+              <BookOpen className="w-6 h-6" />
             </div>
           )}
 
@@ -627,7 +627,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                     type="submit"
                     className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-2 shadow-lg transition-all scale-105"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4" />
                     <span>Submit Online Application</span>
                   </button>
                 </div>

@@ -96,7 +96,7 @@ export function EnterpriseTable<T extends { id?: string }>({
               {columns.map((col, idx) => (
                 <th
                   key={idx}
-                  className={`py-3 px-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'} ${col.className || ''}`}
+                  className={`py-3 px-4 whitespace-nowrap ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'} ${col.className || ''}`}
                 >
                   {col.header}
                 </th>
@@ -123,7 +123,7 @@ export function EnterpriseTable<T extends { id?: string }>({
                   {columns.map((col, colIdx) => (
                     <td
                       key={colIdx}
-                      className={`py-3.5 px-4 ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'} ${col.className || ''}`}
+                      className={`py-3.5 px-4 whitespace-nowrap ${col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : 'text-left'} ${col.className || ''}`}
                     >
                       {col.cell ? col.cell(item) : col.accessorKey ? String(item[col.accessorKey] ?? '') : null}
                     </td>

@@ -7,7 +7,6 @@ import { ThemeToggle } from './ThemeToggle';
 import { AdmissionFormModal } from '../public/AdmissionFormModal';
 import { useApp } from '../../lib/context';
 import {
-  Sparkles,
   BookOpen,
   Phone,
   Mail,
@@ -19,6 +18,7 @@ import {
   GraduationCap,
   ShieldCheck,
   Award,
+  Megaphone,
 } from 'lucide-react';
 
 export function PublicNavbar() {
@@ -48,11 +48,11 @@ export function PublicNavbar() {
         {mounted && admissionStatus === 'OPEN' ? (
           <div className="animate-marquee-smooth items-center gap-12">
             <span className="flex items-center gap-2 font-black tracking-wide shrink-0">
-              <Sparkles className="w-4 h-4 text-emerald-950 animate-pulse shrink-0" />
+              <Megaphone className="w-4 h-4 text-emerald-950 shrink-0" />
               <span>OFFICIAL ANNOUNCEMENT: Admissions for 2026/2027 Academic Session are OPEN! Click "Enroll Your Child" to submit your online application.</span>
             </span>
             <span className="flex items-center gap-2 font-black tracking-wide shrink-0">
-              <Sparkles className="w-4 h-4 text-emerald-950 animate-pulse shrink-0" />
+              <Megaphone className="w-4 h-4 text-emerald-950 shrink-0" />
               <span>OFFICIAL ANNOUNCEMENT: Admissions for 2026/2027 Academic Session are OPEN! Click "Enroll Your Child" to submit your online application.</span>
             </span>
           </div>
@@ -76,20 +76,20 @@ export function PublicNavbar() {
               </div>
             ) : (
               <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-700 via-emerald-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-emerald-900/30 group-hover:scale-105 transition-transform shrink-0 border-2 border-emerald-400/50">
-                <Sparkles className="w-6 h-6 sm:w-7 sm:h-7" />
+                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7" />
               </div>
             )}
           </Link>
 
           {/* Desktop Links */}
-          <nav className="hidden lg:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap shrink-0 transition-all ${
                     isActive
                       ? 'bg-emerald-100 dark:bg-emerald-800/40 text-emerald-950 dark:text-emerald-200 font-bold border border-emerald-300 dark:border-emerald-700/50'
                       : 'text-slate-700 dark:text-emerald-100/80 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 hover:text-emerald-900 dark:hover:text-white'

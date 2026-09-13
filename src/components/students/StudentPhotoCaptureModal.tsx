@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Camera, Upload, X, Check, RefreshCw, AlertCircle, ShieldAlert, Sparkles, Image as ImageIcon, SwitchCamera } from 'lucide-react';
+import { Camera, Upload, X, Check, RefreshCw, AlertCircle, ShieldAlert, Image as ImageIcon, SwitchCamera } from 'lucide-react';
 import { compressStudentPhotoToWebP, MAX_STUDENT_PHOTO_SIZE_BYTES } from '@/lib/imageUtils';
 import { getAuthHeaders } from '@/lib/context';
 
@@ -452,7 +452,7 @@ export function StudentPhotoCaptureModal({
           {/* WebP Compression Info Badge */}
           {compressedKb !== null && (
             <div className="flex items-center justify-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-500/10 py-1.5 px-3 rounded-xl border border-emerald-500/20 max-w-[280px] mx-auto">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
               <span className="truncate">Compressed to WebP: {compressedKb} KB</span>
             </div>
           )}

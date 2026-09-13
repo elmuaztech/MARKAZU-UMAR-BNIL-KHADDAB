@@ -12,7 +12,6 @@ import {
   ChevronRight,
   ChevronLeft,
   X,
-  Sparkles,
   ShieldCheck,
   AlertTriangle,
 } from 'lucide-react';
@@ -110,7 +109,7 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
         <div className="p-6 bg-gradient-to-r from-emerald-950 via-[#042f1e] to-emerald-900 text-white border-b border-emerald-500/30 flex items-center justify-between">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase">
-              <Sparkles className="w-3 h-3" /> Teacher Assignment Engine
+              <UserCheck className="w-3 h-3" /> Teacher Assignment Engine
             </div>
             <h2 className="text-xl font-black">Assign Academic & Tahfiz Load</h2>
             <p className="text-xs text-emerald-200/80">Step {step} of 4 • Multi-Programme & Multi-Subject Wizard</p>

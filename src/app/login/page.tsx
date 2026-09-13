@@ -8,7 +8,7 @@ import { verifyPassword, checkLockoutStatus, generatePasswordResetToken, createN
 import { ThemeToggle } from '../../components/navigation/ThemeToggle';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
-import { Sparkles, ShieldCheck, Crown, UserCheck, GraduationCap, HeartHandshake, Lock, Mail, ArrowRight, AlertTriangle, KeyRound, CheckCircle2, X, RefreshCw, Eye, EyeOff } from 'lucide-react';
+import { BookOpen, ShieldCheck, Crown, UserCheck, GraduationCap, HeartHandshake, Lock, Mail, ArrowRight, AlertTriangle, KeyRound, CheckCircle2, X, RefreshCw, Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -318,7 +318,7 @@ export default function LoginPage() {
               </div>
             ) : (
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-sky-500 flex items-center justify-center text-white mx-auto shadow-lg shadow-emerald-900/40">
-                <Sparkles className="w-8 h-8" />
+                <BookOpen className="w-8 h-8" />
               </div>
             )}
             <h1 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-white uppercase leading-snug">

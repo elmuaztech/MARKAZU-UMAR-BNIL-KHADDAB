@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
-  Sparkles,
   User,
   HeartHandshake,
   Phone,
@@ -129,7 +128,7 @@ export default function AdmissionsPage() {
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-900 via-emerald-800 to-sky-900 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-emerald-700/50">
         <div className="space-y-2 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-amber-300 text-[11px] font-bold">
-            <Sparkles className="w-3.5 h-3.5" /> Admission Control & Review Centre
+            <ShieldCheck className="w-3.5 h-3.5" /> Admission Control & Review Centre
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
             Online Student Admission System

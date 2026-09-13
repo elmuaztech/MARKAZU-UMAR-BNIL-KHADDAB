@@ -4,12 +4,10 @@ import React, { useState, useMemo } from 'react';
 import {
   BookOpen,
   Award,
-  Sparkles,
   Save,
   CheckCircle2,
   BarChart3,
   TrendingUp,
-  Star,
   User,
   Calendar,
   AlertCircle,
@@ -435,18 +433,18 @@ export function TahfizTracker() {
 
               <div>
                 <label className="block text-[11px] font-extrabold text-slate-600 dark:text-emerald-300 mb-1">
-                  Sabki Rating (1-5 Stars)
+                  Sabki Rating (Grade 1-5)
                 </label>
                 <select
                   value={sabkiRating}
                   onChange={(e) => setSabkiRating(Number(e.target.value) as any)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white"
                 >
-                  <option value={5}>⭐⭐⭐⭐⭐ (5/5 Excellent)</option>
-                  <option value={4}>⭐⭐⭐⭐ (4/5 Very Good)</option>
-                  <option value={3}>⭐⭐⭐ (3/5 Good)</option>
-                  <option value={2}>⭐⭐ (2/5 Fair)</option>
-                  <option value={1}>⭐ (1/5 Needs Review)</option>
+                  <option value={5}>Grade 5 (5/5 Excellent)</option>
+                  <option value={4}>Grade 4 (4/5 Very Good)</option>
+                  <option value={3}>Grade 3 (3/5 Good)</option>
+                  <option value={2}>Grade 2 (2/5 Fair)</option>
+                  <option value={1}>Grade 1 (1/5 Needs Review)</option>
                 </select>
               </div>
             </div>
@@ -469,18 +467,18 @@ export function TahfizTracker() {
 
               <div>
                 <label className="block text-[11px] font-extrabold text-slate-600 dark:text-emerald-300 mb-1">
-                  Manzil Rating (1-5 Stars)
+                  Manzil Rating (Grade 1-5)
                 </label>
                 <select
                   value={manzilRating}
                   onChange={(e) => setManzilRating(Number(e.target.value) as any)}
                   className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white"
                 >
-                  <option value={5}>⭐⭐⭐⭐⭐ (5/5 Strong Retention)</option>
-                  <option value={4}>⭐⭐⭐⭐ (4/5 Good)</option>
-                  <option value={3}>⭐⭐⭐ (3/5 Moderate)</option>
-                  <option value={2}>⭐⭐ (2/5 Weak)</option>
-                  <option value={1}>⭐ (1/5 Major Hesitation)</option>
+                  <option value={5}>Grade 5 (5/5 Strong Retention)</option>
+                  <option value={4}>Grade 4 (4/5 Good)</option>
+                  <option value={3}>Grade 3 (3/5 Moderate)</option>
+                  <option value={2}>Grade 2 (2/5 Weak)</option>
+                  <option value={1}>Grade 1 (1/5 Major Hesitation)</option>
                 </select>
               </div>
             </div>

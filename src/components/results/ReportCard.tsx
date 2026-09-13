@@ -3,7 +3,7 @@
 import React from 'react';
 import { Student, GradeRecord, SchoolSession } from '../../types';
 import { useApp } from '../../lib/context';
-import { Printer, Sparkles, Award, BookOpen, ShieldCheck } from 'lucide-react';
+import { Printer, Award, BookOpen, ShieldCheck } from 'lucide-react';
 import { BilingualText } from '../ui/BilingualText';
 
 interface ReportCardProps {
@@ -82,7 +82,7 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
                 <img src={schoolLogo} alt="School Crest Logo" className="w-14 h-14 sm:w-16 sm:h-16 rounded-full object-cover border-2 border-white p-0.5 shadow-md bg-white" />
               ) : (
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-800 flex items-center justify-center text-amber-300 border-2 border-white shadow-md">
-                  <Sparkles className="w-7 h-7 sm:w-8 sm:h-8" />
+                  <BookOpen className="w-7 h-7 sm:w-8 sm:h-8" />
                 </div>
               )
             )}
@@ -155,15 +155,15 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
               </div>
               <div>
                 <span className="text-[10px] text-emerald-200 uppercase block">Sabki (Revision)</span>
-                <span className="font-bold" style={{ color: accentColor }}>★ {student.hifzProgress.sabkiRating} / 5 Stars</span>
+                <span className="font-bold" style={{ color: accentColor }}>{student.hifzProgress.sabkiRating} / 5</span>
               </div>
               <div>
                 <span className="text-[10px] text-emerald-200 uppercase block">Manzil (Retention)</span>
-                <span className="font-bold" style={{ color: accentColor }}>★ {student.hifzProgress.manzilRating} / 5 Stars</span>
+                <span className="font-bold" style={{ color: accentColor }}>{student.hifzProgress.manzilRating} / 5</span>
               </div>
               <div>
                 <span className="text-[10px] text-emerald-200 uppercase block">Tajweed Quality</span>
-                <span className="font-bold text-white">★ {student.hifzProgress.tajweedRating} / 5 Stars</span>
+                <span className="font-bold text-white">{student.hifzProgress.tajweedRating} / 5</span>
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
-import { BookOpen, Sparkles, Award, CheckCircle2, ShieldCheck, Star, Clock, HeartHandshake, UserCheck, Flame } from 'lucide-react';
+import { BookOpen, Award, CheckCircle2, ShieldCheck, Clock, HeartHandshake, UserCheck, Flame } from 'lucide-react';
 
 export default function TahfizProgramPage() {
   return (
@@ -14,7 +14,7 @@ export default function TahfizProgramPage() {
         {/* Hero Banner */}
         <div className="text-center space-y-4 max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 border border-emerald-300 dark:border-emerald-500/40 text-emerald-900 dark:text-amber-300 font-semibold text-xs shadow-inner">
-            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-amber-400" /> Core Specialty Programme
+            <Award className="w-4 h-4 text-emerald-600 dark:text-amber-400" /> Core Specialty Programme
           </div>
 
           <h1 className="font-arabic font-bold text-2xl md:text-4xl text-amber-600 dark:text-amber-300">
@@ -114,7 +114,7 @@ export default function TahfizProgramPage() {
             {/* 7. Hadith */}
             <div className="p-6 rounded-2xl glass-card border border-emerald-500/30 space-y-3">
               <div className="w-12 h-12 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/30">
-                <Star className="w-6 h-6" />
+                <BookOpen className="w-6 h-6" />
               </div>
               <h4 className="text-base font-bold text-slate-900 dark:text-white">7. Hadith (Prophetic Traditions)</h4>
               <p className="text-xs text-slate-600 dark:text-emerald-200/80 leading-relaxed">
@@ -125,7 +125,7 @@ export default function TahfizProgramPage() {
             {/* 8. Tauhid */}
             <div className="p-6 rounded-2xl glass-card border border-emerald-500/30 space-y-3">
               <div className="w-12 h-12 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-500/30">
-                <Sparkles className="w-6 h-6" />
+                <ShieldCheck className="w-6 h-6" />
               </div>
               <h4 className="text-base font-bold text-slate-900 dark:text-white">8. Tauhid (Pure Creed)</h4>
               <p className="text-xs text-slate-600 dark:text-emerald-200/80 leading-relaxed">

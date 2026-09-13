@@ -6,7 +6,7 @@ import { useApp } from '../../lib/context';
 import { validatePasswordPolicy, verifyResetToken, hashPassword, recordPasswordInHistory, isPasswordInHistory, markResetTokenUsed } from '../../lib/security';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
-import { KeyRound, Lock, ArrowRight, ShieldCheck, CheckCircle2, AlertTriangle, Sparkles, Clock, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, Lock, ArrowRight, ShieldCheck, CheckCircle2, AlertTriangle, BookOpen, Clock, Eye, EyeOff } from 'lucide-react';
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -164,7 +164,7 @@ function ResetPasswordForm() {
           </div>
         ) : (
           <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 via-emerald-500 to-sky-500 flex items-center justify-center text-white mx-auto shadow-lg shadow-emerald-900/40">
-            <Sparkles className="w-8 h-8" />
+            <BookOpen className="w-8 h-8" />
           </div>
         )}
         <h1 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-white uppercase leading-snug">

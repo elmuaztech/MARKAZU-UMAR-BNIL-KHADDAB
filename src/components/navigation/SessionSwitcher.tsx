@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useApp } from '@/lib/context';
-import { Calendar, ChevronDown, Check, Plus, Sparkles, X, ShieldCheck } from 'lucide-react';
+import { Calendar, ChevronDown, Check, Plus, X, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export function SessionSwitcher() {
@@ -191,7 +191,7 @@ export function SessionSwitcher() {
               <div className="p-5 bg-gradient-to-r from-emerald-950 via-[#042f1e] to-emerald-900 text-white border-b border-emerald-500/30 flex items-center justify-between">
                 <div>
                   <h3 className="font-extrabold text-base flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-400" /> Create Academic Session
+                    <Calendar className="w-4 h-4 text-emerald-400" /> Create Academic Session
                   </h3>
                   <p className="text-xs text-emerald-200/80">Add a new academic session to the database</p>
                 </div>

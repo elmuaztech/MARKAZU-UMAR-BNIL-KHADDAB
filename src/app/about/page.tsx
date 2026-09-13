@@ -3,7 +3,7 @@
 import React from 'react';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
-import { Sparkles, BookOpen, Award, ShieldCheck, Users, HeartHandshake, CheckCircle2, MapPin, Phone, Mail } from 'lucide-react';
+import { BookOpen, Award, ShieldCheck, Users, HeartHandshake, CheckCircle2, MapPin, Phone, Mail } from 'lucide-react';
 
 import { FloatingWhatsApp } from '../../components/ui/FloatingWhatsApp';
 
@@ -17,7 +17,7 @@ export default function AboutPage() {
         <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#032417] via-[#043322] to-[#021d14] border border-emerald-500/40 p-8 sm:p-12 text-center text-white space-y-4 max-w-5xl mx-auto">
           <div className="relative z-10 space-y-4">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/40 text-amber-300 font-semibold text-xs shadow-lg backdrop-blur-md">
-              <Sparkles className="w-4 h-4 text-amber-400" /> About Our Institution
+              <BookOpen className="w-4 h-4 text-amber-400" /> About Our Institution
             </div>
 
             <h1 className="font-arabic font-bold text-2xl md:text-3xl text-amber-300">
@@ -105,7 +105,7 @@ export default function AboutPage() {
               </div>
               <div className="space-y-2 text-center sm:text-left flex-1">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Director
+                  <Award className="w-3.5 h-3.5 text-amber-400" /> Director
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black text-white">
                   Alh. Salisu Abubakar Daneji
@@ -130,7 +130,7 @@ export default function AboutPage() {
               </div>
               <div className="space-y-2 text-center sm:text-left flex-1">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-400" /> Deputy Director
+                  <Award className="w-3.5 h-3.5 text-emerald-400" /> Deputy Director
                 </div>
                 <h3 className="text-xl sm:text-2xl font-black text-white">
                   Ustaz Sani Abubakar Daneji

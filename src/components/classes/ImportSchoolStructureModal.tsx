@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   XCircle,
   X,
-  Sparkles,
   School,
   Users,
   BookOpen,
@@ -174,7 +173,7 @@ export function ImportSchoolStructureModal({
           <div className="flex-1 overflow-y-auto min-h-0 p-6 sm:p-8 space-y-6">
             <div className="rounded-3xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/30 p-5 space-y-2">
               <div className="flex items-center gap-2 font-black text-sm text-emerald-900 dark:text-emerald-300">
-                <Sparkles className="w-5 h-5 text-emerald-500" />
+                <FileSpreadsheet className="w-5 h-5 text-emerald-500" />
                 Required Structure Column Headers
               </div>
               <p className="text-xs text-slate-700 dark:text-emerald-200/90 leading-relaxed">

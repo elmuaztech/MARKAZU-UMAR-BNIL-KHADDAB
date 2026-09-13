@@ -19,6 +19,7 @@ import {
   Download,
   Baby,
   UserPlus,
+  Upload,
 } from 'lucide-react';
 import { Parent } from '../../../types';
 import { filterStudentsForUser, filterParentsForUser } from '../../../lib/rbac';
@@ -243,8 +244,9 @@ export default function ParentsPage() {
               <Button
                 variant="outline"
                 size="md"
-                className="bg-emerald-500/20 text-white hover:bg-emerald-500/30 border-emerald-400/40"
+                className="bg-white/20 text-white hover:bg-white/30 border-white/30 font-bold whitespace-nowrap"
                 onClick={() => setShowBulkModal(true)}
+                leftIcon={<Upload className="w-4 h-4" />}
               >
                 Upload CSV
               </Button>

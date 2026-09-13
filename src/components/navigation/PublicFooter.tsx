@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useApp } from '../../lib/context';
 import { AdmissionFormModal } from '../public/AdmissionFormModal';
 import {
-  Sparkles,
   MapPin,
   Phone,
   Mail,
@@ -33,7 +32,7 @@ export function PublicFooter() {
                 </div>
               ) : (
                 <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-sky-500 flex items-center justify-center text-white shadow-lg shadow-emerald-900/50 shrink-0 border-2 border-emerald-400/40">
-                  <Sparkles className="w-6 h-6" />
+                  <BookOpen className="w-6 h-6" />
                 </div>
               )}
               <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight leading-snug">

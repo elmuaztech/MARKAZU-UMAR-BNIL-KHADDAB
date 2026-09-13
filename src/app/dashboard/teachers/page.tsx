@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   ShieldAlert,
   GraduationCap,
+  Upload,
 } from 'lucide-react';
 import { Teacher } from '../../../types';
 import { filterTeachersForUser } from '../../../lib/rbac';
@@ -485,8 +486,9 @@ export default function TeachersPage() {
               <Button
                 variant="outline"
                 size="md"
-                className="bg-white dark:bg-emerald-950 border-slate-200 dark:border-emerald-800"
+                className="bg-white dark:bg-emerald-950 text-emerald-950 dark:text-emerald-100 font-bold border-slate-300 dark:border-emerald-800 hover:bg-slate-50"
                 onClick={() => setShowBulkModal(true)}
+                leftIcon={<Upload className="w-4 h-4" />}
               >
                 Upload CSV
               </Button>

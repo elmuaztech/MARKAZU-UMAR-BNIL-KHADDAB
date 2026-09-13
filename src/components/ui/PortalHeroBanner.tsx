@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Sparkles, LucideIcon } from 'lucide-react';
+import { BookOpen, LucideIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface PortalHeroBannerProps {
@@ -16,7 +16,7 @@ interface PortalHeroBannerProps {
 
 export function PortalHeroBanner({
   badgeText,
-  badgeIcon: BadgeIcon = Sparkles,
+  badgeIcon: BadgeIcon = BookOpen,
   title,
   titleArabic,
   description,

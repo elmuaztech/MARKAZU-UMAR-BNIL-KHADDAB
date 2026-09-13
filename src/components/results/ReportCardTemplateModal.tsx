@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '@/lib/context';
 import { ReportCardTemplate } from '@/types';
 import {
-  Sparkles,
   Palette,
   Layout,
   Type,
@@ -157,7 +156,7 @@ export function ReportCardTemplateModal({ isOpen, onClose }: ReportCardTemplateM
         <div className="p-4 sm:p-6 bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white flex items-center justify-between border-b border-emerald-500/30 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-amber-300 shadow-md shrink-0">
-              <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
+              <Palette className="w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
               <h2 className="text-sm sm:text-lg font-black tracking-tight text-white flex items-center gap-2">

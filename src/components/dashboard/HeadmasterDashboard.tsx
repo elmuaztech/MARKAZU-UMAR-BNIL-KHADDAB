@@ -19,7 +19,7 @@ import {
   BookOpen,
   Award,
   MessageSquare,
-  Sparkles,
+  Zap,
   ArrowRight,
   UserCheck,
   Tag,
@@ -250,7 +250,7 @@ export function HeadmasterDashboard() {
       {/* Quick Action Hub */}
       <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
         <h2 className="text-base font-black font-poppins text-slate-900 dark:text-white flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-amber-500" /> Quick Section Actions
+          <Zap className="w-5 h-5 text-amber-500" /> Quick Section Actions
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs font-poppins font-bold">

@@ -18,7 +18,7 @@ import {
   Baby,
   HeartHandshake,
   Camera,
-  Sparkles,
+  Upload,
 } from 'lucide-react';
 
 import { filterStudentsForUser } from '../../../lib/rbac';
@@ -463,42 +463,47 @@ export default function StudentsPage() {
     {
       header: 'Class / Halqa',
       accessorKey: 'className',
+      className: 'whitespace-nowrap min-w-[170px]',
       cell: (student) => (
-        <div>
-          <div className="font-bold text-slate-800 dark:text-emerald-100 text-xs">{student.className}</div>
-          <div className="text-[10px] text-slate-500 dark:text-emerald-400/80">{student.programmeName || 'Asubah & Magrib'}</div>
+        <div className="whitespace-nowrap">
+          <div className="font-bold text-slate-800 dark:text-emerald-100 text-xs whitespace-nowrap">{student.className}</div>
+          <div className="text-[10px] text-slate-500 dark:text-emerald-400/80 whitespace-nowrap">{student.programmeName || 'Asubah & Magrib'}</div>
         </div>
       ),
     },
     {
       header: 'Parent / Guardian',
+      className: 'whitespace-nowrap min-w-[160px]',
       cell: (student) => (
-        <div>
-          <div className="font-bold text-slate-900 dark:text-white text-xs">{student.guardianName}</div>
-          <div className="text-[10px] text-slate-500 dark:text-emerald-400/80 flex items-center gap-1 font-mono">
-            <Phone className="w-2.5 h-2.5 text-emerald-500" /> {student.guardianPhone}
+        <div className="whitespace-nowrap">
+          <div className="font-bold text-slate-900 dark:text-white text-xs whitespace-nowrap">{student.guardianName}</div>
+          <div className="text-[10px] text-slate-500 dark:text-emerald-400/80 flex items-center gap-1 font-mono whitespace-nowrap">
+            <Phone className="w-2.5 h-2.5 text-emerald-500 shrink-0" /> <span className="whitespace-nowrap">{student.guardianPhone}</span>
           </div>
         </div>
       ),
     },
     {
       header: 'Tahfiz Progress',
+      className: 'whitespace-nowrap min-w-[120px]',
       cell: (student) => (
-        <Badge variant="purple">
+        <Badge variant="purple" className="whitespace-nowrap">
           {student.hifzProgress.juzCompleted} / 30 Juz
         </Badge>
       ),
     },
     {
       header: 'Status',
+      className: 'whitespace-nowrap min-w-[90px]',
       cell: (student) => (
-        <Badge variant={student.status === 'ACTIVE' ? 'emerald' : 'slate'}>
+        <Badge variant={student.status === 'ACTIVE' ? 'emerald' : 'slate'} className="whitespace-nowrap">
           {student.status}
         </Badge>
       ),
     },
     {
       header: 'Actions',
+      className: 'whitespace-nowrap min-w-[120px] text-right',
       cell: (student) => (
         <div className="flex items-center justify-end gap-1">
           {canManageStudents && (
@@ -578,14 +583,15 @@ export default function StudentsPage() {
                 Quick Grid Enrol
               </Button>
               {isAdmin && (
-                <Button
-                  variant="secondary"
-                  size="md"
-                  className="bg-emerald-900/70 hover:bg-emerald-800 text-white border border-emerald-400/40 whitespace-nowrap"
+                <button
+                  type="button"
                   onClick={() => setShowBulkModal(true)}
+                  className="inline-flex items-center justify-center font-bold text-xs sm:text-sm px-4 py-2.5 h-10 gap-2 rounded-2xl transition-all duration-200 bg-white hover:bg-slate-100 text-emerald-950 font-black border border-emerald-300 shadow-md whitespace-nowrap active:scale-95 shrink-0"
+                  title="Upload CSV to Bulk Enroll Students"
                 >
-                  Upload CSV
-                </Button>
+                  <Upload className="w-4 h-4 text-emerald-800 shrink-0" />
+                  <span>Upload CSV</span>
+                </button>
               )}
               <Button
                 variant="primary"

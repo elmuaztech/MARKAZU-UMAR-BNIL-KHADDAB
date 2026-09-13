@@ -16,9 +16,8 @@ import {
   Award,
   CalendarCheck,
   GraduationCap,
-  Sparkles,
   CheckCircle,
-  Star,
+  Clock,
   Download,
   Check,
   Bell,
@@ -169,7 +168,7 @@ export function StudentDashboard() {
           title="Akhlaq Rating"
           value={student.akhlaqRating}
           subtitle="Islamic Conduct & Discipline"
-          icon={<Sparkles className="w-5 h-5" />}
+          icon={<Award className="w-5 h-5" />}
           variant="amber"
         />
       </div>
@@ -205,7 +204,7 @@ export function StudentDashboard() {
                 {isCompleted ? (
                   <Check className="w-3 h-3 mx-auto mt-0.5 text-emerald-100" />
                 ) : isCurrent ? (
-                  <Star className="w-3 h-3 mx-auto mt-0.5 text-amber-100 fill-amber-100" />
+                  <Clock className="w-3 h-3 mx-auto mt-0.5 text-amber-100" />
                 ) : null}
               </div>
             );

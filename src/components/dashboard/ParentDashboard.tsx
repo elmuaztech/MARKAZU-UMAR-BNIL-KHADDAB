@@ -17,13 +17,12 @@ import {
   CalendarCheck,
   Download,
   Users,
-  Star,
   CheckCircle,
   Bell,
   Baby,
   FileSpreadsheet,
   MessageSquare,
-  Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 
 export function ParentDashboard() {
@@ -185,9 +184,9 @@ export function ParentDashboard() {
 
               <StatCard
                 title="Sabki Revision Score"
-                value={`★ ${activeChild.hifzProgress?.sabkiRating || 0} / 5`}
+                value={`${activeChild.hifzProgress?.sabkiRating || 0} / 5`}
                 subtitle="Daily Hifz Retention Rating"
-                icon={<Star className="w-5 h-5" />}
+                icon={<Award className="w-5 h-5" />}
                 variant="sky"
               />
 
@@ -195,7 +194,7 @@ export function ParentDashboard() {
                 title="Akhlaq Rating"
                 value={activeChild.akhlaqRating || 'N/A'}
                 subtitle="Evaluated by Class Teacher"
-                icon={<Sparkles className="w-5 h-5" />}
+                icon={<ShieldCheck className="w-5 h-5" />}
                 variant="amber"
               />
             </div>

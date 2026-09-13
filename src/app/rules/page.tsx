@@ -3,7 +3,7 @@
 import React from 'react';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
-import { ShieldCheck, BookOpen, Clock, AlertTriangle, CheckCircle2, Sparkles, Scale, Heart } from 'lucide-react';
+import { ShieldCheck, BookOpen, Clock, AlertTriangle, CheckCircle2, Scale, Heart } from 'lucide-react';
 
 export default function RulesPage() {
   return (
@@ -94,7 +94,7 @@ export default function RulesPage() {
           {/* 3. Dress Code & Islamic Attire */}
           <div className="p-8 rounded-3xl glass-card border border-emerald-500/30 space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-500/30">
-              <Sparkles className="w-6 h-6" />
+              <ShieldCheck className="w-6 h-6" />
             </div>
 
             <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">

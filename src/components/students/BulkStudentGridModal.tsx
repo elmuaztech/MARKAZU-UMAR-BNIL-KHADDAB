@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Users,
-  Sparkles,
   ArrowDown,
   Mail,
   Phone,
@@ -653,7 +652,7 @@ export function BulkStudentGridModal({
         {/* Bottom Submission Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5 border-t border-slate-100 dark:border-emerald-800/40 bg-slate-50/50 dark:bg-emerald-950/40">
           <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-emerald-300">
-            <Sparkles className="w-4 h-4 text-amber-400" />
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>
               All parents will receive a Welcome email with temporary login credentials to access the Parent Portal.
             </span>
