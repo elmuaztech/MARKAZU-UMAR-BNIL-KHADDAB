@@ -21,7 +21,7 @@ import {
   Upload,
 } from 'lucide-react';
 
-import { filterStudentsForUser } from '../../../lib/rbac';
+import { filterStudentsForUser, filterProgrammesForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '../../../lib/rbac';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { EnterpriseTable, Column } from '@/components/ui/EnterpriseTable';
@@ -55,12 +55,30 @@ export default function StudentsPage() {
   // RBAC Data Scoping
   const userStudents = filterStudentsForUser(currentUser, students, parents, teacherAssignments);
 
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const canManageStudents = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN' || isHeadmaster;
+  const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
+
+  const headmasterProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
+  const availableProgrammes = filterProgrammesForUser(currentUser, programmes);
+  const userClasses = isHeadmaster ? filterClassesForUser(currentUser, classes) : classes;
+
   // New Student Form State
   const [fullName, setFullName] = useState('');
   const [admissionNo, setAdmissionNo] = useState(`MU-${new Date().getFullYear()}-0${Math.floor(100 + Math.random() * 900)}`);
   const [gender, setGender] = useState<'MALE' | 'FEMALE'>('MALE');
-  const [selectedProgrammeId, setSelectedProgrammeId] = useState(programmes[0]?.id || 'prog-01');
-  const [classId, setClassId] = useState(classes[0]?.id || '');
+  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>(() => {
+    if (isHeadmaster && headmasterProg) return headmasterProg.id;
+    return availableProgrammes[0]?.id || programmes[0]?.id || 'prog-01';
+  });
+
+  React.useEffect(() => {
+    if (isHeadmaster && headmasterProg && selectedProgrammeId !== headmasterProg.id) {
+      setSelectedProgrammeId(headmasterProg.id);
+    }
+  }, [isHeadmaster, headmasterProg, selectedProgrammeId]);
+
+  const [classId, setClassId] = useState(userClasses[0]?.id || '');
   const [selectedParentId, setSelectedParentId] = useState(parents[0]?.id || '');
   const [guardianName, setGuardianName] = useState('');
   const [guardianPhone, setGuardianPhone] = useState('');
@@ -83,22 +101,6 @@ export default function StudentsPage() {
   const [editGuardianPhone, setEditGuardianPhone] = useState('');
   const [editCompletedJuz, setEditCompletedJuz] = useState(0);
   const [editStatus, setEditStatus] = useState<'ACTIVE' | 'GRADUATED' | 'SUSPENDED'>('ACTIVE');
-  const isHeadmaster = currentUser.role === 'HEADMASTER';
-  const canManageStudents = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN' || isHeadmaster;
-  const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
-
-  const availableProgrammes = isHeadmaster
-    ? programmes.filter(
-        (p) =>
-          p.id === currentUser.assignedProgrammeId ||
-          (p.programme_name_english &&
-            currentUser.assignedProgrammeName &&
-            p.programme_name_english.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase()) ||
-          (p.programme_name &&
-            currentUser.assignedProgrammeName &&
-            p.programme_name.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
-      )
-    : programmes;
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -767,7 +769,7 @@ export default function StudentsPage() {
                       onChange={(e) => setClassId(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
                     >
-                      {classes
+                      {userClasses
                         .filter((c) => c.programmeId === selectedProgrammeId || !selectedProgrammeId)
                         .map((c) => (
                           <option key={c.id} value={c.id}>
@@ -1001,7 +1003,7 @@ export default function StudentsPage() {
                       onChange={(e) => setEditClassId(e.target.value)}
                       className="w-full bg-slate-50 dark:bg-emerald-950 border border-slate-300 dark:border-emerald-700 rounded-xl p-2 text-slate-900 dark:text-white font-poppins font-bold"
                     >
-                      {classes
+                      {userClasses
                         .filter((c) => c.programmeId === editProgrammeId || !editProgrammeId)
                         .map((c) => (
                           <option key={c.id} value={c.id}>

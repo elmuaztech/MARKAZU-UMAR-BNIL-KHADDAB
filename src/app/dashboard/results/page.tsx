@@ -7,16 +7,33 @@ import { ReportCard } from '@/components/results/ReportCard';
 import { ReportCardTemplateModal } from '@/components/results/ReportCardTemplateModal';
 import { PortalTheme } from '@/components/ui/PortalTheme';
 import { PortalHeroBanner } from '@/components/ui/PortalHeroBanner';
-import { Award, Users, PlusCircle, FileSpreadsheet, AlertCircle, Palette, Sparkles, Printer } from 'lucide-react';
-import { filterStudentsForUser, filterGradesForUser } from '@/lib/rbac';
+import { filterStudentsForUser, filterGradesForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
+import { Award, Palette, FileSpreadsheet, Printer, AlertCircle, Users } from 'lucide-react';
 
 export default function ResultsPage() {
   const { students, parents, grades, programmes, classes, currentSession, currentUser, teacherAssignments } = useApp();
 
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const assignedProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
+
   const userStudents = filterStudentsForUser(currentUser, students, parents, teacherAssignments);
   const userGrades = filterGradesForUser(currentUser, grades, userStudents);
 
-  const [selectedProgramme, setSelectedProgramme] = useState('ALL');
+  const [selectedProgramme, setSelectedProgramme] = useState(() => {
+    if (isHeadmaster && assignedProg) return assignedProg.id;
+    return 'ALL';
+  });
+
+  React.useEffect(() => {
+    if (isHeadmaster && assignedProg && selectedProgramme !== assignedProg.id) {
+      setSelectedProgramme(assignedProg.id);
+    }
+  }, [isHeadmaster, assignedProg, selectedProgramme]);
+
+  const userClasses = isHeadmaster
+    ? filterClassesForUser(currentUser, classes, teacherAssignments)
+    : classes;
+
   const [selectedClass, setSelectedClass] = useState('ALL');
   const [selectedStudentId, setSelectedStudentId] = useState(userStudents[0]?.id || '');
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -110,7 +127,7 @@ export default function ResultsPage() {
                 Your Section Programme
               </label>
               <div className="w-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-500/40 rounded-xl px-3.5 py-2.5 text-xs font-black text-emerald-900 dark:text-emerald-200 truncate">
-                {currentUser.assignedProgrammeName || 'Asubah & Magrib Section'}
+                {assignedProg?.programme_name || assignedProg?.programme_name_english || currentUser.assignedProgrammeName || 'Your Section'}
               </div>
             </div>
           )}
@@ -124,8 +141,8 @@ export default function ResultsPage() {
               onChange={(e) => setSelectedClass(e.target.value)}
               className="w-full bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-emerald-500 outline-none"
             >
-              <option value="ALL">All Classes in Section ({classes.filter((c) => selectedProgramme === 'ALL' || c.programmeId === selectedProgramme || c.programmeName === selectedProgramme).length})</option>
-              {classes
+              <option value="ALL">All Classes in Section ({userClasses.filter((c) => selectedProgramme === 'ALL' || c.programmeId === selectedProgramme || c.programmeName === selectedProgramme).length})</option>
+              {userClasses
                 .filter((c) => selectedProgramme === 'ALL' || c.programmeId === selectedProgramme || c.programmeName === selectedProgramme)
                 .map((c) => (
                   <option key={c.id} value={c.id}>{c.class_name_english || c.name}</option>

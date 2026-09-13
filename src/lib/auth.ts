@@ -56,7 +56,62 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
         },
       });
 
+async function resolveHeadmasterProgramme(user: any): Promise<{ id: string; name: string } | null> {
+  if (!user || user.role !== 'HEADMASTER') return null;
+  if (user.assignedProgrammeId && user.assignedProgrammeName) {
+    return { id: user.assignedProgrammeId, name: user.assignedProgrammeName };
+  }
+  try {
+    const userText = `${user.name || ''} ${user.email || ''} ${user.username || ''}`.toLowerCase();
+    let matchedProg: any = null;
+    if (userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba') || userText.includes('matan')) {
+      matchedProg = await prisma.programme.findFirst({
+        where: {
+          OR: [
+            { code: 'MTA' },
+            { id: 'prog-04' },
+            { nameEnglish: { contains: 'Matan', mode: 'insensitive' } },
+          ],
+        },
+      });
+    } else if (userText.includes('sirad') || userText.includes('balarabe') || userText.includes('asuba')) {
+      matchedProg = await prisma.programme.findFirst({
+        where: {
+          OR: [
+            { code: 'ASM' },
+            { id: 'prog-01' },
+            { nameEnglish: { contains: 'Asubah', mode: 'insensitive' } },
+          ],
+        },
+      });
+    }
+
+    if (matchedProg) {
+      const progName = matchedProg.nameEnglish || matchedProg.name || 'Assigned Section';
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          assignedProgrammeId: matchedProg.id,
+          assignedProgrammeName: progName,
+        },
+      }).catch(() => {});
+      return { id: matchedProg.id, name: progName };
+    }
+  } catch (e) {}
+  return null;
+}
+
       if (dbSession && dbSession.user && dbSession.user.status === 'ACTIVE' && !dbSession.user.deletedAt) {
+        let assignedProgrammeId = dbSession.user.assignedProgrammeId;
+        let assignedProgrammeName = dbSession.user.assignedProgrammeName;
+        if (dbSession.user.role === 'HEADMASTER' && !assignedProgrammeId) {
+          const resolved = await resolveHeadmasterProgramme(dbSession.user);
+          if (resolved) {
+            assignedProgrammeId = resolved.id;
+            assignedProgrammeName = resolved.name;
+          }
+        }
+
         return {
           id: dbSession.user.id,
           name: dbSession.user.name,
@@ -64,8 +119,8 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
           username: (dbSession.user as any).username || null,
           role: dbSession.user.role,
           avatar: dbSession.user.avatar || null,
-          assignedProgrammeId: dbSession.user.assignedProgrammeId,
-          assignedProgrammeName: dbSession.user.assignedProgrammeName,
+          assignedProgrammeId,
+          assignedProgrammeName,
           status: dbSession.user.status,
           isFirstLogin: dbSession.user.isFirstLogin,
           mustChangePassword: dbSession.user.mustChangePassword,
@@ -84,6 +139,16 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
       });
 
       if (dbUser) {
+        let assignedProgrammeId = dbUser.assignedProgrammeId;
+        let assignedProgrammeName = dbUser.assignedProgrammeName;
+        if (dbUser.role === 'HEADMASTER' && !assignedProgrammeId) {
+          const resolved = await resolveHeadmasterProgramme(dbUser);
+          if (resolved) {
+            assignedProgrammeId = resolved.id;
+            assignedProgrammeName = resolved.name;
+          }
+        }
+
         return {
           id: dbUser.id,
           name: dbUser.name,
@@ -91,8 +156,8 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
           username: dbUser.username || null,
           role: dbUser.role,
           avatar: dbUser.avatar || null,
-          assignedProgrammeId: dbUser.assignedProgrammeId,
-          assignedProgrammeName: dbUser.assignedProgrammeName,
+          assignedProgrammeId,
+          assignedProgrammeName,
           status: dbUser.status,
           isFirstLogin: dbUser.isFirstLogin,
           mustChangePassword: dbUser.mustChangePassword,

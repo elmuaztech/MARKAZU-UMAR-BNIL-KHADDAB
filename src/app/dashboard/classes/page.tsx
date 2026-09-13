@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useApp } from '../../../lib/context';
 import { SchoolClass } from '@/types';
-import { filterClassesForUser } from '../../../lib/rbac';
+import { filterClassesForUser, filterProgrammesForUser, getHeadmasterAssignedProgramme } from '../../../lib/rbac';
 import { School, Users, UserCheck, Plus, Edit, Trash2, UserX, RefreshCw, FileSpreadsheet } from 'lucide-react';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +20,19 @@ export default function ClassesPage() {
   const isAdmin = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN';
   const isHeadmaster = currentUser.role === 'HEADMASTER';
 
-  const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>('ALL');
+  const userProgrammes = filterProgrammesForUser(currentUser, programmes);
+  const headmasterProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
+
+  const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>(() => {
+    if (isHeadmaster && headmasterProg) return headmasterProg.id;
+    return 'ALL';
+  });
+
+  React.useEffect(() => {
+    if (isHeadmaster && headmasterProg && selectedProgrammeFilter !== headmasterProg.id) {
+      setSelectedProgrammeFilter(headmasterProg.id);
+    }
+  }, [isHeadmaster, headmasterProg, selectedProgrammeFilter]);
 
   // Modals state
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -40,7 +52,7 @@ export default function ClassesPage() {
   const [classFormData, setClassFormData] = useState({
     class_name_english: '',
     class_name_arabic: '',
-    programmeId: programmes[0]?.id || '',
+    programmeId: headmasterProg?.id || userProgrammes[0]?.id || programmes[0]?.id || '',
     subcategory: '',
     section: 'Section A',
     capacity: 30,
@@ -79,9 +91,9 @@ export default function ClassesPage() {
   };
 
   const handleOpenAdd = () => {
-    const defaultProgId = isHeadmaster && currentUser.assignedProgrammeId 
-      ? currentUser.assignedProgrammeId 
-      : (selectedProgrammeFilter !== 'ALL' ? selectedProgrammeFilter : programmes[0]?.id || '');
+    const defaultProgId = isHeadmaster && headmasterProg
+      ? headmasterProg.id
+      : (selectedProgrammeFilter !== 'ALL' ? selectedProgrammeFilter : userProgrammes[0]?.id || programmes[0]?.id || '');
     const targetProg = programmes.find((p) => p.id === defaultProgId);
     setClassFormData({
       class_name_english: '',
@@ -252,34 +264,45 @@ export default function ClassesPage() {
       </div>
 
       {/* Programme Filter Tabs */}
-      <div className="p-3.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-xs flex items-center gap-2 overflow-x-auto">
-        <button
-          onClick={() => setSelectedProgrammeFilter('ALL')}
-          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-            selectedProgrammeFilter === 'ALL'
-              ? 'bg-emerald-700 text-white shadow-sm'
-              : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
-          }`}
-        >
-          All Classes ({classes.length})
-        </button>
-        {programmes.map((prog) => {
-          const count = classes.filter((c) => c.programmeId === prog.id || c.programmeName === prog.programme_name).length;
-          return (
-            <button
-              key={prog.id}
-              onClick={() => setSelectedProgrammeFilter(prog.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                selectedProgrammeFilter === prog.id
-                  ? 'bg-emerald-700 text-white shadow-sm'
-                  : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
-              }`}
-            >
-              {prog.programme_name_english || prog.programme_name} ({count})
-            </button>
-          );
-        })}
-      </div>
+      {!isHeadmaster ? (
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-xs flex items-center gap-2 overflow-x-auto">
+          <button
+            onClick={() => setSelectedProgrammeFilter('ALL')}
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              selectedProgrammeFilter === 'ALL'
+                ? 'bg-emerald-700 text-white shadow-sm'
+                : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
+            }`}
+          >
+            All Classes ({userClasses.length})
+          </button>
+          {userProgrammes.map((prog) => {
+            const count = userClasses.filter((c) => c.programmeId === prog.id || c.programmeName === prog.programme_name).length;
+            return (
+              <button
+                key={prog.id}
+                onClick={() => setSelectedProgrammeFilter(prog.id)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                  selectedProgrammeFilter === prog.id
+                    ? 'bg-emerald-700 text-white shadow-sm'
+                    : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-600 dark:text-emerald-300 hover:bg-slate-200'
+                }`}
+              >
+                {prog.programme_name_english || prog.programme_name} ({count})
+              </button>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-xs flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-slate-600 dark:text-emerald-300">Assigned Section:</span>
+            <span className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs">
+              {headmasterProg?.programme_name_english || headmasterProg?.programme_name || currentUser.assignedProgrammeName || 'My Section'} ({userClasses.length} Classes)
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Grid of Class Cards */}
       {filteredClasses.length === 0 ? (
@@ -426,7 +449,7 @@ export default function ClassesPage() {
                       }}
                       className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      {programmes.map((p) => (
+                      {userProgrammes.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.programme_name_english || p.programme_name} ({p.programme_code})
                         </option>
@@ -593,7 +616,7 @@ export default function ClassesPage() {
                       }}
                       className="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white font-bold"
                     >
-                      {programmes.map((p) => (
+                      {userProgrammes.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.programme_name_english || p.programme_name} ({p.programme_code})
                         </option>

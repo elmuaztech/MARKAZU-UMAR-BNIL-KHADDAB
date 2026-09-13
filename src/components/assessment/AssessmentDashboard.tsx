@@ -10,7 +10,7 @@ import { ResultEntryGrid } from './ResultEntryGrid';
 import { ResultPreviewModal } from './ResultPreviewModal';
 import { AdminApprovalQueue } from './AdminApprovalQueue';
 import { AdminAssessmentConfig } from './AdminAssessmentConfig';
-import { canTeacherGradeSubject } from '@/lib/rbac';
+import { canTeacherGradeSubject, filterProgrammesForUser, filterClassesForUser, filterSubjectsForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
 import { GradeRecord } from '@/types';
 import {
   Award,
@@ -43,42 +43,43 @@ export function AssessmentDashboard() {
     submitResultBatch,
   } = useApp();
 
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
   const isTeacher = currentUser.role === 'TEACHER';
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
 
-  // Active Tab for Admin
+  // Active Tab for Admin and Headmaster
   const [activeTab, setActiveTab] = useState<'ENTRY' | 'APPROVALS' | 'SETTINGS'>('ENTRY');
 
   // Step 1 & 2: Session & Term
   const [selectedSession, setSelectedSession] = useState(currentSession.sessionName);
   const [selectedTerm, setSelectedTerm] = useState(currentSession.activeTerm);
 
-  // Step 3: Assigned Programmes for User
+  // Step 3: Assigned Programmes strictly scoped by role
   const userTeacherAssignments = teacherAssignments.filter(
     (ta) => ta.teacherId === currentUser.id || isTeacher
   );
+  const teacherAssignedProgrammeIds = Array.from(new Set(userTeacherAssignments.map((ta) => ta.programmeId)));
 
-  const assignedProgrammeIds = Array.from(new Set(userTeacherAssignments.map((ta) => ta.programmeId)));
   const availableProgrammes = isTeacher
-    ? programmes.filter((p) => assignedProgrammeIds.includes(p.id))
-    : programmes;
+    ? programmes.filter((p) => teacherAssignedProgrammeIds.includes(p.id))
+    : filterProgrammesForUser(currentUser, programmes);
+
+  const headmasterProgramme = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
 
   // Step 3 Selection
-  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>(
-    availableProgrammes[0]?.id || programmes[0]?.id || ''
-  );
+  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>(() => {
+    if (isHeadmaster && headmasterProgramme) return headmasterProgramme.id;
+    return availableProgrammes[0]?.id || programmes[0]?.id || '';
+  });
 
   // Step 4: Assigned Classes under selected Programme
-  const assignedClassIds = Array.from(
-    new Set(
-      userTeacherAssignments
-        .filter((ta) => !selectedProgrammeId || ta.programmeId === selectedProgrammeId)
-        .map((ta) => ta.classId)
-    )
+  const userClasses = isHeadmaster || isTeacher
+    ? filterClassesForUser(currentUser, classes, teacherAssignments)
+    : classes;
+
+  const availableClasses = userClasses.filter(
+    (c) => !selectedProgrammeId || c.programmeId === selectedProgrammeId
   );
-  const availableClasses = isTeacher
-    ? classes.filter((c) => assignedClassIds.includes(c.id) && c.programmeId === selectedProgrammeId)
-    : classes.filter((c) => c.programmeId === selectedProgrammeId);
 
   // Step 4 Selection
   const [selectedClassId, setSelectedClassId] = useState<string>(
@@ -86,21 +87,53 @@ export function AssessmentDashboard() {
   );
 
   // Step 5: Assigned Subjects under selected Class
-  const assignedSubjectIds = Array.from(
-    new Set(
-      userTeacherAssignments
-        .filter((ta) => ta.classId === selectedClassId)
-        .flatMap((ta) => ta.subjectIds)
-    )
-  );
-  const availableSubjects = isTeacher
-    ? subjects.filter((s) => assignedSubjectIds.includes(s.id))
+  const userSubjects = isHeadmaster
+    ? filterSubjectsForUser(currentUser, subjects, classes)
+    : isTeacher
+    ? subjects.filter((s) => {
+        const assignedSubjectIds = Array.from(
+          new Set(
+            userTeacherAssignments
+              .filter((ta) => ta.classId === selectedClassId)
+              .flatMap((ta) => ta.subjectIds)
+          )
+        );
+        return assignedSubjectIds.includes(s.id);
+      })
     : subjects;
+
+  const availableSubjects = userSubjects.filter(
+    (s) => !selectedClassId || !s.classId || s.classId === selectedClassId
+  );
 
   // Step 5 Selection
   const [selectedSubjectId, setSelectedSubjectId] = useState<string>(
     availableSubjects[0]?.id || ''
   );
+
+  // Sync state when programmes or user context loads
+  React.useEffect(() => {
+    if (isHeadmaster) {
+      const assigned = getHeadmasterAssignedProgramme(currentUser, programmes);
+      if (assigned && selectedProgrammeId !== assigned.id) {
+        setSelectedProgrammeId(assigned.id);
+      }
+    } else if (!selectedProgrammeId && availableProgrammes.length > 0) {
+      setSelectedProgrammeId(availableProgrammes[0].id);
+    }
+  }, [currentUser, programmes, isHeadmaster, selectedProgrammeId, availableProgrammes]);
+
+  React.useEffect(() => {
+    if (availableClasses.length > 0 && !availableClasses.some((c) => c.id === selectedClassId)) {
+      setSelectedClassId(availableClasses[0].id);
+    }
+  }, [availableClasses, selectedClassId]);
+
+  React.useEffect(() => {
+    if (availableSubjects.length > 0 && !availableSubjects.some((s) => s.id === selectedSubjectId)) {
+      setSelectedSubjectId(availableSubjects[0].id);
+    }
+  }, [availableSubjects, selectedSubjectId]);
 
   // Step 6: Students enrolled in selected Class
   const activeClassObj = classes.find((c) => c.id === selectedClassId) || availableClasses[0];
@@ -196,8 +229,8 @@ export function AssessmentDashboard() {
         description="Spreadsheet-style continuous assessment and examination score entry with instant automatic calculations, score validation, preview workflow, and administrator approval queue."
       />
 
-      {/* Admin Mode Tab Switcher */}
-      {isAdmin && (
+      {/* Admin and Headmaster Tab Switcher */}
+      {(isAdmin || isHeadmaster) && (
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-3 border-b border-slate-200 dark:border-emerald-800/40 pb-3 font-poppins">
           <button
             onClick={() => setActiveTab('ENTRY')}
@@ -223,22 +256,24 @@ export function AssessmentDashboard() {
             <span>Review Queue ({resultSubmissions.filter((s) => s.status === 'PENDING').length})</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab('SETTINGS')}
-            className={`col-span-2 sm:col-span-1 px-3.5 sm:px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
-              activeTab === 'SETTINGS'
-                ? 'bg-purple-600 text-white border-purple-500 shadow-md'
-                : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
-            }`}
-          >
-            <Sliders className="w-4 h-4 shrink-0" />
-            <span>Configurations</span>
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setActiveTab('SETTINGS')}
+              className={`col-span-2 sm:col-span-1 px-3.5 sm:px-5 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 sm:gap-2 border ${
+                activeTab === 'SETTINGS'
+                  ? 'bg-purple-600 text-white border-purple-500 shadow-md'
+                  : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/60'
+              }`}
+            >
+              <Sliders className="w-4 h-4 shrink-0" />
+              <span>Configurations</span>
+            </button>
+          )}
         </div>
       )}
 
-      {/* Render Admin Views */}
-      {isAdmin && activeTab === 'APPROVALS' && <AdminApprovalQueue />}
+      {/* Render Approval & Settings Views */}
+      {(isAdmin || isHeadmaster) && activeTab === 'APPROVALS' && <AdminApprovalQueue />}
       {isAdmin && activeTab === 'SETTINGS' && <AdminAssessmentConfig />}
 
       {/* Main Score Entry Workflow (Step 1 -> 6) */}
@@ -291,18 +326,21 @@ export function AssessmentDashboard() {
               {/* Step 3: Programme */}
               <div>
                 <label className="block text-slate-600 dark:text-emerald-300 font-bold mb-1">
-                  3. Programme
+                  3. Programme {isHeadmaster && <span className="text-[10px] text-emerald-500 font-bold">(Section Locked)</span>}
                 </label>
                 <select
+                  disabled={isHeadmaster}
                   value={selectedProgrammeId}
                   onChange={(e) => {
-                    setSelectedProgrammeId(e.target.value);
-                    const matchingClasses = classes.filter((c) => c.programmeId === e.target.value);
-                    if (matchingClasses.length > 0) {
-                      setSelectedClassId(matchingClasses[0].id);
+                    if (!isHeadmaster) {
+                      setSelectedProgrammeId(e.target.value);
+                      const matchingClasses = classes.filter((c) => c.programmeId === e.target.value);
+                      if (matchingClasses.length > 0) {
+                        setSelectedClassId(matchingClasses[0].id);
+                      }
                     }
                   }}
-                  className="w-full p-2.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 font-bold text-slate-900 dark:text-white"
+                  className="w-full p-2.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 font-bold text-slate-900 dark:text-white disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {availableProgrammes.map((p) => (
                     <option key={p.id} value={p.id}>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../lib/context';
+import { getHeadmasterAssignedProgramme } from '../../lib/rbac';
 import { useRouter } from 'next/navigation';
 import {
   School,
@@ -35,8 +36,10 @@ export default function HeadmasterPortalPage() {
   const isAdmin = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN';
 
   const [activeTab, setActiveTab] = useState<'overview' | 'classes' | 'students' | 'teachers' | 'attendance'>('overview');
+  
+  const headmasterProg = getHeadmasterAssignedProgramme(currentUser, programmes);
   const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>(
-    currentUser.role === 'HEADMASTER' ? (currentUser.assignedProgrammeId || programmes[0]?.id || '') : (programmes[0]?.id || 'ALL')
+    currentUser.role === 'HEADMASTER' ? (headmasterProg?.id || '') : (programmes[0]?.id || 'ALL')
   );
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('ALL');
 
@@ -49,9 +52,11 @@ export default function HeadmasterPortalPage() {
 
   // Determine current active programme based on role and selection
   const isGlobalScope = isAdmin && selectedProgrammeId === 'ALL';
-  const currentProgramme = isGlobalScope
+  const currentProgramme = currentUser.role === 'HEADMASTER'
+    ? headmasterProg
+    : isGlobalScope
     ? null
-    : programmes.find((p) => p.id === selectedProgrammeId) || (currentUser.role === 'HEADMASTER' ? programmes.find((p) => p.id === currentUser.assignedProgrammeId) : programmes[0]);
+    : programmes.find((p) => p.id === selectedProgrammeId) || programmes[0];
 
   const activeProgName = isGlobalScope
     ? 'All School Programmes (Global Scope)'
@@ -280,7 +285,7 @@ export default function HeadmasterPortalPage() {
                   </span>
                 </button>
 
-                {availableSubcategories.map((sub) => {
+                {availableSubcategories.map((sub: any) => {
                   const isSelected = selectedSubcategory.toLowerCase() === sub.toLowerCase();
                   const subClasses = rawClasses.filter((c) => {
                     const cat = (c.subcategory || c.section || '').toLowerCase();
@@ -424,7 +429,7 @@ export default function HeadmasterPortalPage() {
                     <p className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold uppercase">Subcategories</p>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {availableSubcategories.length > 0 ? (
-                        availableSubcategories.map((sub) => (
+                        availableSubcategories.map((sub: any) => (
                           <span key={sub} className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
                             {sub}
                           </span>

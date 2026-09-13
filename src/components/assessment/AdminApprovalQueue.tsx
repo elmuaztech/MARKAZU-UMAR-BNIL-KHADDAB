@@ -17,14 +17,34 @@ import {
   Filter,
 } from 'lucide-react';
 
+import { getHeadmasterAssignedProgramme } from '@/lib/rbac';
+
 export function AdminApprovalQueue() {
   const {
+    currentUser,
+    programmes,
     resultSubmissions,
     grades,
     approveResultSubmission,
     rejectResultSubmission,
     returnResultSubmission,
   } = useApp();
+
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const assignedProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
+
+  // Filter submissions by Headmaster's section if Headmaster
+  const scopedSubmissions = isHeadmaster
+    ? resultSubmissions.filter((s) => {
+        if (assignedProg && s.programmeId === assignedProg.id) return true;
+        const pName = (assignedProg?.programme_name || assignedProg?.programme_name_english || currentUser.assignedProgrammeName || '').toLowerCase();
+        if (pName && s.programmeName?.toLowerCase().includes(pName)) return true;
+        const userText = `${currentUser.name || ''} ${currentUser.email || ''}`.toLowerCase();
+        if ((userText.includes('muazzam') || userText.includes('matan') || userText.includes('ahmad abba')) && s.programmeName?.toLowerCase().includes('matan')) return true;
+        if ((userText.includes('sirad') || userText.includes('asuba')) && s.programmeName?.toLowerCase().includes('asuba')) return true;
+        return false;
+      })
+    : resultSubmissions;
 
   const [activeTab, setActiveTab] = useState<'PENDING' | 'APPROVED' | 'REJECTED' | 'RETURNED'>('PENDING');
 
@@ -33,7 +53,7 @@ export function AdminApprovalQueue() {
   const [actionType, setActionType] = useState<'APPROVE' | 'REJECT' | 'RETURN' | null>(null);
   const [commentText, setCommentText] = useState('');
 
-  const filteredSubmissions = resultSubmissions.filter((s) => s.status === activeTab);
+  const filteredSubmissions = scopedSubmissions.filter((s) => s.status === activeTab);
 
   const handleActionConfirm = () => {
     if (!selectedSub || !actionType) return;
@@ -138,7 +158,7 @@ export function AdminApprovalQueue() {
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 dark:border-emerald-800/40 pb-3 overflow-x-auto no-scrollbar max-w-full -mx-1 px-1">
         {(['PENDING', 'APPROVED', 'RETURNED', 'REJECTED'] as const).map((tab) => {
-          const count = resultSubmissions.filter((s) => s.status === tab).length;
+          const count = scopedSubmissions.filter((s) => s.status === tab).length;
           return (
             <button
               key={tab}
@@ -168,8 +188,12 @@ export function AdminApprovalQueue() {
 
       {/* Submissions Table */}
       <EnterpriseTable
-        title={`Administrator Review Queue (${activeTab})`}
-        subtitle="Review, approve, reject, or return teacher score submissions before official report sheet generation"
+        title={isHeadmaster ? `Section Assessment Queue (${activeTab})` : `Administrator Review Queue (${activeTab})`}
+        subtitle={
+          isHeadmaster
+            ? `Review, approve, reject, or return score submissions for ${assignedProg?.programme_name || currentUser.assignedProgrammeName || 'your section'} before report sheet generation`
+            : "Review, approve, reject, or return teacher score submissions before official report sheet generation"
+        }
         columns={columns}
         data={filteredSubmissions}
         searchPlaceholder="Search by subject, class, or teacher..."

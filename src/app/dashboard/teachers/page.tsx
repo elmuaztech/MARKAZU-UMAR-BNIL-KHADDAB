@@ -23,7 +23,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { Teacher } from '../../../types';
-import { filterTeachersForUser } from '../../../lib/rbac';
+import { filterTeachersForUser, filterClassesForUser, filterProgrammesForUser, getHeadmasterAssignedProgramme } from '../../../lib/rbac';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -114,6 +114,10 @@ export default function TeachersPage() {
   };
 
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const headmasterProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
+  const userClasses = isHeadmaster ? filterClassesForUser(currentUser, classes) : classes;
+  const userProgrammes = filterProgrammesForUser(currentUser, programmes);
 
   const userTeachers = filterTeachersForUser(currentUser, teachers);
 
@@ -924,7 +928,7 @@ export default function TeachersPage() {
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-44 overflow-y-auto">
-                    {classes.map((c) => {
+                    {userClasses.map((c) => {
                       const isSelected = selectedClasses.includes(c.id) || selectedClasses.includes(c.name);
                       return (
                         <button
@@ -1280,7 +1284,7 @@ export default function TeachersPage() {
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 max-h-44 overflow-y-auto">
-                    {classes.map((c) => {
+                    {userClasses.map((c) => {
                       const isSelected = editSelectedClasses.includes(c.id) || editSelectedClasses.includes(c.name);
                       return (
                         <button

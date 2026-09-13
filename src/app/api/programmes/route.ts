@@ -39,9 +39,27 @@ function formatProgrammeResponse(p: any) {
 
 export async function GET(req: NextRequest) {
   try {
-    const programmes = await prisma.programme.findMany({
+    const authUser = await getAuthenticatedUser(req);
+    let programmes = await prisma.programme.findMany({
       orderBy: { displayOrder: 'asc' },
     });
+
+    if (authUser && authUser.role === 'HEADMASTER') {
+      const assignedId = authUser.assignedProgrammeId;
+      const assignedName = (authUser.assignedProgrammeName || '').toLowerCase().trim();
+      const userText = `${authUser.name || ''} ${authUser.email || ''} ${authUser.username || ''}`.toLowerCase();
+
+      programmes = programmes.filter((p: any) => {
+        if (assignedId && p.id === assignedId) return true;
+        const pName = (p.nameEnglish || p.name || '').toLowerCase();
+        const pCode = (p.code || '').toLowerCase();
+        if (assignedName && (pName.includes(assignedName) || assignedName.includes(pName) || pCode === assignedName)) return true;
+        // Specific section canonical identities
+        if ((userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba') || userText.includes('matan')) && (pCode === 'mta' || pName.includes('matan') || p.id === 'prog-04')) return true;
+        if ((userText.includes('sirad') || userText.includes('balarabe') || userText.includes('asuba')) && (pCode === 'asm' || pName.includes('asuba') || p.id === 'prog-01')) return true;
+        return false;
+      });
+    }
 
     const formatted = programmes.map(formatProgrammeResponse);
 

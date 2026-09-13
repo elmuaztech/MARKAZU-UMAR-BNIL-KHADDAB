@@ -7,7 +7,7 @@ import { PortalHeroBanner } from '@/components/ui/PortalHeroBanner';
 import { EnterpriseTable, Column } from '@/components/ui/EnterpriseTable';
 import { Button, IconButton } from '@/components/ui/ButtonSystem';
 import { Subject } from '@/types';
-import { filterSubjectsForUser } from '@/lib/rbac';
+import { filterSubjectsForUser, filterProgrammesForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
 import {
   BookOpen,
   Plus,
@@ -29,22 +29,21 @@ export default function SubjectsPage() {
   const isHeadmaster = currentUser.role === 'HEADMASTER';
   const canManage = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN' || currentUser.role === 'HEADMASTER';
 
-  const userProgrammes = isHeadmaster
-    ? programmes.filter(
-        (p) =>
-          p.id === currentUser.assignedProgrammeId ||
-          (p.programme_name_english &&
-            currentUser.assignedProgrammeName &&
-            p.programme_name_english.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase()) ||
-          (p.programme_name &&
-            currentUser.assignedProgrammeName &&
-            p.programme_name.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
-      )
-    : programmes;
+  const userProgrammes = filterProgrammesForUser(currentUser, programmes);
+  const headmasterProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
+  const userClasses = isHeadmaster ? filterClassesForUser(currentUser, classes) : classes;
 
-  const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>(
-    isHeadmaster && userProgrammes[0]?.id ? userProgrammes[0].id : 'ALL'
-  );
+  const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>(() => {
+    if (isHeadmaster && headmasterProg) return headmasterProg.id;
+    return 'ALL';
+  });
+
+  React.useEffect(() => {
+    if (isHeadmaster && headmasterProg && selectedProgrammeFilter !== headmasterProg.id) {
+      setSelectedProgrammeFilter(headmasterProg.id);
+    }
+  }, [isHeadmaster, headmasterProg, selectedProgrammeFilter]);
+
   const [selectedClassFilter, setSelectedClassFilter] = useState<string>('ALL');
 
   // Modal State
@@ -74,7 +73,7 @@ export default function SubjectsPage() {
     setCode('');
     setCategory('ISLAMIC');
     setDescription('');
-    setProgrammeId(isHeadmaster && userProgrammes[0]?.id ? userProgrammes[0].id : '');
+    setProgrammeId(isHeadmaster && headmasterProg ? headmasterProg.id : (userProgrammes[0]?.id || ''));
     setClassId('');
     setDisplayOrder(1);
     setErrorMessage('');
@@ -301,8 +300,8 @@ export default function SubjectsPage() {
             onChange={(e) => setSelectedClassFilter(e.target.value)}
             className="px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-slate-900 dark:text-white"
           >
-            <option value="ALL">All Classes</option>
-            {classes
+            <option value="ALL">All Classes in Section</option>
+            {userClasses
               .filter((c) => selectedProgrammeFilter === 'ALL' || c.programmeId === selectedProgrammeFilter)
               .map((c) => (
                 <option key={c.id} value={c.id}>

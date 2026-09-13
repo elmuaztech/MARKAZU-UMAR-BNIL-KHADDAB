@@ -16,13 +16,16 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { TahfizRecord, Student } from '@/types';
-import { filterStudentsForUser, filterTahfizForUser } from '@/lib/rbac';
+import { filterStudentsForUser, filterTahfizForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
 
 export function TahfizTracker() {
   const { students, parents, classes, teachers, teacherAssignments, currentUser, tahfizRecords, saveTahfizRecord } = useApp();
 
-  // Scope available classes for TEACHER
+  // Scope available classes for HEADMASTER and TEACHER
   const availableClasses = useMemo(() => {
+    if (currentUser.role === 'HEADMASTER') {
+      return filterClassesForUser(currentUser, classes, teacherAssignments);
+    }
     if (currentUser.role !== 'TEACHER') return classes;
     const currentTeacher = teachers.find(
       (t) =>

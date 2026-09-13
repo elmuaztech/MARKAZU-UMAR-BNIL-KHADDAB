@@ -234,7 +234,7 @@ export function Sidebar({
     // ACADEMICS & CURRICULUM
     {
       id: 'programmes',
-      label: currentUser.role === 'TEACHER' ? 'My Programmes' : 'Programmes',
+      label: currentUser.role === 'HEADMASTER' ? 'My Section' : currentUser.role === 'TEACHER' ? 'My Programmes' : 'Programmes',
       href: '/dashboard/programmes',
       icon: Layers,
       group: 'ACADEMICS',
@@ -253,10 +253,17 @@ export function Sidebar({
       icon: BookMarked,
       group: 'ACADEMICS',
     },
-    { id: 'attendance', label: 'Attendance', href: '/dashboard/attendance', icon: CalendarCheck, group: 'ACADEMICS' },
+    {
+      id: 'tahfiz',
+      label: currentUser.role === 'HEADMASTER' ? 'Section Tahfiz' : 'Tahfiz Tracker',
+      href: '/dashboard/tahfiz',
+      icon: BookOpen,
+      group: 'ACADEMICS',
+    },
+    { id: 'attendance', label: currentUser.role === 'HEADMASTER' ? 'Section Attendance' : 'Attendance', href: '/dashboard/attendance', icon: CalendarCheck, group: 'ACADEMICS' },
     {
       id: 'assessment',
-      label: currentUser.role === 'TEACHER' ? 'Grade Entry' : 'Assessments',
+      label: currentUser.role === 'TEACHER' ? 'Grade Entry' : currentUser.role === 'HEADMASTER' ? 'Section Assessments' : 'Assessments',
       href: '/dashboard/assessment',
       icon: FileSpreadsheet,
       group: 'ACADEMICS',

@@ -131,7 +131,50 @@ export async function POST(req: NextRequest) {
       });
     } catch (e) {}
 
-    // 5. Create Session in PostgreSQL
+    // 5. Ensure Headmaster has assignedProgrammeId and assignedProgrammeName in PostgreSQL
+    if (user.role === 'HEADMASTER' && !user.assignedProgrammeId) {
+      try {
+        const userText = `${user.name || ''} ${user.email || ''} ${user.username || ''}`.toLowerCase();
+        let matchedProg: any = null;
+        if (userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba') || userText.includes('matan')) {
+          matchedProg = await prisma.programme.findFirst({
+            where: {
+              OR: [
+                { code: 'MTA' },
+                { id: 'prog-04' },
+                { nameEnglish: { contains: 'Matan', mode: 'insensitive' } },
+              ],
+            },
+          });
+        } else if (userText.includes('sirad') || userText.includes('balarabe') || userText.includes('asuba')) {
+          matchedProg = await prisma.programme.findFirst({
+            where: {
+              OR: [
+                { code: 'ASM' },
+                { id: 'prog-01' },
+                { nameEnglish: { contains: 'Asubah', mode: 'insensitive' } },
+              ],
+            },
+          });
+        }
+
+        if (matchedProg) {
+          user.assignedProgrammeId = matchedProg.id;
+          user.assignedProgrammeName = matchedProg.nameEnglish || matchedProg.name || 'Assigned Section';
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              assignedProgrammeId: user.assignedProgrammeId,
+              assignedProgrammeName: user.assignedProgrammeName,
+            },
+          });
+        }
+      } catch (progErr) {
+        console.warn('[LOGIN] Headmaster programme resolution error:', progErr);
+      }
+    }
+
+    // 6. Create Session in PostgreSQL
     const sessionId = `sess-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 

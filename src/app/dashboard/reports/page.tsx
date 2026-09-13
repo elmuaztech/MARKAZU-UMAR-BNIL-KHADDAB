@@ -13,33 +13,16 @@ import {
   Legend,
 } from 'recharts';
 
+import { filterProgrammesForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
+
 export default function ReportsPage() {
   const { students, programmes, classes, currentUser } = useApp();
 
   const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const assignedProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
 
-  const visibleProgrammes = isHeadmaster
-    ? programmes.filter(
-        (p) =>
-          p.id === currentUser.assignedProgrammeId ||
-          (p.programme_name_english &&
-            currentUser.assignedProgrammeName &&
-            p.programme_name_english.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase()) ||
-          (p.programme_name &&
-            currentUser.assignedProgrammeName &&
-            p.programme_name.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
-      )
-    : programmes;
-
-  const visibleClasses = isHeadmaster
-    ? classes.filter(
-        (c) =>
-          c.programmeId === currentUser.assignedProgrammeId ||
-          (c.programmeName &&
-            currentUser.assignedProgrammeName &&
-            c.programmeName.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
-      )
-    : classes;
+  const visibleProgrammes = filterProgrammesForUser(currentUser, programmes);
+  const visibleClasses = isHeadmaster ? filterClassesForUser(currentUser, classes) : classes;
 
   const classPerformanceData = visibleClasses.length > 0
     ? visibleClasses.slice(0, 6).map((c, i) => ({

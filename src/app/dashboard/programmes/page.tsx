@@ -32,6 +32,7 @@ import { ImportSchoolStructureModal } from '@/components/classes/ImportSchoolStr
 import { motion, AnimatePresence } from 'framer-motion';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { Button } from '@/components/ui/Button';
+import { filterProgrammesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
 
 export default function ProgrammesPage() {
   const {
@@ -124,18 +125,10 @@ export default function ProgrammesPage() {
   });
   const [classFormError, setClassFormError] = useState<string | null>(null);
 
-  const filteredProgrammes = programmes.filter((p) => {
-    // If Headmaster, STRICTLY isolate to their assigned section only
-    if (currentUser.role === 'HEADMASTER') {
-      const assignedId = currentUser.assignedProgrammeId;
-      const assignedName = currentUser.assignedProgrammeName?.toLowerCase() || '';
-      const matchesProgramme =
-        (assignedId && p.id === assignedId) ||
-        (assignedName && (p.programme_name_english || p.programme_name || '').toLowerCase().includes(assignedName)) ||
-        (assignedName && assignedName.includes((p.programme_name_english || p.programme_name || '').toLowerCase()));
-      if (!matchesProgramme) return false;
-    }
+  const userProgrammes = filterProgrammesForUser(currentUser, programmes);
+  const headmasterProg = currentUser.role === 'HEADMASTER' ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
 
+  const filteredProgrammes = userProgrammes.filter((p) => {
     const matchesSearch =
       (p.programme_name_english || p.programme_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (p.programme_name_arabic || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -522,10 +515,12 @@ export default function ProgrammesPage() {
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black font-poppins text-white flex items-center gap-2">
-            <Layers className="w-7 h-7 text-emerald-400" /> Programmes & Subcategories Management
+            <Layers className="w-7 h-7 text-emerald-400" /> {currentUser.role === 'HEADMASTER' ? 'My Section Structure & Classes' : 'Programmes & Subcategories Management'}
           </h1>
           <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
-            Create, manage, and scale programmes, subcategories, classes, teacher assignments, and headmaster assignments dynamically.
+            {currentUser.role === 'HEADMASTER'
+              ? `Academic structure, subcategories, classes, and teachers for ${headmasterProg?.programme_name || currentUser.assignedProgrammeName || 'your assigned section'}.`
+              : 'Create, manage, and scale programmes, subcategories, classes, teacher assignments, and headmaster assignments dynamically.'}
           </p>
         </div>
 
@@ -872,7 +867,7 @@ export default function ProgrammesPage() {
                           <td className="py-3.5 px-4">
                             {prog.hasSubcategories && prog.subcategories && prog.subcategories.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
-                                {prog.subcategories.map((sub, idx) => (
+                                {prog.subcategories.map((sub: any, idx: number) => (
                                   <span
                                     key={idx}
                                     className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-extrabold text-[10px]"

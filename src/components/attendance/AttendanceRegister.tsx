@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { AttendanceRecord, AttendanceStatusType, SchoolClass, Student } from '@/types';
-import { canTeacherAccessAttendance, filterStudentsForUser, filterAttendanceForUser } from '@/lib/rbac';
+import { canTeacherAccessAttendance, filterStudentsForUser, filterAttendanceForUser, filterProgrammesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
 import { PortalTheme } from '@/components/ui/PortalTheme';
 
 interface AttendanceRegisterProps {
@@ -60,16 +60,25 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState<boolean>(false);
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
 
+  const availableProgrammes = useMemo(() => {
+    return filterProgrammesForUser(currentUser, programmes);
+  }, [currentUser, programmes]);
+
   // Initialize selected programme dynamically
   useEffect(() => {
-    if (programmes.length > 0 && !selectedProgrammeId) {
-      if (currentUser.role === 'HEADMASTER' && currentUser.assignedProgrammeId) {
-        setSelectedProgrammeId(currentUser.assignedProgrammeId);
-      } else {
-        setSelectedProgrammeId(programmes[0].id);
+    if (currentUser.role === 'HEADMASTER') {
+      const assigned = getHeadmasterAssignedProgramme(currentUser, programmes);
+      if (assigned) {
+        if (selectedProgrammeId !== assigned.id) {
+          setSelectedProgrammeId(assigned.id);
+        }
+        return;
       }
     }
-  }, [programmes, currentUser, selectedProgrammeId]);
+    if (availableProgrammes.length > 0 && !selectedProgrammeId) {
+      setSelectedProgrammeId(availableProgrammes[0].id);
+    }
+  }, [programmes, currentUser, selectedProgrammeId, availableProgrammes]);
 
   // RBAC Access Check
   const hasAccess = useMemo(() => {
@@ -82,8 +91,14 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
       return classes.filter((c) => !selectedProgrammeId || c.programmeId === selectedProgrammeId);
     }
     if (currentUser.role === 'HEADMASTER') {
-      const progId = currentUser.assignedProgrammeId || selectedProgrammeId;
-      return classes.filter((c) => !progId || c.programmeId === progId);
+      const assigned = getHeadmasterAssignedProgramme(currentUser, programmes);
+      const progId = assigned?.id || currentUser.assignedProgrammeId || selectedProgrammeId;
+      return classes.filter((c) => {
+        if (progId && c.programmeId === progId) return true;
+        const progName = (assigned?.programme_name || assigned?.programme_name_english || currentUser.assignedProgrammeName || '').toLowerCase();
+        if (progName && c.programmeName?.toLowerCase().includes(progName)) return true;
+        return false;
+      });
     }
     const assignedClassIds = new Set(
       teacherAssignments
@@ -394,10 +409,10 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
               }}
               className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {programmes.length === 0 ? (
+              {availableProgrammes.length === 0 ? (
                 <option value="">-- No Programmes Found --</option>
               ) : (
-                programmes.map((p) => (
+                availableProgrammes.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.programme_name_english || p.programme_name} ({p.programme_code})
                   </option>

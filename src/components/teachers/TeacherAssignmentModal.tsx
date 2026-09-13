@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '@/lib/context';
+import { filterProgrammesForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
 import {
   X,
   BookOpen,
@@ -42,7 +43,12 @@ export function TeacherAssignmentModal({
   onClose,
   onSaved,
 }: TeacherAssignmentModalProps) {
-  const { programmes, classes, subjects, selectedSessionId, currentSession, sessions, notify } = useApp();
+  const { programmes, classes, subjects, selectedSessionId, currentSession, sessions, notify, currentUser } = useApp();
+
+  const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const headmasterProg = useMemo(() => getHeadmasterAssignedProgramme(currentUser, programmes), [currentUser, programmes]);
+  const userProgrammes = useMemo(() => filterProgrammesForUser(currentUser, programmes), [currentUser, programmes]);
+  const userClasses = useMemo(() => filterClassesForUser(currentUser, classes), [currentUser, classes]);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -53,7 +59,9 @@ export function TeacherAssignmentModal({
   );
 
   // Step 1: Selected Programmes
-  const [selectedProgrammeIds, setSelectedProgrammeIds] = useState<string[]>([]);
+  const [selectedProgrammeIds, setSelectedProgrammeIds] = useState<string[]>(
+    isHeadmaster && headmasterProg ? [headmasterProg.id] : []
+  );
 
   // Step 2: Category filter (optional)
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
@@ -114,10 +122,12 @@ export function TeacherAssignmentModal({
           setAssignments(initialMap);
 
           // If assignments exist, select those programmes; otherwise select first programme by default
-          if (loadedProgIds.size > 0) {
+          if (isHeadmaster && headmasterProg) {
+            setSelectedProgrammeIds([headmasterProg.id]);
+          } else if (loadedProgIds.size > 0) {
             setSelectedProgrammeIds(Array.from(loadedProgIds));
-          } else if (programmes.length > 0) {
-            setSelectedProgrammeIds([programmes[0].id]);
+          } else if (userProgrammes.length > 0) {
+            setSelectedProgrammeIds([userProgrammes[0].id]);
           }
         }
       } catch (err: any) {
@@ -127,8 +137,10 @@ export function TeacherAssignmentModal({
           title: 'Assignments Notice',
           message: 'Could not fetch existing assignments. Starting with a blank configuration.',
         });
-        if (programmes.length > 0) {
-          setSelectedProgrammeIds([programmes[0].id]);
+        if (isHeadmaster && headmasterProg) {
+          setSelectedProgrammeIds([headmasterProg.id]);
+        } else if (userProgrammes.length > 0) {
+          setSelectedProgrammeIds([userProgrammes[0].id]);
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -139,32 +151,33 @@ export function TeacherAssignmentModal({
     return () => {
       isMounted = false;
     };
-  }, [teacher.id, activeSessionId, classes, programmes]);
+  }, [teacher.id, activeSessionId, classes, programmes, isHeadmaster, headmasterProg, userProgrammes]);
 
   // Compute available categories from selected programmes
   const availableSubcategories = useMemo(() => {
     const subcats = new Set<string>();
-    programmes
+    userProgrammes
       .filter((p) => selectedProgrammeIds.includes(p.id))
       .forEach((p) => {
         if (p.subcategories && Array.isArray(p.subcategories)) {
-          p.subcategories.forEach((sc) => subcats.add(sc));
+          p.subcategories.forEach((sc: any) => subcats.add(sc));
         }
       });
     return Array.from(subcats);
-  }, [programmes, selectedProgrammeIds]);
+  }, [userProgrammes, selectedProgrammeIds]);
 
   // Filter classes belonging to selected programmes and category filter
   const visibleClasses = useMemo(() => {
-    return classes.filter((cls) => {
+    return userClasses.filter((cls) => {
       if (!selectedProgrammeIds.includes(cls.programmeId)) return false;
       if (categoryFilter !== 'ALL' && cls.subcategory !== categoryFilter) return false;
       return true;
     });
-  }, [classes, selectedProgrammeIds, categoryFilter]);
+  }, [userClasses, selectedProgrammeIds, categoryFilter]);
 
   // Toggle programme selection
   const handleToggleProgramme = (progId: string) => {
+    if (isHeadmaster) return; // Headmaster is locked to their section
     setSelectedProgrammeIds((prev) =>
       prev.includes(progId) ? prev.filter((id) => id !== progId) : [...prev, progId]
     );
@@ -500,7 +513,7 @@ export function TeacherAssignmentModal({
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                {programmes.map((prog) => {
+                {userProgrammes.map((prog) => {
                   const isSelected = selectedProgrammeIds.includes(prog.id);
                   return (
                     <button

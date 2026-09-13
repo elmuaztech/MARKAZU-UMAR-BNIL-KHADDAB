@@ -1,6 +1,6 @@
 'use client';
 
-import { UserRole, User, Student, Parent, Teacher, SchoolClass, Subject, AdmissionApplication, AttendanceRecord, TahfizRecord, GradeRecord, TeacherAssignment } from '../types';
+import { UserRole, User, Student, Parent, Teacher, SchoolClass, Subject, AdmissionApplication, AttendanceRecord, TahfizRecord, GradeRecord, TeacherAssignment, Programme } from '../types';
 
 export type ExtendedRole = 'SUPER_ADMIN' | 'ADMIN' | 'HEADMASTER' | 'TEACHER' | 'STUDENT' | 'PARENT';
 
@@ -199,6 +199,150 @@ export function hasPermission(role: UserRole | string, permission: keyof RolePer
 
 // Data Scoping Helper Functions
 
+/**
+ * Resolves the assigned Programme record for a Headmaster.
+ * Strictly scopes the Headmaster to their assigned section only.
+ */
+export function getHeadmasterAssignedProgramme(
+  user: User | null | undefined,
+  programmes: Programme[]
+): Programme | undefined {
+  if (!user || user.role !== 'HEADMASTER' || !Array.isArray(programmes) || programmes.length === 0) {
+    return undefined;
+  }
+
+  const progId = user.assignedProgrammeId?.trim();
+  const progName = (user.assignedProgrammeName || '').toLowerCase().trim();
+
+  // 1. Direct ID match
+  if (progId) {
+    const found = programmes.find((p) => p.id === progId || p.id.toLowerCase() === progId.toLowerCase());
+    if (found) return found;
+  }
+
+  // 2. Direct Name match
+  if (progName) {
+    const found = programmes.find((p) => {
+      const pNameEng = (p.programme_name_english || p.programme_name || (p as any).nameEnglish || (p as any).name || '').toLowerCase();
+      const pName = (p.programme_name || (p as any).name || '').toLowerCase();
+      const pCode = (p.programme_code || (p as any).code || '').toLowerCase();
+      return (
+        pNameEng === progName ||
+        pName === progName ||
+        pCode === progName ||
+        pNameEng.includes(progName) ||
+        progName.includes(pNameEng) ||
+        pName.includes(progName) ||
+        progName.includes(pName)
+      );
+    });
+    if (found) return found;
+
+    // Canonical section keywords
+    if (progName.includes('matan') || progName.includes('aure') || progName.includes('mta')) {
+      const pMatan = programmes.find(
+        (p) =>
+          (p.programme_code || (p as any).code)?.toUpperCase() === 'MTA' ||
+          (p.programme_name_english || p.programme_name || '').toLowerCase().includes('matan') ||
+          p.id === 'prog-04'
+      );
+      if (pMatan) return pMatan;
+    }
+    if (progName.includes('asuba') || progName.includes('magrib') || progName.includes('asm')) {
+      const pAsuba = programmes.find(
+        (p) =>
+          (p.programme_code || (p as any).code)?.toUpperCase() === 'ASM' ||
+          (p.programme_name_english || p.programme_name || '').toLowerCase().includes('asuba') ||
+          p.id === 'prog-01'
+      );
+      if (pAsuba) return pAsuba;
+    }
+    if (progName.includes('super') || progName.includes('spm')) {
+      const pSuper = programmes.find(
+        (p) =>
+          (p.programme_code || (p as any).code)?.toUpperCase() === 'SPM' ||
+          (p.programme_name_english || p.programme_name || '').toLowerCase().includes('super') ||
+          p.id === 'prog-02'
+      );
+      if (pSuper) return pSuper;
+    }
+    if (progName.includes('islam') || progName.includes('adult') || progName.includes('ism')) {
+      const pIslam = programmes.find(
+        (p) =>
+          (p.programme_code || (p as any).code)?.toUpperCase() === 'ISM' ||
+          (p.programme_name_english || p.programme_name || '').toLowerCase().includes('islam') ||
+          p.id === 'prog-03'
+      );
+      if (pIslam) return pIslam;
+    }
+  }
+
+  // 3. User Identity Matching (Matan Aure headmaster e.g. Muazzam Abdullahi or Ahmad Abba)
+  const userText = `${user.name || ''} ${user.email || ''} ${user.username || ''}`.toLowerCase();
+  if (userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba') || userText.includes('matan')) {
+    const pMatan = programmes.find(
+      (p) =>
+        (p.programme_code || (p as any).code)?.toUpperCase() === 'MTA' ||
+        (p.programme_name_english || p.programme_name || '').toLowerCase().includes('matan') ||
+        p.id === 'prog-04'
+    );
+    if (pMatan) return pMatan;
+  }
+  if (userText.includes('sirad') || userText.includes('balarabe') || userText.includes('asuba')) {
+    const pAsuba = programmes.find(
+      (p) =>
+        (p.programme_code || (p as any).code)?.toUpperCase() === 'ASM' ||
+        (p.programme_name_english || p.programme_name || '').toLowerCase().includes('asuba') ||
+        p.id === 'prog-01'
+    );
+    if (pAsuba) return pAsuba;
+  }
+
+  return undefined;
+}
+
+/**
+ * Filters the list of programmes for the current user.
+ * - SUPER_ADMIN & ADMIN see all programmes.
+ * - HEADMASTER ONLY sees their assigned programme/section.
+ * - TEACHER sees programmes relevant to their teaching assignments.
+ */
+export function filterProgrammesForUser(
+  currentUser: User | null | undefined,
+  allProgrammes: Programme[]
+): Programme[] {
+  if (!currentUser || !Array.isArray(allProgrammes)) {
+    return [];
+  }
+
+  if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+    return allProgrammes;
+  }
+
+  if (currentUser.role === 'HEADMASTER') {
+    const assignedProg = getHeadmasterAssignedProgramme(currentUser, allProgrammes);
+    if (assignedProg) {
+      return [assignedProg];
+    }
+    // Strict fallback: If no assigned programme could be identified, look for any programme with matching id or name
+    const progId = currentUser.assignedProgrammeId;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase() || '';
+    if (progId || progName) {
+      const filtered = allProgrammes.filter((p) => {
+        if (progId && p.id === progId) return true;
+        const pName = (p.programme_name_english || p.programme_name || '').toLowerCase();
+        if (progName && (pName.includes(progName) || progName.includes(pName))) return true;
+        return false;
+      });
+      if (filtered.length > 0) return filtered;
+    }
+    // If still unmatched, never leak all programmes to headmaster: default to empty array
+    return [];
+  }
+
+  return allProgrammes;
+}
+
 export function filterStudentsForUser(
   currentUser: User,
   allStudents: Student[],
@@ -216,17 +360,22 @@ export function filterStudentsForUser(
   if (currentUser.role === 'HEADMASTER') {
     const progId = currentUser.assignedProgrammeId;
     const progName = currentUser.assignedProgrammeName?.toLowerCase() || '';
+    const userText = `${currentUser.name || ''} ${currentUser.email || ''} ${currentUser.username || ''}`.toLowerCase();
+    const isMatanAureHM = progName.includes('matan') || progId === 'prog-04' || userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba');
+    const isAsubaHM = progName.includes('asuba') || progId === 'prog-01' || userText.includes('sirad') || userText.includes('balarabe');
+    const isSuperHM = progName.includes('super') || progId === 'prog-02';
+    const isIslamHM = progName.includes('islam') || progId === 'prog-03';
 
     return allStudents.filter((s) => {
       if (progId && s.programmeId === progId) return true;
       if (progName && s.programmeName?.toLowerCase().includes(progName)) return true;
       if (progName && progName.includes(s.programmeName?.toLowerCase() || '')) return true;
 
-      // Class-based linking
-      if ((progId === 'prog-01' || progName.includes('asubah')) && (s.classId?.startsWith('cls-asm') || s.programmeId === 'prog-01')) return true;
-      if ((progId === 'prog-02' || progName.includes('super')) && (s.classId?.startsWith('cls-sm') || s.programmeId === 'prog-02')) return true;
-      if ((progId === 'prog-03' || progName.includes('islam')) && (s.classId?.startsWith('cls-is') || s.programmeId === 'prog-03')) return true;
-      if ((progId === 'prog-04' || progName.includes('matan')) && (s.classId?.startsWith('cls-ma') || s.programmeId === 'prog-04')) return true;
+      // Class-based & canonical section linking
+      if (isAsubaHM && (s.classId?.startsWith('cls-asm') || s.programmeId === 'prog-01' || s.programmeName?.toLowerCase().includes('asuba'))) return true;
+      if (isSuperHM && (s.classId?.startsWith('cls-sm') || s.programmeId === 'prog-02' || s.programmeName?.toLowerCase().includes('super'))) return true;
+      if (isIslamHM && (s.classId?.startsWith('cls-is') || s.programmeId === 'prog-03' || s.programmeName?.toLowerCase().includes('islam'))) return true;
+      if (isMatanAureHM && (s.classId?.startsWith('cls-ma') || s.programmeId === 'prog-04' || s.programmeName?.toLowerCase().includes('matan') || s.className?.toLowerCase().includes('matan'))) return true;
 
       return false;
     });
@@ -284,14 +433,48 @@ export function filterTeachersForUser(currentUser: User, allTeachers: Teacher[])
 
   if (currentUser.role === 'HEADMASTER') {
     const progId = currentUser.assignedProgrammeId;
-    const progName = currentUser.assignedProgrammeName?.toLowerCase();
-    if (!progId && !progName) return allTeachers;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase() || '';
+    const userText = `${currentUser.name || ''} ${currentUser.email || ''} ${currentUser.username || ''}`.toLowerCase();
+    const isMatanAureHM = progName.includes('matan') || progId === 'prog-04' || userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba');
+    const isAsubaHM = progName.includes('asuba') || progId === 'prog-01' || userText.includes('sirad') || userText.includes('balarabe');
+    const isSuperHM = progName.includes('super') || progId === 'prog-02';
+    const isIslamHM = progName.includes('islam') || progId === 'prog-03';
 
     return allTeachers.filter((t) => {
       if (progId && t.programmeIds?.includes(progId)) return true;
       if (progName && t.qualification?.toLowerCase().includes(progName)) return true;
       if (progName && t.specialization?.toLowerCase().includes(progName)) return true;
-      if (progName && t.programmeIds?.some((p) => p.toLowerCase().includes(progName))) return true;
+      if (progName && t.programmeIds?.some((p) => p.toLowerCase().includes(progName) || progName.includes(p.toLowerCase()))) return true;
+
+      // Class assigned check
+      if (isMatanAureHM && (
+        t.programmeIds?.includes('prog-04') ||
+        t.programmeIds?.some((p) => p.toLowerCase().includes('matan')) ||
+        t.classesAssigned?.some((c) => c.toLowerCase().includes('matan') || c.startsWith('cls-ma')) ||
+        t.specialization?.toLowerCase().includes('matan')
+      )) return true;
+
+      if (isAsubaHM && (
+        t.programmeIds?.includes('prog-01') ||
+        t.programmeIds?.some((p) => p.toLowerCase().includes('asuba')) ||
+        t.classesAssigned?.some((c) => c.toLowerCase().includes('asuba') || c.startsWith('cls-asm')) ||
+        t.specialization?.toLowerCase().includes('asuba')
+      )) return true;
+
+      if (isSuperHM && (
+        t.programmeIds?.includes('prog-02') ||
+        t.programmeIds?.some((p) => p.toLowerCase().includes('super')) ||
+        t.classesAssigned?.some((c) => c.toLowerCase().includes('super') || c.startsWith('cls-sm')) ||
+        t.specialization?.toLowerCase().includes('super')
+      )) return true;
+
+      if (isIslamHM && (
+        t.programmeIds?.includes('prog-03') ||
+        t.programmeIds?.some((p) => p.toLowerCase().includes('islam')) ||
+        t.classesAssigned?.some((c) => c.toLowerCase().includes('islam') || c.startsWith('cls-is')) ||
+        t.specialization?.toLowerCase().includes('islam')
+      )) return true;
+
       return false;
     });
   }
@@ -299,19 +482,45 @@ export function filterTeachersForUser(currentUser: User, allTeachers: Teacher[])
   return allTeachers;
 }
 
-export function filterClassesForUser(currentUser: User, allClasses: SchoolClass[]): SchoolClass[] {
+export function filterClassesForUser(
+  currentUser: User,
+  allClasses: SchoolClass[],
+  teacherAssignments?: TeacherAssignment[]
+): SchoolClass[] {
   if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
     return allClasses;
   }
 
+  if (currentUser.role === 'TEACHER' && teacherAssignments && teacherAssignments.length > 0) {
+    const userAssignments = teacherAssignments.filter(
+      (ta) =>
+        ta.teacherId === currentUser.id ||
+        (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase())
+    );
+    const assignedClassIds = new Set(userAssignments.map((ta) => ta.classId));
+    const teacherClasses = allClasses.filter((c) => assignedClassIds.has(c.id) || c.classTeacherId === currentUser.id);
+    if (teacherClasses.length > 0) return teacherClasses;
+  }
+
   if (currentUser.role === 'HEADMASTER') {
     const progId = currentUser.assignedProgrammeId;
-    const progName = currentUser.assignedProgrammeName?.toLowerCase();
-    if (!progId && !progName) return allClasses;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase() || '';
+    const userText = `${currentUser.name || ''} ${currentUser.email || ''} ${currentUser.username || ''}`.toLowerCase();
+    const isMatanAureHM = progName.includes('matan') || progId === 'prog-04' || userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba');
+    const isAsubaHM = progName.includes('asuba') || progId === 'prog-01' || userText.includes('sirad') || userText.includes('balarabe');
+    const isSuperHM = progName.includes('super') || progId === 'prog-02';
+    const isIslamHM = progName.includes('islam') || progId === 'prog-03';
 
     return allClasses.filter((c) => {
       if (progId && c.programmeId === progId) return true;
       if (progName && c.programmeName?.toLowerCase().includes(progName)) return true;
+      if (progName && progName.includes(c.programmeName?.toLowerCase() || '')) return true;
+
+      if (isAsubaHM && (c.id?.startsWith('cls-asm') || c.programmeId === 'prog-01' || c.programmeName?.toLowerCase().includes('asuba') || c.name?.toLowerCase().includes('asuba'))) return true;
+      if (isSuperHM && (c.id?.startsWith('cls-sm') || c.programmeId === 'prog-02' || c.programmeName?.toLowerCase().includes('super') || c.name?.toLowerCase().includes('super'))) return true;
+      if (isIslamHM && (c.id?.startsWith('cls-is') || c.programmeId === 'prog-03' || c.programmeName?.toLowerCase().includes('islam') || c.name?.toLowerCase().includes('islam'))) return true;
+      if (isMatanAureHM && (c.id?.startsWith('cls-ma') || c.programmeId === 'prog-04' || c.programmeName?.toLowerCase().includes('matan') || c.name?.toLowerCase().includes('matan'))) return true;
+
       return false;
     });
   }
@@ -319,20 +528,36 @@ export function filterClassesForUser(currentUser: User, allClasses: SchoolClass[
   return allClasses;
 }
 
-export function filterSubjectsForUser(currentUser: User, allSubjects: Subject[]): Subject[] {
+export function filterSubjectsForUser(
+  currentUser: User,
+  allSubjects: Subject[],
+  allClasses?: SchoolClass[]
+): Subject[] {
   if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
     return allSubjects;
   }
 
   if (currentUser.role === 'HEADMASTER') {
     const progId = currentUser.assignedProgrammeId;
-    const progName = currentUser.assignedProgrammeName?.toLowerCase();
-    if (!progId && !progName) return allSubjects;
+    const progName = currentUser.assignedProgrammeName?.toLowerCase() || '';
+    const userText = `${currentUser.name || ''} ${currentUser.email || ''} ${currentUser.username || ''}`.toLowerCase();
+    const isMatanAureHM = progName.includes('matan') || progId === 'prog-04' || userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba');
+    const isAsubaHM = progName.includes('asuba') || progId === 'prog-01' || userText.includes('sirad') || userText.includes('balarabe');
+    const isSuperHM = progName.includes('super') || progId === 'prog-02';
+    const isIslamHM = progName.includes('islam') || progId === 'prog-03';
 
     return allSubjects.filter((s) => {
-      if (!s.programmeId && !s.programmeName) return true; // General shared subjects
+      // General subjects shared across all sections
+      if (!s.programmeId && !s.programmeName) return true;
       if (progId && s.programmeId === progId) return true;
       if (progName && s.programmeName?.toLowerCase().includes(progName)) return true;
+      if (progName && progName.includes(s.programmeName?.toLowerCase() || '')) return true;
+
+      if (isAsubaHM && (s.programmeId === 'prog-01' || s.programmeName?.toLowerCase().includes('asuba'))) return true;
+      if (isSuperHM && (s.programmeId === 'prog-02' || s.programmeName?.toLowerCase().includes('super'))) return true;
+      if (isIslamHM && (s.programmeId === 'prog-03' || s.programmeName?.toLowerCase().includes('islam'))) return true;
+      if (isMatanAureHM && (s.programmeId === 'prog-04' || s.programmeName?.toLowerCase().includes('matan'))) return true;
+
       return false;
     });
   }

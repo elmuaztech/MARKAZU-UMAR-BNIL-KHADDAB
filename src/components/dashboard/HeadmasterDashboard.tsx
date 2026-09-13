@@ -9,6 +9,7 @@ import {
   filterTeachersForUser,
   filterAttendanceForUser,
   filterTahfizForUser,
+  getHeadmasterAssignedProgramme,
 } from '@/lib/rbac';
 import {
   Crown,
@@ -47,17 +48,8 @@ export function HeadmasterDashboard() {
 
   const [activeTab, setActiveTab] = useState<'overview' | 'classes' | 'teachers'>('overview');
 
-  // Find Headmaster's Assigned Programme
-  const assignedProg = programmes.find(
-    (p) =>
-      p.id === currentUser.assignedProgrammeId ||
-      (p.programme_name_english &&
-        currentUser.assignedProgrammeName &&
-        p.programme_name_english.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase()) ||
-      (p.programme_name &&
-        currentUser.assignedProgrammeName &&
-        p.programme_name.toLowerCase() === currentUser.assignedProgrammeName.toLowerCase())
-  );
+  // Find Headmaster's Assigned Programme using canonical RBAC resolver
+  const assignedProg = getHeadmasterAssignedProgramme(currentUser, programmes);
 
   // Scoped Data
   const scopedStudents = filterStudentsForUser(currentUser, students, parents);
@@ -152,7 +144,7 @@ export function HeadmasterDashboard() {
             </span>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            {assignedProg.subcategories.map((sub, idx) => {
+            {assignedProg.subcategories.map((sub: any, idx: number) => {
               const count = scopedClasses.filter(
                 (c) => c.subcategory?.toLowerCase() === sub.toLowerCase() || c.section?.toLowerCase() === sub.toLowerCase()
               ).length;
