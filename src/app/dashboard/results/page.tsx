@@ -412,10 +412,19 @@ function ResultsContent() {
                   <h2 className="text-lg font-black text-slate-900 dark:text-white">Report not available yet</h2>
                   <p className="text-xs text-slate-600 dark:text-emerald-200/80">You'll be notified when your child's report is ready.</p>
                 </div>
-                <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 text-xs text-slate-700 dark:text-emerald-300 font-medium space-y-1">
-                  <p><strong>Child:</strong> {selectedStudent.fullName}</p>
-                  <p><strong>Class:</strong> {selectedStudent.className || 'Assigned Class'}</p>
-                  <p><strong>Session:</strong> {currentSession?.sessionName} • {currentSession?.activeTerm}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left pt-1">
+                  <div className="p-3 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-extrabold uppercase block mb-0.5">Child</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate block">{selectedStudent.fullName}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-extrabold uppercase block mb-0.5">Class</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate block">{selectedStudent.className || 'Assigned Class'}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-extrabold uppercase block mb-0.5">Session</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white truncate block">{currentSession?.sessionName} ({currentSession?.activeTerm})</span>
+                  </div>
                 </div>
               </div>
             ) : (

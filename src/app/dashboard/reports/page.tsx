@@ -74,10 +74,16 @@ export default function ReportsPage() {
                   </span>
                   <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{p.status}</span>
                 </div>
-                <h4 className="font-bold text-slate-900 dark:text-white">{p.programme_name}</h4>
-                <div className="flex items-center justify-between text-[11px] text-slate-600 dark:text-emerald-200/80">
-                  <span>{pClasses.length} Classes</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-300">{pStudents.length} Students</span>
+                <h4 className="font-bold text-slate-900 dark:text-white truncate">{p.programme_name}</h4>
+                <div className="grid grid-cols-2 gap-2 pt-1 text-center">
+                  <div className="p-2 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold block">Classes</span>
+                    <span className="text-xs font-black text-slate-900 dark:text-white block">{pClasses.length}</span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">
+                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold block">Students</span>
+                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-300 block">{pStudents.length}</span>
+                  </div>
                 </div>
               </div>
             );
