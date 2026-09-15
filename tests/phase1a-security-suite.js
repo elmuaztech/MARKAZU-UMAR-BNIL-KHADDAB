@@ -339,7 +339,7 @@ async function runSuite() {
     // -------------------------------------------------------------------------
     // 10. Password reset token works once
     // -------------------------------------------------------------------------
-    const rawResetCode = '748291';
+    const rawResetCode = Math.floor(100000 + Math.random() * 900000).toString();
     const hashedResetCode = crypto.createHash('sha256').update(rawResetCode).digest('hex');
     const resetTokenRecord = await prisma.passwordResetToken.create({
       data: {
@@ -374,7 +374,7 @@ async function runSuite() {
     // -------------------------------------------------------------------------
     // 11. Expired reset token -> denied
     // -------------------------------------------------------------------------
-    const expiredRawCode = '918273';
+    const expiredRawCode = Math.floor(100000 + Math.random() * 900000).toString();
     const expiredHashedCode = crypto.createHash('sha256').update(expiredRawCode).digest('hex');
     await prisma.passwordResetToken.create({
       data: {
