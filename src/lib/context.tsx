@@ -1143,7 +1143,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
+    const handleWorkerSync = () => {
+      refreshAllData();
+    };
+
     window.addEventListener('online', handleOnline);
+    window.addEventListener('markazu:auto-sync', handleWorkerSync);
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     // 4. Background silent periodic auto-sync (every 45 seconds)
@@ -1155,6 +1160,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       window.removeEventListener('online', handleOnline);
+      window.removeEventListener('markazu:auto-sync', handleWorkerSync);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       clearInterval(intervalId);
     };

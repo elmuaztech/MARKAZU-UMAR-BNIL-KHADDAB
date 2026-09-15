@@ -1,1 +1,234 @@
-if(!self.define){let a,e={};const s=(s,i)=>(s=new URL(s+".js",i).href,e[s]||new Promise(e=>{if("document"in self){const a=document.createElement("script");a.src=s,a.onload=e,document.head.appendChild(a)}else a=s,importScripts(s),e()}).then(()=>{let a=e[s];if(!a)throw new Error(`Module ${s} didn’t register its module`);return a}));self.define=(i,c)=>{const n=a||("document"in self?document.currentScript.src:"")||location.href;if(e[n])return;let r={};const t=a=>s(a,n),d={module:{uri:n},exports:r,require:t};e[n]=Promise.all(i.map(a=>d[a]||t(a))).then(a=>(c(...a),r))}}define(["./workbox-2c180093"],function(a){"use strict";importScripts("fallback-vqAiUxg_FYYVa26OfwyCQ.js","worker-vqAiUxg_FYYVa26OfwyCQ.js"),self.skipWaiting(),a.clientsClaim(),a.precacheAndRoute([{url:"/_next/app-build-manifest.json",revision:"b230d9165c49466806ed3135d36fcc67"},{url:"/_next/static/chunks/2066-e47642d6d663d5e8.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/2117-dca0b7e9217fae58.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/2170a4aa-5f37fbbd2c4613dd.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/2440-8982ec01bb5708b0.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/2654-d63706f9d7fb30f6.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/3561-0c341c46150decb5.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/3602-38ed2e78e932abb3.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/5835-c83426343db7d348.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/5936-02f5dbe605ae1f34.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/6850-93c271120757b571.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/7323-917c9707ecfac5aa.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/7648-91d807d2335fa329.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/8069-f61361755ae9a080.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/9123-211ae46b58ceafb8.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/9328-74939ae92925673c.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/9332-14755218e275060e.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/9894-5c597f81a369606d.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/ad2866b8-d9a081783e4ea5b3.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/_not-found/page-2b0dc07a4d9b4dac.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/about/page-39b15eaf23293ce6.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/academics/page-c1f98b961f72bdef.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/change-password/page-76997abea4642cc6.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/contact/page-13cb7d1a5a45c6e9.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/admissions/layout-93cb36f0bc389f5c.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/admissions/page-d92911d3d7df1ed1.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/announcements/page-9e13ebcdb59ec9c1.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/assessment/page-ef2339eb0ef75822.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/attendance/page-243e8765d9bc8b6a.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/backup/layout-0503a7e781577de2.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/backup/page-e4005bafa16aca35.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/classes/page-dd3679390d8a4753.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/cms/page-cdaa4da0d16a22f7.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/failed/page-b27e7a6be1f4ca85.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/history/page-f7e2153ac763d589.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/new/page-741adaa6a95539cb.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/notifications/page-3ac207a40c633792.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/page-d4d248b10d8fe445.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/queue/page-d6b33a16938dbd84.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/report-sheet-delivery/page-3af69a94dc63a650.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/scheduled/page-5e687c0aaefcc894.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/settings/page-6c0e923dd96c2b34.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/communication/templates/page-76bd8bfd5ade31fe.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/downloads/page-44bb61ce01b08496.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/layout-7513131d4942274b.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/messages/page-857f0db5d2cf7ded.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/page-ec6c37ba60fe3c21.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/parents/page-adc6004c3ebf4cfb.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/programmes/page-678b56eb25d5a1a7.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/reports/page-da2858b30338a2e6.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/results/page-937333509e174700.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/security/layout-40015e79fc6cce75.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/security/page-cc32ceb138a3d681.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/sessions/layout-dd1e2f7b7f82c2cd.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/sessions/page-d86c6c9b88545834.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/settings/page-c3a5d818b571c0d5.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/students/page-763948a29a2fb359.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/subjects/page-629b339009a58b4a.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/tahfiz/page-38a9464a964321c6.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/dashboard/teachers/page-7a7c0ff33a51d4a9.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/enroll/page-47ba9fd19338bb38.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/error-1f4f168a6ff0b089.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/headmaster/layout-29bac6ca38401eba.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/headmaster/page-66948e8e4b6d1998.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/layout-bbe3620a3420adbe.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/login/page-4cd5c4073952e573.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/page-02531e1ff03fbdab.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/reset-password/page-4f4f0b951da58d15.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/rules/page-dfd3cd2f56a8555a.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/app/tahfiz-program/page-635b3ef6e93921ac.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/fd9d1056-270721ac51469ce4.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/framework-8e0e0f4a6b83a956.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/main-app-f9204cae6ef9da88.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/main-f30729b14810bf12.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/pages/_app-3c9ca398d360b709.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/pages/_error-cf5ca766ac8f493f.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/chunks/polyfills-42372ed130431b0a.js",revision:"846118c33b2c0e922d7b3a7676f81f6f"},{url:"/_next/static/chunks/webpack-cbbe3cef69f35cec.js",revision:"vqAiUxg_FYYVa26OfwyCQ"},{url:"/_next/static/css/562edb7b8c3aa8da.css",revision:"562edb7b8c3aa8da"},{url:"/_next/static/vqAiUxg_FYYVa26OfwyCQ/_buildManifest.js",revision:"6310079bf1ae7bebeb6a2135896e4564"},{url:"/_next/static/vqAiUxg_FYYVa26OfwyCQ/_ssgManifest.js",revision:"b6652df95db52feb4daf4eca35380933"},{url:"/director.jpg",revision:"a44cb8b46a8c83c5fee997ef03ffc903"},{url:"/favicon.ico",revision:"72a4f36033f375966091466dee4b4f30"},{url:"/gallery/deputy-director.jpg",revision:"c2151e7e22de58da88b0c5b6cc3a9dc4"},{url:"/gallery/director.jpg",revision:"a44cb8b46a8c83c5fee997ef03ffc903"},{url:"/gallery/gallery-1.jpg",revision:"87a50dc3808bdc817fc518b535107a45"},{url:"/gallery/gallery-2.jpg",revision:"b1423ae9d12fd7602779e4707164e86a"},{url:"/gallery/gallery-3.jpg",revision:"f8594fbbfd7734539c5b109e22e92a2a"},{url:"/gallery/gallery-4.jpg",revision:"8c9365972a31b3bba3217d2b06a8f97c"},{url:"/gallery/headmaster-asuba-maghrib.jpg",revision:"3c4d1277166a7b74f1bd07252fd76271"},{url:"/gallery/headmaster-matan-aure.jpg",revision:"6f06b06d10bc785f1ac368a4c53f8327"},{url:"/gallery/huffazu-abi-bakr.jpg",revision:"8c9365972a31b3bba3217d2b06a8f97c"},{url:"/gallery/huffazu-umar-bin-khaddab.jpg",revision:"87a50dc3808bdc817fc518b535107a45"},{url:"/gallery/students-group-1.jpg",revision:"0b2b407d96e87e26bdb3ab2bf37c366f"},{url:"/gallery/students-group-2.jpg",revision:"ec955a803a6e6e160a78da6042c18661"},{url:"/gallery/students-group-3.jpg",revision:"04abda3e8d3787e9d5d46bb2ecc11d57"},{url:"/gallery/teachers-1.jpg",revision:"c842d02042cb3be289786c6c7e201c7b"},{url:"/gallery/teachers-2.jpg",revision:"f4ed2f645166fd21e5b1f16cb15ca0f2"},{url:"/gallery/teachers-3.jpg",revision:"3683ed2e28c881d7d5f2ad6c0960fa4b"},{url:"/gallery/teachers-4.jpg",revision:"4696fd4acc4e318110aa1b956bff3f0e"},{url:"/gallery/teachers-5.jpg",revision:"70eda46f763456490f9ef6f76ba08910"},{url:"/gallery/teachers-6.jpg",revision:"f48353fa26f9496d1f7fa9b5e2e3a2ca"},{url:"/gallery/teachers-7.jpg",revision:"7110031fade2d1695f4658cbef1d85f1"},{url:"/icon-192.png",revision:"72a4f36033f375966091466dee4b4f30"},{url:"/icon-512.png",revision:"72a4f36033f375966091466dee4b4f30"},{url:"/logo-rounded.png",revision:"72a4f36033f375966091466dee4b4f30"},{url:"/logo.jpg",revision:"bd33a9c4e591717485b3b2ded94b3456"},{url:"/logo.png",revision:"bd33a9c4e591717485b3b2ded94b3456"},{url:"/manifest.json",revision:"eea6d370bc72da6585ea0a465965b0ba"},{url:"/markazu-umar-school-management-system.zip",revision:"ae5d70cb0307bd9ce75c0ea995a1e728"},{url:"/offline.html",revision:"d9f6ca90f0a5df3acb9099d997f019be"},{url:"/school-bg.jpg",revision:"b1423ae9d12fd7602779e4707164e86a"},{url:"/screenshots/home-1080x1920.png",revision:"24efe932a059713879e01d7f54e205ac"},{url:"/screenshots/home-1920x1080.png",revision:"e711f96119c027fdb98a5eac79f0c9f5"}],{ignoreURLParametersMatching:[]}),a.cleanupOutdatedCaches(),a.registerRoute("/",new a.NetworkFirst({cacheName:"start-url",plugins:[{cacheWillUpdate:async({request:a,response:e,event:s,state:i})=>e&&"opaqueredirect"===e.type?new Response(e.body,{status:200,statusText:"OK",headers:e.headers}):e},{handlerDidError:async({request:a})=>self.fallback(a)}]}),"GET"),a.registerRoute(/^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,new a.CacheFirst({cacheName:"google-fonts",plugins:[new a.ExpirationPlugin({maxEntries:30,maxAgeSeconds:31536e3}),{handlerDidError:async({request:a})=>self.fallback(a)}]}),"GET"),a.registerRoute(/\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,new a.CacheFirst({cacheName:"images-cache",plugins:[new a.ExpirationPlugin({maxEntries:100,maxAgeSeconds:2592e3}),{handlerDidError:async({request:a})=>self.fallback(a)}]}),"GET"),a.registerRoute(/\/_next\/static\/.*/i,new a.StaleWhileRevalidate({cacheName:"static-assets-cache",plugins:[new a.ExpirationPlugin({maxEntries:120,maxAgeSeconds:5184e3}),{handlerDidError:async({request:a})=>self.fallback(a)}]}),"GET"),a.registerRoute(/\/api\/.*$/i,new a.NetworkFirst({cacheName:"api-cache",networkTimeoutSeconds:5,plugins:[new a.ExpirationPlugin({maxEntries:100,maxAgeSeconds:86400}),{handlerDidError:async({request:a})=>self.fallback(a)}]}),"GET"),a.registerRoute(/.*/i,new a.NetworkFirst({cacheName:"pages-cache",networkTimeoutSeconds:3,plugins:[new a.ExpirationPlugin({maxEntries:50,maxAgeSeconds:2592e3}),{handlerDidError:async({request:a})=>self.fallback(a)}]}),"GET")});
+// ============================================================================
+// Markazu Umar bn Al-Khattab SMS - Unified PWA Service Worker
+// Fully compliant with PWABuilder, Google Play PWA Packaging & W3C PWA Standards
+// 
+// Capabilities:
+// 1. Offline Navigation Support with fallback page (/offline.html)
+// 2. Intelligent Caching (CacheFirst for images, StaleWhileRevalidate for assets)
+// 3. Native Web Push Notifications (push, notificationclick, pushsubscriptionchange)
+// 4. Background Sync (sync event listener for offline replay)
+// 5. Periodic Background Sync (periodicsync event listener for scheduled updates)
+// ============================================================================
+
+const CACHE_NAME_PREFIX = 'markazu-sms-v2';
+const STATIC_CACHE = `${CACHE_NAME_PREFIX}-static`;
+const PAGES_CACHE = `${CACHE_NAME_PREFIX}-pages`;
+const IMAGES_CACHE = `${CACHE_NAME_PREFIX}-images`;
+const OFFLINE_FALLBACK_PAGE = '/offline.html';
+
+const PRECACHE_ASSETS = [
+  '/',
+  '/dashboard',
+  '/offline.html',
+  '/manifest.json',
+  '/logo-rounded.png',
+  '/logo.png',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/favicon.ico',
+  '/school-bg.jpg',
+  '/director.jpg',
+  '/screenshots/home-1080x1920.png',
+  '/screenshots/home-1920x1080.png',
+];
+
+// ----------------------------------------------------------------------------
+// 1. Service Worker Installation & Pre-caching
+// ----------------------------------------------------------------------------
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then((cache) => {
+      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+        console.warn('[SW] Precache partial warning:', err);
+      });
+    })
+  );
+});
+
+// ----------------------------------------------------------------------------
+// 2. Service Worker Activation & Outdated Cache Cleanup
+// ----------------------------------------------------------------------------
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames
+          .filter((name) => name.startsWith('markazu-sms') && name !== STATIC_CACHE && name !== PAGES_CACHE && name !== IMAGES_CACHE)
+          .map((name) => caches.delete(name))
+      );
+    }).then(() => self.clients.claim())
+  );
+});
+
+// ----------------------------------------------------------------------------
+// 3. Fetch Event Handler (Offline Support & Has Logic)
+// ----------------------------------------------------------------------------
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip non-GET and browser extension requests
+  if (request.method !== 'GET' || url.protocol.startsWith('chrome-extension')) {
+    return;
+  }
+
+  // A. Navigation requests: Network-First with Offline Page Fallback
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(PAGES_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(async () => {
+          const cachedResponse = await caches.match(request);
+          if (cachedResponse) return cachedResponse;
+          const fallback = await caches.match(OFFLINE_FALLBACK_PAGE);
+          return fallback || new Response('Offline', { status: 503, statusText: 'Offline' });
+        })
+    );
+    return;
+  }
+
+  // B. Static Images: Cache-First
+  if (
+    request.destination === 'image' ||
+    url.pathname.match(/\.(png|jpg|jpeg|svg|webp|gif|ico)$/i)
+  ) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(IMAGES_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        }).catch(() => caches.match('/favicon.ico'));
+      })
+    );
+    return;
+  }
+
+  // C. Scripts & Styles: Stale-While-Revalidate
+  if (
+    request.destination === 'script' ||
+    request.destination === 'style' ||
+    url.pathname.startsWith('/_next/static')
+  ) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        const fetchPromise = fetch(request).then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+          }
+          return networkResponse;
+        }).catch(() => cached);
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // D. General Requests: Cache with Network Fallback
+  event.respondWith(
+    caches.match(request).then((cached) => cached || fetch(request))
+  );
+});
+
+// ----------------------------------------------------------------------------
+// 4. Native Web Push Notifications (PWABuilder & Mobile App Standard)
+// ----------------------------------------------------------------------------
+self.addEventListener('push', (event) => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: 'Markazu Umar Islamiyyah', body: event.data.text() };
+    }
+  }
+
+  const title = data.title || 'Markazu Umar SMS Alert';
+  const options = {
+    body: data.body || 'You have an important school update.',
+    icon: data.icon || '/icon-192.png',
+    badge: data.badge || '/favicon.ico',
+    image: data.image || undefined,
+    vibrate: [100, 50, 100],
+    data: {
+      url: data.url || '/dashboard',
+      id: data.id || Date.now(),
+    },
+    tag: data.tag || 'markazu-notification',
+    renotify: true,
+  };
+
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/dashboard';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil(
+    self.registration.pushManager
+      .subscribe({ userVisibleOnly: true })
+      .then((subscription) => {
+        console.log('[SW] Push subscription refreshed:', subscription.endpoint);
+      })
+      .catch((err) => {
+        console.warn('[SW] Push subscription refresh error:', err);
+      })
+  );
+});
+
+// ----------------------------------------------------------------------------
+// 5. Automatic Background Sync & Periodic Sync (PWABuilder & Mobile Sync)
+// ----------------------------------------------------------------------------
+self.addEventListener('sync', (event) => {
+  console.log('[SW] Background Sync event triggered:', event.tag);
+  if (event.tag === 'markazu-auto-sync' || event.tag === 'sync-queue') {
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        clientList.forEach((client) => {
+          client.postMessage({ type: 'TRIGGER_AUTO_SYNC', timestamp: Date.now() });
+        });
+      })
+    );
+  }
+});
+
+self.addEventListener('periodicsync', (event) => {
+  console.log('[SW] Periodic Background Sync event triggered:', event.tag);
+  if (event.tag === 'markazu-periodic-sync' || event.tag === 'content-sync') {
+    event.waitUntil(
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+        clientList.forEach((client) => {
+          client.postMessage({ type: 'TRIGGER_PERIODIC_SYNC', timestamp: Date.now() });
+        });
+      })
+    );
+  }
+});

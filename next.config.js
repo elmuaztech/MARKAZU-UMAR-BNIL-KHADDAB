@@ -1,74 +1,3 @@
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: false,
-  register: true,
-  skipWaiting: true,
-  reloadOnOnline: true,
-  customWorkerDir: 'worker',
-  fallbacks: {
-    document: '/offline.html',
-  },
-  runtimeCaching: [
-    {
-      urlPattern: /^https:\/\/fonts\.(?:googleapis|gstatic)\.com\/.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'google-fonts',
-        expiration: {
-          maxEntries: 30,
-          maxAgeSeconds: 365 * 24 * 60 * 60,
-        },
-      },
-    },
-    {
-      urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'images-cache',
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 30 * 24 * 60 * 60,
-        },
-      },
-    },
-    {
-      urlPattern: /\/_next\/static\/.*/i,
-      handler: 'StaleWhileRevalidate',
-      options: {
-        cacheName: 'static-assets-cache',
-        expiration: {
-          maxEntries: 120,
-          maxAgeSeconds: 60 * 24 * 60 * 60,
-        },
-      },
-    },
-    {
-      urlPattern: /\/api\/.*$/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'api-cache',
-        networkTimeoutSeconds: 5,
-        expiration: {
-          maxEntries: 100,
-          maxAgeSeconds: 24 * 60 * 60,
-        },
-      },
-    },
-    {
-      urlPattern: /.*/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'pages-cache',
-        networkTimeoutSeconds: 3,
-        expiration: {
-          maxEntries: 50,
-          maxAgeSeconds: 30 * 24 * 60 * 60,
-        },
-      },
-    },
-  ],
-});
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -117,8 +46,25 @@ const nextConfig = {
           },
         ],
       },
+      {
+        source: '/sw.js',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Service-Worker-Allowed',
+            value: '/',
+          },
+        ],
+      },
     ];
   },
 };
 
-module.exports = withPWA(nextConfig);
+module.exports = nextConfig;
