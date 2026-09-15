@@ -112,13 +112,13 @@ export function TeacherMessagingCenter() {
   };
 
   return (
-    <div className="space-y-6 font-poppins">
-      <div className="p-6 bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-md space-y-4">
+    <div className="space-y-4 sm:space-y-6 font-poppins">
+      <div className="p-4 sm:p-6 bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl shadow-md space-y-3 sm:space-y-4">
         <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
-          <ShieldCheck className="w-4 h-4" />
-          <span>Scope-Restricted In-App Teacher Communication Gateway</span>
+          <ShieldCheck className="w-4 h-4 shrink-0" />
+          <span className="truncate">Scope-Restricted In-App Teacher Communication Gateway</span>
         </div>
-        <h2 className="text-xl font-black text-slate-900 dark:text-white">
+        <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
           Teacher-to-Student Direct Messaging Engine
         </h2>
         <p className="text-xs text-slate-500 dark:text-emerald-300/80">
@@ -126,9 +126,9 @@ export function TeacherMessagingCenter() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmitMessage} className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 space-y-5 shadow-xl">
+      <form onSubmit={handleSubmitMessage} className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 space-y-4 sm:space-y-5 shadow-xl">
         {/* Recipient Scope Selectors */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 dark:bg-[#021810] p-4 rounded-2xl border border-slate-200 dark:border-emerald-500/20">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 bg-slate-50 dark:bg-[#021810] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-emerald-500/20">
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-emerald-200 mb-1">
               Select Programme
@@ -191,7 +191,7 @@ export function TeacherMessagingCenter() {
           <label className="block text-xs font-bold text-slate-700 dark:text-emerald-200 mb-1.5">
             Message Type Category
           </label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1 sm:flex-wrap">
             {(
               [
                 'GENERAL_NOTICE',
@@ -208,10 +208,10 @@ export function TeacherMessagingCenter() {
                 key={type}
                 type="button"
                 onClick={() => setMessageType(type)}
-                className={`px-3.5 py-2 rounded-xl font-extrabold text-[11px] transition-all ${
+                className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl font-bold text-[10px] sm:text-[11px] whitespace-nowrap shrink-0 transition-all ${
                   messageType === type
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30'
-                    : 'bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 hover:bg-emerald-500/20'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 ring-2 ring-emerald-400/40'
+                    : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-700 dark:text-emerald-300 hover:bg-emerald-500/20'
                 }`}
               >
                 {type.replace('_', ' ')}
@@ -230,7 +230,7 @@ export function TeacherMessagingCenter() {
             placeholder="Enter concise subject title..."
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
-            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white"
+            className="w-full p-2.5 sm:p-3 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white"
             required
           />
         </div>
@@ -245,29 +245,29 @@ export function TeacherMessagingCenter() {
             placeholder="Write clear instructions, homework requirements, or reminder details..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none"
+            className="w-full p-2.5 sm:p-3 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none"
             required
           />
         </div>
 
         {/* Attachments Section */}
-        <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-emerald-500/20">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-700 dark:text-emerald-200 flex items-center gap-1.5">
-              <Paperclip className="w-4 h-4 text-emerald-500" /> Attached Documents (PDF, Images)
+        <div className="space-y-2.5 pt-2 border-t border-slate-200 dark:border-emerald-500/20">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="text-xs font-bold text-slate-700 dark:text-emerald-200 flex items-center gap-1.5 truncate">
+              <Paperclip className="w-4 h-4 text-emerald-500 shrink-0" /> Attached Documents (PDF, Images)
             </span>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => handleAddSampleAttachment('PDF')}
-                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-emerald-950 text-[10px] font-extrabold text-slate-700 dark:text-emerald-300 hover:bg-emerald-500/20"
+                className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-emerald-950 text-[10px] font-extrabold text-slate-700 dark:text-emerald-300 hover:bg-emerald-500/20 flex items-center gap-1"
               >
                 + Add PDF
               </button>
               <button
                 type="button"
                 onClick={() => handleAddSampleAttachment('IMAGE')}
-                className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-emerald-950 text-[10px] font-extrabold text-slate-700 dark:text-emerald-300 hover:bg-emerald-500/20"
+                className="px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-emerald-950 text-[10px] font-extrabold text-slate-700 dark:text-emerald-300 hover:bg-emerald-500/20 flex items-center gap-1"
               >
                 + Add Image
               </button>

@@ -675,21 +675,21 @@ export function AdminDashboard() {
             className="space-y-6"
           >
             {/* Header / Sub-nav bar */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-emerald-500/20 pb-4">
+            <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-3 sm:space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200 dark:border-emerald-500/20 pb-3 sm:pb-4">
                 <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-                    <Users className="w-5 h-5 text-emerald-500" /> User & Directory Management Hub
+                  <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                    <Users className="w-5 h-5 text-emerald-500 shrink-0" /> User & Directory Management Hub
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-0.5">
                     Centralized admin controls to add, manage, edit, and remove Teachers, Parents, and Children (Students).
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2 overflow-x-auto p-1 rounded-2xl bg-slate-100 dark:bg-[#021810] text-xs font-bold">
+                <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto hide-scrollbar p-1 rounded-2xl bg-slate-100 dark:bg-[#021810] text-xs font-bold shrink-0">
                   <button
                     onClick={() => setUserDirectorySubTab('teachers')}
-                    className={`px-3 py-1.5 rounded-xl transition-all ${
+                    className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
                       userDirectorySubTab === 'teachers'
                         ? 'bg-emerald-600 text-white shadow-md'
                         : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
@@ -699,7 +699,7 @@ export function AdminDashboard() {
                   </button>
                   <button
                     onClick={() => setUserDirectorySubTab('parents')}
-                    className={`px-3 py-1.5 rounded-xl transition-all ${
+                    className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
                       userDirectorySubTab === 'parents'
                         ? 'bg-emerald-600 text-white shadow-md'
                         : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
@@ -709,7 +709,7 @@ export function AdminDashboard() {
                   </button>
                   <button
                     onClick={() => setUserDirectorySubTab('students')}
-                    className={`px-3 py-1.5 rounded-xl transition-all ${
+                    className={`px-3 py-1.5 rounded-xl transition-all whitespace-nowrap ${
                       userDirectorySubTab === 'students'
                         ? 'bg-emerald-600 text-white shadow-md'
                         : 'text-slate-600 dark:text-gray-400 hover:text-emerald-500'
@@ -721,7 +721,7 @@ export function AdminDashboard() {
               </div>
 
               {/* Search & Actions Bar */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 text-xs">
                 <div className="relative w-full sm:max-w-md">
                   <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400 dark:text-emerald-400/70" />
                   <input
@@ -733,11 +733,11 @@ export function AdminDashboard() {
                   />
                 </div>
 
-                <div className="flex items-center gap-2 self-end sm:self-auto">
+                <div className="flex items-center gap-2 w-full sm:w-auto">
                   {userDirectorySubTab === 'teachers' && (
                     <Link
                       href="/dashboard/teachers"
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-md"
+                      className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-1.5 shadow-md text-xs"
                     >
                       <UserCheck className="w-4 h-4" /> Open Teachers Directory Page
                     </Link>
@@ -745,7 +745,7 @@ export function AdminDashboard() {
                   {userDirectorySubTab === 'parents' && (
                     <Link
                       href="/dashboard/parents"
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-md"
+                      className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-1.5 shadow-md text-xs"
                     >
                       <HeartHandshake className="w-4 h-4" /> Open Parents Directory Page
                     </Link>
@@ -753,7 +753,7 @@ export function AdminDashboard() {
                   {userDirectorySubTab === 'students' && (
                     <Link
                       href="/dashboard/students"
-                      className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow-md"
+                      className="w-full sm:w-auto px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-1.5 shadow-md text-xs"
                     >
                       <GraduationCap className="w-4 h-4" /> Open Students Directory Page
                     </Link>
@@ -764,7 +764,7 @@ export function AdminDashboard() {
 
             {/* SubTab Content: Teachers */}
             {userDirectorySubTab === 'teachers' && (
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
+              <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-slate-700 dark:text-emerald-300 uppercase tracking-wider">
                     Asatizah & Academic Staff Roster
@@ -774,7 +774,8 @@ export function AdminDashboard() {
                   </span>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-500/20">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto hide-scrollbar rounded-2xl border border-slate-200 dark:border-emerald-500/20">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 font-bold uppercase text-[10px]">
@@ -835,12 +836,74 @@ export function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile Cards View (Hidden on Desktop) */}
+                <div className="md:hidden space-y-2.5">
+                  {teachers
+                    .filter(
+                      (t) =>
+                        t.fullName.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                        t.staffNo.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                        t.email.toLowerCase().includes(userSearchQuery.toLowerCase())
+                    )
+                    .map((teacher) => (
+                      <div
+                        key={teacher.id}
+                        className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2.5 shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-9 h-9 rounded-full bg-sky-500/20 text-sky-700 dark:text-sky-300 font-black text-xs flex items-center justify-center shrink-0">
+                              {teacher.fullName.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                                {teacher.fullName}
+                              </h5>
+                              <span className="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                {teacher.staffNo}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              showConfirm({
+                                title: 'Remove Teacher Profile',
+                                description: `Are you sure you want to remove teacher profile for ${teacher.fullName}?`,
+                                confirmLabel: 'Remove Teacher',
+                                onConfirm: () => deleteTeacher(teacher.id),
+                                isDanger: true,
+                              });
+                            }}
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white dark:text-rose-400 shrink-0"
+                            title="Remove Teacher"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-1.5 pt-2 border-t border-slate-200/60 dark:border-emerald-500/10 text-[11px]">
+                          <p className="text-slate-600 dark:text-emerald-300/80 font-mono text-[10px] truncate">
+                            {teacher.email} {teacher.phone ? `• ${teacher.phone}` : ''}
+                          </p>
+                          <div className="flex flex-wrap gap-1 pt-0.5">
+                            {teacher.classesAssigned.map((c) => (
+                              <span key={c} className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 px-1.5 py-0.5 rounded font-medium">
+                                {c}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             )}
 
             {/* SubTab Content: Parents */}
             {userDirectorySubTab === 'parents' && (
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
+              <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-slate-700 dark:text-emerald-300 uppercase tracking-wider">
                     Parents & Guardians Profiles
@@ -850,7 +913,8 @@ export function AdminDashboard() {
                   </span>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-500/20">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto hide-scrollbar rounded-2xl border border-slate-200 dark:border-emerald-500/20">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 font-bold uppercase text-[10px]">
@@ -916,12 +980,82 @@ export function AdminDashboard() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* Mobile Cards View (Hidden on Desktop) */}
+                <div className="md:hidden space-y-2.5">
+                  {parents
+                    .filter(
+                      (p) =>
+                        p.fullName.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                        p.email.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                        p.phone.includes(userSearchQuery)
+                    )
+                    .map((parent) => {
+                      const linkedChildren = students.filter(
+                        (s) => s.guardianId === parent.id || s.guardianId === parent.userId
+                      );
+                      return (
+                        <div
+                          key={parent.id}
+                          className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2.5 shadow-sm"
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="w-9 h-9 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-black text-xs flex items-center justify-center shrink-0">
+                                {parent.fullName.charAt(0).toUpperCase()}
+                              </div>
+                              <div className="min-w-0">
+                                <h5 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                                  {parent.fullName}
+                                </h5>
+                                <span className="bg-amber-500/10 text-amber-600 dark:text-amber-300 font-bold px-2 py-0.5 rounded text-[10px]">
+                                  {linkedChildren.length} Children Linked
+                                </span>
+                              </div>
+                            </div>
+
+                            <button
+                              onClick={() => {
+                                showConfirm({
+                                  title: 'Remove Parent Record',
+                                  description: `Are you sure you want to remove guardian profile for ${parent.fullName}?`,
+                                  confirmLabel: 'Remove Parent',
+                                  onConfirm: () => deleteParent(parent.id),
+                                  isDanger: true,
+                                });
+                              }}
+                              className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white dark:text-rose-400 shrink-0"
+                              title="Remove Parent"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+
+                          <div className="space-y-1 pt-2 border-t border-slate-200/60 dark:border-emerald-500/10 text-[11px]">
+                            <p className="text-slate-600 dark:text-emerald-300/80 font-mono text-[10px] truncate">
+                              {parent.email} {parent.phone ? `• ${parent.phone}` : ''}
+                            </p>
+                            {parent.occupation && (
+                              <p className="text-slate-700 dark:text-gray-300 text-[10px]">
+                                Occupation: <strong>{parent.occupation}</strong>
+                              </p>
+                            )}
+                            {parent.address && (
+                              <p className="text-slate-500 dark:text-emerald-300/70 text-[10px] truncate">
+                                {parent.address}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
               </div>
             )}
 
             {/* SubTab Content: Students (Children) */}
             {userDirectorySubTab === 'students' && (
-              <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
+              <div className="p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-slate-700 dark:text-emerald-300 uppercase tracking-wider">
                     Enrolled Children & Students Directory
@@ -931,7 +1065,8 @@ export function AdminDashboard() {
                   </span>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-500/20">
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto hide-scrollbar rounded-2xl border border-slate-200 dark:border-emerald-500/20">
                   <table className="w-full text-left text-xs border-collapse">
                     <thead>
                       <tr className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 font-bold uppercase text-[10px]">
@@ -991,6 +1126,76 @@ export function AdminDashboard() {
                         ))}
                     </tbody>
                   </table>
+                </div>
+
+                {/* Mobile Cards View (Hidden on Desktop) */}
+                <div className="md:hidden space-y-2.5">
+                  {students
+                    .filter(
+                      (s) =>
+                        s.fullName.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                        s.admissionNo.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                        s.guardianName.toLowerCase().includes(userSearchQuery.toLowerCase())
+                    )
+                    .map((student) => (
+                      <div
+                        key={student.id}
+                        className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2.5 shadow-sm"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-black text-xs flex items-center justify-center shrink-0">
+                              {student.fullName.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <h5 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
+                                {student.fullName}
+                              </h5>
+                              <span className="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                                {student.admissionNo}
+                              </span>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              showConfirm({
+                                title: 'Delete Student Profile',
+                                description: `Are you sure you want to remove student profile for ${student.fullName}?`,
+                                confirmLabel: 'Delete Student',
+                                onConfirm: () => deleteStudent(student.id),
+                                isDanger: true,
+                              });
+                            }}
+                            className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500 text-rose-600 hover:text-white dark:text-rose-400 shrink-0"
+                            title="Delete Student"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 dark:border-emerald-500/10 text-[11px]">
+                          <div>
+                            <span className="text-slate-400 dark:text-emerald-300/60 block text-[10px]">Class</span>
+                            <span className="font-semibold text-slate-800 dark:text-emerald-100 truncate block">
+                              {student.className}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-slate-400 dark:text-emerald-300/60 block text-[10px]">Hifz Progress</span>
+                            <span className="bg-purple-500/10 text-purple-600 dark:text-purple-300 font-bold px-1.5 py-0.5 rounded text-[10px] inline-block">
+                              {student.hifzProgress.juzCompleted} / 30 Juz
+                            </span>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-slate-400 dark:text-emerald-300/60 block text-[10px]">Guardian</span>
+                            <span className="font-medium text-slate-700 dark:text-slate-300 truncate block">
+                              {student.guardianName}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                 </div>
               </div>
             )}

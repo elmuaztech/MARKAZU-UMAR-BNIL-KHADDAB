@@ -98,49 +98,80 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md font-poppins">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/80 backdrop-blur-md font-poppins overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.95 }}
-        className="w-full max-w-3xl rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="w-full max-w-3xl rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-2xl overflow-hidden flex flex-col max-h-[94vh] my-auto"
       >
         {/* Modal Header */}
-        <div className="p-6 bg-gradient-to-r from-emerald-950 via-[#042f1e] to-emerald-900 text-white border-b border-emerald-500/30 flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase">
-              <UserCheck className="w-3 h-3" /> Teacher Assignment Engine
+        <div className="p-4 sm:p-6 bg-gradient-to-r from-emerald-950 via-[#042f1e] to-emerald-900 text-white border-b border-emerald-500/30 flex items-start sm:items-center justify-between gap-3">
+          <div className="space-y-1 min-w-0">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase">
+              <UserCheck className="w-3 h-3 shrink-0" /> Teacher Assignment Engine
             </div>
-            <h2 className="text-xl font-black">Assign Academic & Tahfiz Load</h2>
-            <p className="text-xs text-emerald-200/80">Step {step} of 4 • Multi-Programme & Multi-Subject Wizard</p>
+            <h2 className="text-lg sm:text-xl font-black truncate">Assign Academic & Tahfiz Load</h2>
+            <p className="text-[11px] sm:text-xs text-emerald-200/80">Step {step} of 4 • Multi-Programme & Multi-Subject Wizard</p>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-emerald-300 hover:text-white transition-all"
+            className="p-1.5 sm:p-2 rounded-full hover:bg-white/10 text-emerald-300 hover:text-white transition-all shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Step Progress Tracker */}
-        <div className="grid grid-cols-4 bg-slate-50 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 text-center text-xs font-bold divide-x divide-slate-200 dark:divide-emerald-500/20">
-          <div className={`p-3 ${step === 1 ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-emerald-400/70'}`}>
+        {/* Step Progress Tracker - Desktop Grid (Hidden on Mobile) */}
+        <div className="hidden sm:grid grid-cols-4 bg-slate-50 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 text-center text-xs font-bold divide-x divide-slate-200 dark:divide-emerald-500/20">
+          <div className={`p-3 transition-colors ${step === 1 ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-emerald-400/70'}`}>
             1. Teacher Info
           </div>
-          <div className={`p-3 ${step === 2 ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-emerald-400/70'}`}>
+          <div className={`p-3 transition-colors ${step === 2 ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-emerald-400/70'}`}>
             2. Programme(s)
           </div>
-          <div className={`p-3 ${step === 3 ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-emerald-400/70'}`}>
+          <div className={`p-3 transition-colors ${step === 3 ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-emerald-400/70'}`}>
             3. Class(es)
           </div>
-          <div className={`p-3 ${step === 4 ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-emerald-400/70'}`}>
+          <div className={`p-3 transition-colors ${step === 4 ? 'bg-emerald-600 text-white' : 'text-slate-500 dark:text-emerald-400/70'}`}>
             4. Subjects & Confirm
           </div>
         </div>
 
+        {/* Step Progress Tracker - Modern Mobile Stepper (Native App Style) */}
+        <div className="sm:hidden px-4 py-2.5 bg-slate-50 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 space-y-2">
+          <div className="w-full bg-slate-200 dark:bg-emerald-950 h-1.5 rounded-full overflow-hidden">
+            <div
+              className="bg-emerald-500 h-full rounded-full transition-all duration-300"
+              style={{ width: `${(step / 4) * 100}%` }}
+            />
+          </div>
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-[11px]">
+              Step {step} of 4: {['Teacher Info', 'Programme(s)', 'Class(es)', 'Subjects & Confirm'][step - 1]}
+            </span>
+            <div className="flex items-center gap-1.5">
+              {[1, 2, 3, 4].map((s) => (
+                <span
+                  key={s}
+                  className={`w-5 h-5 rounded-full text-[10px] font-black flex items-center justify-center transition-all ${
+                    step === s
+                      ? 'bg-emerald-600 text-white shadow'
+                      : step > s
+                      ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 font-bold'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-400'
+                  }`}
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Modal Body / Steps */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        <div className="p-3.5 sm:p-6 overflow-y-auto space-y-4 sm:space-y-6 flex-1 text-xs hide-scrollbar">
           {/* STEP 1: SELECT TEACHER */}
           {step === 1 && (
             <div className="space-y-4">
@@ -153,14 +184,14 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto p-1 hide-scrollbar">
                 {teachers.map((t) => {
                   const isSelected = selectedTeacherId === t.id;
                   return (
                     <div
                       key={t.id}
                       onClick={() => setSelectedTeacherId(t.id)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                      className={`p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border cursor-pointer transition-all ${
                         isSelected
                           ? 'bg-emerald-500/15 border-emerald-500 ring-2 ring-emerald-500/30'
                           : 'bg-slate-50 dark:bg-[#021810] border-slate-200 dark:border-emerald-500/20 hover:border-emerald-500'
@@ -170,9 +201,9 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                         <span className="font-mono text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                           {t.staffNo}
                         </span>
-                        {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                        {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />}
                       </div>
-                      <p className="font-bold text-slate-900 dark:text-white">{t.fullName}</p>
+                      <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">{t.fullName}</p>
                       <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 truncate">{t.email}</p>
                     </div>
                   );
@@ -193,14 +224,14 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto p-1 hide-scrollbar">
                 {programmes.map((p) => {
                   const isSelected = selectedProgrammeIds.includes(p.id);
                   return (
                     <div
                       key={p.id}
                       onClick={() => toggleSelection(selectedProgrammeIds, setSelectedProgrammeIds, p.id)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                      className={`p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border cursor-pointer transition-all ${
                         isSelected
                           ? 'bg-emerald-500/15 border-emerald-500 ring-2 ring-emerald-500/30'
                           : 'bg-slate-50 dark:bg-[#021810] border-slate-200 dark:border-emerald-500/20 hover:border-emerald-500'
@@ -210,10 +241,10 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                         <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                           {p.programme_code}
                         </span>
-                        {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                        {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />}
                       </div>
-                      <p className="font-bold text-slate-900 dark:text-white">{p.programme_name_english || p.programme_name}</p>
-                      <p className="font-arabic text-amber-600 dark:text-amber-300 text-[11px]">{p.programme_name_arabic}</p>
+                      <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">{p.programme_name_english || p.programme_name}</p>
+                      <p className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] truncate">{p.programme_name_arabic}</p>
                     </div>
                   );
                 })}
@@ -229,18 +260,18 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                   <School className="w-4 h-4 text-emerald-500" /> Step 3: Select Class(es)
                 </h3>
                 <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-bold">
-                  {availableClasses.length} Available Classes under selected Programmes
+                  {availableClasses.length} Available Classes
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto p-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-72 overflow-y-auto p-1 hide-scrollbar">
                 {availableClasses.map((c) => {
                   const isSelected = selectedClassIds.includes(c.id);
                   return (
                     <div
                       key={c.id}
                       onClick={() => toggleSelection(selectedClassIds, setSelectedClassIds, c.id)}
-                      className={`p-4 rounded-2xl border cursor-pointer transition-all ${
+                      className={`p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border cursor-pointer transition-all ${
                         isSelected
                           ? 'bg-emerald-500/15 border-emerald-500 ring-2 ring-emerald-500/30'
                           : 'bg-slate-50 dark:bg-[#021810] border-slate-200 dark:border-emerald-500/20 hover:border-emerald-500'
@@ -250,10 +281,10 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                         <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
                           {c.programmeName}
                         </span>
-                        {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                        {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />}
                       </div>
-                      <p className="font-bold text-slate-900 dark:text-white">{c.name}</p>
-                      <p className="font-arabic text-amber-600 dark:text-amber-300 text-[11px]">{c.class_name_arabic}</p>
+                      <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">{c.name}</p>
+                      <p className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] truncate">{c.class_name_arabic}</p>
                     </div>
                   );
                 })}
@@ -263,36 +294,36 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
 
           {/* STEP 4: SELECT SUBJECTS & CONFIRM */}
           {step === 4 && (
-            <div className="space-y-5">
-              <div className="flex items-center justify-between">
+            <div className="space-y-4 sm:space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <h3 className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-emerald-500" /> Step 4: Select Subjects & Review Assignment
+                  <BookOpen className="w-4 h-4 text-emerald-500 shrink-0" /> Step 4: Select Subjects
                 </h3>
                 <Button variant="outline" size="sm" onClick={handleSelectAllSubjects}>
                   {selectedSubjectIds.length === availableSubjects.length ? 'Deselect All' : 'Select All Subjects'}
                 </Button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto p-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1 hide-scrollbar">
                 {availableSubjects.map((s) => {
                   const isSelected = selectedSubjectIds.includes(s.id);
                   return (
                     <div
                       key={s.id}
                       onClick={() => toggleSelection(selectedSubjectIds, setSelectedSubjectIds, s.id)}
-                      className={`p-3 rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
+                      className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border cursor-pointer transition-all flex items-center justify-between ${
                         isSelected
                           ? 'bg-emerald-500/15 border-emerald-500 ring-2 ring-emerald-500/30'
                           : 'bg-slate-50 dark:bg-[#021810] border-slate-200 dark:border-emerald-500/20 hover:border-emerald-500'
                       }`}
                     >
-                      <div>
+                      <div className="min-w-0 pr-2">
                         <span className="font-mono text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
                           {s.code}
                         </span>
-                        <p className="font-bold text-slate-900 dark:text-white">{s.name}</p>
+                        <p className="font-bold text-xs text-slate-900 dark:text-white truncate">{s.name}</p>
                       </div>
-                      {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />}
                     </div>
                   );
                 })}
@@ -315,7 +346,7 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
         </div>
 
         {/* Modal Controls Footer */}
-        <div className="p-4 bg-slate-50 dark:bg-[#021810] border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-between">
+        <div className="p-3.5 sm:p-4 bg-slate-50 dark:bg-[#021810] border-t border-slate-200 dark:border-emerald-500/20 flex items-center justify-between gap-2">
           <Button
             variant="outline"
             disabled={step === 1}

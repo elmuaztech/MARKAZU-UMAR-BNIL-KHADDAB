@@ -89,7 +89,7 @@ export function EnterpriseTable<T extends { id?: string }>({
       )}
 
       {/* Desktop Responsive Table */}
-      <div className="hidden md:block overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-500/20">
+      <div className="hidden md:block overflow-x-auto hide-scrollbar rounded-2xl border border-slate-200 dark:border-emerald-500/20">
         <table className="w-full text-left border-collapse text-xs">
           <thead className="sticky top-0 bg-slate-100 dark:bg-[#021810] z-10">
             <tr className="border-b border-slate-200 dark:border-emerald-500/20 text-slate-500 dark:text-emerald-300 font-extrabold uppercase tracking-wider text-[10px]">
