@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Offline Mode | Markazu Umar bn Al-Khattab SMS</title>
+  <link rel="icon" href="/logo-rounded.png" type="image/png">
+  <style>
+    :root {
+      --bg-color: #031c13;
+      --card-bg: rgba(6, 42, 30, 0.85);
+      --text-main: #f0fdf4;
+      --text-muted: #86efac;
+      --accent: #10b981;
+      --accent-gold: #f59e0b;
+      --border-color: rgba(16, 185, 129, 0.3);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    body {
+      background: radial-gradient(circle at top center, #063d2b 0%, #031c13 100%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 1.25rem;
+      padding: 2.5rem 2rem;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(12px);
+    }
+    .logo {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      padding: 4px;
+      background: #031c13;
+      margin: 0 auto 1.5rem;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--accent-gold);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-gold);
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+    }
+    p {
+      color: #cbd5e1;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+    .feature-box {
+      background: rgba(3, 28, 19, 0.6);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      text-align: left;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="/logo-rounded.png" alt="Markazu Umar Logo" class="logo">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Offline Mode Active
+    </div>
+    <h1>Working Without Internet</h1>
+    <p>
+      You are currently disconnected, but <strong>Markazu Umar SMS</strong> continues to function using your device's local IndexedDB storage.
+    </p>
+
+    <div class="feature-box">
+      <div class="feature-item">
+        <span>✓</span>
+        <span>Cached records and dashboard are accessible offline</span>
+      </div>
+      <div class="feature-item">
+        <span>✓</span>
+        <span>Attendance, Tahfiz, and grade entries are stored locally</span>
+      </div>
+      <div class="feature-item">
+        <span>✓</span>
+        <span>Queued changes will auto-sync once internet is restored</span>
+      </div>
+    </div>
+
+    <div class="btn-group">
+      <a href="/dashboard" class="btn btn-primary">Go to Offline Dashboard</a>
+      <button onclick="window.location.reload()" class="btn btn-secondary">Check Connection Again</button>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('online', function() {
+      window.location.href = '/dashboard';
+    });
+  </script>
+</body>
+</html>

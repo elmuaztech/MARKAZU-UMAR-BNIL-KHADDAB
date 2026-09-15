@@ -6,6 +6,7 @@ import { RoleSwitcher } from './RoleSwitcher';
 import { ThemeToggle } from './ThemeToggle';
 import { HeaderNotificationBadge } from './HeaderNotificationBadge';
 import { SessionSwitcher } from './SessionSwitcher';
+import { SyncStatusBadge } from './SyncStatusBadge';
 import { Menu, Bell } from 'lucide-react';
 
 export function Header({
@@ -32,6 +33,9 @@ export function Header({
       </div>
 
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 whitespace-nowrap">
+        {/* Offline & Server Synchronization Badge */}
+        <SyncStatusBadge />
+
         {/* Theme Switcher for Dark/Light Mode */}
         <ThemeToggle variant="dropdown" />
 

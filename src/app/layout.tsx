@@ -2,6 +2,7 @@ import './globals.css';
 import { Metadata, Viewport } from 'next';
 import { AppProvider } from '../lib/context';
 import { ThemeProvider } from '../lib/themeContext';
+import { PwaRegister } from '../components/pwa/PwaRegister';
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -16,6 +17,12 @@ export const metadata: Metadata = {
     template: "%s | Markazu Umar bn Al-Khattab",
   },
   description: "Premier Islamic Institution and 30-Juz Qur'an Memorization Center in Daneji Quarters, Kano, Nigeria. Offering Tahfiz, Islamiyya, Arabic Studies, Fiqh, Hadith, and moral discipline.",
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Markazu Umar SMS',
+  },
   keywords: [
     "Markazu Umar",
     "Markazu Umar bn Al-Khattab",
@@ -96,6 +103,11 @@ export default function RootLayout({
         <link rel="icon" href="/logo-rounded.png" type="image/png" />
         <link rel="shortcut icon" href="/logo-rounded.png" type="image/png" />
         <link rel="apple-touch-icon" href="/logo-rounded.png" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Markazu Umar" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet" />
@@ -106,6 +118,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
+        <PwaRegister />
         <ThemeProvider>
           <AppProvider>{children}</AppProvider>
         </ThemeProvider>
