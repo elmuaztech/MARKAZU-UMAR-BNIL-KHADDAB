@@ -2,6 +2,9 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
+  images: {
+    unoptimized: true,
+  },
   experimental: {
     serverComponentsExternalPackages: ['nodemailer'],
   },
@@ -60,6 +63,23 @@ const nextConfig = {
           {
             key: 'Service-Worker-Allowed',
             value: '/',
+          },
+        ],
+      },
+      {
+        source: '/manifest.json',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'application/manifest+json; charset=utf-8',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate',
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
           },
         ],
       },

@@ -7,7 +7,7 @@ RUN apk add --no-cache openssl libc6-compat ca-certificates
 FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci
+RUN npm ci || npm install --legacy-peer-deps
 
 # Stage 2: Build Next.js application
 FROM base AS builder
@@ -15,7 +15,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_OPTIONS "--max-old-space-size=1536"
+ENV NODE_OPTIONS "--max-old-space-size=2048"
+ENV DATABASE_URL "postgresql://mssms_user:mssms_secure_pass_1447@postgres:5432/mssms_db?schema=public"
 RUN npm run build
 
 # Stage 3: Runner
