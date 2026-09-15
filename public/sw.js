@@ -10,9 +10,13 @@ const PRECACHE_ASSETS = [
   '/manifest.json',
   '/logo-rounded.png',
   '/logo.png',
+  '/icon-192.png',
+  '/icon-512.png',
   '/favicon.ico',
   '/school-bg.jpg',
   '/director.jpg',
+  '/screenshots/home-1080x1920.png',
+  '/screenshots/home-1920x1080.png',
 ];
 
 // 1. Attempt to load Workbox from CDN
