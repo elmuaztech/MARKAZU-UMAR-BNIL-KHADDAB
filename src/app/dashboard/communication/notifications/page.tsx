@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useApp } from '@/lib/context';
-import { Bell, CheckCircle2, Pin, Archive, Trash2, ArrowLeft, Search, Filter, Sparkles, FileText, Eye } from 'lucide-react';
+import { PushNotificationManager } from '@/lib/pushNotifications';
+import { Bell, CheckCircle2, Pin, Archive, Trash2, ArrowLeft, Search, Filter, Sparkles, FileText, Eye, Smartphone, BellRing, BellOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function NotificationCenterPage() {
@@ -22,6 +23,14 @@ export default function NotificationCenterPage() {
 
   const [filterTab, setFilterTab] = useState<'ALL' | 'UNREAD' | 'PINNED' | 'ARCHIVED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
+  const [isEnablingPush, setIsEnablingPush] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setPushPermission(PushNotificationManager.getPermission());
+    }
+  }, []);
 
   const filteredNotifs = inAppNotifications.filter((n) => {
     if (filterTab === 'UNREAD' && n.read) return false;
@@ -63,6 +72,64 @@ export default function NotificationCenterPage() {
           </button>
         )}
       </div>
+
+      {/* Push Notification Device Card */}
+      {pushPermission !== 'granted' && pushPermission !== 'denied' && (
+        <div className="p-4 rounded-3xl bg-gradient-to-r from-emerald-600/15 via-teal-600/10 to-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="p-3 rounded-2xl bg-emerald-600 text-white shrink-0 shadow-md">
+              <Smartphone className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-black text-slate-900 dark:text-white text-sm">Enable Native Push Notifications</h3>
+              <p className="text-xs text-slate-500 dark:text-emerald-300/70">Receive immediate lock screen & pop-up alerts on your device for announcements, attendance, and exam scores.</p>
+            </div>
+          </div>
+          <button
+            disabled={isEnablingPush}
+            onClick={async () => {
+              setIsEnablingPush(true);
+              try {
+                const perm = await PushNotificationManager.requestPermission();
+                setPushPermission(perm);
+                if (perm === 'granted') {
+                  await PushNotificationManager.showNotification({
+                    title: 'Markazu Umar SMS Alerts',
+                    body: 'Push notifications are now active! You will receive live school alerts directly on this device.',
+                    url: '/dashboard',
+                  });
+                }
+              } finally {
+                setIsEnablingPush(false);
+              }
+            }}
+            className="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 shrink-0 w-full sm:w-auto text-center"
+          >
+            {isEnablingPush ? 'Activating Alerts...' : 'Turn On Push Notifications'}
+          </button>
+        </div>
+      )}
+
+      {pushPermission === 'granted' && (
+        <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300 font-bold">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <span>Device Push Notifications Active</span>
+          </div>
+          <button
+            onClick={async () => {
+              await PushNotificationManager.showNotification({
+                title: 'Markazu Umar Islamiyyah',
+                body: 'Push notification test successful! Your device is ready to receive instant alerts.',
+                url: '/dashboard/communication/notifications',
+              });
+            }}
+            className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#021810] border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 font-bold text-xs transition-all shadow-sm shrink-0"
+          >
+            Send Test Alert
+          </button>
+        </div>
+      )}
 
       {/* Tabs & Search */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">

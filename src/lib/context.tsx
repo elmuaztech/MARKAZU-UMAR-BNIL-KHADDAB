@@ -49,6 +49,7 @@ import { UserSession, ACTIVE_SESSIONS, revokeSession, revokeAllUserSessions, has
 import { NotificationService } from '../services/notificationService';
 import { localDb } from './db/dexieDb';
 import { syncEngine, SyncEngineState } from './db/syncEngine';
+import { PushNotificationManager } from './pushNotifications';
 
 const INITIAL_ADMISSION_APPLICATIONS: AdmissionApplication[] = [];
 
@@ -282,6 +283,7 @@ interface AppContextType {
   // Local-First Dexie.js & Workbox Sync State
   syncState: SyncEngineState;
   syncNow: () => Promise<void>;
+  refreshAllData: () => Promise<void>;
 }
 
 export interface DeletedIdentifiers {
@@ -407,6 +409,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => {
       dismissToast(id);
     }, toast.duration || 4500);
+
+    // Modern Native Device Push Notification Trigger
+    if (typeof window !== 'undefined' && PushNotificationManager.getPermission() === 'granted') {
+      PushNotificationManager.showNotification({
+        title: toast.title || 'Markazu Umar SMS',
+        body: toast.message,
+        url: '/dashboard',
+      }).catch(() => {});
+    }
   };
 
   const dismissToast = (id: string) => {
@@ -926,276 +937,227 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // 1. Fetch Students
-      syncStudentsFromBackend();
+  const refreshAllData = async (): Promise<void> => {
+    if (typeof window === 'undefined' || !navigator.onLine) return;
+    try {
+      // 1. Process pending offline queue mutations first
+      await syncEngine.processSyncQueue();
 
-      // 2. Fetch Teachers
-      syncTeachersFromBackend();
+      // 2. Synchronize user, teacher, student, parent, attendance models from backend
+      await Promise.allSettled([
+        syncUsersFromBackend(),
+        syncTeachersFromBackend(),
+        syncStudentsFromBackend(),
+        syncParentsFromBackend(),
+        syncAttendanceFromBackend(),
+      ]);
 
-      // 2.2 Fetch Parents
-      syncParentsFromBackend();
+      // 3. Fetch fresh records from PostgreSQL for all entities
+      const [
+        progRes,
+        clsRes,
+        subjRes,
+        tahfizRes,
+        annRes,
+        ttRes,
+        msgRes,
+        resRes,
+        sessRes,
+        auditRes,
+      ] = await Promise.allSettled([
+        fetch('/api/programmes').then((r) => r.json()),
+        fetch('/api/classes').then((r) => r.json()),
+        fetch('/api/subjects').then((r) => r.json()),
+        fetch('/api/tahfiz').then((r) => r.json()),
+        fetch('/api/announcements').then((r) => r.json()),
+        fetch('/api/timetable').then((r) => r.json()),
+        fetch('/api/messages').then((r) => r.json()),
+        fetch('/api/results').then((r) => r.json()),
+        fetch('/api/sessions').then((r) => r.json()),
+        fetch('/api/audit').then((r) => r.json()),
+      ]);
 
-      // 2.3 Fetch Attendance
-      syncAttendanceFromBackend();
-
-      // 2.2 Fetch Parents
-      syncParentsFromBackend();
-
-      // 2.5 Fetch Programmes from PostgreSQL
-      fetch('/api/programmes')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.programmes)) {
-            const mappedProgrammes = data.programmes.map((p: any) => {
-              let subcats: string[] = [];
-              if (p.subcategories) {
-                try {
-                  subcats = typeof p.subcategories === 'string' ? JSON.parse(p.subcategories) : p.subcategories;
-                } catch (e) {
-                  subcats = [];
-                }
-              }
-              return {
-                id: p.id,
-                programme_code: p.programme_code || p.code,
-                programme_name_english: p.programme_name_english || p.nameEnglish || p.name,
-                programme_name_arabic: p.programme_name_arabic || p.nameArabic || '',
-                programme_name: p.programme_name_english || p.nameEnglish || p.name,
-                hasSubcategories: !!p.hasSubcategories,
-                subcategories: subcats,
-                status: p.status === 'Active' || p.status === 'ACTIVE' ? 'Active' : 'Inactive',
-                created_at: p.createdAt || p.created_at || new Date().toISOString(),
-                updated_at: p.updatedAt || p.updated_at || new Date().toISOString(),
-              };
-            });
-            setProgrammes(mappedProgrammes);
-            safeLocalStorageSet('markazu_programmes', mappedProgrammes);
-            localDb.programmes.bulkPut(mappedProgrammes).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncProgrammes] error:', e));
-
-      // 3. Fetch Classes from PostgreSQL
-      fetch('/api/classes')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.classes)) {
-            const mappedClasses = data.classes.map((c: any) => ({
-              id: c.id,
-              name: c.name || c.class_name_english,
-              class_name_english: c.name || c.class_name_english,
-              class_name_arabic: c.class_name_arabic || c.classTeacher?.full_name_arabic || '',
-              category: c.category,
-              section: c.section,
-              subcategory: c.subcategory || undefined,
-              capacity: c.capacity,
-              studentCount: c.studentCount || c._count?.students || 0,
-              classTeacherId: c.classTeacherId || undefined,
-              classTeacherName: c.classTeacherName || c.classTeacher?.fullName || undefined,
-              classTeacherNameArabic: c.classTeacherNameArabic || c.classTeacher?.full_name_arabic || undefined,
-              programmeId: c.programmeId || '',
-              programmeName: c.programmeName || c.programme?.nameEnglish || 'Programme',
-              programmeNameArabic: c.programmeNameArabic || c.programme?.nameArabic || '',
-            }));
-            setClasses(mappedClasses);
-            safeLocalStorageSet('markazu_classes', mappedClasses);
-            localDb.classes.bulkPut(mappedClasses).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncClasses] error:', e));
-
-      // 4. Fetch Subjects
-      fetch('/api/subjects')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.subjects)) {
-            const mappedSubjects = data.subjects.map((s: any) => ({
-              id: s.id,
-              name: s.name,
-              arabicName: s.arabicName || undefined,
-              code: s.code,
-              category: s.category,
-              description: s.description || '',
-              programmeId: s.programmeId || undefined,
-              programmeName: s.programme?.nameEnglish || undefined,
-              classId: s.classId || undefined,
-              className: s.schoolClass?.name || undefined,
-              status: s.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
-              displayOrder: s.displayOrder || 1,
-            }));
-            setSubjects(mappedSubjects);
-            safeLocalStorageSet('markazu_subjects', mappedSubjects);
-            localDb.subjects.bulkPut(mappedSubjects).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncSubjects] error:', e));
-
-      // 5. Fetch Attendance
-      fetch('/api/attendance')
-        .then((res) => res.json())
-        .then((resData) => {
-          if (resData && resData.success && Array.isArray(resData.data)) {
-            const mappedAttendance = resData.data.map((a: any) => ({
-              id: a.id,
-              date: a.date,
-              studentId: a.studentId,
-              studentName: a.student?.fullName || 'Student',
-              programmeId: a.programmeId || undefined,
-              classId: a.classId,
-              className: a.schoolClass?.name || 'Class',
-              teacherId: a.teacherId || undefined,
-              status: a.statusEnum || a.status,
-              remarks: a.remarks || undefined,
-              isDraft: a.isDraft,
-            }));
-            setAttendance(mappedAttendance);
-            safeLocalStorageSet('markazu_attendance', mappedAttendance);
-            localDb.attendance.bulkPut(mappedAttendance).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncAttendance] error:', e));
-
-      // 6. Fetch Tahfiz Progress
-      fetch('/api/tahfiz')
-        .then((res) => res.json())
-        .then((resData) => {
-          if (resData && resData.success && Array.isArray(resData.data)) {
-            const mappedTahfiz = resData.data.map((t: any) => ({
-              id: t.id,
-              date: t.date,
-              studentId: t.studentId,
-              studentName: t.student?.fullName || 'Student',
-              programmeId: t.programmeId || undefined,
-              classId: t.classId,
-              className: t.schoolClass?.name || 'Class',
-              teacherId: t.teacherId,
-              teacherName: t.teacher?.fullName || 'Teacher',
-              hifzSurah: t.hifzSurah,
-              hifzFromAyah: t.hifzFromAyah,
-              hifzToAyah: t.hifzToAyah,
-              hifzPages: t.hifzPages,
-              currentJuz: t.currentJuz,
-              sabkiSurah: t.sabkiSurah,
-              sabkiRating: t.sabkiRating,
-              manzilJuz: t.manzilJuz,
-              manzilRating: t.manzilRating,
-              teacherNotes: t.teacherNotes,
-              studentBehaviour: t.studentBehaviour,
-              completionPercentage: t.completionPercentage,
-              teacherComment: t.teacherComment || undefined,
-            }));
-            setTahfizRecords(mappedTahfiz);
-            safeLocalStorageSet('markazu_tahfiz_records', mappedTahfiz);
-            localDb.tahfizRecords.bulkPut(mappedTahfiz).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncTahfiz] error:', e));
-
-      // 7. Fetch Announcements
-      fetch('/api/announcements')
-        .then((res) => res.json())
-        .then((resData) => {
-          if (resData && Array.isArray(resData.announcements)) {
-            setAnnouncements(resData.announcements);
-            safeLocalStorageSet('markazu_announcements', resData.announcements);
-            localDb.announcements.bulkPut(resData.announcements).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncAnnouncements] error:', e));
-
-      // 8. Fetch Parents
-      fetch('/api/parents')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.parents)) {
-            setParents(data.parents);
-            safeLocalStorageSet('markazu_parents', data.parents);
-            localDb.parents.bulkPut(data.parents).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncParents] error:', e));
-
-      // 9. Fetch Programmes
-      fetch('/api/programmes')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.programmes)) {
-            setProgrammes(data.programmes);
-            safeLocalStorageSet('markazu_programmes', data.programmes);
-            localDb.programmes.bulkPut(data.programmes).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncProgrammes] error:', e));
-
-      // 10. Fetch Timetable Periods
-      fetch('/api/timetable')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.timetablePeriods)) {
-            setTimetablePeriods(data.timetablePeriods);
-            safeLocalStorageSet('markazu_timetable', data.timetablePeriods);
-            localDb.timetablePeriods.bulkPut(data.timetablePeriods).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncTimetable] error:', e));
-
-      // 11. Fetch Direct Messages
-      fetch('/api/messages')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && data.success && Array.isArray(data.data)) {
-            setDirectMessages(data.data);
-            safeLocalStorageSet('markazu_direct_messages', data.data);
-            localDb.directMessages.bulkPut(data.data).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncMessages] error:', e));
-
-      // 12. Fetch Grades / Results
-      fetch('/api/results')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.grades)) {
-            setGrades(data.grades);
-            safeLocalStorageSet('markazu_grades', data.grades);
-            localDb.grades.bulkPut(data.grades).catch(() => {});
-          }
-        })
-        .catch((e) => console.warn('[syncResults] error:', e));
-
-      // 13. Fetch Audit Logs
-      fetch('/api/audit')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.auditLogs)) {
-            setAuditLogs(data.auditLogs);
-            safeLocalStorageSet('markazu_audit_logs', data.auditLogs);
-          }
-        })
-        .catch((e) => console.warn('[syncAudit] error:', e));
-
-      // 14. Fetch Academic Sessions
-      fetch('/api/sessions')
-        .then((res) => res.json())
-        .then((data) => {
-          if (data && Array.isArray(data.sessions)) {
-            setSchoolSessions(data.sessions);
-            localDb.sessions.bulkPut(data.sessions).catch(() => {});
-            const active = data.sessions.find((s: any) => s.isCurrent) || data.sessions[0];
-            if (active) {
-              setCurrentSession({
-                id: active.id,
-                sessionName: active.sessionName,
-                activeTerm: active.activeTerm,
-                isCurrent: active.isCurrent,
-              });
+      if (progRes.status === 'fulfilled' && progRes.value && Array.isArray(progRes.value.programmes)) {
+        const mappedProgrammes = progRes.value.programmes.map((p: any) => {
+          let subcats: string[] = [];
+          if (p.subcategories) {
+            try {
+              subcats = typeof p.subcategories === 'string' ? JSON.parse(p.subcategories) : p.subcategories;
+            } catch (e) {
+              subcats = [];
             }
           }
-        })
-        .catch((e) => console.warn('[syncSessions] error:', e));
+          return {
+            id: p.id,
+            programme_code: p.programme_code || p.code,
+            programme_name_english: p.programme_name_english || p.nameEnglish || p.name,
+            programme_name_arabic: p.programme_name_arabic || p.nameArabic || '',
+            programme_name: p.programme_name_english || p.nameEnglish || p.name,
+            hasSubcategories: !!p.hasSubcategories,
+            subcategories: subcats,
+            status: p.status === 'Active' || p.status === 'ACTIVE' ? 'Active' : 'Inactive',
+            created_at: p.createdAt || p.created_at || new Date().toISOString(),
+            updated_at: p.updatedAt || p.updated_at || new Date().toISOString(),
+          };
+        });
+        setProgrammes(mappedProgrammes);
+        safeLocalStorageSet('markazu_programmes', mappedProgrammes);
+        localDb.programmes.bulkPut(mappedProgrammes).catch(() => {});
+      }
+
+      if (clsRes.status === 'fulfilled' && clsRes.value && Array.isArray(clsRes.value.classes)) {
+        const mappedClasses = clsRes.value.classes.map((c: any) => ({
+          id: c.id,
+          name: c.name || c.class_name_english,
+          class_name_english: c.name || c.class_name_english,
+          class_name_arabic: c.class_name_arabic || c.classTeacher?.full_name_arabic || '',
+          category: c.category,
+          section: c.section,
+          subcategory: c.subcategory || undefined,
+          capacity: c.capacity,
+          studentCount: c.studentCount || c._count?.students || 0,
+          classTeacherId: c.classTeacherId || undefined,
+          classTeacherName: c.classTeacherName || c.classTeacher?.fullName || undefined,
+          classTeacherNameArabic: c.classTeacherNameArabic || c.classTeacher?.full_name_arabic || undefined,
+          programmeId: c.programmeId || '',
+          programmeName: c.programmeName || c.programme?.nameEnglish || 'Programme',
+          programmeNameArabic: c.programmeNameArabic || c.programme?.nameArabic || '',
+        }));
+        setClasses(mappedClasses);
+        safeLocalStorageSet('markazu_classes', mappedClasses);
+        localDb.classes.bulkPut(mappedClasses).catch(() => {});
+      }
+
+      if (subjRes.status === 'fulfilled' && subjRes.value && Array.isArray(subjRes.value.subjects)) {
+        const mappedSubjects = subjRes.value.subjects.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          arabicName: s.arabicName || undefined,
+          code: s.code,
+          category: s.category,
+          description: s.description || '',
+          programmeId: s.programmeId || undefined,
+          programmeName: s.programme?.nameEnglish || undefined,
+          classId: s.classId || undefined,
+          className: s.schoolClass?.name || undefined,
+          status: s.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
+          displayOrder: s.displayOrder || 1,
+        }));
+        setSubjects(mappedSubjects);
+        safeLocalStorageSet('markazu_subjects', mappedSubjects);
+        localDb.subjects.bulkPut(mappedSubjects).catch(() => {});
+      }
+
+      if (tahfizRes.status === 'fulfilled' && tahfizRes.value && tahfizRes.value.success && Array.isArray(tahfizRes.value.data)) {
+        const mappedTahfiz = tahfizRes.value.data.map((t: any) => ({
+          id: t.id,
+          date: t.date,
+          studentId: t.studentId,
+          studentName: t.student?.fullName || 'Student',
+          programmeId: t.programmeId || undefined,
+          classId: t.classId,
+          className: t.schoolClass?.name || 'Class',
+          teacherId: t.teacherId,
+          teacherName: t.teacher?.fullName || 'Teacher',
+          hifzSurah: t.hifzSurah,
+          hifzFromAyah: t.hifzFromAyah,
+          hifzToAyah: t.hifzToAyah,
+          hifzPages: t.hifzPages,
+          currentJuz: t.currentJuz,
+          sabkiSurah: t.sabkiSurah,
+          sabkiRating: t.sabkiRating,
+          manzilJuz: t.manzilJuz,
+          manzilRating: t.manzilRating,
+          teacherNotes: t.teacherNotes,
+          studentBehaviour: t.studentBehaviour,
+          completionPercentage: t.completionPercentage,
+          teacherComment: t.teacherComment || undefined,
+        }));
+        setTahfizRecords(mappedTahfiz);
+        safeLocalStorageSet('markazu_tahfiz_records', mappedTahfiz);
+        localDb.tahfizRecords.bulkPut(mappedTahfiz).catch(() => {});
+      }
+
+      if (annRes.status === 'fulfilled' && annRes.value && Array.isArray(annRes.value.announcements)) {
+        setAnnouncements(annRes.value.announcements);
+        safeLocalStorageSet('markazu_announcements', annRes.value.announcements);
+        localDb.announcements.bulkPut(annRes.value.announcements).catch(() => {});
+      }
+
+      if (ttRes.status === 'fulfilled' && ttRes.value && Array.isArray(ttRes.value.timetablePeriods)) {
+        setTimetablePeriods(ttRes.value.timetablePeriods);
+        safeLocalStorageSet('markazu_timetable', ttRes.value.timetablePeriods);
+        localDb.timetablePeriods.bulkPut(ttRes.value.timetablePeriods).catch(() => {});
+      }
+
+      if (msgRes.status === 'fulfilled' && msgRes.value && msgRes.value.success && Array.isArray(msgRes.value.data)) {
+        setDirectMessages(msgRes.value.data);
+        safeLocalStorageSet('markazu_direct_messages', msgRes.value.data);
+        localDb.directMessages.bulkPut(msgRes.value.data).catch(() => {});
+      }
+
+      if (resRes.status === 'fulfilled' && resRes.value && Array.isArray(resRes.value.grades)) {
+        setGrades(resRes.value.grades);
+        safeLocalStorageSet('markazu_grades', resRes.value.grades);
+        localDb.grades.bulkPut(resRes.value.grades).catch(() => {});
+      }
+
+      if (sessRes.status === 'fulfilled' && sessRes.value && Array.isArray(sessRes.value.sessions)) {
+        setSchoolSessions(sessRes.value.sessions);
+        localDb.sessions.bulkPut(sessRes.value.sessions).catch(() => {});
+        const active = sessRes.value.sessions.find((s: any) => s.isCurrent) || sessRes.value.sessions[0];
+        if (active) {
+          setCurrentSession({
+            id: active.id,
+            sessionName: active.sessionName,
+            activeTerm: active.activeTerm,
+            isCurrent: active.isCurrent,
+          });
+        }
+      }
+
+      if (auditRes.status === 'fulfilled' && auditRes.value && Array.isArray(auditRes.value.auditLogs)) {
+        setAuditLogs(auditRes.value.auditLogs);
+        safeLocalStorageSet('markazu_audit_logs', auditRes.value.auditLogs);
+      }
+    } catch (e) {
+      console.warn('[refreshAllData] Background auto-sync warning:', e);
     }
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // 1. Initial automated pull from database
+    refreshAllData();
+
+    // 2. Automatic sync when phone/browser reconnects to internet
+    const handleOnline = () => {
+      refreshAllData();
+    };
+
+    // 3. Automatic sync when user switches back to the app window/tab
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine) {
+        refreshAllData();
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 4. Background silent periodic auto-sync (every 45 seconds)
+    const intervalId = setInterval(() => {
+      if (navigator.onLine) {
+        refreshAllData();
+      }
+    }, 45000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(intervalId);
+    };
   }, []);
 
   useEffect(() => {
@@ -5695,6 +5657,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         activateSession,
         syncState,
         syncNow,
+        refreshAllData,
       }}
     >
       {children}
