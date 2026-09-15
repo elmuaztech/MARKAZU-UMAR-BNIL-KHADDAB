@@ -1,69 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
+import { getAuthenticatedUser } from '../../../../lib/auth';
 import { verifyPassword, validatePasswordPolicy, hashPassword } from '../../../../lib/security';
 import { sendSystemEmail } from '../../../../lib/emailService';
-import { findServerUser, updateServerUser } from '../../../../lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   try {
+    // 1. Authoritative session authentication (proves identity of the caller)
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json(
+        { error: 'Authentication required. Please log in to change your password.' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
-    const userId = body.userId;
-    const userEmail = (body.email || '').trim().toLowerCase();
     const currentPassword = body.currentPassword || '';
     const newPassword = body.newPassword || '';
 
-    if (!userId && !userEmail) {
-      return NextResponse.json({ error: 'User identifier or email required' }, { status: 400 });
+    if (!currentPassword) {
+      return NextResponse.json({ error: 'Current password is required.' }, { status: 400 });
     }
 
-    let user: any = null;
-
-    // 1. Try Prisma DB query
-    try {
-      user = await prisma.user.findFirst({
-        where: {
-          OR: [
-            userId ? { id: userId } : {},
-            userEmail ? { email: userEmail } : {},
-            userId ? { username: userId } : {},
-          ],
-          deletedAt: null,
-        },
-      });
-    } catch (dbErr) {
-      console.warn('[CHANGE_PASSWORD] Postgres query skipped, using serverDb:', dbErr);
+    if (!newPassword) {
+      return NextResponse.json({ error: 'New password is required.' }, { status: 400 });
     }
 
-    // 2. Fallback to serverDb
-    if (!user) {
-      const serverUser = findServerUser(userId || userEmail);
-      if (serverUser) {
-        user = {
-          id: serverUser.id,
-          username: serverUser.username || serverUser.id,
-          name: serverUser.name,
-          email: serverUser.email,
-          password: serverUser.password || hashPassword('@Aa123456789'),
-          role: serverUser.role,
-          isFirstLogin: serverUser.isFirstLogin,
-          mustChangePassword: serverUser.mustChangePassword,
-        };
-      }
-    }
+    // 2. Fetch authoritative user record strictly from PostgreSQL
+    const user = await prisma.user.findFirst({
+      where: {
+        id: authUser.id,
+        deletedAt: null,
+      },
+    });
 
     if (!user) {
-      return NextResponse.json({ error: 'User account not found' }, { status: 404 });
+      return NextResponse.json({ error: 'User account not found or deactivated.' }, { status: 404 });
     }
 
-    // 2. Verify current/temporary password
+    if (user.status !== 'ACTIVE') {
+      return NextResponse.json({ error: 'Account is deactivated or suspended.' }, { status: 403 });
+    }
+
+    // 3. Verify current password against stored hash
     const isCurrentValid = verifyPassword(currentPassword, user.password);
-    if (!isCurrentValid && !user.isFirstLogin && !user.mustChangePassword) {
+    if (!isCurrentValid) {
       return NextResponse.json({ error: 'Current password is incorrect.' }, { status: 401 });
     }
 
-    // 3. Validate Password Policy
+    // 4. Validate new password policy
     const policyResult = validatePasswordPolicy(newPassword);
     if (!policyResult.isValid) {
       return NextResponse.json(
@@ -74,58 +62,69 @@ export async function POST(req: NextRequest) {
 
     const newHash = hashPassword(newPassword);
 
-    // 4. Update persistent serverDb
-    updateServerUser(user.id || user.email, {
-      password: newHash,
-      isFirstLogin: false,
-      mustChangePassword: false,
-      failedLoginAttempts: 0,
-      isLocked: false,
+    // 5. Update user password in PostgreSQL
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: newHash,
+        isFirstLogin: false,
+        mustChangePassword: false,
+        failedLoginAttempts: 0,
+        isLocked: false,
+        lockoutUntil: null,
+      },
     });
 
-    // 5. Update Prisma Record if connected
-    let updatedUser: any = null;
+    // 6. Record password in PostgreSQL password history
     try {
-      updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          password: newHash,
-          isFirstLogin: false,
-          mustChangePassword: false,
-          failedLoginAttempts: 0,
-          isLocked: false,
-          lockoutUntil: null,
-        },
-      });
-
       await prisma.passwordHistory.create({
         data: {
           userId: user.id,
           passwordHash: newHash,
         },
       });
-    } catch (dbErr) {
-      console.warn('[CHANGE_PASSWORD] Postgres write warning, updated in serverDb:', dbErr);
+    } catch (historyErr) {
+      console.warn('[CHANGE_PASSWORD] Password history recording error:', historyErr);
     }
 
-    const finalUser = updatedUser || user;
+    // 7. Revoke other active sessions for this user, keeping the current session valid
+    const cookieSessionId = req.cookies.get('mssms_session_id')?.value;
+    const authHeader = req.headers.get('authorization');
+    const headerSessionId = req.headers.get('x-session-id');
+    let rawSession = cookieSessionId || headerSessionId;
+    if (!rawSession && authHeader && authHeader.startsWith('Bearer ')) {
+      rawSession = authHeader.substring(7).trim();
+    }
+    const currentCleanSessionId = rawSession ? rawSession.replace(/^jwt-token-/, '').trim() : '';
 
-    // 6. Dispatch Confirmation Email
+    try {
+      await prisma.userSession.updateMany({
+        where: {
+          userId: user.id,
+          ...(currentCleanSessionId ? { sessionId: { not: currentCleanSessionId } } : {}),
+        },
+        data: { revoked: true },
+      });
+    } catch (sessionErr) {
+      console.warn('[CHANGE_PASSWORD] Session revocation error:', sessionErr);
+    }
+
+    // 8. Dispatch confirmation email
     sendSystemEmail({
-      to: finalUser.email,
-      recipientName: finalUser.name,
+      to: updatedUser.email,
+      recipientName: updatedUser.name,
       subject: 'Security Notice: Password Updated - Markazu Umar Portal',
       template: 'PASSWORD_CHANGED_CONFIRMATION',
     }).catch(() => {});
 
     return NextResponse.json({
-      message: 'Password changed successfully. Your temporary password has been revoked forever.',
+      message: 'Password changed successfully. Other active sessions have been invalidated.',
       user: {
-        id: finalUser.id,
-        username: finalUser.username || finalUser.id,
-        name: finalUser.name,
-        email: finalUser.email,
-        role: finalUser.role,
+        id: updatedUser.id,
+        username: updatedUser.username || updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
         isFirstLogin: false,
         mustChangePassword: false,
       },

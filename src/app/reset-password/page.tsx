@@ -25,7 +25,7 @@ function ResetPasswordForm() {
     const tokenParam = searchParams.get('token') || searchParams.get('otp');
     if (tokenParam) {
       const clean = tokenParam.trim();
-      if (/^\d{4}$/.test(clean)) {
+      if (/^\d{4,8}$/.test(clean)) {
         setToken(clean);
       }
     }
@@ -67,11 +67,6 @@ function ResetPasswordForm() {
       const data = await response.json();
 
       if (response.ok) {
-        // Also sync local React state & localStorage
-        const tokenCheck = verifyResetToken(cleanToken);
-        const targetEmail = (tokenCheck.email || 'markazuumarbnkhaddabdaneji@gmail.com').toLowerCase();
-        updateUserPasswordByEmail(targetEmail, newPassword);
-
         setSuccessMsg(data.message || 'Password successfully reset! You can now log in.');
         setIsSubmitting(false);
         setTimeout(() => {
@@ -80,77 +75,11 @@ function ResetPasswordForm() {
         return;
       }
 
-      // If API returns specific token verification failure, fallback to security helper
-      const tokenCheck = verifyResetToken(cleanToken);
-      if (!tokenCheck.isValid || !tokenCheck.userId) {
-        setErrorMsg(tokenCheck.error || data.error || 'The code is invalid or has expired. Please request a new one.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const targetEmail = (tokenCheck.email || 'markazuumarbnkhaddabdaneji@gmail.com').toLowerCase();
-      const targetUser = users.find((u) => u.id === tokenCheck.userId || u.email.toLowerCase() === targetEmail);
-      if (!targetUser) {
-        setErrorMsg('We could not find an account with those details.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (isPasswordInHistory(targetUser.id, newPassword)) {
-        setErrorMsg('You cannot reuse one of your last 5 passwords. Please enter a new password.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      updateUserPasswordByEmail(targetEmail, newPassword);
-      markResetTokenUsed(cleanToken);
-
-      addAuditLog({
-        action: 'PASSWORD_RESET_COMPLETED',
-        performedBy: targetUser.name,
-        userRole: targetUser.role,
-        details: `Successfully reset password using 5-minute token`,
-        ipAddress: '197.210.227.14',
-        affectedRecord: `User/${targetUser.id}`,
-        status: 'SUCCESS',
-      });
-
-      setSuccessMsg('Your password has been successfully reset. Redirecting to login page...');
+      setErrorMsg(data.error || 'The code is invalid or has expired. Please request a new code.');
       setIsSubmitting(false);
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
     } catch {
-      // Direct Fallback Execution
-      const tokenCheck = verifyResetToken(cleanToken);
-      if (!tokenCheck.isValid || !tokenCheck.userId) {
-        setErrorMsg(tokenCheck.error || 'Invalid or expired 5-minute reset token.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      const targetEmail = (tokenCheck.email || 'markazuumarbnkhaddabdaneji@gmail.com').toLowerCase();
-      const targetUser = users.find((u) => u.id === tokenCheck.userId || u.email.toLowerCase() === targetEmail);
-      if (!targetUser) {
-        setErrorMsg('User account record not found.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (isPasswordInHistory(targetUser.id, newPassword)) {
-        setErrorMsg('You cannot reuse one of your last 5 passwords. Please enter a new password.');
-        setIsSubmitting(false);
-        return;
-      }
-
-      updateUserPasswordByEmail(targetEmail, newPassword);
-      markResetTokenUsed(cleanToken);
-
-      setSuccessMsg('Your password has been successfully reset! Redirecting to login page...');
+      setErrorMsg('Network error. Unable to reach the server. Please try again.');
       setIsSubmitting(false);
-      setTimeout(() => {
-        router.push('/login');
-      }, 2000);
     }
   };
 
@@ -223,10 +152,10 @@ function ResetPasswordForm() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 required
-                maxLength={4}
+                maxLength={8}
                 value={token}
                 onChange={(e) => setToken(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="Enter 4-digit OTP code"
+                placeholder="Enter verification code"
                 className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-base tracking-widest font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>

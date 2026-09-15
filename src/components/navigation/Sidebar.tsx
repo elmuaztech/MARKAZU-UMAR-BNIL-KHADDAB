@@ -16,7 +16,7 @@ import {
   School,
   BookMarked,
   CalendarCheck,
-  Award,
+  Award,   
   Bell,
   BarChart3,
   Settings,
@@ -551,8 +551,11 @@ export function Sidebar({
               </Link>
 
               <button
-                onClick={() => {
+                onClick={async () => {
                   setProfileMenuOpen(false);
+                  try {
+                    await fetch('/api/auth/logout', { method: 'POST' });
+                  } catch (e) {}
                   if (typeof window !== 'undefined') {
                     localStorage.removeItem('markazu_current_user');
                     localStorage.removeItem('markazu_session_token');

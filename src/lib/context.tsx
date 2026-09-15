@@ -383,10 +383,9 @@ export function getAuthHeaders(): Record<string, string> {
         userRole = u.role || '';
       } catch (e) {}
     }
-    const sessionVal = token || userId;
-    if (sessionVal) {
-      headers['Authorization'] = `Bearer ${sessionVal}`;
-      headers['x-session-id'] = sessionVal;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+      headers['x-session-id'] = token;
     }
     if (userId) headers['x-user-id'] = userId;
     if (userRole) headers['x-user-role'] = userRole;

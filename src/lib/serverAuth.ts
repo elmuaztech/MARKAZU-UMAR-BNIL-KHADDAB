@@ -68,33 +68,7 @@ export async function getServerSessionUser(): Promise<ServerAuthenticatedUser | 
       };
     }
 
-    // 2. Direct active user lookup fallback by ID/email/username
-    const dbUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ id: cleanSessionId }, { username: cleanSessionId }, { email: cleanSessionId }],
-        status: 'ACTIVE',
-        deletedAt: null,
-      },
-    });
-
-    if (dbUser) {
-      return {
-        id: dbUser.id,
-        name: dbUser.name,
-        email: dbUser.email,
-        username: dbUser.username || null,
-        role: dbUser.role,
-        avatar: dbUser.avatar || null,
-        assignedProgrammeId: dbUser.assignedProgrammeId,
-        assignedProgrammeName: dbUser.assignedProgrammeName,
-        status: dbUser.status,
-        isFirstLogin: dbUser.isFirstLogin,
-        mustChangePassword: dbUser.mustChangePassword,
-        isLocked: dbUser.isLocked,
-        failedLoginAttempts: dbUser.failedLoginAttempts,
-      };
-    }
-
+    // If no active, unrevoked database session was found, deny authentication.
     return null;
   } catch (error) {
     console.error('[SERVER_AUTH_ERROR] Failed to resolve server session:', error);

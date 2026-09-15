@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 // Enterprise Security, Password Policy, Hashing, Session Management & Account Lockout Engine
 // Markazu Umar School Management System
@@ -101,10 +102,6 @@ export function verifyPassword(password: string, storedHash: string): boolean {
   try {
     const cleanPass = password.trim();
     const cleanHash = storedHash.trim();
-    // Direct match fallback in case stored as plain text
-    if (cleanPass === cleanHash) {
-      return true;
-    }
     return bcrypt.compareSync(cleanPass, cleanHash);
   } catch (err) {
     return false;
@@ -208,10 +205,10 @@ export function getLockoutExpiryTime(): string {
   return new Date(Date.now() + LOCKOUT_DURATION_MS).toISOString();
 }
 
-// 5. Reset Token Generator & Validator (5-Minute Expiry)
+// 5. Reset Token Generator & Validator (10-Minute Expiry)
 export function generatePasswordResetToken(email: string, userId: string): string {
-  // Generate clean 4-digit OTP (e.g., "4819")
-  const otp = Math.floor(1000 + Math.random() * 9000).toString();
+  // Generate cryptographically secure 6-digit OTP (e.g., "582194")
+  const otp = crypto.randomInt(100000, 1000000).toString();
   const expiresAt = Date.now() + 10 * 60 * 1000; // 10 Minutes Limit
 
   RESET_TOKENS.push({
@@ -227,30 +224,21 @@ export function generatePasswordResetToken(email: string, userId: string): strin
 
 export function verifyResetToken(token: string): { isValid: boolean; email?: string; userId?: string; error?: string } {
   const cleanToken = (token || '').trim();
-  const record = RESET_TOKENS.find((r) => r.token === cleanToken || r.token.endsWith(cleanToken));
+  const record = RESET_TOKENS.find((r) => r.token === cleanToken);
 
   if (record) {
     if (record.used) {
-      return { isValid: false, error: 'Password reset 4-digit OTP has already been used' };
+      return { isValid: false, error: 'Password reset code has already been used' };
     }
 
     if (Date.now() > record.expiresAt) {
-      return { isValid: false, error: 'Password reset 4-digit OTP has expired (10-minute limit)' };
+      return { isValid: false, error: 'Password reset code has expired (10-minute limit)' };
     }
 
     return { isValid: true, email: record.email, userId: record.userId };
   }
 
-  // Fallback for valid 4-digit OTP testing
-  if (cleanToken.length === 4 && /^\d{4}$/.test(cleanToken)) {
-    const activeRecord = RESET_TOKENS.find((r) => !r.used && Date.now() <= r.expiresAt);
-    if (activeRecord) {
-      return { isValid: true, email: activeRecord.email, userId: activeRecord.userId };
-    }
-    return { isValid: true, email: 'markazuumarbnkhaddabdaneji@gmail.com', userId: 'usr-superadmin-1' };
-  }
-
-  return { isValid: false, error: 'Invalid or expired 4-digit reset OTP' };
+  return { isValid: false, error: 'Invalid or expired reset code' };
 }
 
 export function markResetTokenUsed(token: string) {

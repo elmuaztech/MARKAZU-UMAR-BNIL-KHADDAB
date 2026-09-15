@@ -166,8 +166,8 @@ export async function POST(req: NextRequest) {
   try {
     const authUser = await getAuthenticatedUser(req);
     const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN']);
-    if (!authCheck.authorized) {
-      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+    if (!authUser || !authCheck.authorized) {
+      return NextResponse.json({ error: authCheck.reason || 'Authentication required' }, { status: authCheck.status || 401 });
     }
 
     const body = await req.json();
@@ -181,6 +181,14 @@ export async function POST(req: NextRequest) {
 
     if (!name || !email) {
       return NextResponse.json({ error: 'Full Name and Email address are required.' }, { status: 400 });
+    }
+
+    // Role escalation protection: Only SUPER_ADMIN can create SUPER_ADMIN accounts
+    if (role === 'SUPER_ADMIN' && authUser.role !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { error: 'Security Violation: Only Super Administrators can create Super Administrator accounts.' },
+        { status: 403 }
+      );
     }
 
     // Deactivated vs Active Duplicate Email Detection strictly from PostgreSQL

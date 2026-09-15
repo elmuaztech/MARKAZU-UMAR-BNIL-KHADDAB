@@ -64,6 +64,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Access Denied: You do not have permission to modify other user accounts.' }, { status: 403 });
     }
 
+    // Role escalation & privilege protection: Only SUPER_ADMIN can manage or assign SUPER_ADMIN
+    if (dbUser.role === 'SUPER_ADMIN' && authUser.role !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { error: 'Security Violation: Only Super Administrators can modify Super Administrator accounts.' },
+        { status: 403 }
+      );
+    }
+
+    if (body.role === 'SUPER_ADMIN' && authUser.role !== 'SUPER_ADMIN') {
+      return NextResponse.json(
+        { error: 'Security Violation: Only Super Administrators can promote users to Super Administrator.' },
+        { status: 403 }
+      );
+    }
+
     // Normal users cannot elevate their own role, status, or assigned programme
     if (!isAdmin) {
       if (body.role !== undefined && body.role !== dbUser.role) {

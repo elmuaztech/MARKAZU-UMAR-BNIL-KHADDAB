@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import prisma from '../../../../lib/prisma';
-import { validatePasswordPolicy, hashPassword, verifyPassword } from '../../../../lib/security';
+import { validatePasswordPolicy, hashPassword } from '../../../../lib/security';
 import { sendSystemEmail } from '../../../../lib/emailService';
-import { findServerOtpToken, markServerOtpTokenUsed, findServerUser, updateServerUser } from '../../../../lib/serverDb';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,21 +13,24 @@ export async function POST(req: NextRequest) {
     const newPassword = body.newPassword || '';
 
     if (!otp) {
-      return NextResponse.json({ error: 'Please enter the 4-digit OTP code sent to your email.' }, { status: 400 });
+      return NextResponse.json({ error: 'Please enter the verification code sent to your email.' }, { status: 400 });
     }
 
     if (!newPassword) {
       return NextResponse.json({ error: 'Please enter a new password.' }, { status: 400 });
     }
 
-    let tokenRecord: any = null;
-    let targetUser: any = null;
+    // 1. Authoritative token verification strictly from PostgreSQL
+    const tokenHash = crypto.createHash('sha256').update(otp).digest('hex');
 
-    // 1. Try Prisma DB first
+    let tokenRecord: any = null;
     try {
       tokenRecord = await prisma.passwordResetToken.findFirst({
         where: {
-          tokenHash: otp,
+          OR: [
+            { tokenHash },
+            { tokenHash: otp },
+          ],
           used: false,
           expiresAt: {
             gt: new Date(),
@@ -37,28 +40,15 @@ export async function POST(req: NextRequest) {
           user: true,
         },
       });
-
-      if (tokenRecord?.user) {
-        targetUser = tokenRecord.user;
-      }
     } catch (dbErr) {
-      console.warn('[RESET_PASSWORD] Postgres query skipped, using serverDb:', dbErr);
+      console.error('[RESET_PASSWORD_DB_ERROR]', dbErr);
+      return NextResponse.json({ error: 'Database service error. Please try again.' }, { status: 500 });
     }
 
-    // 2. Fallback to serverDb OTP verification
-    if (!targetUser) {
-      const serverToken = findServerOtpToken(otp);
-      if (serverToken) {
-        const sUser = findServerUser(serverToken.email) || findServerUser(serverToken.userId);
-        if (sUser) {
-          targetUser = sUser;
-          markServerOtpTokenUsed(otp);
-        }
-      }
-    }
+    const targetUser = tokenRecord?.user;
 
-    if (!targetUser) {
-      return NextResponse.json({ error: 'Invalid or expired 4-digit OTP code. Please request a new OTP.' }, { status: 400 });
+    if (!tokenRecord || !targetUser || targetUser.deletedAt || targetUser.status !== 'ACTIVE') {
+      return NextResponse.json({ error: 'Invalid or expired verification code. Please request a new code.' }, { status: 400 });
     }
 
     // 2. Validate Password Policy
@@ -72,19 +62,9 @@ export async function POST(req: NextRequest) {
 
     const newHash = hashPassword(newPassword);
 
-    // 3. Update persistent serverDb
-    updateServerUser(targetUser.id || targetUser.email, {
-      password: newHash,
-      isFirstLogin: false,
-      mustChangePassword: false,
-      failedLoginAttempts: 0,
-      isLocked: false,
-    });
-
-    // 4. Update Database User Password Hash in Prisma if connected
-    let updatedUser: any = null;
+    // 3. Atomically update user, mark token as used, record history, and revoke sessions
     try {
-      updatedUser = await prisma.user.update({
+      await prisma.user.update({
         where: { id: targetUser.id },
         data: {
           password: newHash,
@@ -96,41 +76,48 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      if (tokenRecord) {
-        await prisma.passwordResetToken.update({
-          where: { id: tokenRecord.id },
-          data: { used: true },
+      await prisma.passwordResetToken.update({
+        where: { id: tokenRecord.id },
+        data: { used: true },
+      });
+
+      try {
+        await prisma.passwordHistory.create({
+          data: {
+            userId: targetUser.id,
+            passwordHash: newHash,
+          },
         });
+      } catch (histErr) {
+        console.warn('[RESET_PASSWORD] Password history recording warning:', histErr);
       }
 
-      await prisma.passwordHistory.create({
-        data: {
-          userId: targetUser.id,
-          passwordHash: newHash,
-        },
+      // Invalidate all existing sessions for this user across all devices
+      await prisma.userSession.updateMany({
+        where: { userId: targetUser.id },
+        data: { revoked: true },
       });
-    } catch (dbErr) {
-      console.warn('[RESET_PASSWORD] Postgres write warning, updated in serverDb:', dbErr);
+    } catch (updateErr) {
+      console.error('[RESET_PASSWORD_UPDATE_ERROR]', updateErr);
+      return NextResponse.json({ error: 'Failed to update account credentials.' }, { status: 500 });
     }
 
-    const finalUser = updatedUser || targetUser;
-
-    // 5. Send Password Changed Confirmation Email
+    // 4. Send Password Changed Confirmation Email
     sendSystemEmail({
-      to: finalUser.email,
-      recipientName: finalUser.name,
+      to: targetUser.email,
+      recipientName: targetUser.name,
       subject: 'Password Reset Successfully - Markazu Umar Portal',
       template: 'PASSWORD_CHANGED_CONFIRMATION',
     }).catch(() => {});
 
     return NextResponse.json({
-      message: 'Your password has been successfully reset in the database. You can now log in with your new password.',
+      message: 'Your password has been successfully reset. All previous sessions have been logged out. You can now log in with your new password.',
       user: {
-        id: finalUser.id,
-        username: finalUser.username || finalUser.id,
-        name: finalUser.name,
-        email: finalUser.email,
-        role: finalUser.role,
+        id: targetUser.id,
+        username: targetUser.username || targetUser.id,
+        name: targetUser.name,
+        email: targetUser.email,
+        role: targetUser.role,
       },
     });
   } catch (error: any) {

@@ -129,43 +129,7 @@ async function resolveHeadmasterProgramme(user: any): Promise<{ id: string; name
         };
       }
 
-      // 2. Direct active user lookup by ID, username, or email
-      const dbUser = await prisma.user.findFirst({
-        where: {
-          OR: [{ id: cleanSessionId }, { username: cleanSessionId }, { email: cleanSessionId }],
-          status: 'ACTIVE',
-          deletedAt: null,
-        },
-      });
-
-      if (dbUser) {
-        let assignedProgrammeId = dbUser.assignedProgrammeId;
-        let assignedProgrammeName = dbUser.assignedProgrammeName;
-        if (dbUser.role === 'HEADMASTER' && !assignedProgrammeId) {
-          const resolved = await resolveHeadmasterProgramme(dbUser);
-          if (resolved) {
-            assignedProgrammeId = resolved.id;
-            assignedProgrammeName = resolved.name;
-          }
-        }
-
-        return {
-          id: dbUser.id,
-          name: dbUser.name,
-          email: dbUser.email,
-          username: dbUser.username || null,
-          role: dbUser.role,
-          avatar: dbUser.avatar || null,
-          assignedProgrammeId,
-          assignedProgrammeName,
-          status: dbUser.status,
-          isFirstLogin: dbUser.isFirstLogin,
-          mustChangePassword: dbUser.mustChangePassword,
-          isLocked: dbUser.isLocked,
-          failedLoginAttempts: dbUser.failedLoginAttempts,
-        };
-      }
-
+      // If no active, unrevoked database session was found, deny authentication.
       return null;
     } catch (dbErr) {
       console.error('[AUTH_DB_ERROR] Session query error:', dbErr);
