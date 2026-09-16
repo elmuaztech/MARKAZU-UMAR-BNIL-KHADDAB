@@ -102,23 +102,23 @@ export function PublicNavbar() {
           </nav>
 
           {/* Action Controls */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             <ThemeToggle variant="dropdown" />
 
             <button
               onClick={() => setAdmissionModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all scale-105"
+              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20 transition-all scale-105 whitespace-nowrap shrink-0"
             >
-              <FileText className="w-3.5 h-3.5" />
-              <span>Enroll Your Child</span>
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="whitespace-nowrap">Enroll Your Child</span>
             </button>
 
             <Link
               href="/login"
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-900/30 transition-all"
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-900/30 transition-all whitespace-nowrap shrink-0"
             >
-              <span>Portal Login</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span className="whitespace-nowrap">Portal Login</span>
+              <ArrowRight className="w-3.5 h-3.5 shrink-0" />
             </Link>
           </div>
 
@@ -168,19 +168,19 @@ export function PublicNavbar() {
                   setMobileMenuOpen(false);
                   setAdmissionModalOpen(true);
                 }}
-                className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md"
+                className="w-full py-2.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-md whitespace-nowrap"
               >
-                <FileText className="w-4 h-4" />
-                <span>Enroll Your Child</span>
+                <FileText className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">Enroll Your Child</span>
               </button>
 
               <Link
                 href="/login"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md"
+                className="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md whitespace-nowrap"
               >
-                <span>Enter Portal Login</span>
-                <ArrowRight className="w-4 h-4" />
+                <span className="whitespace-nowrap">Enter Portal Login</span>
+                <ArrowRight className="w-4 h-4 shrink-0" />
               </Link>
             </div>
           </div>

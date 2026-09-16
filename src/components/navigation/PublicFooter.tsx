@@ -137,10 +137,10 @@ export function PublicFooter() {
               </p>
               <button
                 onClick={() => setAdmissionModalOpen(true)}
-                className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all"
+                className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-1.5 shadow-md transition-all whitespace-nowrap"
               >
-                <FileText className="w-4 h-4" />
-                <span>Enroll Your Child</span>
+                <FileText className="w-4 h-4 shrink-0" />
+                <span className="whitespace-nowrap">Enroll Your Child</span>
               </button>
             </div>
           </div>

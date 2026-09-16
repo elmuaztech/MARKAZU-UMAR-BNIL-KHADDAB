@@ -154,17 +154,17 @@ export default function HomePage() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">
               <button
                 onClick={() => setAdmissionModalOpen(true)}
-                className="px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/30 transition-all hover:scale-105 text-center"
+                className="px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/30 transition-all hover:scale-105 text-center whitespace-nowrap shrink-0"
               >
                 <FileText className="w-4 h-4 shrink-0" />
-                <span>Enroll Your Child</span>
+                <span className="whitespace-nowrap">Enroll Your Child</span>
               </button>
 
               <Link
                 href="/login"
-                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/40 transition-all hover:scale-105 border border-emerald-400/30 text-center"
+                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/40 transition-all hover:scale-105 border border-emerald-400/30 text-center whitespace-nowrap shrink-0"
               >
-                <span>Portal Login</span>
+                <span className="whitespace-nowrap">Portal Login</span>
                 <ArrowRight className="w-4 h-4 shrink-0" />
               </Link>
             </div>
@@ -871,10 +871,10 @@ export default function HomePage() {
 
           <button
             onClick={() => setAdmissionModalOpen(true)}
-            className="px-8 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs md:text-sm flex items-center gap-2 shadow-2xl transition-all scale-105 shrink-0"
+            className="px-8 py-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs md:text-sm flex items-center gap-2 shadow-2xl transition-all scale-105 shrink-0 whitespace-nowrap"
           >
-            <FileText className="w-5 h-5" />
-            <span>Enroll Your Child</span>
+            <FileText className="w-5 h-5 shrink-0" />
+            <span className="whitespace-nowrap">Enroll Your Child</span>
           </button>
         </section>
       </main>
