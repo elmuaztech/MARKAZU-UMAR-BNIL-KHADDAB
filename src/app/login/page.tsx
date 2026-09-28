@@ -14,7 +14,6 @@ export default function LoginPage() {
   const router = useRouter();
   const { users, setCurrentUser, updateUserPasswordByEmail, addAuditLog, schoolLogo, notify } = useApp();
 
-  const [activeTab, setActiveTab] = useState<UserRole>('SUPER_ADMIN');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -75,7 +74,7 @@ export default function LoginPage() {
         return;
       }
 
-      setResetSuccessMsg(data.message || `4-Digit OTP code successfully sent to ${data.email || cleanInput}.`);
+      setResetSuccessMsg(data.message || `Verification code successfully sent to ${data.email || cleanInput}.`);
       setOtpInput('');
       setResetStep(2);
     } catch (err: any) {
@@ -89,8 +88,8 @@ export default function LoginPage() {
     setResetErrorMsg('');
 
     const cleanOtp = otpInput.trim();
-    if (cleanOtp.length !== 4) {
-      setResetErrorMsg('Please enter a valid 4-digit numeric OTP code.');
+    if (cleanOtp.length < 4) {
+      setResetErrorMsg('Please enter a valid numeric verification code.');
       return;
     }
 
@@ -115,7 +114,7 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok || data.error) {
-        setResetErrorMsg(data.error || 'Password reset failed. Please check your OTP code.');
+        setResetErrorMsg(data.error || 'Password reset failed. Please check your verification code.');
         return;
       }
 
@@ -149,8 +148,6 @@ export default function LoginPage() {
 
         if (fullUser.role === 'HEADMASTER') {
           router.push('/headmaster');
-        } else if (fullUser.role === 'SUPER_ADMIN' || fullUser.role === 'ADMIN') {
-          router.push('/dashboard');
         } else {
           router.push('/dashboard');
         }
@@ -161,51 +158,6 @@ export default function LoginPage() {
     } catch (err: any) {
       setResetErrorMsg(err.message || 'Password reset failed.');
     }
-  };
-
-  const getPortalPlaceholder = (role: UserRole) => {
-    switch (role) {
-      case 'SUPER_ADMIN':
-        return 'e.g. email address or username (superadmin)';
-      case 'ADMIN':
-        return 'e.g. email address or username (admin)';
-      case 'HEADMASTER':
-        return 'e.g. email address or username (headmaster)';
-      case 'TEACHER':
-        return 'e.g. email address or username (teacher)';
-      case 'STUDENT':
-        return 'e.g. email address or username (student)';
-      case 'PARENT':
-        return 'e.g. email address or username (parent)';
-      default:
-        return 'e.g. email address or username';
-    }
-  };
-
-  const getPortalHint = (role: UserRole) => {
-    switch (role) {
-      case 'SUPER_ADMIN':
-        return 'Super Admin credentials (e.g. username superadmin or root email)';
-      case 'ADMIN':
-        return 'School Admin credentials (e.g. username admin or administrator email)';
-      case 'HEADMASTER':
-        return 'Headmaster Staff ID (e.g. MUBK-HM-0001) or registered email';
-      case 'TEACHER':
-        return 'Teacher Staff ID (e.g. TCH-101 / MUBK-TEA-0001) or teacher email';
-      case 'STUDENT':
-        return 'Student Admission No (e.g. MUBK/2026/001) or student email';
-      case 'PARENT':
-        return 'Parent Phone / ID (e.g. MUBK-PAR-0001) or registered email';
-      default:
-        return 'Enter registered email or username';
-    }
-  };
-
-  const handleTabChange = (role: UserRole) => {
-    setActiveTab(role);
-    setErrorMsg('');
-    setEmail('');
-    setPassword('');
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -221,7 +173,6 @@ export default function LoginPage() {
           username: email.trim(),
           email: email.trim(),
           password,
-          portalRole: activeTab,
         }),
       });
 
@@ -241,7 +192,7 @@ export default function LoginPage() {
         addAuditLog({
           action: 'FAILED_LOGIN_ATTEMPT',
           performedBy: email,
-          userRole: activeTab,
+          userRole: 'GUEST',
           details: `Login failed: ${data.error || 'Invalid credentials'}`,
           ipAddress: '197.210.227.14',
           status: 'FAILURE',
@@ -250,12 +201,6 @@ export default function LoginPage() {
       }
 
       const authUser = data.user;
-
-      // Seamless portal login: sync activeTab to user's registered role
-      const userRole = (authUser.role || '').toUpperCase() as UserRole;
-      if (activeTab !== userRole) {
-        setActiveTab(userRole);
-      }
 
       const fullUserRecord: User = {
         id: authUser.id,
@@ -298,19 +243,17 @@ export default function LoginPage() {
         action: 'AUTHENTICATION_SUCCESS',
         performedBy: fullUserRecord.name,
         userRole: fullUserRecord.role,
-        details: `Successfully authenticated via ${fullUserRecord.role} portal`,
+        details: `Successfully authenticated via centralized login as ${fullUserRecord.role}`,
         ipAddress: '197.210.227.14',
         affectedRecord: `User/${fullUserRecord.id}`,
         status: 'SUCCESS',
       });
 
-      // Handle Guaranteed Role-Based Routing
+      // Handle Authoritative Server-Determined Role-Based Routing
       const targetUrl =
         fullUserRecord.isFirstLogin || fullUserRecord.mustChangePassword
           ? '/change-password'
-          : fullUserRecord.role === 'HEADMASTER'
-          ? '/headmaster'
-          : '/dashboard';
+          : data.redirectUrl || (fullUserRecord.role === 'HEADMASTER' ? '/headmaster' : '/dashboard');
 
       window.location.href = targetUrl;
     } catch (err: any) {
@@ -327,13 +270,12 @@ export default function LoginPage() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200">
       <PublicNavbar />
 
-      <main className="flex-1 flex items-center justify-center p-3 sm:p-6 py-6 sm:py-12 md:py-16">
-        <div className="w-full max-w-md glass-panel border border-emerald-500/30 rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-5 sm:space-y-6 shadow-2xl relative overflow-hidden">
+      <main className="flex-1 flex items-center justify-center p-3 sm:p-6 py-8 sm:py-12 md:py-16">
+        <div className="w-full max-w-md glass-panel border border-emerald-500/30 rounded-2xl sm:rounded-3xl p-5 sm:p-8 space-y-5 sm:space-y-6 shadow-2xl relative overflow-hidden">
 
           {/* Brand Header */}
           <div className="text-center space-y-2">
@@ -347,110 +289,11 @@ export default function LoginPage() {
               </div>
             )}
             <h1 className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-white uppercase leading-snug">
-              MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI
+              MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES
             </h1>
-            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
-              Enterprise Identity & Access Management
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider">
+              Centralized Portal Login
             </p>
-          </div>
-
-          {/* Role Navigation Tabs */}
-          <div className="bg-slate-100 dark:bg-[#021810] p-1.5 rounded-2xl border border-slate-200 dark:border-emerald-500/20 shadow-inner">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
-              <button
-                type="button"
-                onClick={() => handleTabChange('SUPER_ADMIN')}
-                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'SUPER_ADMIN'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
-                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
-                }`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Super Admin</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTabChange('ADMIN')}
-                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'ADMIN'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
-                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
-                }`}
-              >
-                <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Admin</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTabChange('HEADMASTER')}
-                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'HEADMASTER'
-                    ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-900/30 font-black'
-                    : 'text-slate-600 dark:text-gray-300 hover:text-amber-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
-                }`}
-              >
-                <Crown className="w-3.5 h-3.5 shrink-0 text-amber-500" />
-                <span className="truncate">Headmaster</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTabChange('TEACHER')}
-                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'TEACHER'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
-                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
-                }`}
-              >
-                <UserCheck className="w-3.5 h-3.5 shrink-0 text-sky-400" />
-                <span className="truncate">Teacher</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTabChange('STUDENT')}
-                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'STUDENT'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
-                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
-                }`}
-              >
-                <GraduationCap className="w-3.5 h-3.5 shrink-0 text-purple-400" />
-                <span className="truncate">Student</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleTabChange('PARENT')}
-                className={`py-2.5 px-2 rounded-xl text-center font-bold text-[11px] sm:text-xs transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === 'PARENT'
-                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30 font-black'
-                    : 'text-slate-600 dark:text-gray-300 hover:text-emerald-500 hover:bg-white/80 dark:hover:bg-emerald-950/60'
-                }`}
-              >
-                <HeartHandshake className="w-3.5 h-3.5 shrink-0 text-amber-400" />
-                <span className="truncate">Parent</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Role Header Info */}
-          <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs text-emerald-800 dark:text-emerald-300">
-            <div className="flex items-center gap-2 font-semibold">
-              {activeTab === 'SUPER_ADMIN' && <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
-              {activeTab === 'ADMIN' && <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />}
-              {activeTab === 'HEADMASTER' && <Crown className="w-4 h-4 text-amber-500" />}
-              {activeTab === 'TEACHER' && <UserCheck className="w-4 h-4 text-sky-500" />}
-              {activeTab === 'STUDENT' && <GraduationCap className="w-4 h-4 text-purple-400" />}
-              {activeTab === 'PARENT' && <HeartHandshake className="w-4 h-4 text-amber-400" />}
-              <span>{activeTab.replace('_', ' ')} Portal Access</span>
-            </div>
-            <span className="text-[10px] bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-md uppercase">
-              Secure Login
-            </span>
           </div>
 
           {errorMsg && (
@@ -460,10 +303,10 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* Login Form */}
+          {/* Centralized Login Form: Email, Password, Sign In, Forgot Password */}
           <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
-            <div className="space-y-1">
-              <label className="block text-slate-700 dark:text-gray-300 font-bold">Portal Username / Email Address</label>
+            <div className="space-y-1.5">
+              <label className="block text-slate-700 dark:text-gray-300 font-bold">Email Address or Username</label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400" />
                 <input
@@ -471,22 +314,19 @@ export default function LoginPage() {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={getPortalPlaceholder(activeTab)}
+                  placeholder="Enter your registered email or username"
                   className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 placeholder:text-slate-400 dark:placeholder:text-emerald-300/40"
                 />
               </div>
-              <p className="text-[10px] text-slate-500 dark:text-emerald-300/70 font-medium">
-                💡 {getPortalHint(activeTab)}
-              </p>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex justify-between items-center">
                 <label className="block text-slate-700 dark:text-gray-300 font-bold">Password</label>
                 <button
                   type="button"
                   onClick={() => setShowForgotModal(true)}
-                  className="text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
+                  className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
                 >
                   Forgot Password?
                 </button>
@@ -498,7 +338,7 @@ export default function LoginPage() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your account password"
+                  placeholder="Enter your password"
                   className="w-full pl-9 pr-12 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
                 <button
@@ -516,7 +356,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-bold flex items-center justify-center gap-2 shadow-md transition-all text-xs"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-500 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/20 transition-all text-xs"
             >
               {isSubmitting ? (
                 <>
@@ -525,7 +365,7 @@ export default function LoginPage() {
                 </>
               ) : (
                 <>
-                  <span>Sign In to {activeTab.replace('_', ' ')} Portal</span>
+                  <span>Sign In</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

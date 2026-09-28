@@ -98,7 +98,7 @@ export function AdminDashboard() {
     unlockAccount,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'security' | 'tahfiz' | 'analytics' | 'system'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'security' | 'analytics' | 'system'>('overview');
   const [userDirectorySubTab, setUserDirectorySubTab] = useState<'teachers' | 'parents' | 'students'>('teachers');
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [auditSearchQuery, setAuditSearchQuery] = useState('');
@@ -219,6 +219,14 @@ export function AdminDashboard() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            <Link
+              href="/dashboard/finance"
+              className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
+            >
+              <CreditCardIcon className="w-4 h-4" />
+              <span>Finance & Fee Schedules</span>
+            </Link>
+
             <button
               onClick={() => setIsAssignWizardOpen(true)}
               className="px-4 py-2.5 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold text-xs flex items-center gap-1.5 border border-white/20 transition-all hover:scale-105"
@@ -1074,7 +1082,7 @@ export function AdminDashboard() {
                         <th className="py-3 px-4">Student Name</th>
                         <th className="py-3 px-4">Class</th>
                         <th className="py-3 px-4">Parent / Guardian</th>
-                        <th className="py-3 px-4">Hifz Progress</th>
+                        <th className="py-3 px-4">Status</th>
                         <th className="py-3 px-4 text-right">Action</th>
                       </tr>
                     </thead>
@@ -1101,8 +1109,8 @@ export function AdminDashboard() {
                               {student.guardianName}
                             </td>
                             <td className="py-3 px-4">
-                              <span className="bg-purple-500/10 text-purple-600 dark:text-purple-300 font-bold px-2 py-0.5 rounded text-[11px]">
-                                {student.hifzProgress.juzCompleted} / 30 Juz
+                              <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-bold px-2 py-0.5 rounded text-[11px]">
+                                {student.status === 'ACTIVE' ? 'Active' : student.status || 'Enrolled'}
                               </span>
                             </td>
                             <td className="py-3 px-4 text-right">
@@ -1182,9 +1190,9 @@ export function AdminDashboard() {
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-400 dark:text-emerald-300/60 block text-[10px]">Hifz Progress</span>
-                            <span className="bg-purple-500/10 text-purple-600 dark:text-purple-300 font-bold px-1.5 py-0.5 rounded text-[10px] inline-block">
-                              {student.hifzProgress.juzCompleted} / 30 Juz
+                            <span className="text-slate-400 dark:text-emerald-300/60 block text-[10px]">Status</span>
+                            <span className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-bold px-1.5 py-0.5 rounded text-[10px] inline-block">
+                              {student.status === 'ACTIVE' ? 'Active' : student.status || 'Enrolled'}
                             </span>
                           </div>
                           <div className="col-span-2">
@@ -1344,95 +1352,6 @@ export function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {activeTab === 'tahfiz' && (
-          <motion.div
-            key="tab-tahfiz"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-6"
-          >
-            {/* Qur'an Memorization Command Widget */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-6">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-emerald-500/20">
-                <div>
-                  <h3 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-emerald-500" /> Qur'an Memorization & Tahfiz Command Center
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-emerald-300/70 mt-0.5">
-                    Monitoring daily Hifz, Sabki, and Manzil progression for 120+ active Tahfiz students in Kano.
-                  </p>
-                </div>
-                <Link
-                  href="/dashboard/tahfiz"
-                  className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md flex items-center gap-1.5"
-                >
-                  <BookOpen className="w-4 h-4" /> Full Tahfiz Portal
-                </Link>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-1">
-                  <span className="text-xs font-bold uppercase">Average Hifz Rating</span>
-                  <p className="text-2xl font-black">4.8 / 5.0 ★</p>
-                  <p className="text-[11px] text-amber-800/80 dark:text-amber-300/80">Excellent Tajweed & Makhraj</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 space-y-1">
-                  <span className="text-xs font-bold uppercase">Completed Huffaz</span>
-                  <p className="text-2xl font-black">14 Graduated</p>
-                  <p className="text-[11px] text-emerald-800/80 dark:text-emerald-300/80">Full 30 Juz memorized with Ijazah</p>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/30 text-sky-900 dark:text-sky-200 space-y-1">
-                  <span className="text-xs font-bold uppercase">Daily Sabki Submissions</span>
-                  <p className="text-2xl font-black">48 Logged Today</p>
-                  <p className="text-[11px] text-sky-800/80 dark:text-sky-300/80">Verified by Ustaz Abubakar Sadiq</p>
-                </div>
-              </div>
-
-              {/* Recent Hifz Entries List */}
-              <div className="space-y-3 pt-2">
-                <h4 className="text-xs font-bold uppercase text-slate-700 dark:text-emerald-300 tracking-wider">
-                  Latest Daily Memorization Submissions
-                </h4>
-
-                <div className="space-y-3">
-                  {tahfizRecords.slice(0, 4).map((record) => (
-                    <div
-                      key={record.id}
-                      className="p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex items-center justify-between gap-4 text-xs"
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-slate-900 dark:text-white">{record.studentName}</span>
-                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                            Halqa 1
-                          </span>
-                        </div>
-                        <p className="text-amber-600 dark:text-amber-400 font-bold">
-                          Hifz: {record.hifzSurah} (Ayah {record.hifzFromAyah}-{record.hifzToAyah}) • Pages: {record.hifzPages}
-                        </p>
-                        <p className="text-slate-500 dark:text-emerald-300/70 text-[11px]">
-                          Sabki: {record.sabkiSurah} • Manzil: Juz {record.manzilJuz} • Notes: "{record.teacherNotes}"
-                        </p>
-                      </div>
-
-                      <div className="text-right flex-shrink-0">
-                        <span className="text-xs font-black text-amber-600 dark:text-amber-300 bg-amber-500/20 px-2.5 py-1 rounded-lg border border-amber-500/30">
-                          ★ {record.sabkiRating}/5
-                        </span>
-                        <p className="text-[10px] text-slate-400 dark:text-emerald-400/70 mt-1">{record.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </motion.div>
@@ -1609,7 +1528,7 @@ export function AdminDashboard() {
           <button
             onClick={() => {
               setViewingReport('ACADEMIC');
-              setActiveTab('tahfiz');
+              setActiveTab('analytics');
             }}
             className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 hover:border-teal-500 transition-all flex flex-col items-center gap-2 font-poppins font-bold text-slate-900 dark:text-white text-center hover:scale-105 group"
           >

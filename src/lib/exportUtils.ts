@@ -120,7 +120,9 @@ export function printOrExportPDFReference(
       </head>
       <body>
         <div class="header">
-          <h2 style="margin: 0; color: #064e3b;">Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School</h2>
+          <div style="font-family: 'Amiri', 'Traditional Arabic', serif; font-size: 16px; font-weight: bold; color: #064e3b; margin-bottom: 4px;">مركز عمر بن الخطاب<br/>لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي</div>
+          <h2 style="margin: 0; color: #064e3b; font-size: 16px; font-weight: 800;">MARKAZU UMAR BN KHADDAB</h2>
+          <p style="margin: 2px 0 6px 0; font-size: 11px; font-weight: 600; color: #047857;">Centre for Qura'an Memorization and Islamic Studies - Daneji</p>
           <p style="margin: 4px 0 0 0; font-size: 12px; color: #475569;">
             Programme: <strong>${programmeName}</strong> | Class: <strong>${className}</strong> | Subject: <strong>${subjectName}</strong>
           </p>
@@ -136,7 +138,7 @@ export function printOrExportPDFReference(
         <table>
           <thead>
             <tr>
-              <th>#</th>
+              <th>S/N</th>
               <th>Admission No</th>
               <th>Student Name</th>
               ${config.enableAssignment ? `<th>Assign (${config.maxAssignment})</th>` : ''}

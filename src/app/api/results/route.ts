@@ -56,8 +56,10 @@ export async function GET(req: NextRequest) {
       if (!student) {
         return NextResponse.json({ error: 'Student record not found.' }, { status: 404 });
       }
-      // Strictly enforce own studentId
+      // Strictly enforce own studentId and only released, approved results
       whereClause.studentId = student.id;
+      whereClause.isReleased = true;
+      whereClause.status = 'APPROVED';
     } else if (authUser?.role === 'PARENT') {
       const parent = await prisma.parent.findFirst({
         where: { OR: [{ userId: authUser.id }, { id: authUser.id }], deletedAt: null },
@@ -75,6 +77,9 @@ export async function GET(req: NextRequest) {
       } else {
         whereClause.studentId = { in: linkedWards };
       }
+      // Parents can only view officially released, approved results
+      whereClause.isReleased = true;
+      whereClause.status = 'APPROVED';
     } else if (authUser?.role === 'TEACHER') {
       const scope = await resolveTeacherScope(authUser.id, sessionIdParam || undefined);
       if (!scope.isTeacher) {

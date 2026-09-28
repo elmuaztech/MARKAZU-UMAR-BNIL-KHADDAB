@@ -156,9 +156,9 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
 
   // Extract template customization properties with fallback defaults
   const {
-    titleEnglish = "MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI",
-    titleArabic = "مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج",
-    subTitleEnglish = "OFFICIAL TERMINAL ACADEMIC & TAHFIZ PROGRESS REPORT",
+    titleEnglish = "MARKAZU UMAR BN KHADDAB",
+    titleArabic = "مركز عمر بن الخطاب لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي",
+    subTitleEnglish = "Centre for Qura'an Memorization and Islamic Studies - Daneji • Official Academic Report",
     headerBgColor = "#042f1e",
     headerTextColor = "#ffffff",
     accentColor = "#f59e0b",
@@ -189,7 +189,7 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
               Official Terminal Report Card
             </h3>
             <p className="text-xs text-slate-500 dark:text-emerald-300/80 font-medium">
-              Certified Academic & Tahfiz Performance Record
+              Certified Academic & Islamic Studies Record
             </p>
           </div>
         </div>
@@ -334,46 +334,6 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
           </div>
         </div>
 
-        {/* Specialized Tahfiz Performance Card */}
-        {showTahfizSection && (
-          <div
-            className="text-white p-4 rounded-xl space-y-3 shadow-md"
-            style={{ backgroundColor: tableHeaderBgColor }}
-          >
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/15 pb-2">
-              <h3 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: accentColor }}>
-                <BookOpen className="w-4 h-4" />
-                <span>Tahfiz & Qur'an Memorization Evaluation</span>
-              </h3>
-              <span
-                className="self-start sm:self-auto font-black text-[10px] px-2.5 py-1 rounded-md uppercase shadow-xs"
-                style={{ backgroundColor: accentColor, color: '#0f172a' }}
-              >
-                {student.hifzProgress.juzCompleted} / 30 Juz Completed
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
-              <div className="p-2.5 rounded-lg bg-black/20 border border-white/15 backdrop-blur-xs flex flex-col justify-between">
-                <span className="text-[10px] text-emerald-200/90 uppercase font-bold tracking-wider mb-0.5">Current Surah</span>
-                <span className="font-bold text-white text-xs sm:text-sm truncate">{student.hifzProgress.currentSurah}</span>
-              </div>
-              <div className="p-2.5 rounded-lg bg-black/20 border border-white/15 backdrop-blur-xs flex flex-col justify-between">
-                <span className="text-[10px] text-emerald-200/90 uppercase font-bold tracking-wider mb-0.5">Sabki (Revision)</span>
-                <span className="font-extrabold text-xs sm:text-sm" style={{ color: accentColor }}>{student.hifzProgress.sabkiRating} / 5</span>
-              </div>
-              <div className="p-2.5 rounded-lg bg-black/20 border border-white/15 backdrop-blur-xs flex flex-col justify-between">
-                <span className="text-[10px] text-emerald-200/90 uppercase font-bold tracking-wider mb-0.5">Manzil (Retention)</span>
-                <span className="font-extrabold text-xs sm:text-sm" style={{ color: accentColor }}>{student.hifzProgress.manzilRating} / 5</span>
-              </div>
-              <div className="p-2.5 rounded-lg bg-black/20 border border-white/15 backdrop-blur-xs flex flex-col justify-between">
-                <span className="text-[10px] text-emerald-200/90 uppercase font-bold tracking-wider mb-0.5">Tajweed Quality</span>
-                <span className="font-bold text-white text-xs sm:text-sm">{student.hifzProgress.tajweedRating} / 5</span>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Academic Subject Scores Table */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -399,31 +359,39 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
                 </tr>
               </thead>
               <tbody>
-                {grades.map((g, idx) => (
-                  <tr key={g.id} className={idx % 2 === 0 ? 'bg-gray-50/70 hover:bg-gray-100/60' : 'bg-white hover:bg-gray-50'}>
-                    <td className="p-2.5 border border-gray-200 font-bold text-emerald-950">{g.subjectName}</td>
-                    <td className="p-2.5 border border-gray-200 text-center font-mono font-medium">{g.ca1Score}</td>
-                    <td className="p-2.5 border border-gray-200 text-center font-mono font-medium">{g.ca2Score}</td>
-                    <td className="p-2.5 border border-gray-200 text-center font-mono font-medium">{g.examScore}</td>
-                    <td className="p-2.5 border border-gray-200 text-center font-mono font-black text-emerald-900">{g.totalScore}%</td>
-                    <td className="p-2.5 border border-gray-200 text-center">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-black shadow-2xs ${
-                        g.grade === 'A'
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                          : g.grade === 'B'
-                          ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                          : g.grade === 'C'
-                          ? 'bg-sky-100 text-sky-800 border border-sky-300'
-                          : g.grade === 'D'
-                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                          : 'bg-rose-100 text-rose-800 border border-rose-300'
-                      }`}>
-                        {g.grade}
-                      </span>
+                {grades.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-8 text-center text-slate-500 font-medium">
+                      No results yet for this academic session / term.
                     </td>
-                    <td className="p-2.5 border border-gray-200 text-[11px] text-gray-700 italic">{g.remarks}</td>
                   </tr>
-                ))}
+                ) : (
+                  grades.map((g, idx) => (
+                    <tr key={g.id} className={idx % 2 === 0 ? 'bg-gray-50/70 hover:bg-gray-100/60' : 'bg-white hover:bg-gray-50'}>
+                      <td className="p-2.5 border border-gray-200 font-bold text-emerald-950">{g.subjectName}</td>
+                      <td className="p-2.5 border border-gray-200 text-center font-mono font-medium">{g.ca1Score}</td>
+                      <td className="p-2.5 border border-gray-200 text-center font-mono font-medium">{g.ca2Score}</td>
+                      <td className="p-2.5 border border-gray-200 text-center font-mono font-medium">{g.examScore}</td>
+                      <td className="p-2.5 border border-gray-200 text-center font-mono font-black text-emerald-900">{g.totalScore}%</td>
+                      <td className="p-2.5 border border-gray-200 text-center">
+                        <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-black shadow-2xs ${
+                          g.grade === 'A'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : g.grade === 'B'
+                            ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                            : g.grade === 'C'
+                            ? 'bg-sky-100 text-sky-800 border border-sky-300'
+                            : g.grade === 'D'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                            : 'bg-rose-100 text-rose-800 border border-rose-300'
+                        }`}>
+                          {g.grade}
+                        </span>
+                      </td>
+                      <td className="p-2.5 border border-gray-200 text-[11px] text-gray-700 italic">{g.remarks}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -446,19 +414,29 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
                 <div className="p-2.5 rounded-lg bg-white border border-gray-200 shadow-2xs flex items-center justify-between text-xs">
                   <span className="font-semibold text-gray-600">Total Score Obtained:</span>
                   <span className="font-mono font-black text-slate-900 px-2.5 py-0.5 rounded bg-gray-100 border border-gray-200">
-                    {totalObtained} / {totalPossible}
+                    {grades.length > 0 ? `${totalObtained} / ${totalPossible}` : 'No results yet'}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-white border border-gray-200 shadow-2xs flex items-center justify-between text-xs">
                   <span className="font-semibold text-gray-600">Average Percentage:</span>
                   <span className="font-mono font-black text-emerald-800 px-2.5 py-0.5 rounded bg-emerald-50 border border-emerald-200">
-                    {averagePercentage}%
+                    {grades.length > 0 ? `${averagePercentage}%` : 'No results yet'}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-white border border-gray-200 shadow-2xs flex items-center justify-between text-xs">
                   <span className="font-semibold text-gray-600">Overall Terminal Grade:</span>
                   <span className="font-black text-emerald-900 px-2.5 py-0.5 rounded bg-emerald-100 border border-emerald-300">
-                    {numAverage >= 75 ? 'DISTINCTION (A)' : numAverage >= 60 ? 'VERY GOOD (B)' : numAverage >= 50 ? 'CREDIT (C)' : numAverage >= 40 ? 'PASS (D)' : 'NEEDS IMPROVEMENT (F)'}
+                    {grades.length === 0
+                      ? 'No results yet'
+                      : numAverage >= 75
+                      ? 'DISTINCTION (A)'
+                      : numAverage >= 60
+                      ? 'VERY GOOD (B)'
+                      : numAverage >= 50
+                      ? 'CREDIT (C)'
+                      : numAverage >= 40
+                      ? 'PASS (D)'
+                      : 'NEEDS IMPROVEMENT (F)'}
                   </span>
                 </div>
               </div>

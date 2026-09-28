@@ -241,7 +241,7 @@ export function ResultEntryGrid({
         <table className="w-full min-w-[850px] text-left text-xs border-collapse">
           <thead>
             <tr className="bg-slate-100 dark:bg-[#021810] text-slate-700 dark:text-emerald-300 uppercase tracking-wider font-bold border-b border-slate-200 dark:border-emerald-800/40">
-              <th className="p-3 text-center">#</th>
+              <th className="p-3 text-center">S/N</th>
               <th className="p-3">Admission No</th>
               <th className="p-3">Student Name</th>
               {config.enableAssignment && <th className="p-3 text-center">Assign ({config.maxAssignment})</th>}

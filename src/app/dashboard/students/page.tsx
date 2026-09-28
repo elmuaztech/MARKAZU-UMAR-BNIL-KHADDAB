@@ -17,7 +17,6 @@ import {
   Download,
   Baby,
   HeartHandshake,
-  Camera,
   Upload,
 } from 'lucide-react';
 
@@ -433,7 +432,7 @@ export default function StudentsPage() {
             )}
             {canManageStudents && (
               <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-md border border-white dark:border-[#042419] opacity-0 group-hover/avatar:opacity-100 transition-opacity">
-                <Camera className="w-2.5 h-2.5" />
+                <Upload className="w-2.5 h-2.5" />
               </div>
             )}
           </div>
@@ -512,10 +511,10 @@ export default function StudentsPage() {
             <Button
               variant="ghost"
               size="sm"
-              title="Capture / Upload Passport Photo"
+              title="Upload Passport Photo"
               onClick={() => setPhotoModalStudent(student)}
             >
-              <Camera className="w-3.5 h-3.5 text-amber-500 hover:text-amber-400" />
+              <Upload className="w-3.5 h-3.5 text-amber-500 hover:text-amber-400" />
             </Button>
           )}
           <Button variant="ghost" size="sm" title="View Profile" onClick={() => setSelectedStudent(student)}>
@@ -1140,7 +1139,7 @@ export default function StudentsPage() {
                       title="Update Passport Photo"
                       className="absolute -bottom-1 -right-1 p-1.5 rounded-xl bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-lg transition-transform hover:scale-110"
                     >
-                      <Camera className="w-3.5 h-3.5 font-bold" />
+                      <Upload className="w-3.5 h-3.5 font-bold" />
                     </button>
                   )}
                 </div>
@@ -1152,8 +1151,8 @@ export default function StudentsPage() {
                       onClick={() => setPhotoModalStudent(selectedStudent)}
                       className="mt-2 text-[11px] font-bold text-amber-500 hover:text-amber-400 flex items-center gap-1"
                     >
-                      <Camera className="w-3 h-3" />
-                      {selectedStudent.avatar ? 'Change Passport Photo' : 'Capture / Upload Photo'}
+                      <Upload className="w-3 h-3" />
+                      {selectedStudent.avatar ? 'Change Passport Photo' : 'Upload Passport Photo'}
                     </button>
                   )}
                 </div>
@@ -1161,8 +1160,8 @@ export default function StudentsPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-500/30">
-                  <span className="text-[10px] text-purple-700 dark:text-purple-300 font-bold block">Juz Memorized</span>
-                  <span className="text-lg font-black text-amber-500">{selectedStudent.hifzProgress.juzCompleted} / 30 Juz</span>
+                  <span className="text-[10px] text-purple-700 dark:text-purple-300 font-bold block">Academic Status</span>
+                  <span className="text-lg font-black text-emerald-600 dark:text-emerald-400 capitalize">{selectedStudent.status?.toLowerCase() || 'Active'}</span>
                 </div>
                 <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-500/30">
                   <span className="text-[10px] text-sky-700 dark:text-sky-300 font-bold block">Akhlaq Rating</span>

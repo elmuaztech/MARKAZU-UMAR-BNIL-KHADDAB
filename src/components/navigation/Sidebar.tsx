@@ -32,7 +32,7 @@ import {
   HardDrive,
   Layers,
   FileSpreadsheet,
-  Camera,
+  Upload,
   Search,
   ChevronLeft,
   ChevronRight,
@@ -43,6 +43,7 @@ import {
   X,
   User as UserIcon,
   Key,
+  CreditCard,
 } from 'lucide-react';
 
 interface NavItem {
@@ -253,13 +254,6 @@ export function Sidebar({
       icon: BookMarked,
       group: 'ACADEMICS',
     },
-    {
-      id: 'tahfiz',
-      label: currentUser.role === 'HEADMASTER' ? 'Section Tahfiz' : 'Tahfiz Tracker',
-      href: '/dashboard/tahfiz',
-      icon: BookOpen,
-      group: 'ACADEMICS',
-    },
     { id: 'attendance', label: currentUser.role === 'HEADMASTER' ? 'Section Attendance' : 'Attendance', href: '/dashboard/attendance', icon: CalendarCheck, group: 'ACADEMICS' },
     {
       id: 'assessment',
@@ -302,6 +296,15 @@ export function Sidebar({
     { id: 'sessions', label: 'Academic Terms', href: '/dashboard/sessions', icon: Calendar, group: 'REPORTS & SETUP' },
     { id: 'cms', label: 'Website CMS', href: '/dashboard/cms', icon: Globe, group: 'REPORTS & SETUP' },
     { id: 'downloads', label: 'Downloads', href: '/dashboard/downloads', icon: Download, group: 'REPORTS & SETUP' },
+
+    // FINANCE & TUITION
+    {
+      id: 'finance',
+      label: currentUser.role === 'HEADMASTER' ? 'Section Finance' : currentUser.role === 'PARENT' ? 'School Fees' : 'Finance & Fees',
+      href: '/dashboard/finance',
+      icon: CreditCard,
+      group: 'FINANCE',
+    },
 
     // SYSTEM & SECURITY
     { id: 'security', label: 'Security & Accounts', href: '/dashboard/security', icon: ShieldCheck, badge: 'Admin', group: 'SETTINGS' },
@@ -534,7 +537,7 @@ export function Sidebar({
                 }}
                 className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-slate-700 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-900/40 font-semibold"
               >
-                <Camera className="w-4 h-4 text-emerald-500" />
+                <Upload className="w-4 h-4 text-emerald-500" />
                 <span>Upload Profile Photo</span>
               </button>
 

@@ -5,7 +5,7 @@ import { useApp } from '../../../lib/context';
 import { AuditEntry } from '../../../lib/audit';
 import { compressImageFile } from '../../../lib/imageUtils';
 import { ThemeToggle } from '../../../components/navigation/ThemeToggle';
-import { Settings, School, Calendar, ShieldCheck, RotateCcw, Upload, Trash2, Image as ImageIcon, Sparkles, CheckCircle2, User, Camera } from 'lucide-react';
+import { Settings, School, Calendar, ShieldCheck, RotateCcw, Upload, Trash2, Image as ImageIcon, Sparkles, CheckCircle2, User } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
@@ -258,7 +258,7 @@ export default function SettingsPage() {
 
             <div className="flex items-center gap-2">
               <label className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs cursor-pointer flex items-center gap-1.5 shadow-sm transition-all">
-                <Camera className="w-4 h-4" />
+                <Upload className="w-4 h-4" />
                 <span>Upload Avatar Photo</span>
                 <input
                   type="file"

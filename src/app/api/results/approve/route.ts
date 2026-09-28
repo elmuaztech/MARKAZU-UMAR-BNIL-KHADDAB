@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error('[APPROVE_RESULTS_ERROR]', error);
     return NextResponse.json(
-      { status: 500, message: error.message || 'Internal server error processing result batch approval' },
+      { status: 500, message: 'Unable to process result approval. Please try again later.' },
       { status: 500 }
     );
   }

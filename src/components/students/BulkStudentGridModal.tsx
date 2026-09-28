@@ -463,7 +463,7 @@ export function BulkStudentGridModal({
             <table className="w-full text-left text-xs border-collapse">
               <thead className="bg-emerald-900/90 text-white font-black text-[11px] uppercase tracking-wider sticky top-0 z-10">
                 <tr>
-                  <th className="p-3 w-12 text-center border-b border-emerald-800">#</th>
+                  <th className="p-3 w-12 text-center border-b border-emerald-800">S/N</th>
                   <th className="p-3 min-w-[180px] border-b border-emerald-800">Student Full Name *</th>
                   <th className="p-3 min-w-[100px] border-b border-emerald-800">Gender *</th>
                   <th className="p-3 min-w-[170px] border-b border-emerald-800">Programme *</th>

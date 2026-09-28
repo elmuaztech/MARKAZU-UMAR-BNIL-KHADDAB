@@ -215,3 +215,127 @@ html.light .glass-card {
 .animate-marquee-smooth:hover {
   animation-play-state: paused;
 }
+
+/* ==========================================================================
+   RESPONSIVE UTILITIES & TABLE CONTAINMENT
+   ========================================================================== */
+.mobile-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.break-word-safe {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+/* ==========================================================================
+   OFFICIAL A4 PRINT STYLESHEET
+   ========================================================================== */
+@page {
+  size: A4 portrait;
+  margin: 8mm 10mm;
+}
+
+@media print {
+  /* 1. Global Reset for Paper Output */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  /* 2. Hide Web Chrome, Navbars, Sidebars, Actions, and Modals */
+  nav,
+  aside,
+  header,
+  footer,
+  button,
+  .no-print,
+  [role="navigation"],
+  .theme-toggle,
+  .sync-badge,
+  .sidebar-container,
+  #banner-bar,
+  .action-bar,
+  .modal-backdrop {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 3. Main Content & Layout Adjustments */
+  main,
+  .dashboard-content,
+  .content-area {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* 4. Professional Report Card Container Fitting */
+  .print-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-container .grid {
+    display: grid !important;
+  }
+
+  .print-container table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .print-container tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .print-container th,
+  .print-container td {
+    padding: 3.5px 6px !important;
+    font-size: 8.5pt !important;
+  }
+
+  .print-container .rounded-2xl,
+  .print-container .rounded-xl {
+    border-radius: 6px !important;
+  }
+
+  /* Attestation & Signature Blocks */
+  .print-container .pt-2.border-t-2 {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+}

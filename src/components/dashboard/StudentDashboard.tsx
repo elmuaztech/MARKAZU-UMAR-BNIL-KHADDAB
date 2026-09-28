@@ -39,25 +39,11 @@ export function StudentDashboard() {
 
   const studentActions: QuickActionItem[] = [
     {
-      label: 'My Hifz Progress',
-      labelArabic: 'تقدم الحفظ',
-      href: '/dashboard/tahfiz',
-      icon: BookOpen,
-      color: 'from-emerald-600 to-emerald-700',
-    },
-    {
       label: 'Report Sheet Center',
       labelArabic: 'مركز كشوف الدرجات',
       href: '/dashboard/results',
       icon: Award,
       color: 'from-amber-600 to-amber-700',
-    },
-    {
-      label: 'My Subjects',
-      labelArabic: 'المواد الدراسية',
-      href: '/dashboard/subjects',
-      icon: BookOpen,
-      color: 'from-emerald-600 to-emerald-700',
     },
     {
       label: 'Attendance History',
@@ -67,9 +53,9 @@ export function StudentDashboard() {
       color: 'from-sky-600 to-sky-700',
     },
     {
-      label: 'My Messages & Notices',
+      label: 'Announcements',
       labelArabic: 'الإعلانات والرسائل',
-      href: '/dashboard/messages',
+      href: '/dashboard/communication/notifications',
       icon: Bell,
       color: 'from-purple-600 to-purple-700',
     },
@@ -131,7 +117,7 @@ export function StudentDashboard() {
         badgeIcon={GraduationCap}
         title={student.fullName}
         titleArabic={student.fullNameArabic}
-        description={`${student.className} • Memorization Target: ${student.hifzProgress.currentSurah}. Consistent progress in Tahfiz and Islamiyya streams.`}
+        description={`${student.className} • Admission: ${student.admissionNo}. Comprehensive Islamic and Arabic academic studies.`}
         actions={
           <Link
             href="/dashboard/results"
@@ -149,10 +135,10 @@ export function StudentDashboard() {
       {/* KPI Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
-          title="Juz Memorized"
-          value={`${student.hifzProgress.juzCompleted} / 30`}
-          subtitle={`${((student.hifzProgress.juzCompleted / 30) * 100).toFixed(0)}% Roadmap Completed`}
-          icon={<BookOpen className="w-5 h-5" />}
+          title="Class Enrollment"
+          value={student.className}
+          subtitle={`Admission: ${student.admissionNo}`}
+          icon={<GraduationCap className="w-5 h-5" />}
           variant="emerald"
         />
 
@@ -171,45 +157,6 @@ export function StudentDashboard() {
           icon={<Award className="w-5 h-5" />}
           variant="amber"
         />
-      </div>
-
-      {/* 30-Juz Progress Roadmap */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200/90 dark:border-emerald-500/30 shadow-md space-y-4 font-poppins">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-emerald-500" /> 30-Juz Qur'an Memorization Roadmap
-          </h3>
-          <span className="text-xs font-bold text-amber-600 dark:text-amber-300 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-            Target: {student.hifzProgress.currentSurah}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-10 gap-2">
-          {Array.from({ length: 30 }, (_, i) => i + 1).map((juzNum) => {
-            const isCompleted = juzNum <= student.hifzProgress.juzCompleted;
-            const isCurrent = juzNum === student.hifzProgress.currentJuz;
-            return (
-              <div
-                key={juzNum}
-                className={`p-2 rounded-2xl text-center border transition-all ${
-                  isCompleted
-                    ? 'bg-gradient-to-br from-emerald-600 to-emerald-800 border-emerald-400 text-white shadow-sm'
-                    : isCurrent
-                    ? 'bg-gradient-to-br from-amber-500 to-amber-700 border-amber-300 text-white animate-pulse shadow-sm'
-                    : 'bg-slate-50 dark:bg-emerald-950/40 border-slate-200 dark:border-emerald-800/40 text-slate-400 dark:text-emerald-500/60'
-                }`}
-              >
-                <span className="text-[10px] font-bold block uppercase">Juz</span>
-                <span className="text-sm font-black">{juzNum}</span>
-                {isCompleted ? (
-                  <Check className="w-3 h-3 mx-auto mt-0.5 text-emerald-100" />
-                ) : isCurrent ? (
-                  <Clock className="w-3 h-3 mx-auto mt-0.5 text-amber-100" />
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
       </div>
 
       {/* Timetable Schedule Widget */}

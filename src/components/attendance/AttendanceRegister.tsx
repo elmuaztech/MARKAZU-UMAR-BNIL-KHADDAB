@@ -577,7 +577,7 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
               <table className="w-full min-w-[650px] text-left border-collapse">
                 <thead>
                   <tr className="bg-slate-100 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 text-[11px] font-black text-slate-600 dark:text-emerald-300 uppercase tracking-wider">
-                    <th className="p-4">#</th>
+                    <th className="p-4">S/N</th>
                     <th className="p-4">Student Admission & Name</th>
                     <th className="p-4">Quick Status Toggle</th>
                     <th className="p-4">Status Remarks & Notes</th>

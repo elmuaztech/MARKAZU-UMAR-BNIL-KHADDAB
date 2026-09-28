@@ -140,8 +140,8 @@ export async function GET(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Filter to approved grades only
-    const approvedGrades = isStaff ? grades : grades.filter((g) => g.status === 'APPROVED');
+    // Filter to approved and released grades only for non-staff
+    const approvedGrades = isStaff ? grades : grades.filter((g) => g.status === 'APPROVED' && g.isReleased === true);
 
     if (approvedGrades.length === 0) {
       return NextResponse.json({
@@ -217,7 +217,7 @@ function generateInMemoryReportPdf(
         margin: 40,
         info: {
           Title: `Report Card - ${student.fullName}`,
-          Author: "Markazu Umar bn Al-Khattab Centre for Qur'an & Islamic Studies",
+          Author: "MARKAZU UMAR BN KHADDAB — Centre for Qura'an Memorization and Islamic Studies - Daneji",
         },
       });
 
@@ -229,10 +229,10 @@ function generateInMemoryReportPdf(
       // Header Banner
       doc.rect(40, 40, 515, 75).fill('#042f1e');
       doc.fillColor('#ffffff').fontSize(12).font('Helvetica-Bold')
-        .text("MARKAZU UMAR BN AL-KHATTAB CENTRE", 45, 50, { align: 'center', width: 505 });
-      doc.fontSize(9).font('Helvetica')
-        .text("FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES — DANEJI, KANO", 45, 66, { align: 'center', width: 505 });
-      doc.fontSize(10).font('Helvetica-Bold').fillColor('#f59e0b')
+        .text("MARKAZU UMAR BN KHADDAB", 45, 50, { align: 'center', width: 505 });
+      doc.fontSize(8.5).font('Helvetica')
+        .text("CENTRE FOR QURA'AN MEMORIZATION AND ISLAMIC STUDIES — DANEJI, KANO", 45, 66, { align: 'center', width: 505 });
+      doc.fontSize(9.5).font('Helvetica-Bold').fillColor('#f59e0b')
         .text(`OFFICIAL TERMINAL REPORT CARD — ${termName.toUpperCase()} (${sessionName})`, 45, 84, { align: 'center', width: 505 });
 
       // Student Biodata Box
@@ -245,7 +245,7 @@ function generateInMemoryReportPdf(
       doc.font('Helvetica-Bold').fillColor('#064e3b').text('CLASS:', 50, 152).font('Helvetica').fillColor('#0f172a').text(student.schoolClass?.name || 'Assigned Class', 120, 152);
       doc.font('Helvetica-Bold').fillColor('#064e3b').text('GUARDIAN:', 320, 152).font('Helvetica').fillColor('#0f172a').text(student.parent?.fullName || 'Registered Parent', 410, 152);
 
-      doc.font('Helvetica-Bold').fillColor('#064e3b').text('HIFZ PROGRESS:', 50, 169).font('Helvetica').fillColor('#0f172a').text(`${student.juzCompleted || 0} / 30 Juz Memorized`, 120, 169);
+      doc.font('Helvetica-Bold').fillColor('#064e3b').text('STATUS:', 50, 169).font('Helvetica').fillColor('#0f172a').text(student.status === 'ACTIVE' ? 'Active Enrollment' : student.status || 'Enrolled', 120, 169);
       doc.font('Helvetica-Bold').fillColor('#064e3b').text('AKHLAQ (CONDUCT):', 320, 169).font('Helvetica').fillColor('#0f172a').text(student.akhlaqRating || 'EXCELLENT', 410, 169);
 
       // Academic Performance Table Header

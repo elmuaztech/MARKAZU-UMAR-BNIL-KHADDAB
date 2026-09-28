@@ -114,10 +114,10 @@ export function TeacherDashboard() {
 
   const quickActions: QuickActionItem[] = [
     {
-      label: 'Log Daily Hifz',
-      labelArabic: 'تسجيل الحفظ اليومي',
-      href: '/dashboard/tahfiz',
-      icon: BookOpen,
+      label: 'Enter Grades',
+      labelArabic: 'رصد الدرجات',
+      href: '/dashboard/assessment',
+      icon: Award,
       color: 'from-emerald-600 to-emerald-700',
     },
     {
@@ -128,25 +128,18 @@ export function TeacherDashboard() {
       color: 'from-amber-600 to-amber-700',
     },
     {
-      label: 'Enter Grades',
-      labelArabic: 'رصد الدرجات',
-      href: '/dashboard/assessment',
-      icon: Award,
+      label: 'Class Roster',
+      labelArabic: 'قوائم الفصول',
+      href: '/dashboard/students',
+      icon: Users,
       color: 'from-sky-600 to-sky-700',
-    },
-    {
-      label: 'Student Messaging',
-      labelArabic: 'رسائل الطلاب',
-      href: '/dashboard/messages',
-      icon: MessageSquare,
-      color: 'from-purple-600 to-purple-700',
     },
     {
       label: 'Downloads Center',
       labelArabic: 'مركز التحميلات',
       href: '/dashboard/downloads',
       icon: Bell,
-      color: 'from-indigo-600 to-indigo-700',
+      color: 'from-purple-600 to-purple-700',
     },
   ];
 
@@ -165,14 +158,18 @@ export function TeacherDashboard() {
       cell: (s) => <span className="font-bold text-slate-700 dark:text-emerald-200">{s.className}</span>,
     },
     {
-      header: 'Current Hifz Target',
-      cell: (s) => <span className="font-semibold text-amber-600 dark:text-amber-300">{s.hifzProgress.currentSurah}</span>,
+      header: 'Academic Status',
+      cell: (s) => (
+        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 font-bold">
+          {s.status === 'ACTIVE' ? 'Active' : s.status || 'Enrolled'}
+        </span>
+      ),
     },
     {
-      header: 'Juz Completed',
+      header: 'Akhlaq Rating',
       cell: (s) => (
-        <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-300 font-bold">
-          {s.hifzProgress.juzCompleted} / 30 Juz
+        <span className="font-semibold text-amber-600 dark:text-amber-300">
+          {s.akhlaqRating || 'Good'}
         </span>
       ),
     },
@@ -181,10 +178,10 @@ export function TeacherDashboard() {
       align: 'right',
       cell: (s) => (
         <Link
-          href="/dashboard/tahfiz"
+          href="/dashboard/assessment"
           className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] transition-all"
         >
-          Update Log
+          Enter Grades
         </Link>
       ),
     },
@@ -197,14 +194,14 @@ export function TeacherDashboard() {
         badgeIcon={UserCheck}
         title={`Assalamu Alaikum, ${currentTeacher.full_name_english || currentUser.name || 'Teacher'}`}
         titleArabic={currentTeacher.full_name_arabic}
-        description="Teacher Command Portal: Scoped exclusively to your assigned Programmes, Classes, and Subjects. Manage daily Hifz, Muraja'ah, class attendance, and grade entries."
+        description="Teacher Command Portal: Scoped exclusively to your assigned Programmes, Classes, and Subjects. Manage class attendance, assessment records, and grade entries."
         actions={
           <Link
-            href="/dashboard/tahfiz"
+            href="/dashboard/assessment"
             className="px-5 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
           >
-            <BookOpen className="w-4 h-4" />
-            <span>Log Daily Hifz & Sabki</span>
+            <Award className="w-4 h-4" />
+            <span>Enter Assessment Grades</span>
           </Link>
         }
       />
@@ -314,7 +311,7 @@ export function TeacherDashboard() {
 
       {/* Allocated Student Table */}
       <EnterpriseTable
-        title="Assigned Halqa & Class Roster"
+        title="Assigned Class Roster"
         subtitle="Students in your active assigned classes"
         columns={columns}
         data={teacherStudents}

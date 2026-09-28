@@ -152,7 +152,6 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/headmaster': ['SUPER_ADMIN', 'HEADMASTER'],
   '/dashboard/admissions': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters & Teachers
   '/dashboard/programmes': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
-  '/dashboard/tahfiz': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/students': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'PARENT'],
   '/dashboard/teachers': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER'],
   '/dashboard/parents': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
@@ -179,6 +178,7 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/security': ['SUPER_ADMIN'], // Strictly Super Admin authority
   '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard/finance': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'PARENT'],
 };
 
 export function hasPageAccess(role: UserRole | string, pathname: string): boolean {

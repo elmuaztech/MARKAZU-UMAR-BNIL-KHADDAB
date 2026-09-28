@@ -194,6 +194,7 @@ model Student {
   tahfizRecords TahfizRecord[]
   gradeRecords  GradeRecord[]
   enrollments   StudentEnrollment[]
+  paymentTransactions PaymentTransaction[]
 
   @@index([classId])
   @@index([guardianId])
@@ -268,6 +269,9 @@ model Programme {
   subjects           Subject[]
   teacherAssignments TeacherAssignment[]
   studentEnrollments StudentEnrollment[]
+  feeConfig          ProgrammeFeeConfig?
+  admissionApplications AdmissionApplication[]
+  paymentTransactions PaymentTransaction[]
 
   @@map("programmes")
 }
@@ -647,3 +651,119 @@ model InAppNotification {
   @@index([category, metadata])
   @@map("in_app_notifications")
 }
+
+// =============================================================================
+// DOMAIN: FINANCIALS, ADMISSION APPLICATIONS & FLUTTERWAVE PAYMENTS
+// =============================================================================
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentType {
+  APPLICATION_FEE
+  SCHOOL_FEE
+}
+
+enum AdmissionStatus {
+  PAYMENT_PENDING
+  PAYMENT_CONFIRMED
+  FORM_AVAILABLE
+  SUBMITTED
+  UNDER_REVIEW
+  INTERVIEW_REQUIRED
+  ACCEPTED
+  REJECTED
+}
+
+model ProgrammeFeeConfig {
+  id                    String    @id @default(uuid())
+  programmeId           String    @unique @map("programme_id")
+  programme             Programme @relation(fields: [programmeId], references: [id], onDelete: Cascade)
+  requiresApplicationFee Boolean  @default(false) @map("requires_application_fee")
+  applicationFeeAmount  Float     @default(0)     @map("application_fee_amount")
+  schoolFeeAmount       Float     @default(0)     @map("school_fee_amount")
+  currency              String    @default("NGN")
+  isActive              Boolean   @default(true)  @map("is_active")
+  updatedByUserId       String?   @map("updated_by_user_id")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt      @map("updated_at")
+
+  @@map("programme_fee_configs")
+}
+
+model AdmissionApplication {
+  id                  String          @id @default(uuid())
+  applicationNo       String          @unique @map("application_no")
+  programmeId         String          @map("programme_id")
+  programme           Programme       @relation(fields: [programmeId], references: [id])
+  studentFullName     String          @map("student_full_name")
+  studentGender       Gender          @map("student_gender")
+  studentDob          DateTime        @map("student_dob")
+  passportPhoto       String?         @map("passport_photo")
+  state               String
+  lga                 String
+  studentAddress      String          @map("student_address")
+  previousSchool      String?         @map("previous_school")
+  parentName          String          @map("parent_name")
+  parentRelationship  String          @map("parent_relationship")
+  parentPhone         String          @map("parent_phone")
+  parentWhatsapp      String?         @map("parent_whatsapp")
+  parentEmail         String          @map("parent_email")
+  parentOccupation    String?         @map("parent_occupation")
+  parentAddress       String          @map("parent_address")
+  emergencyName       String?         @map("emergency_name")
+  emergencyPhone      String?         @map("emergency_phone")
+  medicalInformation  String?         @map("medical_information")
+  remarks             String?
+  status              AdmissionStatus @default(SUBMITTED)
+  rejectionReason     String?         @map("rejection_reason")
+  reviewedAt          DateTime?       @map("reviewed_at")
+  reviewedBy          String?         @map("reviewed_by")
+  assignedClassId     String?         @map("assigned_class_id")
+  generatedStudentId  String?         @map("generated_student_id")
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt      @map("updated_at")
+
+  payments            PaymentTransaction[]
+
+  @@index([programmeId, status])
+  @@index([parentEmail])
+  @@map("admission_applications")
+}
+
+model PaymentTransaction {
+  id                  String                @id @default(uuid())
+  reference           String                @unique
+  flutterwaveTxId     String?               @unique @map("flutterwave_tx_id")
+  provider            String                @default("FLUTTERWAVE")
+  paymentType         PaymentType           @map("payment_type")
+  amount              Float
+  currency            String                @default("NGN")
+  status              PaymentStatus         @default(PENDING)
+  applicantEmail      String                @map("applicant_email")
+  applicantName       String                @map("applicant_name")
+  applicantPhone      String?               @map("applicant_phone")
+  applicationId       String?               @map("application_id")
+  application         AdmissionApplication? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
+  studentId           String?               @map("student_id")
+  student             Student?              @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  programmeId         String                @map("programme_id")
+  programme           Programme             @relation(fields: [programmeId], references: [id])
+  metadata            Json?
+  verifiedAt          DateTime?             @map("verified_at")
+  ipAddress           String?               @map("ip_address")
+  createdAt           DateTime              @default(now()) @map("created_at")
+  updatedAt           DateTime              @updatedAt      @map("updated_at")
+
+  @@index([reference])
+  @@index([programmeId, paymentType, status])
+  @@index([studentId])
+  @@index([applicationId])
+  @@map("payment_transactions")
+}
+

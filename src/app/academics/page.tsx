@@ -20,12 +20,12 @@ export default function AcademicsPage() {
           <h1 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
             Comprehensive Islamic & <br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-emerald-500 to-amber-600 dark:from-emerald-400 dark:via-emerald-200 dark:to-amber-300">
-              Tahfiz Academic Programmes
+              Arabic Academic Programmes
             </span>
           </h1>
 
           <p className="text-sm md:text-base text-slate-600 dark:text-emerald-100/80 leading-relaxed max-w-2xl mx-auto">
-            Combining rigorous 30-Juz Qur'an memorization with structured Islamiyya streams, classical Arabic grammar, and authentic Islamic jurisprudence.
+            Combining structured Qur'an memorization with Islamiyya streams, classical Arabic grammar, and authentic Islamic jurisprudence.
           </p>
         </div>
 
@@ -61,7 +61,7 @@ export default function AcademicsPage() {
               </li>
               <li className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span><strong>Tahfeez:</strong> Dedicated 30-Juz daily memorization, Sabki & Manzil revision track</span>
+                <span><strong>Quranic Studies:</strong> Dedicated daily recitation, Tajweed mastery, and memorization</span>
               </li>
             </ul>
           </div>
@@ -197,9 +197,9 @@ export default function AcademicsPage() {
             </div>
 
             <div className="p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800/60 space-y-2">
-              <span className="font-bold text-amber-700 dark:text-amber-300">Hifz Retention Rating</span>
+              <span className="font-bold text-amber-700 dark:text-amber-300">Islamic Tarbiyya & Akhlaq</span>
               <p className="text-slate-600 dark:text-emerald-200/80">
-                Special 5-Star rating metric evaluating student Sabki (recent) and Manzil (long-term) Qur'anic memory accuracy.
+                Evaluation of student moral character, Islamic discipline, punctuality, and peer respect.
               </p>
             </div>
           </div>

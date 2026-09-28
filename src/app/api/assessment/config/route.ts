@@ -103,6 +103,6 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error('[POST_ASSESSMENT_CONFIG_ERROR]', error);
-    return NextResponse.json({ status: 500, message: error.message || 'Internal server error updating assessment config' }, { status: 500 });
+    return NextResponse.json({ status: 500, message: 'Unable to update assessment configuration. Please try again later.' }, { status: 500 });
   }
 }

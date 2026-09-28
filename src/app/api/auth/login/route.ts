@@ -196,9 +196,12 @@ export async function POST(req: NextRequest) {
       console.warn('[LOGIN] Session persistence warning:', e);
     }
 
+    const redirectUrl = user.role === 'HEADMASTER' ? '/headmaster' : '/dashboard';
+
     const response = NextResponse.json({
       message: 'Authentication successful',
       token: `jwt-token-${sessionId}`,
+      redirectUrl,
       user: {
         id: user.id,
         username: user.username || user.id,

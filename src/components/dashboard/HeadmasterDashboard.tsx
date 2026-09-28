@@ -30,6 +30,7 @@ import {
   ChevronRight,
   Layers,
   FileSpreadsheet,
+  CreditCard,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { BilingualText } from '@/components/ui/BilingualText';
@@ -271,11 +272,11 @@ export function HeadmasterDashboard() {
           </Link>
 
           <Link
-            href="/dashboard/tahfiz"
+            href="/dashboard/assessment"
             className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-200 flex flex-col items-center justify-center text-center gap-2 transition-all shadow-sm group"
           >
-            <BookOpen className="w-6 h-6 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-            <span>Tahfiz Progress</span>
+            <FileSpreadsheet className="w-6 h-6 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+            <span>Assessments</span>
           </Link>
 
           <Link
@@ -293,10 +294,18 @@ export function HeadmasterDashboard() {
             <BookOpen className="w-6 h-6 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" />
             <span>Section Subjects</span>
           </Link>
+
+          <Link
+            href="/dashboard/finance"
+            className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-200 flex flex-col items-center justify-center text-center gap-2 transition-all shadow-sm group"
+          >
+            <CreditCard className="w-6 h-6 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+            <span>Section Finance</span>
+          </Link>
         </div>
       </div>
 
-      {/* Class Stream Overview for this Section */}
+      {/* Class Stream Overview for this Section & Finance Quick Card */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 font-poppins">
         <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
           <div className="flex items-center justify-between">
@@ -358,6 +367,52 @@ export function HeadmasterDashboard() {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Column 3: Section Finance Overview Card */}
+        <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4 flex flex-col justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4" />
+                Section Finance
+              </span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                {assignedProg?.programme_code || 'PROG'}
+              </span>
+            </div>
+
+            <h4 className="text-base font-black text-slate-900 dark:text-white">
+              Financial Schedule & Balances
+            </h4>
+
+            <p className="text-xs text-slate-500 dark:text-emerald-300/80 leading-relaxed">
+              Track collected school fees, verify applicant form fee transactions, and monitor outstanding tuition balances.
+            </p>
+
+            <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-900/40 space-y-2 text-xs">
+              <div className="flex justify-between">
+                <span className="text-slate-500 dark:text-emerald-400">Programme:</span>
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {assignedProg?.programme_name || 'Academic Section'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500 dark:text-emerald-400">Access Scope:</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                  Strictly Isolated to Section
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <Link
+            href="/dashboard/finance"
+            className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all group"
+          >
+            <span>Open Section Finance Ledger</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </div>
     </div>

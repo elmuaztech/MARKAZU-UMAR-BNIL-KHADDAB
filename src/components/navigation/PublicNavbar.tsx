@@ -36,7 +36,6 @@ export function PublicNavbar() {
     { label: 'Home', href: '/' },
     { label: 'About', href: '/about' },
     { label: 'Academics', href: '/academics' },
-    { label: "Qur'an Memorization", href: '/tahfiz-program' },
     { label: 'Rules & Guidelines', href: '/rules' },
     { label: 'Contact', href: '/contact' },
   ];

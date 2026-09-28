@@ -115,7 +115,7 @@ export function SyncStatusBadge() {
             <div className="flex items-center justify-between text-slate-600 dark:text-emerald-200/80">
               <span>Local Storage:</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200">
-                IndexedDB (Dexie.js)
+                Device Storage
               </span>
             </div>
 
@@ -123,7 +123,7 @@ export function SyncStatusBadge() {
               <span>Cloud Server:</span>
               <span className="font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1">
                 <Server className="w-3 h-3 text-emerald-500" />
-                PostgreSQL (Hostinger)
+                School Cloud Server
               </span>
             </div>
 

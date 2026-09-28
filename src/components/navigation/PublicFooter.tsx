@@ -35,13 +35,18 @@ export function PublicFooter() {
                   <BookOpen className="w-6 h-6" />
                 </div>
               )}
-              <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight leading-snug">
-                MARKAZU UMAR BN AL-KHATTAB
-              </h3>
+              <div>
+                <h3 className="font-extrabold text-sm sm:text-base text-white tracking-tight leading-snug">
+                  MARKAZU UMAR BN KHADDAB
+                </h3>
+                <p className="text-xs text-emerald-300 font-medium">
+                  Centre for Qura'an Memorization and Islamic Studies - Daneji
+                </p>
+              </div>
             </div>
 
-            <div className="font-arabic font-bold text-sm text-amber-300">
-              مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج
+            <div className="font-arabic font-bold text-sm text-amber-300 leading-relaxed">
+              مركز عمر بن الخطاب<br />لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي
             </div>
 
             <div className="inline-block px-3.5 py-1.5 rounded-full bg-emerald-900/60 border border-emerald-600/40 text-amber-300 text-xs font-arabic font-bold">
@@ -68,11 +73,6 @@ export function PublicFooter() {
               <li>
                 <Link href="/academics" className="hover:text-amber-300 transition-colors flex items-center gap-1.5">
                   <span className="text-emerald-500">›</span> Academic Programmes
-                </Link>
-              </li>
-              <li>
-                <Link href="/tahfiz-program" className="hover:text-amber-300 transition-colors flex items-center gap-1.5">
-                  <span className="text-emerald-500">›</span> Qur'an Memorization (30-Juz)
                 </Link>
               </li>
               <li>
@@ -133,7 +133,7 @@ export function PublicFooter() {
 
             <div className="p-4 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 space-y-3">
               <p className="text-xs text-emerald-200">
-                Enroll your child for 30-Juz Tahfiz and Islamiyya studies.
+                Enroll your child for comprehensive Islamic and Arabic studies.
               </p>
               <button
                 onClick={() => setAdmissionModalOpen(true)}
@@ -149,7 +149,7 @@ export function PublicFooter() {
         {/* Bottom Professional Copyright Bar with Clean Developer & Email Alignment */}
         <div className="max-w-7xl mx-auto pt-6 border-t border-emerald-900/60 flex flex-col xl:flex-row items-center justify-between gap-4 text-center xl:text-left text-xs text-emerald-400/80">
           <p className="whitespace-normal xl:whitespace-nowrap tracking-tight font-medium">
-            © 2026 Markazu Umar bn Al-Khattab Centre for Qur'an Memorization & Islamic Studies - Daneji, Kano, Nigeria.
+            © 2026 MARKAZU UMAR BN KHADDAB — Centre for Qura'an Memorization and Islamic Studies - Daneji, Kano, Nigeria.
           </p>
           <div className="flex flex-wrap items-center justify-center xl:justify-end gap-3 text-xs shrink-0">
             <span className="font-semibold text-emerald-200">

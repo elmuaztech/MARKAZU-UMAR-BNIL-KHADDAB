@@ -400,11 +400,6 @@ export function ReportCardTemplateModal({ isOpen, onClose }: ReportCardTemplateM
             <div className="space-y-4">
               {[
                 {
-                  key: 'showTahfizSection',
-                  title: 'Tahfiz & Qur’an Evaluation Card',
-                  desc: 'Display Juz completion rate, current surah, Sabki & Manzil star ratings.',
-                },
-                {
                   key: 'showAkhlaqSection',
                   title: 'Behavioral & Akhlaq Rating Box',
                   desc: 'Display Islamic conduct (Adab), neatness, punctuality & respect scores.',

@@ -62,24 +62,24 @@ export default function HomePage() {
   // FAQ Data
   const faqs = [
     {
-      q: 'What is the admission procedure for Markazu Umar bn Al-Khattab?',
-      a: 'Parents can fill the official online admission form on our website or visit the Administration Office at No. 32 Daneji Quarters, Behind Sahad Store, Kano. Candidates undergo a basic assessment for Halqa placement.',
+      q: 'What is the admission procedure for MARKAZU UMAR BN KHADDAB?',
+      a: 'Parents can fill the official online admission form on our website or visit the Administration Office at No. 32 Daneji Quarters, Behind Sahad Store, Kano. Candidates undergo a basic assessment for class placement.',
     },
     {
-      q: 'What academic & Qur’anic programs are available?',
-      a: 'We offer structured 30-Juz Tahfizul Qur’an memorization, Islamiyya primary to secondary levels, Tajweed phonetics, and classical Quranic Arabic studies.',
+      q: 'What academic & Islamic programs are available?',
+      a: 'We offer structured Islamic and Arabic studies, Islamiyya primary to secondary levels, Tajweed phonetics, and classical Quranic Arabic studies.',
     },
     {
-      q: "How does the 30-Juz Qur'an Memorization track work?",
-      a: 'Students are assigned to dedicated Halqas managed by certified Huffaz teachers. Each student follows a daily routine of Hifz (new memorization), Sabki (recent revision), and Manzil (long-term cumulative revision).',
+      q: 'How are the classroom sessions structured?',
+      a: 'Students learn in structured class groups managed by qualified educators following a daily routine of continuous assessment, Islamic character building, and academic instruction.',
     },
     {
-      q: "Can parents monitor their ward's Tahfiz progress remotely?",
-      a: 'Yes! Parents receive login credentials to our Parent Progress Portal to view daily Hifz surah/ayah logs, Sabki ratings, attendance records, and termly report cards.',
+      q: "Can parents monitor their ward's academic progress remotely?",
+      a: 'Yes! Parents receive login credentials to our Parent Progress Portal to view daily attendance records, Continuous Assessment (CA) scores, and termly report cards.',
     },
     {
-      q: 'How are Tahfiz and Islamiyya sessions structured?',
-      a: 'Classes follow structured morning and evening shifts managed by dedicated Huffaz teachers and certified academic supervisors.',
+      q: 'How are the school sessions scheduled?',
+      a: 'Classes follow structured morning and evening shifts managed by certified academic teachers and experienced supervisors.',
     },
   ];
 
@@ -92,7 +92,7 @@ export default function HomePage() {
     },
     {
       name: 'Ustaz Ahmad Muhammad',
-      title: 'Head of Tahfiz & Hifz Master',
+      title: 'Head of Islamic & Arabic Studies',
       avatar: '',
     },
     {
@@ -102,12 +102,12 @@ export default function HomePage() {
     },
     {
       name: 'Ustaz Hafiz Sulaiman',
-      title: 'Senior Sabki & Manzil Inspector',
+      title: 'Senior Academic Inspector',
       avatar: '',
     },
     {
       name: 'Malama Fatima Abubakar',
-      title: 'Female Halqa & Tarbiyya Supervisor',
+      title: 'Female Student & Tarbiyya Supervisor',
       avatar: '',
     },
   ];
@@ -137,18 +137,18 @@ export default function HomePage() {
             </div>
 
             <h1 className="text-xl sm:text-3xl md:text-5xl font-black tracking-tight leading-snug sm:leading-tight text-white max-w-full sm:max-w-4xl mx-auto drop-shadow-md text-center px-1">
-              Markazu Umar bn Al-Khattab <br className="hidden sm:inline" />
+              MARKAZU UMAR BN KHADDAB <br className="hidden sm:inline" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-amber-300 to-sky-300">
-                Centre for Qur'an Memorization and Islamic Studies - Daneji
+                Centre for Qura'an Memorization and Islamic Studies - Daneji
               </span>
             </h1>
 
-            <div className="font-arabic font-bold text-lg md:text-xl text-amber-300 drop-shadow">
-              مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج
+            <div className="font-arabic font-bold text-lg md:text-xl text-amber-300 drop-shadow leading-relaxed">
+              مركز عمر بن الخطاب<br className="sm:hidden" /> لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي
             </div>
 
             <p className="text-sm md:text-base text-emerald-100/90 leading-relaxed max-w-2xl mx-auto font-medium">
-              Fostering spiritual growth, 30-Juz Qur'an memorization, and classical Islamic education across 1,000+ students and 40+ Huffaz educators in Kano, Nigeria.
+              Fostering spiritual growth, Quranic literacy, and comprehensive Islamic education across 1,000+ students and dedicated educators in Kano, Nigeria.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">
@@ -187,15 +187,15 @@ export default function HomePage() {
               <div className="text-3xl sm:text-4xl font-black text-amber-300 tracking-tight">
                 <AnimatedCounter end={40} suffix="+" />
               </div>
-              <p className="text-xs font-bold text-emerald-200 uppercase tracking-wider">Huffaz Educators</p>
+              <p className="text-xs font-bold text-emerald-200 uppercase tracking-wider">Certified Educators</p>
             </div>
 
             <div className="p-4 space-y-1 pt-6 md:pt-4">
               <BookOpen className="w-7 h-7 text-sky-400 mx-auto" />
               <div className="text-3xl sm:text-4xl font-black text-amber-300 tracking-tight">
-                <AnimatedCounter end={30} suffix=" Juz" />
+                <AnimatedCounter end={100} suffix="%" />
               </div>
-              <p className="text-xs font-bold text-emerald-200 uppercase tracking-wider">Tahfiz Memorization</p>
+              <p className="text-xs font-bold text-emerald-200 uppercase tracking-wider">Quranic Studies</p>
             </div>
 
             <div className="p-4 space-y-1 pt-6 md:pt-4">
@@ -215,10 +215,10 @@ export default function HomePage() {
               <BookOpen className="w-6 h-6 group-hover:rotate-6 transition-transform duration-300" />
             </div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-amber-300 transition-colors">
-              30-Juz Tahfiz Program
+              Quranic & Arabic Studies
             </h3>
             <p className="text-xs text-slate-600 dark:text-emerald-200/70">
-              Daily Hifz, Sabki revision, and Manzil retention tracking.
+              Comprehensive Tajweed recitation, Arabic literacy, and memorization.
             </p>
           </div>
 
@@ -230,7 +230,7 @@ export default function HomePage() {
               1,000+ Capacity
             </h3>
             <p className="text-xs text-slate-600 dark:text-emerald-200/70">
-              Structured Tahfiz Halqas and Islamiyya streams.
+              Structured classroom streams and dedicated learning groups.
             </p>
           </div>
 

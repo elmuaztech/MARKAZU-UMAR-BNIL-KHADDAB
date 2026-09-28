@@ -96,8 +96,9 @@ export default function DownloadsPage() {
         <body>
           <div class="header">
             <img src="${logoUrl}" alt="School Logo" class="logo-img" onerror="this.style.display='none'" />
-            <div class="arabic">مركز عمر بن الخطاب لتحفيظ القرآن والدراسات الإسلامية - دنيج</div>
-            <div class="title">MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI</div>
+            <div class="arabic">مركز عمر بن الخطاب<br/>لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي</div>
+            <div class="title">MARKAZU UMAR BN KHADDAB</div>
+            <div style="font-size: 11px; font-weight: 600; color: #047857; margin-bottom: 6px;">Centre for Qura'an Memorization and Islamic Studies - Daneji</div>
             <div class="subtitle">${title} — ${subtitle}</div>
             <div class="meta">Generated on: ${new Date().toLocaleString()} | Official Record Export</div>
           </div>
@@ -105,7 +106,7 @@ export default function DownloadsPage() {
           <table>
             <thead>
               <tr>
-                <th>#</th>
+                <th>S/N</th>
                 ${headers.map((h) => `<th>${h}</th>`).join('')}
               </tr>
             </thead>
@@ -124,7 +125,7 @@ export default function DownloadsPage() {
           </table>
 
           <div class="footer" style="margin-top:40px; display:flex; justify-content:space-between;">
-            <div>Issued by: Administrative Office, Markazu Umar bn Al-Khattab Centre</div>
+            <div>Issued by: Administrative Office, Markazu Umar BN Khaddab</div>
             <div>Official Stamp & Signature: _______________________</div>
           </div>
 

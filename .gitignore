@@ -31,7 +31,9 @@ Thumbs.db
 *.tmp
 *.temp
 scratch/
+artifacts/
 *.zip
+*.sql
 
 # Backups
 backup/
