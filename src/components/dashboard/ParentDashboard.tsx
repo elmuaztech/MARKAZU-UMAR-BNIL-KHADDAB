@@ -236,9 +236,11 @@ export function ParentDashboard() {
                 variant="amber"
               />
             </div>
+          )}
 
-            {/* Ward Tuition Status Card */}
-            {(() => {
+          {/* Ward Tuition Status Card */}
+          {activeChild &&
+            (() => {
               const activeWardFinance = financeWards.find((w) => w.studentId === activeChild.id);
               if (!activeWardFinance) return null;
 
@@ -312,7 +314,6 @@ export function ParentDashboard() {
                 </div>
               );
             })()}
-          )}
         </>
       ) : (
         <div className="p-8 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/20 text-center space-y-2">

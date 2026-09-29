@@ -5,7 +5,17 @@ export interface EmailPayload {
   to: string;
   recipientName: string;
   subject: string;
-  template: 'WELCOME_NEW_ACCOUNT' | 'PASSWORD_RESET_REQUEST' | 'PASSWORD_CHANGED_CONFIRMATION' | 'ACCOUNT_LOCKOUT_ALERT' | 'ACCOUNT_UNLOCKED';
+  template:
+    | 'WELCOME_NEW_ACCOUNT'
+    | 'PASSWORD_RESET_REQUEST'
+    | 'PASSWORD_CHANGED_CONFIRMATION'
+    | 'ACCOUNT_LOCKOUT_ALERT'
+    | 'ACCOUNT_UNLOCKED'
+    | 'ADMISSION_ACCEPTED'
+    | 'ADMISSION_REJECTED'
+    | 'INTERVIEW_INVITATION'
+    | 'APPLICATION_SUBMITTED'
+    | 'FEE_PAYMENT_CONFIRMATION';
   metadata?: {
     username?: string;
     tempPassword?: string;
@@ -17,6 +27,7 @@ export interface EmailPayload {
     assignedProgramme?: string;
     email?: string;
     loginUrl?: string;
+    [key: string]: any;
   };
 }
 
@@ -239,6 +250,77 @@ export function generateEmailHtml(payload: EmailPayload): string {
               Log In to Portal
             </a>
           </div>
+        </div>
+      `;
+      break;
+
+    case 'APPLICATION_SUBMITTED':
+      bodyHtml = `
+        <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
+          <h2 style="color: #064e3b; margin-top: 0;">Application Received Successfully</h2>
+          <p>Dear <strong>${payload.recipientName}</strong>,</p>
+          <p>Assalamu Alaikum. We have received the admission application for <strong>${payload.metadata?.studentName || 'the applicant'}</strong> for the <strong>${payload.metadata?.programmeName || 'selected programme'}</strong>.</p>
+          <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+            <p style="margin: 0; font-size: 13px; color: #065f46;"><strong>Application Reference Number:</strong></p>
+            <p style="margin: 6px 0; font-size: 20px; font-weight: bold; font-family: monospace; color: #047857;">${payload.metadata?.applicationNo}</p>
+          </div>
+          <p style="font-size: 13px; color: #475569;">The school admission board is currently reviewing the application. You will be notified of interview dates and status updates via email.</p>
+        </div>
+      `;
+      break;
+
+    case 'ADMISSION_ACCEPTED':
+      bodyHtml = `
+        <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
+          <h2 style="color: #064e3b; margin-top: 0;">🎉 Congratulations! Admission Accepted</h2>
+          <p>Dear <strong>${payload.recipientName}</strong>,</p>
+          <p>Assalamu Alaikum. We are pleased to inform you that <strong>${payload.metadata?.studentName}</strong> has been officially accepted into <strong>${schoolNameEng}</strong>.</p>
+          <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+            <p style="margin: 4px 0;"><strong>Admission Number:</strong> ${payload.metadata?.admissionNo || 'Assigned'}</p>
+            <p style="margin: 4px 0;"><strong>Class Assigned:</strong> ${payload.metadata?.assignedClass || 'Active Class'}</p>
+          </div>
+          <p style="font-size: 13px; color: #475569;">Please log into the Guardian Portal to review term schedules, academic guidelines, and school fee schedules (if applicable).</p>
+        </div>
+      `;
+      break;
+
+    case 'ADMISSION_REJECTED':
+      bodyHtml = `
+        <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
+          <h2 style="color: #991b1b; margin-top: 0;">Admission Decision Notice</h2>
+          <p>Dear <strong>${payload.recipientName}</strong>,</p>
+          <p>Assalamu Alaikum. Thank you for your interest in <strong>${schoolNameEng}</strong> for <strong>${payload.metadata?.studentName}</strong>.</p>
+          <p>Following review by the Admissions Board, we regret to inform you that we are unable to offer admission at this time. Remarks: <em>${payload.metadata?.rejectionReason || 'Class capacity reached for this cohort.'}</em></p>
+          <p style="font-size: 13px; color: #475569;">No further financial liability or school fees apply to this application. We wish the candidate success in their studies.</p>
+        </div>
+      `;
+      break;
+
+    case 'INTERVIEW_INVITATION':
+      bodyHtml = `
+        <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
+          <h2 style="color: #064e3b; margin-top: 0;">Entrance Assessment & Interview Invitation</h2>
+          <p>Dear <strong>${payload.recipientName}</strong>,</p>
+          <p>Assalamu Alaikum. Candidate <strong>${payload.metadata?.studentName}</strong> has been scheduled for an entrance assessment and interview.</p>
+          <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+            <p style="margin: 4px 0;"><strong>Instructions:</strong> ${payload.metadata?.notes || 'Please report to the administrative office with original birth certificate and previous academic records.'}</p>
+          </div>
+        </div>
+      `;
+      break;
+
+    case 'FEE_PAYMENT_CONFIRMATION':
+      bodyHtml = `
+        <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
+          <h2 style="color: #064e3b; margin-top: 0;">Official Payment Receipt</h2>
+          <p>Dear <strong>${payload.recipientName}</strong>,</p>
+          <p>Assalamu Alaikum. We confirm receipt of your payment to <strong>${schoolNameEng}</strong>.</p>
+          <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+            <p style="margin: 4px 0;"><strong>Payment Type:</strong> ${payload.metadata?.paymentType === 'APPLICATION_FEE' ? 'Application Form Fee' : 'School Fee / Tuition'}</p>
+            <p style="margin: 4px 0;"><strong>Amount Paid:</strong> ₦${Number(payload.metadata?.amount || 0).toLocaleString()}</p>
+            <p style="margin: 4px 0;"><strong>Transaction Reference:</strong> <code style="font-family: monospace;">${payload.metadata?.reference}</code></p>
+          </div>
+          <p style="font-size: 13px; color: #475569;">Thank you for your prompt payment. This serves as your official payment receipt.</p>
         </div>
       `;
       break;

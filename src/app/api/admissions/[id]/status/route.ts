@@ -64,7 +64,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             fullName: application.parentName,
             email: application.parentEmail,
             phone: application.parentPhone,
-            whatsapp: application.parentWhatsapp,
             occupation: application.parentOccupation || 'Guardian',
             address: application.parentAddress || application.studentAddress,
           },
