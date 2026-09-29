@@ -14,6 +14,22 @@ function formatProgrammeResponse(p: any) {
       subcats = [];
     }
   }
+
+  const feeConfig = p.feeConfig
+    ? {
+        requiresApplicationFee: Boolean(p.feeConfig.requiresApplicationFee && p.feeConfig.applicationFeeAmount > 0),
+        applicationFee: p.feeConfig.requiresApplicationFee ? p.feeConfig.applicationFeeAmount : 0,
+        applicationFeeAmount: p.feeConfig.requiresApplicationFee ? p.feeConfig.applicationFeeAmount : 0,
+        schoolFee: p.feeConfig.schoolFeeAmount || 0,
+        schoolFeeAmount: p.feeConfig.schoolFeeAmount || 0,
+        currency: p.feeConfig.currency || 'NGN',
+      }
+    : null;
+
+  const isPaidProgramme = Boolean(
+    feeConfig && (feeConfig.schoolFee > 0 || feeConfig.requiresApplicationFee)
+  );
+
   return {
     id: p.id,
     code: p.code || p.programme_code,
@@ -30,6 +46,8 @@ function formatProgrammeResponse(p: any) {
     status: p.status === 'ACTIVE' || p.status === 'Active' ? 'Active' : 'Inactive',
     displayOrder: p.displayOrder || p.display_order || 1,
     display_order: p.displayOrder || p.display_order || 1,
+    feeConfig,
+    isPaidProgramme,
     createdAt: p.createdAt || p.created_at,
     created_at: p.createdAt || p.created_at,
     updatedAt: p.updatedAt || p.updated_at,
@@ -41,6 +59,7 @@ export async function GET(req: NextRequest) {
   try {
     const authUser = await getAuthenticatedUser(req);
     let programmes = await prisma.programme.findMany({
+      include: { feeConfig: true },
       orderBy: { displayOrder: 'asc' },
     });
 

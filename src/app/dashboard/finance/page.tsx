@@ -92,10 +92,10 @@ export default function FinanceDashboardPage() {
           const admJson = await admRes.json();
 
           if (cfgJson.status === 'success') {
-            setProgrammesConfig(cfgJson.data);
+            setProgrammesConfig(cfgJson.data || cfgJson.programmes || []);
           }
           if (admJson.status === 'success') {
-            setAdmissionsList(admJson.data);
+            setAdmissionsList(admJson.data || admJson.applications || []);
           }
         }
       }
@@ -109,28 +109,44 @@ export default function FinanceDashboardPage() {
   // Super Admin: Update Programme Fee & Headmaster Assignment
   const handleSaveConfig = async (prog: any) => {
     try {
+      const isPaid = Boolean(
+        prog.isPaidProgramme ??
+        (prog.feeConfig?.schoolFee > 0 || prog.feeConfig?.requiresApplicationFee)
+      );
+
+      const appFee = isPaid && prog.feeConfig?.requiresApplicationFee
+        ? Number(prog.feeConfig?.applicationFee || 0)
+        : 0;
+
+      const schFee = isPaid
+        ? Number(prog.feeConfig?.schoolFee || 0)
+        : 0;
+
       const res = await fetch('/api/finance/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           programmeId: prog.id,
-          requiresApplicationFee: prog.feeConfig?.requiresApplicationFee ?? false,
-          applicationFee: Number(prog.feeConfig?.applicationFee || 0),
-          schoolFee: Number(prog.feeConfig?.schoolFee || 0),
+          requiresApplicationFee: isPaid && Boolean(prog.feeConfig?.requiresApplicationFee),
+          applicationFee: appFee,
+          applicationFeeAmount: appFee,
+          schoolFee: schFee,
+          schoolFeeAmount: schFee,
           currency: prog.feeConfig?.currency || 'NGN',
           headmasterId: prog.headmasterId || null,
+          headmasterUserId: prog.headmasterId || null,
         }),
       });
 
       const json = await res.json();
       if (!res.ok || json.status !== 'success') {
-        throw new Error(json.message || 'Failed to update configuration.');
+        throw new Error(json.error || json.message || 'Failed to update configuration.');
       }
 
       notify({
         type: 'success',
-        title: 'Configuration Updated',
-        message: `Financial settings and Headmaster assignment for "${prog.name}" saved to database.`,
+        title: 'Configuration Saved',
+        message: `Financial settings for "${prog.name || prog.nameEnglish}" updated.`,
       });
 
       loadData();
@@ -307,45 +323,60 @@ export default function FinanceDashboardPage() {
 
   return (
     <div className="space-y-6 font-poppins selection:bg-emerald-500 selection:text-white">
-      {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#032015] via-[#064e3b] to-[#042f1e] p-6 sm:p-8 text-white border border-amber-500/40 shadow-2xl">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2">
+      {/* Header Banner - Clean, Executive, No Developer Jargon */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#032015] via-[#064e3b] to-[#042f1e] p-5 sm:p-7 text-white border border-emerald-500/30 shadow-xl">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-3 py-1 rounded-xl bg-amber-500/25 text-amber-300 text-xs font-black uppercase tracking-wider flex items-center gap-1.5 border border-amber-400/40">
-                <CreditCard className="w-4 h-4 text-amber-400" />
-                {isParent ? 'Parent Tuition Portal' : isHeadmaster ? 'Headmaster Section Finance' : 'Institutional Finance Control'}
+              <span className="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-300 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 border border-amber-400/30">
+                <CreditCard className="w-3.5 h-3.5 text-amber-400" />
+                {isParent ? 'Parent Portal' : isHeadmaster ? 'Headmaster Finance' : 'School Finance Command'}
               </span>
               {isHeadmaster && overviewData?.programme && (
-                <span className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-200 text-xs font-mono font-bold border border-emerald-400/30">
+                <span className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-200 text-xs font-bold border border-emerald-400/30">
                   {overviewData.programme.code}
                 </span>
               )}
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
-              {isParent ? 'Wards Tuition & School Fee Ledger' : isHeadmaster ? `${overviewData?.programme?.name || 'Section'} Finance Dashboard` : 'School Financial Command & Tuition Management'}
+            <h1 className="text-xl sm:text-2xl font-black text-white">
+              {isParent
+                ? 'Wards Tuition & School Fees'
+                : isHeadmaster
+                ? `${overviewData?.programme?.name || 'Section'} Finance Dashboard`
+                : 'School Financial Command & Tuition Management'}
             </h1>
 
-            <p className="text-xs sm:text-sm text-emerald-100/90 font-medium max-w-2xl">
+            <p className="text-xs sm:text-sm text-emerald-100/90 font-medium max-w-xl">
               {isParent
-                ? 'Review tuition schedules, verify zero-obligation community programmes, and pay official school fees online via Flutterwave OP Stack.'
+                ? 'Review tuition schedules and pay school fees securely online.'
                 : isHeadmaster
-                ? 'Authoritative section-scoped ledger. Track accepted student enrollment, total fees collected, and outstanding balances.'
-                : 'Centralized financial control for Markazu Umar. Configure application and school fees, assign Headmasters, audit Flutterwave transactions, and approve admissions.'}
+                ? 'Monitor section student enrollments, fee collections, and tuition records.'
+                : 'Configure fee schedules, enable programme payments, and audit financial records.'}
             </p>
           </div>
 
-          <div className="bg-black/30 backdrop-blur-md rounded-2xl p-4 border border-emerald-500/30 space-y-1 text-right shrink-0">
-            <span className="text-[10px] uppercase font-bold text-emerald-300 tracking-wider">
-              Payment Gateway
-            </span>
-            <div className="text-lg font-black text-amber-400 flex items-center justify-end gap-1.5">
-              <span>Flutterwave OP Stack</span>
-            </div>
-            <p className="text-[10px] text-emerald-200/80">
-              Direct Bank & Card Verification
-            </p>
+          {/* Clean Status Badges */}
+          <div className="flex items-center gap-2 self-start sm:self-center">
+            {isHeadmaster && overviewData?.programme && (
+              <span
+                className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold border ${
+                  overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
+                    ? 'bg-amber-500/20 border-amber-400/40 text-amber-300'
+                    : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
+                }`}
+              >
+                {overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
+                  ? '💳 Payment-Enabled Section'
+                  : '🌙 Community Waqf (Free Section)'}
+              </span>
+            )}
+            {isSuperAdmin && (
+              <span className="px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Super Admin Global Access</span>
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -516,32 +547,74 @@ export default function FinanceDashboardPage() {
       {/* ------------------------------------------------------------- */}
       {(isSuperAdmin || isHeadmaster) && (
         <div className="space-y-6">
-          {/* Sub Navigation Tabs for Super Admin */}
+          {/* Sub Navigation Tabs for Super Admin - Always in a Single Straight Line */}
           {isSuperAdmin && (
-            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-emerald-800/40 pb-3">
+            <div className="flex items-center gap-2 border-b border-slate-200 dark:border-emerald-800/40 pb-3 overflow-x-auto scrollbar-none flex-nowrap -mx-1 px-1">
               {[
-                { id: 'overview', label: 'Financial Overview & Audit' },
-                { id: 'config', label: 'Programme Fee Schedule & Headmaster Assignment' },
-                { id: 'admissions', label: 'Admissions & Acceptance Workflow' },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setAdminTab(tab.id as any)}
-                  className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all ${
-                    adminTab === tab.id
-                      ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                      : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/50'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+                { id: 'overview', label: 'Financial Overview & Audit', icon: TrendingUp },
+                { id: 'config', label: 'Programme Fee Schedules & Headmasters', icon: CreditCard },
+                { id: 'admissions', label: 'Admissions & Decisions', icon: UserCheck },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isActive = adminTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setAdminTab(tab.id as any)}
+                    className={`whitespace-nowrap px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shrink-0 ${
+                      isActive
+                        ? 'bg-amber-500 text-slate-950 shadow-md font-black'
+                        : 'bg-white dark:bg-[#042419] text-slate-700 dark:text-emerald-200 border border-slate-200 dark:border-emerald-800/40 hover:bg-emerald-100/50'
+                    }`}
+                  >
+                    <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-slate-950' : 'text-emerald-500'}`} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
           )}
 
           {/* TAB 1: OVERVIEW & AUDIT (Default for Headmaster and Super Admin) */}
           {(adminTab === 'overview' || isHeadmaster) && (
             <div className="space-y-6">
+              {/* Headmaster Section Payment Status Card */}
+              {isHeadmaster && overviewData?.programme && (
+                <div
+                  className={`p-4 rounded-3xl border flex items-center justify-between flex-wrap gap-3 shadow-md ${
+                    overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200'
+                      : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200'
+                  }`}
+                >
+                  <div className="space-y-0.5">
+                    <span className="text-xs font-black uppercase tracking-wider block">
+                      {overviewData.programme.name} • Section Payment Governance
+                    </span>
+                    <p className="text-xs font-medium">
+                      {overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
+                        ? `💳 Online Tuition Enabled — Termly School Fee: ₦${(overviewData.programme.feeConfig?.schoolFeeAmount || 0).toLocaleString()}${
+                            overviewData.programme.feeConfig?.requiresApplicationFee
+                              ? ` • Application Form Fee: ₦${(overviewData.programme.feeConfig?.applicationFeeAmount || 0).toLocaleString()}`
+                              : ''
+                          }`
+                        : '🌙 Community Waqf Section — Fully sponsored with ₦0 tuition liability for all enrolled students.'}
+                    </p>
+                  </div>
+                  <span
+                    className={`px-3.5 py-1.5 rounded-2xl text-xs font-black shadow-sm ${
+                      overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
+                        ? 'bg-amber-500 text-slate-950'
+                        : 'bg-emerald-600 text-white'
+                    }`}
+                  >
+                    {overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
+                      ? 'Payment Supported'
+                      : 'Waqf Sponsored (Free)'}
+                  </span>
+                </div>
+              )}
+
               {/* Metrics Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-2">
@@ -574,7 +647,7 @@ export default function FinanceDashboardPage() {
                     ₦{(overviewData?.metrics?.expectedSchoolFees || 0).toLocaleString()}
                   </p>
                   <p className="text-[11px] text-slate-500 dark:text-amber-300/70 font-medium">
-                    Calculated from Active Accepted Rolls
+                    Calculated from Active Rolls
                   </p>
                 </div>
 
@@ -591,7 +664,7 @@ export default function FinanceDashboardPage() {
                     ₦{(overviewData?.metrics?.totalCollected || 0).toLocaleString()}
                   </p>
                   <p className="text-[11px] text-slate-500 dark:text-emerald-300/70 font-medium">
-                    Verified Flutterwave Transactions
+                    Verified Online Collections
                   </p>
                 </div>
 
@@ -619,7 +692,7 @@ export default function FinanceDashboardPage() {
                   <div>
                     <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
                       <Receipt className="w-5 h-5 text-emerald-500" />
-                      <span>Flutterwave Payment Audit Trail ({filteredTransactions.length})</span>
+                      <span>Payment Audit Trail ({filteredTransactions.length})</span>
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-emerald-300/80">
                       {isHeadmaster
@@ -753,43 +826,270 @@ export default function FinanceDashboardPage() {
 
           {/* TAB 2: PROGRAMME FEE CONFIGURATION & HEADMASTER ASSIGNMENT (Super Admin Only) */}
           {isSuperAdmin && adminTab === 'config' && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-800 dark:text-amber-300 space-y-1">
-                <p className="font-bold flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-amber-500" />
-                  <span>Authoritative Database-Driven Fee & Headmaster Governance:</span>
-                </p>
-                <p className="text-[11px]">
-                  All fee configurations and Headmaster assignments update PostgreSQL directly. Application fees must be paid before registration form access, whereas school fees are only billed to students who have been officially accepted.
-                </p>
+            <div className="space-y-5">
+              {/* Header Summary Bar */}
+              <div className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-emerald-500" />
+                    <span>Programme Tuition & Payment Governance</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-emerald-300/80">
+                    Define which academic programmes require payment and assign the responsible section Headmaster. Free Waqf programmes carry ₦0 fees for students.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-3 py-1.5 rounded-2xl bg-slate-100 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 text-xs font-bold text-slate-700 dark:text-emerald-300">
+                    {programmesConfig.length} Total Sections
+                  </span>
+                  <span className="px-3 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-xs font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    {
+                      programmesConfig.filter(
+                        (p) =>
+                          p.isPaidProgramme ||
+                          p.feeConfig?.schoolFee > 0 ||
+                          p.feeConfig?.requiresApplicationFee
+                      ).length
+                    }{' '}
+                    Payment-Enabled
+                  </span>
+                  <span className="px-3 py-1.5 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-xs font-bold text-cyan-700 dark:text-cyan-300 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+                    {
+                      programmesConfig.filter(
+                        (p) =>
+                          !p.isPaidProgramme &&
+                          !(p.feeConfig?.schoolFee > 0 || p.feeConfig?.requiresApplicationFee)
+                      ).length
+                    }{' '}
+                    Community Waqf
+                  </span>
+                </div>
               </div>
 
+              {/* Programme Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {programmesConfig.map((prog) => {
+                  const isPaid = Boolean(
+                    prog.isPaidProgramme ??
+                    (prog.feeConfig?.schoolFee > 0 || prog.feeConfig?.requiresApplicationFee)
+                  );
+
                   return (
                     <div
                       key={prog.id}
-                      className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-4"
+                      className={`p-5 rounded-3xl bg-white dark:bg-[#042419] border transition-all shadow-md space-y-4 ${
+                        isPaid
+                          ? 'border-emerald-500/40 dark:border-emerald-500/40 ring-1 ring-emerald-500/20'
+                          : 'border-slate-200 dark:border-cyan-500/30'
+                      }`}
                     >
-                      <div className="flex items-center justify-between border-b border-slate-100 dark:border-emerald-900/40 pb-2">
+                      {/* Programme Header */}
+                      <div className="flex items-start justify-between border-b border-slate-100 dark:border-emerald-900/40 pb-3">
                         <div>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-                            {prog.code}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold">
+                              {prog.code}
+                            </span>
+                            <span
+                              className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                                isPaid
+                                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 border border-emerald-300/40'
+                                  : 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/60 dark:text-cyan-300 border border-cyan-300/40'
+                              }`}
+                            >
+                              {isPaid ? 'Payment Enabled' : 'Community Waqf'}
+                            </span>
+                          </div>
                           <h3 className="text-base font-black text-slate-900 dark:text-white mt-1">
-                            {prog.name}
+                            {prog.name || prog.nameEnglish}
                           </h3>
                         </div>
-                        <span className="text-xs font-bold text-slate-400">
-                          ID: {prog.id.slice(0, 12)}...
-                        </span>
                       </div>
+
+                      {/* Payment Mode Selector Buttons */}
+                      <div className="space-y-1.5">
+                        <label className="text-[11px] font-bold text-slate-700 dark:text-gray-300 block">
+                          Programme Payment Status
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = programmesConfig.map((p) =>
+                                p.id === prog.id
+                                  ? {
+                                      ...p,
+                                      isPaidProgramme: false,
+                                      feeConfig: {
+                                        ...p.feeConfig,
+                                        schoolFee: 0,
+                                        requiresApplicationFee: false,
+                                        applicationFee: 0,
+                                      },
+                                    }
+                                  : p
+                              );
+                              setProgrammesConfig(updated);
+                            }}
+                            className={`py-2 px-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                              !isPaid
+                                ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-sm'
+                                : 'bg-slate-50 dark:bg-[#021810] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-emerald-900/50 hover:border-cyan-500/50'
+                            }`}
+                          >
+                            <span>🌙 Free (Waqf)</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = programmesConfig.map((p) =>
+                                p.id === prog.id
+                                  ? {
+                                      ...p,
+                                      isPaidProgramme: true,
+                                      feeConfig: {
+                                        ...p.feeConfig,
+                                        schoolFee:
+                                          (p.feeConfig?.schoolFee || 0) > 0
+                                            ? p.feeConfig.schoolFee
+                                            : 15000,
+                                      },
+                                    }
+                                  : p
+                              );
+                              setProgrammesConfig(updated);
+                            }}
+                            className={`py-2 px-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                              isPaid
+                                ? 'bg-emerald-600 text-white border-emerald-500 font-black shadow-sm'
+                                : 'bg-slate-50 dark:bg-[#021810] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-emerald-900/50 hover:border-emerald-500/50'
+                            }`}
+                          >
+                            <span>💳 Requires Payment</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Fee Inputs (if Paid) or Waqf Notice (if Free) */}
+                      {isPaid ? (
+                        <div className="space-y-3 p-3.5 rounded-2xl bg-emerald-500/5 dark:bg-[#021810] border border-emerald-500/20">
+                          {/* Termly School Fee */}
+                          <div className="space-y-1">
+                            <div className="flex items-center justify-between">
+                              <label className="text-[11px] font-bold text-slate-800 dark:text-emerald-200">
+                                Termly School Fee (₦)
+                              </label>
+                              <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                                Billed After Admission Acceptance
+                              </span>
+                            </div>
+                            <input
+                              type="number"
+                              min="0"
+                              value={prog.feeConfig?.schoolFee || 0}
+                              onChange={(e) => {
+                                const val = parseFloat(e.target.value) || 0;
+                                const updated = programmesConfig.map((p) =>
+                                  p.id === prog.id
+                                    ? {
+                                        ...p,
+                                        isPaidProgramme: true,
+                                        feeConfig: { ...p.feeConfig, schoolFee: val },
+                                      }
+                                    : p
+                                );
+                                setProgrammesConfig(updated);
+                              }}
+                              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#031c13] border border-slate-300 dark:border-emerald-500/30 text-xs font-mono font-bold text-slate-900 dark:text-white"
+                              placeholder="e.g. 15000"
+                            />
+                          </div>
+
+                          {/* Application Fee Toggle and Input */}
+                          <div className="space-y-2 pt-2 border-t border-emerald-500/10 dark:border-emerald-900/30">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <span className="text-xs font-bold text-slate-800 dark:text-emerald-200">
+                                  Application / Form Fee Required
+                                </span>
+                                <p className="text-[10px] text-slate-400 dark:text-emerald-400/80">
+                                  Applicant must pay before form access
+                                </p>
+                              </div>
+                              <input
+                                type="checkbox"
+                                checked={prog.feeConfig?.requiresApplicationFee ?? false}
+                                onChange={(e) => {
+                                  const updated = programmesConfig.map((p) =>
+                                    p.id === prog.id
+                                      ? {
+                                          ...p,
+                                          isPaidProgramme: true,
+                                          feeConfig: {
+                                            ...p.feeConfig,
+                                            requiresApplicationFee: e.target.checked,
+                                            applicationFee: e.target.checked
+                                              ? (p.feeConfig?.applicationFee || 2000)
+                                              : 0,
+                                          },
+                                        }
+                                      : p
+                                  );
+                                  setProgrammesConfig(updated);
+                                }}
+                                className="w-4 h-4 text-emerald-600 rounded accent-emerald-600 cursor-pointer"
+                              />
+                            </div>
+
+                            {prog.feeConfig?.requiresApplicationFee && (
+                              <div className="space-y-1">
+                                <label className="text-[10px] font-bold text-slate-600 dark:text-emerald-400">
+                                  Application Form Fee Amount (₦)
+                                </label>
+                                <input
+                                  type="number"
+                                  min="0"
+                                  value={prog.feeConfig?.applicationFee || 0}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value) || 0;
+                                    const updated = programmesConfig.map((p) =>
+                                      p.id === prog.id
+                                        ? {
+                                            ...p,
+                                            feeConfig: { ...p.feeConfig, applicationFee: val },
+                                          }
+                                        : p
+                                    );
+                                    setProgrammesConfig(updated);
+                                  }}
+                                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#031c13] border border-slate-300 dark:border-emerald-500/30 text-xs font-mono font-bold text-slate-900 dark:text-white"
+                                  placeholder="e.g. 2000"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-3.5 rounded-2xl bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800/30 text-xs text-cyan-800 dark:text-cyan-200 space-y-1">
+                          <p className="font-bold flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
+                            <span>Community Waqf Programme</span>
+                          </p>
+                          <p className="text-[11px] text-cyan-700 dark:text-cyan-300">
+                            Enrolled students in this section attend free of charge (₦0 tuition). No application form or termly fees are charged.
+                          </p>
+                        </div>
+                      )}
 
                       {/* Headmaster Assignment Dropdown */}
                       <div className="space-y-1">
                         <label className="text-[11px] font-bold text-slate-700 dark:text-gray-300 flex items-center gap-1.5">
                           <UserCheck className="w-3.5 h-3.5 text-emerald-500" />
-                          <span>Assigned Headmaster</span>
+                          <span>Assigned Section Headmaster</span>
                         </label>
                         <select
                           value={prog.headmasterId || ''}
@@ -810,102 +1110,14 @@ export default function FinanceDashboardPage() {
                         </select>
                       </div>
 
-                      {/* Application Fee Toggle and Input */}
-                      <div className="space-y-3 p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-100 dark:border-emerald-900/40">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="text-xs font-bold text-slate-800 dark:text-emerald-200">
-                              Application / Form Fee Required
-                            </span>
-                            <p className="text-[10px] text-slate-400 dark:text-emerald-400/80">
-                              Applicant pays before application form unlocks
-                            </p>
-                          </div>
-                          <input
-                            type="checkbox"
-                            checked={prog.feeConfig?.requiresApplicationFee ?? false}
-                            onChange={(e) => {
-                              const updated = programmesConfig.map((p) =>
-                                p.id === prog.id
-                                  ? {
-                                      ...p,
-                                      feeConfig: {
-                                        ...p.feeConfig,
-                                        requiresApplicationFee: e.target.checked,
-                                      },
-                                    }
-                                  : p
-                              );
-                              setProgrammesConfig(updated);
-                            }}
-                            className="w-4 h-4 text-emerald-600 rounded"
-                          />
-                        </div>
-
-                        {prog.feeConfig?.requiresApplicationFee && (
-                          <div className="space-y-1">
-                            <label className="text-[10px] font-bold text-slate-600 dark:text-emerald-400">
-                              Form Fee Amount (₦)
-                            </label>
-                            <input
-                              type="number"
-                              min="0"
-                              value={prog.feeConfig?.applicationFee || 0}
-                              onChange={(e) => {
-                                const val = parseFloat(e.target.value) || 0;
-                                const updated = programmesConfig.map((p) =>
-                                  p.id === prog.id
-                                    ? {
-                                        ...p,
-                                        feeConfig: { ...p.feeConfig, applicationFee: val },
-                                      }
-                                    : p
-                                );
-                                setProgrammesConfig(updated);
-                              }}
-                              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#031c13] border border-slate-300 dark:border-emerald-500/30 text-xs font-mono font-bold text-slate-900 dark:text-white"
-                            />
-                          </div>
-                        )}
-                      </div>
-
-                      {/* School Fee Input */}
-                      <div className="space-y-1 p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-100 dark:border-emerald-900/40">
-                        <div className="flex items-center justify-between">
-                          <label className="text-xs font-bold text-slate-800 dark:text-emerald-200">
-                            Termly School Fee (₦)
-                          </label>
-                          <span className="text-[10px] text-amber-500 font-bold">
-                            Billed Only After Acceptance
-                          </span>
-                        </div>
-                        <input
-                          type="number"
-                          min="0"
-                          value={prog.feeConfig?.schoolFee || 0}
-                          onChange={(e) => {
-                            const val = parseFloat(e.target.value) || 0;
-                            const updated = programmesConfig.map((p) =>
-                              p.id === prog.id
-                                ? {
-                                    ...p,
-                                    feeConfig: { ...p.feeConfig, schoolFee: val },
-                                  }
-                                : p
-                            );
-                            setProgrammesConfig(updated);
-                          }}
-                          className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#031c13] border border-slate-300 dark:border-emerald-500/30 text-xs font-mono font-bold text-slate-900 dark:text-white"
-                        />
-                      </div>
-
+                      {/* Save Button */}
                       <button
                         type="button"
                         onClick={() => handleSaveConfig(prog)}
-                        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition-all"
+                        className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition-all cursor-pointer"
                       >
                         <Check className="w-4 h-4" />
-                        <span>Save Financial Settings to Database</span>
+                        <span>Save Programme Settings</span>
                       </button>
                     </div>
                   );

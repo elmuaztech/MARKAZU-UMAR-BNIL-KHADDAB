@@ -377,7 +377,7 @@ export function HeadmasterDashboard() {
                 <CreditCard className="w-4 h-4" />
                 Section Finance
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold">
                 {assignedProg?.programme_code || 'PROG'}
               </span>
             </div>
@@ -385,6 +385,41 @@ export function HeadmasterDashboard() {
             <h4 className="text-base font-black text-slate-900 dark:text-white">
               Financial Schedule & Balances
             </h4>
+
+            {/* Payment Status Pill */}
+            {(() => {
+              const feeConfig = (assignedProg as any)?.feeConfig;
+              const isPaid = Boolean(
+                (assignedProg as any)?.isPaidProgramme ??
+                (feeConfig?.schoolFee > 0 || feeConfig?.schoolFeeAmount > 0 || feeConfig?.requiresApplicationFee)
+              );
+              const schFee = feeConfig?.schoolFee || feeConfig?.schoolFeeAmount || 0;
+              const appFee = feeConfig?.applicationFee || feeConfig?.applicationFeeAmount || 0;
+
+              return (
+                <div
+                  className={`p-3 rounded-2xl border text-xs space-y-1 ${
+                    isPaid
+                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200'
+                      : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold flex items-center gap-1.5">
+                      {isPaid ? '💳 Payment-Enabled Section' : '🌙 Community Waqf (Free Section)'}
+                    </span>
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/40 dark:bg-black/30">
+                      {isPaid ? `₦${schFee.toLocaleString()} / term` : '₦0 Fees'}
+                    </span>
+                  </div>
+                  <p className="text-[11px] opacity-80">
+                    {isPaid
+                      ? `Enrolled students carry a ₦${schFee.toLocaleString()} termly fee.${appFee > 0 ? ` Form fee: ₦${appFee.toLocaleString()}.` : ''}`
+                      : 'Community sponsored curriculum. Students attend at ₦0 tuition cost.'}
+                  </p>
+                </div>
+              );
+            })()}
 
             <p className="text-xs text-slate-500 dark:text-emerald-300/80 leading-relaxed">
               Track collected school fees, verify applicant form fee transactions, and monitor outstanding tuition balances.
@@ -394,7 +429,7 @@ export function HeadmasterDashboard() {
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-emerald-400">Programme:</span>
                 <span className="font-bold text-slate-900 dark:text-white">
-                  {assignedProg?.programme_name || 'Academic Section'}
+                  {assignedProg?.programme_name_english || assignedProg?.programme_name || 'Academic Section'}
                 </span>
               </div>
               <div className="flex justify-between">
