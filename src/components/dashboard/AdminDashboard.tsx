@@ -54,6 +54,8 @@ import {
   CreditCard as CreditCardIcon,
   Plus,
   X,
+  Crown,
+  FileText,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -201,14 +203,24 @@ export function AdminDashboard() {
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2.5">
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2">
-                Assalamu Alaikum, {currentUser.name || 'Admin User'}! 👋
+                Assalamu Alaikum, {currentUser.name || 'Admin User'}
               </h1>
-              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md ${
+              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-md flex items-center gap-1.5 whitespace-nowrap ${
                 currentUser.role === 'SUPER_ADMIN'
                   ? 'bg-amber-400 text-slate-950'
                   : 'bg-teal-300 text-slate-950'
               }`}>
-                {currentUser.role === 'SUPER_ADMIN' ? '👑 Super Admin Portal' : '🛡️ School Admin Portal'}
+                {currentUser.role === 'SUPER_ADMIN' ? (
+                  <>
+                    <Crown className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                    <span>Super Admin Portal</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-3.5 h-3.5 text-slate-950 shrink-0" />
+                    <span>School Admin Portal</span>
+                  </>
+                )}
               </span>
             </div>
             <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
@@ -1559,21 +1571,52 @@ export function AdminDashboard() {
                     </span>
                     <span className="text-xs text-slate-500 dark:text-emerald-400 font-medium">Generated Immediately</span>
                   </div>
-                  <h2 className="font-poppins text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
-                    {viewingReport === 'SECURITY' && '🛡️ Security & System Operational Report'}
-                    {viewingReport === 'AUDIT' && '📋 Live Administrative Audit Trail Report'}
-                    {viewingReport === 'STUDENT' && '🎓 Enrolled Students & Class Roster Report'}
-                    {viewingReport === 'TEACHER' && '👨‍🏫 Asatizah & Teaching Staff Roster Report'}
-                    {viewingReport === 'ATTENDANCE' && '📊 Daily Attendance & Check-in Report'}
-                    {viewingReport === 'ACADEMIC' && '📖 Tahfiz & Academic Progress Report'}
+                  <h2 className="font-poppins text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+                    {viewingReport === 'SECURITY' && (
+                      <>
+                        <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 shrink-0" />
+                        <span>Security & System Operational Report</span>
+                      </>
+                    )}
+                    {viewingReport === 'AUDIT' && (
+                      <>
+                        <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-sky-500 shrink-0" />
+                        <span>Live Administrative Audit Trail Report</span>
+                      </>
+                    )}
+                    {viewingReport === 'STUDENT' && (
+                      <>
+                        <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-amber-500 shrink-0" />
+                        <span>Enrolled Students & Class Roster Report</span>
+                      </>
+                    )}
+                    {viewingReport === 'TEACHER' && (
+                      <>
+                        <Users className="w-5 h-5 sm:w-6 sm:h-6 text-teal-500 shrink-0" />
+                        <span>Asatizah & Teaching Staff Roster Report</span>
+                      </>
+                    )}
+                    {viewingReport === 'ATTENDANCE' && (
+                      <>
+                        <CalendarCheck className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-500 shrink-0" />
+                        <span>Daily Attendance & Check-in Report</span>
+                      </>
+                    )}
+                    {viewingReport === 'ACADEMIC' && (
+                      <>
+                        <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-purple-500 shrink-0" />
+                        <span>Tahfiz & Academic Progress Report</span>
+                      </>
+                    )}
                   </h2>
                 </div>
 
                 <button
                   onClick={() => setViewingReport(null)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#021810] hover:bg-slate-200 dark:hover:bg-emerald-900 text-slate-700 dark:text-emerald-200 font-poppins font-bold text-xs border border-slate-200 dark:border-emerald-500/30 transition-colors"
+                  className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-[#021810] hover:bg-slate-200 dark:hover:bg-emerald-900 text-slate-700 dark:text-emerald-200 font-poppins font-bold text-xs border border-slate-200 dark:border-emerald-500/30 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap cursor-pointer"
                 >
-                  ✕ Close Preview
+                  <X className="w-4 h-4 shrink-0" />
+                  <span>Close Preview</span>
                 </button>
               </div>
 

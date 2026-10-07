@@ -26,6 +26,7 @@ import {
   Eye,
   UserCheck,
   GraduationCap,
+  X,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -668,9 +669,9 @@ export default function HomePage() {
           <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
             <button
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-6 right-6 text-white text-xl font-bold bg-white/10 p-3 rounded-full hover:bg-white/20"
+              className="absolute top-6 right-6 text-white bg-white/10 p-3 rounded-full hover:bg-white/20 transition-colors"
             >
-              ✕
+              <X className="w-5 h-5" />
             </button>
             <div className="max-w-4xl w-full text-center space-y-4">
               <img
@@ -711,7 +712,7 @@ export default function HomePage() {
               </div>
               <div className="space-y-2 text-center sm:text-left flex-1">
                 <span className="inline-block px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 text-[11px] font-bold">
-                  ⭐ Director
+                  Director
                 </span>
                 <h3 className="text-xl sm:text-2xl font-black text-white">
                   Alh. Salisu Abubakar Daneji
@@ -736,7 +737,7 @@ export default function HomePage() {
               </div>
               <div className="space-y-2 text-center sm:text-left flex-1">
                 <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-bold">
-                  🌙 Deputy Director
+                  Deputy Director
                 </span>
                 <h3 className="text-xl sm:text-2xl font-black text-white">
                   Ustaz Sani Abubakar Daneji

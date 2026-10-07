@@ -137,12 +137,12 @@ export function generateEmailHtml(payload: EmailPayload): string {
             <p style="margin: 6px 0;"><strong>Registered Email Address:</strong> ${payload.to}</p>
             <p style="margin: 6px 0;"><strong>Initial Temporary Password:</strong> <code style="background-color: #d1fae5; padding: 2px 8px; border-radius: 4px; font-family: monospace; font-size: 14px; font-weight: bold; color: #065f46;">${payload.metadata?.tempPassword}</code></p>
             <p style="margin: 10px 0 0 0; font-size: 11px; color: #047857; font-weight: 600;">
-              ℹ️ Note: You can log into your portal using either your <strong>Username (Staff ID / Admission No)</strong> or your <strong>Email address</strong>.
+              Note: You can log into your portal using either your <strong>Username (Staff ID / Admission No)</strong> or your <strong>Email address</strong>.
             </p>
           </div>
 
           <p style="color: #b91c1c; font-size: 13px; font-weight: bold;">
-            ⚠️ Mandatory Action Required: Upon your first login, you will be prompted to create your own new secure password. Your temporary password will expire after first use.
+            Mandatory Action Required: Upon your first login, you will be prompted to create your own new secure password. Your temporary password will expire after first use.
           </p>
 
           <div style="text-align: center; margin: 28px 0;">
@@ -162,7 +162,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
       bodyHtml = `
         <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
           <h2 style="color: #064e3b; margin-top: 0; font-size: 18px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-            🔐 Account Password Reset — 4-Digit OTP Code
+            Account Password Reset — 4-Digit OTP Code
           </h2>
           <p style="font-size: 14px; line-height: 1.6;">Dear <strong>${payload.recipientName}</strong>,</p>
           <p style="font-size: 14px; line-height: 1.6;">
@@ -175,7 +175,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
               ${payload.metadata?.resetToken}
             </p>
             <p style="margin: 12px 0 0 0; font-size: 12px; color: #047857; font-weight: 600;">
-              ⏱️ <strong>Strict Expiry:</strong> This 4-Digit OTP is valid for <strong>10 minutes</strong> only.
+              <strong>Strict Expiry:</strong> This 4-Digit OTP is valid for <strong>10 minutes</strong> only.
             </p>
           </div>
 
@@ -207,7 +207,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
           <p>Your password for the <strong>${schoolNameEng} (${schoolNameArab})</strong> portal was successfully updated on <strong>${new Date().toLocaleString()}</strong>.</p>
 
           <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 14px; margin: 20px 0; color: #065f46; font-size: 13px;">
-            ✓ Your account is secure. If you initiated this password change, no further action is required.
+            Your account is secure. If you initiated this password change, no further action is required.
           </div>
 
           <p style="font-size: 13px; color: #b91c1c;">
@@ -220,7 +220,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
     case 'ACCOUNT_LOCKOUT_ALERT':
       bodyHtml = `
         <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
-          <h2 style="color: #991b1b; margin-top: 0;">⚠️ Security Notice: Account Locked</h2>
+          <h2 style="color: #991b1b; margin-top: 0;">Security Notice: Account Locked</h2>
           <p>Dear ${payload.recipientName},</p>
           <p>Your portal account at <strong>${schoolNameEng} (${schoolNameArab})</strong> has been automatically locked due to <strong>5 consecutive failed login attempts</strong>.</p>
 
@@ -272,7 +272,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
     case 'ADMISSION_ACCEPTED':
       bodyHtml = `
         <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
-          <h2 style="color: #064e3b; margin-top: 0;">🎉 Congratulations! Admission Accepted</h2>
+          <h2 style="color: #064e3b; margin-top: 0;">Congratulations! Admission Accepted</h2>
           <p>Dear <strong>${payload.recipientName}</strong>,</p>
           <p>Assalamu Alaikum. We are pleased to inform you that <strong>${payload.metadata?.studentName}</strong> has been officially accepted into <strong>${schoolNameEng}</strong>.</p>
           <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 16px; margin: 20px 0;">

@@ -21,6 +21,10 @@ export interface RolePermissions {
   canManageSubjects: boolean;
   canManageProgrammes: boolean;
   canManageClasses: boolean;
+  canManageQuranRules: boolean;
+  canViewQuranAssessments: boolean;
+  canEnterQuranAssessments: boolean;
+  canApproveQuranAssessments: boolean;
 }
 
 export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
@@ -43,6 +47,10 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canManageSubjects: true,
     canManageProgrammes: true,
     canManageClasses: true,
+    canManageQuranRules: true,
+    canViewQuranAssessments: true,
+    canEnterQuranAssessments: true,
+    canApproveQuranAssessments: true,
   },
   ADMIN: {
     canViewAllStudents: true,
@@ -63,6 +71,10 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canManageSubjects: true,
     canManageProgrammes: true,
     canManageClasses: true,
+    canManageQuranRules: true,
+    canViewQuranAssessments: true,
+    canEnterQuranAssessments: true,
+    canApproveQuranAssessments: true,
   },
   HEADMASTER: {
     canViewAllStudents: false, // Scoped strictly to assigned section
@@ -83,6 +95,10 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canManageSubjects: true, // Scoped to assigned section subjects
     canManageProgrammes: false, // Admin/Super Admin only
     canManageClasses: true, // Scoped to assigned section classes
+    canManageQuranRules: false, // Strictly prohibited
+    canViewQuranAssessments: true,
+    canEnterQuranAssessments: true,
+    canApproveQuranAssessments: true,
   },
   TEACHER: {
     canViewAllStudents: false, // Scoped ONLY to assigned classes
@@ -103,6 +119,10 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canManageSubjects: false,
     canManageProgrammes: false,
     canManageClasses: false,
+    canManageQuranRules: false, // Strictly prohibited
+    canViewQuranAssessments: true,
+    canEnterQuranAssessments: true,
+    canApproveQuranAssessments: false, // Only Super Admin/Admin/Headmaster
   },
   PARENT: {
     canViewAllStudents: false,
@@ -123,6 +143,10 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canManageSubjects: false,
     canManageProgrammes: false,
     canManageClasses: false,
+    canManageQuranRules: false,
+    canViewQuranAssessments: false,
+    canEnterQuranAssessments: false,
+    canApproveQuranAssessments: false,
   },
   STUDENT: {
     canViewAllStudents: false,
@@ -143,6 +167,10 @@ export const ROLE_PERMISSIONS_MATRIX: Record<ExtendedRole, RolePermissions> = {
     canManageSubjects: false,
     canManageProgrammes: false,
     canManageClasses: false,
+    canManageQuranRules: false,
+    canViewQuranAssessments: false,
+    canEnterQuranAssessments: false,
+    canApproveQuranAssessments: false,
   },
 };
 
@@ -159,6 +187,7 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/subjects': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT'],
   '/dashboard/attendance': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/assessment': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
+  '/dashboard/quran-assessment': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/results': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/communication': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/communication/notifications': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
@@ -178,6 +207,7 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/security': ['SUPER_ADMIN'], // Strictly Super Admin authority
   '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'],
+  '/dashboard/settings/quran-rules': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/finance': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'PARENT'],
 };
 

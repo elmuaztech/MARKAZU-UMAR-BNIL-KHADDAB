@@ -15,6 +15,7 @@ import {
   BookOpen,
   Eye,
   Filter,
+  X,
 } from 'lucide-react';
 
 import { getHeadmasterAssignedProgramme } from '@/lib/rbac';
@@ -221,9 +222,9 @@ export function AdminApprovalQueue() {
                   setSelectedSub(null);
                   setActionType(null);
                 }}
-                className="text-slate-400 hover:text-slate-700 dark:hover:text-white text-lg font-bold p-2"
+                className="text-slate-400 hover:text-slate-700 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-emerald-900/40 transition-colors"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 

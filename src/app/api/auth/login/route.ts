@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
         sendSystemEmail({
           to: user.email,
           recipientName: user.name,
-          subject: '⚠️ Security Alert: Account Locked - Markazu Umar Portal',
+          subject: 'Security Alert: Account Locked - Markazu Umar Portal',
           template: 'ACCOUNT_LOCKOUT_ALERT',
           metadata: { lockoutDurationMinutes: 15 },
         }).catch(() => {});

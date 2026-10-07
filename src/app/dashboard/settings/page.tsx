@@ -1,18 +1,19 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useApp } from '../../../lib/context';
 import { AuditEntry } from '../../../lib/audit';
 import { compressImageFile } from '../../../lib/imageUtils';
 import { ThemeToggle } from '../../../components/navigation/ThemeToggle';
-import { Settings, School, Calendar, ShieldCheck, RotateCcw, Upload, Trash2, Image as ImageIcon, Sparkles, CheckCircle2, User } from 'lucide-react';
+import { Settings, School, Calendar, ShieldCheck, RotateCcw, Upload, Trash2, Image as ImageIcon, Sparkles, CheckCircle2, User, Lock, BookMarked } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 
 export default function SettingsPage() {
-  const { currentSession, schoolLogo, setSchoolLogo, schoolName, setSchoolName, currentUser, setCurrentUser, updateUserAccount, updateUserAvatar, addAuditLog, auditLogs } = useApp();
+  const { currentSession, schoolLogo, setSchoolLogo, schoolName, setSchoolName, currentUser, setCurrentUser, updateUserAccount, updateUserAvatar, addAuditLog, auditLogs, updateSession, notify } = useApp();
 
   const isSuperAdmin = currentUser.role === 'SUPER_ADMIN';
   const [activeTerm, setActiveTerm] = useState<'Term 1' | 'Term 2' | 'Term 3'>(currentSession.activeTerm);
@@ -87,9 +88,25 @@ export default function SettingsPage() {
     setTimeout(() => setLogoNotice(''), 4000);
   };
 
-  const handleTermTransition = () => {
-    setSessionSuccess(true);
-    setTimeout(() => setSessionSuccess(false), 3000);
+  const handleTermTransition = async () => {
+    try {
+      if (currentSession?.id) {
+        await updateSession(currentSession.id, { activeTerm });
+      }
+      setSessionSuccess(true);
+      notify({
+        type: 'success',
+        title: 'Term Advanced',
+        message: `Academic term updated to ${activeTerm} for session "${currentSession.sessionName}".`,
+      });
+      setTimeout(() => setSessionSuccess(false), 3000);
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Update Failed',
+        message: err.message || 'Failed to advance academic term.',
+      });
+    }
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -299,8 +316,9 @@ export default function SettingsPage() {
               Official School Profile Info
             </h3>
             {!isSuperAdmin && (
-              <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                🔒 Super Admin Only
+              <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-500" />
+                <span>Super Admin Only</span>
               </span>
             )}
           </div>
@@ -368,8 +386,9 @@ export default function SettingsPage() {
               Academic Session & Term Controls
             </h3>
             {!isSuperAdmin && (
-              <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20">
-                🔒 Super Admin Only
+              <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded-md border border-amber-500/20 flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-500" />
+                <span>Super Admin Only</span>
               </span>
             )}
           </div>
@@ -410,7 +429,7 @@ export default function SettingsPage() {
             {isSuperAdmin && (
               <button
                 onClick={handleTermTransition}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all"
+                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer whitespace-nowrap"
               >
                 <RotateCcw className="w-4 h-4" />
                 <span>Advance Academic Term</span>
@@ -428,11 +447,13 @@ export default function SettingsPage() {
             </h3>
             {!isSuperAdmin ? (
               <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20 flex items-center gap-1">
-                🔒 Super Admin Authority Required
+                <Lock className="w-3 h-3 text-amber-500" />
+                <span>Super Admin Authority Required</span>
               </span>
             ) : (
-              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20">
-                ✨ Live Global Broadcast
+              <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                <span>Live Global Broadcast</span>
               </span>
             )}
           </div>
@@ -537,6 +558,29 @@ export default function SettingsPage() {
             <ThemeToggle variant="pill" />
           </div>
         </div>
+      </div>
+
+      {/* Qur'an Assessment Rules Management Link */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-emerald-900 to-emerald-950 border border-emerald-700/60 text-white shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            Authoritative Rule Engine
+          </span>
+          <h3 className="text-base font-black text-white mt-1 flex items-center gap-2">
+            <BookMarked className="w-5 h-5 text-emerald-400" />
+            Qur’an Assessment Rules & Disqualification Thresholds
+          </h3>
+          <p className="text-xs text-emerald-200/90 mt-1 max-w-2xl">
+            Manage configuration-driven rules for student types (Masu Biye, Masu Haddah), individual mistake categories (Lahanin Kalma, Tajweed, Wasali), and rule set versions.
+          </p>
+        </div>
+        <Link
+          href="/dashboard/settings/quran-rules"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-xs shadow-md transition whitespace-nowrap self-start sm:self-auto"
+        >
+          <span>Manage Qur’an Rules</span>
+          <BookMarked className="w-4 h-4" />
+        </Link>
       </div>
 
       {/* System Audit Logs Table */}

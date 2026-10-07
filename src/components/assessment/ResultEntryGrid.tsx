@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   HelpCircle,
   Sparkles,
+  ArrowRight,
 } from 'lucide-react';
 
 interface ResultEntryGridProps {
@@ -234,7 +235,10 @@ export function ResultEntryGrid({
 
       {/* Interactive Spreadsheet Data Table */}
       <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-emerald-300/80 px-2 sm:hidden">
-        <span className="flex items-center gap-1">👉 Swipe horizontally to view/enter all assessment columns →</span>
+        <span className="inline-flex items-center gap-1.5">
+          <ArrowRight className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+          <span>Swipe horizontally to view/enter all assessment columns</span>
+        </span>
       </div>
 
       <div className="rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>

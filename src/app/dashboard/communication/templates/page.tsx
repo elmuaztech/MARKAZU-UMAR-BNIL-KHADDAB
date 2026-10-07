@@ -14,6 +14,7 @@ import {
   Search,
   CheckCircle2,
   FileText,
+  X,
 } from 'lucide-react';
 import { MessageTemplate } from '@/types/communication';
 
@@ -168,9 +169,9 @@ export default function MessageTemplatesPage() {
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-emerald-900/40 transition-colors"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 

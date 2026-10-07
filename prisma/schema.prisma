@@ -195,6 +195,7 @@ model Student {
   gradeRecords  GradeRecord[]
   enrollments   StudentEnrollment[]
   paymentTransactions PaymentTransaction[]
+  quranAssessments    QuranStudentAssessment[]
 
   @@index([classId])
   @@index([guardianId])
@@ -220,6 +221,7 @@ model Teacher {
   classesManaged     SchoolClass[]
   tahfizLogs         TahfizRecord[]
   teacherAssignments TeacherAssignment[]
+  quranAssessments   QuranStudentAssessment[]
 
   @@map("teachers")
 }
@@ -298,6 +300,7 @@ model SchoolClass {
   teacherAssignments TeacherAssignment[]
   timetablePeriods   TimetablePeriod[]
   studentEnrollments StudentEnrollment[]
+  quranAssessments   QuranStudentAssessment[]
 
   @@map("school_classes")
 }
@@ -606,6 +609,7 @@ model SchoolSession {
   studentEnrollments StudentEnrollment[]
   attendanceRecords  AttendanceRecord[]
   gradeRecords       GradeRecord[]
+  assessmentEvents   AssessmentEvent[]
 
   @@map("school_sessions")
 }
@@ -766,4 +770,156 @@ model PaymentTransaction {
   @@index([applicationId])
   @@map("payment_transactions")
 }
+
+// =============================================================================
+// DOMAIN: CONFIGURATION-DRIVEN QUR'AN ASSESSMENT SYSTEM
+// =============================================================================
+
+enum RuleSetStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum AssessmentEventStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+}
+
+enum QuranAssessmentStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+}
+
+enum QuranAssessmentResult {
+  PENDING
+  QUALIFIED
+  DISQUALIFIED
+}
+
+model AssessmentRuleSet {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  version       Int            @default(1)
+  status        RuleSetStatus  @default(DRAFT)
+  effectiveFrom DateTime       @default(now())
+  effectiveTo   DateTime?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  rules              AssessmentRule[]
+  events             AssessmentEvent[]
+  studentAssessments QuranStudentAssessment[]
+
+  @@map("assessment_rule_sets")
+}
+
+model AssessmentRule {
+  id              String            @id @default(uuid())
+  ruleSetId       String
+  ruleSet         AssessmentRuleSet @relation(fields: [ruleSetId], references: [id], onDelete: Cascade)
+  studentType     String            // e.g., "Masu Biye", "Masu Haddah"
+  mistakeCategory String            // e.g., "Lahanin Kalma", "Lahanin Harafi", "Lahanin Wasali", "Batar Tilawa", "Tajweed", "Wasali"
+  threshold       Int               // Disqualification mistake count threshold
+  action          String            @default("DISQUALIFY")
+  active          Boolean           @default(true)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@unique([ruleSetId, studentType, mistakeCategory])
+  @@index([ruleSetId, studentType])
+  @@map("assessment_rules")
+}
+
+model AssessmentEvent {
+  id                String                @id @default(uuid())
+  name              String
+  description       String?
+  academicSessionId String?
+  academicSession   SchoolSession?        @relation(fields: [academicSessionId], references: [id], onDelete: SetNull)
+  ruleSetId         String
+  ruleSet           AssessmentRuleSet     @relation(fields: [ruleSetId], references: [id], onDelete: Restrict)
+  status            AssessmentEventStatus @default(DRAFT)
+  durationDays      Int                   @default(30)
+  startDate         DateTime?
+  endDate           DateTime?
+  createdBy         String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+
+  assessments       QuranStudentAssessment[]
+
+  @@index([ruleSetId])
+  @@index([academicSessionId])
+  @@map("assessment_events")
+}
+
+model QuranStudentAssessment {
+  id                       String                @id @default(uuid())
+  studentId                String
+  student                  Student               @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  eventId                  String
+  event                    AssessmentEvent       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  ruleSetId                String
+  ruleSet                  AssessmentRuleSet     @relation(fields: [ruleSetId], references: [id], onDelete: Restrict)
+  studentType              String                // e.g. "Masu Biye", "Masu Haddah"
+  classId                  String
+  schoolClass              SchoolClass           @relation(fields: [classId], references: [id], onDelete: Restrict)
+  teacherId                String?
+  teacher                  Teacher?              @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+  examinerId               String?
+  examinerName             String?
+  status                   QuranAssessmentStatus @default(DRAFT)
+  finalResult              QuranAssessmentResult @default(PENDING)
+  disqualificationReason   String?
+  disqualificationMistakes Int?
+  disqualificationThreshold Int?
+  disqualifiedOnDay        Int?
+  disqualifiedDate         DateTime?
+  notes                    String?
+  submittedAt              DateTime?
+  submittedBy              String?
+  approvedAt               DateTime?
+  approvedBy               String?
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
+
+  dailyRecords             QuranDailyAssessmentRecord[]
+
+  @@unique([studentId, eventId])
+  @@index([eventId, status])
+  @@index([studentId])
+  @@index([classId])
+  @@index([ruleSetId])
+  @@map("quran_student_assessments")
+}
+
+model QuranDailyAssessmentRecord {
+  id               String                 @id @default(uuid())
+  assessmentId     String
+  assessment       QuranStudentAssessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  dayNumber        Int
+  date             DateTime
+  fromHizb         String?
+  toHizb           String?
+  tajweedMistakes  Int                    @default(0)
+  tilawaMistakes   Int                    @default(0)
+  categoryMistakes Json?                  // Dynamic mistake counts by category e.g. {"Lahanin Kalma": 1, "Tajweed": 2}
+  notes            String?
+  enteredBy        String?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  @@unique([assessmentId, dayNumber])
+  @@index([assessmentId, date])
+  @@map("quran_daily_assessment_records")
+}
+
 

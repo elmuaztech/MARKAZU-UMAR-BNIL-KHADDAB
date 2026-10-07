@@ -360,20 +360,28 @@ export default function FinanceDashboardPage() {
           <div className="flex items-center gap-2 self-start sm:self-center">
             {isHeadmaster && overviewData?.programme && (
               <span
-                className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold border ${
+                className={`px-3.5 py-1.5 rounded-2xl text-xs font-bold border whitespace-nowrap flex items-center gap-1.5 ${
                   overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
                     ? 'bg-amber-500/20 border-amber-400/40 text-amber-300'
                     : 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300'
                 }`}
               >
-                {overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
-                  ? '💳 Payment-Enabled Section'
-                  : '🌙 Community Waqf (Free Section)'}
+                {overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee ? (
+                  <>
+                    <CreditCard className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span>Payment-Enabled Section</span>
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>Community Waqf (Free Section)</span>
+                  </>
+                )}
               </span>
             )}
             {isSuperAdmin && (
-              <span className="px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="px-3.5 py-1.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-1.5 whitespace-nowrap">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                 <span>Super Admin Global Access</span>
               </span>
             )}
@@ -593,12 +601,12 @@ export default function FinanceDashboardPage() {
                     </span>
                     <p className="text-xs font-medium">
                       {overviewData.programme.feeConfig?.schoolFeeAmount > 0 || overviewData.programme.feeConfig?.requiresApplicationFee
-                        ? `💳 Online Tuition Enabled — Termly School Fee: ₦${(overviewData.programme.feeConfig?.schoolFeeAmount || 0).toLocaleString()}${
+                        ? `Online Tuition Enabled — Termly School Fee: ₦${(overviewData.programme.feeConfig?.schoolFeeAmount || 0).toLocaleString()}${
                             overviewData.programme.feeConfig?.requiresApplicationFee
                               ? ` • Application Form Fee: ₦${(overviewData.programme.feeConfig?.applicationFeeAmount || 0).toLocaleString()}`
                               : ''
                           }`
-                        : '🌙 Community Waqf Section — Fully sponsored with ₦0 tuition liability for all enrolled students.'}
+                        : 'Community Waqf Section — Fully sponsored with ₦0 tuition liability for all enrolled students.'}
                     </p>
                   </div>
                   <span
@@ -934,13 +942,14 @@ export default function FinanceDashboardPage() {
                               );
                               setProgrammesConfig(updated);
                             }}
-                            className={`py-2 px-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                            className={`py-2 px-2.5 sm:px-3 rounded-2xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer whitespace-nowrap shrink-0 ${
                               !isPaid
                                 ? 'bg-cyan-500 text-slate-950 border-cyan-400 font-black shadow-sm'
                                 : 'bg-slate-50 dark:bg-[#021810] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-emerald-900/50 hover:border-cyan-500/50'
                             }`}
                           >
-                            <span>🌙 Free (Waqf)</span>
+                            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                            <span>Free Waqf</span>
                           </button>
 
                           <button
@@ -963,13 +972,14 @@ export default function FinanceDashboardPage() {
                               );
                               setProgrammesConfig(updated);
                             }}
-                            className={`py-2 px-3 rounded-2xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                            className={`py-2 px-2.5 sm:px-3 rounded-2xl text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 border cursor-pointer whitespace-nowrap shrink-0 ${
                               isPaid
                                 ? 'bg-emerald-600 text-white border-emerald-500 font-black shadow-sm'
                                 : 'bg-slate-50 dark:bg-[#021810] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-emerald-900/50 hover:border-emerald-500/50'
                             }`}
                           >
-                            <span>💳 Requires Payment</span>
+                            <CreditCard className="w-3.5 h-3.5 shrink-0" />
+                            <span>Requires Payment</span>
                           </button>
                         </div>
                       </div>

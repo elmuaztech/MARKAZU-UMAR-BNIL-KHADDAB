@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useApp } from '@/lib/context';
-import { AlertTriangle, RotateCcw, ArrowLeft, ShieldAlert } from 'lucide-react';
+import { AlertTriangle, RotateCcw, ArrowLeft, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 export default function FailedDeliveriesPage() {
   const { deliveryQueue, retryFailedDelivery, retryAllFailedDeliveries } = useApp();
@@ -39,8 +39,10 @@ export default function FailedDeliveriesPage() {
 
       <div className="rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 p-6 shadow-xl space-y-4">
         {failedItems.length === 0 ? (
-          <div className="py-12 text-center text-slate-400 dark:text-emerald-300/60 font-medium">
-            🎉 No failed deliveries recorded! All communication dispatches are operating smoothly.
+          <div className="py-12 text-center text-slate-500 dark:text-emerald-300/80 font-medium flex flex-col items-center justify-center gap-2">
+            <CheckCircle2 className="w-8 h-8 text-emerald-500" />
+            <p className="text-sm font-bold text-slate-800 dark:text-white">No failed deliveries recorded</p>
+            <p className="text-xs text-slate-400 dark:text-emerald-400/60">All communication dispatches are operating smoothly.</p>
           </div>
         ) : (
           <div className="space-y-4">

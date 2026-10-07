@@ -249,13 +249,13 @@ export function ParentDashboard() {
 
               return (
                 <div className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/20 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-emerald-400 flex items-center gap-1.5">
-                      <CreditCard className="w-4 h-4 text-emerald-500" />
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-emerald-400 flex items-center gap-1.5 truncate">
+                      <CreditCard className="w-4 h-4 text-emerald-500 shrink-0" />
                       Tuition & Fee Status: {activeChild.fullName}
                     </span>
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
+                      className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shrink-0 self-start sm:self-auto ${
                         isPaid
                           ? balance > 0
                             ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300'

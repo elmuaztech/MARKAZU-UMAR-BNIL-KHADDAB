@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useApp } from '../../../lib/context';
-import { Bell, PlusCircle, Pin, Megaphone } from 'lucide-react';
+import { Bell, PlusCircle, Pin, Megaphone, X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
@@ -99,7 +99,9 @@ export default function AnnouncementsPage() {
               <h3 className="text-base font-bold flex items-center gap-2">
                 <Megaphone className="w-5 h-5 text-emerald-400" /> Publish New Notice
               </h3>
-              <button onClick={() => setShowModal(false)} className="text-emerald-400 hover:text-white">✕</button>
+              <button onClick={() => setShowModal(false)} className="text-emerald-400 hover:text-white p-1 rounded-lg hover:bg-emerald-900/40 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Body (Scrollable) */}

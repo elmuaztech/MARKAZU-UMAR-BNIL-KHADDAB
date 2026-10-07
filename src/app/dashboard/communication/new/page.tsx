@@ -21,6 +21,8 @@ import {
   Eye,
   Paperclip,
   Check,
+  GraduationCap,
+  HeartHandshake,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CommunicationType, DeliveryChannel, MessagePriority, RecipientType } from '@/types/communication';
@@ -314,14 +316,17 @@ export default function NewCommunicationPage() {
             <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex flex-wrap items-center justify-between gap-4">
               <span className="text-xs font-extrabold uppercase text-slate-600 dark:text-emerald-300">Estimated Target Reach:</span>
               <div className="flex flex-wrap gap-2 text-xs font-black">
-                <span className="px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                  👨‍🎓 {calculatedStudentCount} Students
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 whitespace-nowrap">
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  <span>{calculatedStudentCount} Students</span>
                 </span>
-                <span className="px-3 py-1 rounded-xl bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
-                  👨‍👩‍👧‍👦 {calculatedParentCount} Parents
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 whitespace-nowrap">
+                  <HeartHandshake className="w-3.5 h-3.5" />
+                  <span>{calculatedParentCount} Parents</span>
                 </span>
-                <span className="px-3 py-1 rounded-xl bg-sky-500/20 text-sky-700 dark:text-sky-300 border border-sky-500/30">
-                  👨‍🏫 {calculatedTeacherCount} Teachers
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-sky-500/20 text-sky-700 dark:text-sky-300 border border-sky-500/30 whitespace-nowrap">
+                  <Users className="w-3.5 h-3.5" />
+                  <span>{calculatedTeacherCount} Teachers</span>
                 </span>
               </div>
             </div>
@@ -592,7 +597,7 @@ export default function NewCommunicationPage() {
                   className="p-6 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-sm flex flex-col items-center justify-center gap-2 shadow-xl hover:scale-105 transition-all"
                 >
                   <MessageSquare className="w-6 h-6 text-slate-950" />
-                  <span>📱 Open 1-Click WhatsApp Gateway</span>
+                  <span className="whitespace-nowrap">Open 1-Click WhatsApp Gateway</span>
                   <span className="text-[11px] text-slate-900 font-bold">Interactive WhatsApp Parent Dispatcher</span>
                 </button>
               )}

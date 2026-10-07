@@ -76,7 +76,7 @@ export class EmailProvider implements INotificationProvider {
             
             ${message.attachments && message.attachments.length > 0 ? `
               <div class="attachments">
-                <strong>📎 Official Documents & Attachments (${message.attachments.length}):</strong>
+                <strong>Official Documents & Attachments (${message.attachments.length}):</strong>
                 <ul>
                   ${message.attachments.map(a => `<li><a href="${a.url}">${a.name} (${a.size})</a></li>`).join('')}
                 </ul>
@@ -122,7 +122,7 @@ export class WhatsAppProvider implements INotificationProvider {
     settings?: CommunicationSettings
   ): string {
     const attachmentsText = message.attachments && message.attachments.length > 0
-      ? `\n\n📄 *Attached Files (${message.attachments.length}):*\n` + message.attachments.map(a => `• ${a.name}`).join('\n')
+      ? `\n\n*Attached Files (${message.attachments.length}):*\n` + message.attachments.map(a => `• ${a.name}`).join('\n')
       : '';
 
     return `Assalamu Alaikum.

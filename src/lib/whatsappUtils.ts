@@ -53,7 +53,7 @@ export function buildReportSheetWhatsAppPayload(
       const admissionNo = student ? student.admissionNo : wardId;
       const reportUrl = `${targetBaseUrl}/dashboard/results?studentId=${wardId}`;
 
-      return `• *${studentName}* (${admissionNo})\n  📄 View Report: ${reportUrl}`;
+      return `• *${studentName}* (${admissionNo})\n  View Report: ${reportUrl}`;
     })
     .join('\n\n');
 
@@ -62,8 +62,8 @@ export function buildReportSheetWhatsAppPayload(
 Official Report Card from:
 *Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School* Kano
 
-📌 *Session:* ${sessionName}
-📌 *Term:* ${term}
+*Session:* ${sessionName}
+*Term:* ${term}
 
 *Child Report Card Link:*
 ${childLinksText}
@@ -110,7 +110,7 @@ export function buildAnnouncementWhatsAppPayload(
 Important School Notice from:
 *Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School* Kano
 
-📌 *Subject:* ${subject}
+*Subject:* ${subject}
 
 ${plainContent}
 

@@ -21,6 +21,7 @@ import {
   UserCheck,
   School,
   BookOpen,
+  Phone,
 } from 'lucide-react';
 import { NotificationService } from '@/services/notificationService';
 import { WhatsAppBatchModal } from '@/components/communication/WhatsAppBatchModal';
@@ -138,7 +139,7 @@ export default function ReportSheetDeliveryPage() {
           className="w-full sm:w-auto justify-center px-4 sm:px-5 py-3 rounded-2xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-black text-xs shadow-xl shadow-amber-500/20 flex items-center gap-2 transition-all hover:scale-105 shrink-0"
         >
           <Zap className="w-4 h-4 fill-slate-950 shrink-0" />
-          <span className="text-center">⚡ Send All School Report Sheets (WhatsApp)</span>
+          <span className="text-center whitespace-nowrap">Send All School Report Sheets (WhatsApp)</span>
         </button>
       </div>
 
@@ -320,7 +321,7 @@ export default function ReportSheetDeliveryPage() {
               className="justify-center px-5 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-xl flex items-center gap-2 disabled:opacity-50 transition-all hover:scale-105"
             >
               <MessageSquare className="w-4 h-4 shrink-0" />
-              <span className="truncate">📱 Open WhatsApp Gateway ({parentGroups.length} Parents)</span>
+              <span className="whitespace-nowrap">Open WhatsApp Gateway ({parentGroups.length} Parents)</span>
             </button>
 
             <button
@@ -385,9 +386,17 @@ export default function ReportSheetDeliveryPage() {
                     <td className="py-3.5 px-4">
                       <div className="font-extrabold text-emerald-700 dark:text-emerald-300">{pg.wardNames.join(', ')}</div>
                     </td>
-                    <td className="py-3.5 px-4 text-slate-600 dark:text-emerald-200 font-mono">📱 {pg.parentPhone}</td>
-                    <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-100">
-                      📄 {pg.reportCardsCount} PDF Card{pg.reportCardsCount > 1 ? 's' : ''}
+                    <td className="py-3.5 px-4 text-slate-600 dark:text-emerald-200 font-mono whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-emerald-400" />
+                        {pg.parentPhone}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-100 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5">
+                        <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                        {pg.reportCardsCount} PDF Card{pg.reportCardsCount > 1 ? 's' : ''}
+                      </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <button

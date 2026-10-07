@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useApp, getAuthHeaders } from '../../../lib/context';
-import { Calendar, Plus, CheckCircle2, Archive, AlertTriangle, ShieldCheck, ArrowRight, X } from 'lucide-react';
+import { Calendar, Plus, CheckCircle2, Archive, AlertTriangle, ShieldCheck, ArrowRight, X, Edit3, Check } from 'lucide-react';
 import { SchoolSession } from '../../../types';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -11,7 +11,7 @@ import { Modal } from '@/components/ui/Modal';
 import { FormField, Input, Select } from '@/components/ui/FormField';
 
 export default function SessionsPage() {
-  const { currentSession, currentUser, addAuditLog, notify } = useApp();
+  const { currentSession, currentUser, addAuditLog, notify, updateSession } = useApp();
 
   const [sessionList, setSessionList] = useState<SchoolSession[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,14 @@ export default function SessionsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newSessionName, setNewSessionName] = useState('');
   const [activeTerm, setActiveTerm] = useState<'Term 1' | 'Term 2' | 'Term 3'>('Term 1');
+  const [newIsCurrent, setNewIsCurrent] = useState(false);
   const [notice, setNotice] = useState('');
+
+  // Edit Modal State
+  const [editingSession, setEditingSession] = useState<SchoolSession | null>(null);
+  const [editSessionName, setEditSessionName] = useState('');
+  const [editActiveTerm, setEditActiveTerm] = useState<'Term 1' | 'Term 2' | 'Term 3'>('Term 1');
+  const [editIsCurrent, setEditIsCurrent] = useState(false);
 
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
 
@@ -53,20 +60,16 @@ export default function SessionsPage() {
         body: JSON.stringify({
           sessionName: newSessionName,
           activeTerm,
-          isCurrent: sessionList.length === 0,
+          isCurrent: newIsCurrent || sessionList.length === 0,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Failed to create academic session');
       }
-      if (data && data.session) {
-        setSessionList((prev) => [data.session, ...prev]);
-        setNotice(`Academic Session ${newSessionName} created successfully!`);
-      } else {
-        await fetchSessions();
-        setNotice(`Academic Session ${newSessionName} created!`);
-      }
+
+      await fetchSessions();
+      setNotice(`Academic Session "${newSessionName}" created successfully!`);
 
       notify({
         type: 'success',
@@ -85,6 +88,7 @@ export default function SessionsPage() {
       });
 
       setNewSessionName('');
+      setNewIsCurrent(false);
       setShowAddModal(false);
     } catch (e: any) {
       console.error('[createSession] error:', e);
@@ -97,6 +101,63 @@ export default function SessionsPage() {
       });
     }
     setTimeout(() => setNotice(''), 4000);
+  };
+
+  const openEditModal = (session: SchoolSession) => {
+    setEditingSession(session);
+    setEditSessionName(session.sessionName);
+    setEditActiveTerm((session.activeTerm as any) || 'Term 1');
+    setEditIsCurrent(session.isCurrent);
+  };
+
+  const handleUpdateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSession || !editSessionName.trim()) return;
+
+    try {
+      const headers = getAuthHeaders();
+      const res = await fetch(`/api/sessions/${editingSession.id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+          sessionName: editSessionName.trim(),
+          activeTerm: editActiveTerm,
+          isCurrent: editIsCurrent,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update academic session');
+      }
+
+      await fetchSessions();
+
+      notify({
+        type: 'success',
+        title: 'Session Updated',
+        message: `Academic Session "${editSessionName}" updated successfully.`,
+      });
+
+      addAuditLog({
+        action: 'ACADEMIC_SESSION_UPDATED',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Updated academic session record: ${editSessionName} (${editActiveTerm})`,
+        ipAddress: '197.210.227.14',
+        affectedRecord: `Session/${editingSession.id}`,
+        status: 'SUCCESS',
+      });
+
+      setEditingSession(null);
+    } catch (e: any) {
+      console.error('[updateSession] error:', e);
+      const errMsg = e.message || 'Failed to update academic session';
+      notify({
+        type: 'error',
+        title: 'Update Failed',
+        message: errMsg,
+      });
+    }
   };
 
   const handleActivateSession = async (id: string) => {
@@ -149,18 +210,18 @@ export default function SessionsPage() {
     setTimeout(() => setNotice(''), 4000);
   };
 
-
   return (
-    <div className="space-y-6 text-slate-900 dark:text-gray-100 selection:bg-emerald-500 selection:text-white">
+    <div className="space-y-6 text-slate-900 dark:text-gray-100 selection:bg-emerald-500 selection:text-white font-poppins">
       {/* Top Banner */}
       <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064e3b] to-[#0284c7] text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-emerald-500/30">
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold text-emerald-300 uppercase tracking-widest mb-1">
-            <Calendar className="w-4 h-4 text-emerald-400" /> Academic Session & Term Control Center
+            <Calendar className="w-4 h-4 text-emerald-400" />
+            <span>Academic Session & Term Control Center</span>
           </div>
-          <h1 className="text-xl sm:text-3xl font-black tracking-tight">Academic Sessions & Terms</h1>
+          <h1 className="text-xl sm:text-2xl font-black tracking-tight">Academic Sessions & Terms</h1>
           <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 max-w-2xl">
-            Manage Gregorian & Hijri academic calendars, term activations, examination readiness, and session archiving for Markazu Umar.
+            Configure academic years, set active terms, and switch school session calendars for Markazu Umar.
           </p>
         </div>
 
@@ -170,7 +231,7 @@ export default function SessionsPage() {
             size="md"
             leftIcon={<Plus className="w-4 h-4" />}
             onClick={() => setShowAddModal(true)}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto shrink-0 whitespace-nowrap"
           >
             Create Academic Session
           </Button>
@@ -188,29 +249,29 @@ export default function SessionsPage() {
       <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-emerald-500/40 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-            <h3 className="text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider">
+            <span className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <h3 className="text-sm font-black uppercase text-slate-900 dark:text-white tracking-wider whitespace-nowrap">
               Currently Active School Session
             </h3>
           </div>
-          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/30 self-start sm:self-auto">
+          <span className="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-xl border border-emerald-500/30 self-start sm:self-auto shrink-0 whitespace-nowrap">
             Active School Calendar
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-xs">
           <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200">
-            <span className="text-[10px] font-bold uppercase block text-emerald-600 dark:text-emerald-400">Academic Year</span>
+            <span className="text-[10px] font-bold uppercase block text-emerald-600 dark:text-emerald-400 whitespace-nowrap">Academic Year</span>
             <p className="text-base sm:text-lg font-black mt-1">{currentSession.sessionName || 'Not Set'}</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-900 dark:text-sky-200">
-            <span className="text-[10px] font-bold uppercase block text-sky-600 dark:text-sky-400">Active Term</span>
+            <span className="text-[10px] font-bold uppercase block text-sky-600 dark:text-sky-400 whitespace-nowrap">Active Term</span>
             <p className="text-base sm:text-lg font-black mt-1">{currentSession.activeTerm || 'Term 1'}</p>
           </div>
 
           <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-900 dark:text-purple-200">
-            <span className="text-[10px] font-bold uppercase block text-purple-600 dark:text-purple-400">Examination Status</span>
+            <span className="text-[10px] font-bold uppercase block text-purple-600 dark:text-purple-400 whitespace-nowrap">Examination Status</span>
             <p className="text-base sm:text-lg font-black mt-1">Normal Academic Period</p>
           </div>
         </div>
@@ -218,18 +279,23 @@ export default function SessionsPage() {
 
       {/* Academic Sessions Table */}
       <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-        <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
-          All Academic Session Records
-        </h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight whitespace-nowrap">
+            All Academic Session Records
+          </h3>
+          <span className="text-xs text-slate-400 font-bold">
+            {sessionList.length} Sessions
+          </span>
+        </div>
 
         <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-emerald-500/20 mobile-table-wrapper">
-          <table className="w-full min-w-[480px] text-left border-collapse text-xs">
+          <table className="w-full min-w-[500px] text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-100 dark:bg-[#021810] border-b border-slate-200 dark:border-emerald-500/20 text-slate-700 dark:text-emerald-300 font-bold uppercase text-[10px]">
-                <th className="py-3.5 px-4">Session Name</th>
-                <th className="py-3.5 px-4">Active Term</th>
-                <th className="py-3.5 px-4">Status</th>
-                <th className="py-3.5 px-4 text-right">Actions</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Session Name</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Active Term</th>
+                <th className="py-3.5 px-4 whitespace-nowrap">Status</th>
+                <th className="py-3.5 px-4 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-emerald-500/10">
@@ -244,11 +310,11 @@ export default function SessionsPage() {
               ) : (
                 sessionList.map((s) => (
                   <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-emerald-950/40 transition-all">
-                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">{s.sessionName}</td>
-                    <td className="py-3.5 px-4 text-emerald-600 dark:text-emerald-400 font-semibold">{s.activeTerm}</td>
-                    <td className="py-3.5 px-4">
+                    <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white whitespace-nowrap">{s.sessionName}</td>
+                    <td className="py-3.5 px-4 text-emerald-600 dark:text-emerald-400 font-semibold whitespace-nowrap">{s.activeTerm}</td>
+                    <td className="py-3.5 px-4 whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] uppercase border ${
+                        className={`px-2.5 py-0.5 rounded-md font-bold text-[10px] uppercase border whitespace-nowrap ${
                           s.isCurrent
                             ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
                             : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400 border-slate-300 dark:border-slate-700'
@@ -257,15 +323,26 @@ export default function SessionsPage() {
                         {s.isCurrent ? 'Active' : 'Archived'}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
-                      {!s.isCurrent && isAdmin && (
-                        <button
-                          onClick={() => handleActivateSession(s.id)}
-                          className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm"
-                        >
-                          Activate Session
-                        </button>
-                      )}
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                      <div className="flex items-center justify-end gap-2">
+                        {isAdmin && (
+                          <button
+                            onClick={() => openEditModal(s)}
+                            className="px-2.5 py-1 rounded-xl bg-slate-100 dark:bg-[#021810] border border-slate-300 dark:border-emerald-800/40 hover:bg-slate-200 text-slate-700 dark:text-emerald-300 font-bold text-[11px] flex items-center gap-1 shadow-sm whitespace-nowrap cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Edit</span>
+                          </button>
+                        )}
+                        {!s.isCurrent && isAdmin && (
+                          <button
+                            onClick={() => handleActivateSession(s.id)}
+                            className="px-3 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow-sm whitespace-nowrap cursor-pointer"
+                          >
+                            Activate
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -284,13 +361,13 @@ export default function SessionsPage() {
           <div className="max-w-md w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
             <button
               onClick={() => setShowAddModal(false)}
-              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white"
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
@@ -299,7 +376,7 @@ export default function SessionsPage() {
               </div>
             </div>
 
-            <form onSubmit={handleCreateSession} className="space-y-3">
+            <form onSubmit={handleCreateSession} className="space-y-4">
               <div className="space-y-1">
                 <label className="font-bold text-slate-700 dark:text-gray-300">Session Name</label>
                 <input
@@ -308,7 +385,7 @@ export default function SessionsPage() {
                   value={newSessionName}
                   onChange={(e) => setNewSessionName(e.target.value)}
                   placeholder="e.g. 1448/1449 AH (2026/2027 AD)"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
                 />
               </div>
 
@@ -325,12 +402,106 @@ export default function SessionsPage() {
                 </select>
               </div>
 
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="newIsCurrent"
+                  checked={newIsCurrent}
+                  onChange={(e) => setNewIsCurrent(e.target.checked)}
+                  className="w-4 h-4 text-emerald-600 rounded cursor-pointer accent-emerald-600"
+                />
+                <label htmlFor="newIsCurrent" className="font-semibold text-slate-700 dark:text-gray-300 cursor-pointer">
+                  Set as currently active school session
+                </label>
+              </div>
+
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all uppercase tracking-wider"
+                className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all uppercase tracking-wider cursor-pointer whitespace-nowrap"
               >
                 Create Academic Session
               </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editingSession && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl relative text-xs">
+            <button
+              onClick={() => setEditingSession(null)}
+              className="absolute top-5 right-5 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Edit3 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">Edit Academic Session</h3>
+                <p className="text-slate-500 dark:text-emerald-300/70">Modify session name, term, or active status</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleUpdateSession} className="space-y-4">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Session Name</label>
+                <input
+                  type="text"
+                  required
+                  value={editSessionName}
+                  onChange={(e) => setEditSessionName(e.target.value)}
+                  placeholder="e.g. 1447/1448 AH (2025/2026 AD)"
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-semibold"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700 dark:text-gray-300">Active Term</label>
+                <select
+                  value={editActiveTerm}
+                  onChange={(e: any) => setEditActiveTerm(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="Term 1">Term 1</option>
+                  <option value="Term 2">Term 2</option>
+                  <option value="Term 3">Term 3</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="editIsCurrent"
+                  checked={editIsCurrent}
+                  onChange={(e) => setEditIsCurrent(e.target.checked)}
+                  className="w-4 h-4 text-emerald-600 rounded cursor-pointer accent-emerald-600"
+                />
+                <label htmlFor="editIsCurrent" className="font-semibold text-slate-700 dark:text-gray-300 cursor-pointer">
+                  Set as currently active school session
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingSession(null)}
+                  className="w-1/2 py-2.5 rounded-xl bg-slate-100 dark:bg-[#021810] border border-slate-300 dark:border-emerald-800/40 text-slate-700 dark:text-gray-300 font-bold text-xs cursor-pointer whitespace-nowrap"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>Save Changes</span>
+                </button>
+              </div>
             </form>
           </div>
         </div>

@@ -262,6 +262,13 @@ export function Sidebar({
       icon: FileSpreadsheet,
       group: 'ACADEMICS',
     },
+    {
+      id: 'quran_assessment',
+      label: "Qur'an Assessment",
+      href: '/dashboard/quran-assessment',
+      icon: BookOpen,
+      group: 'ACADEMICS',
+    },
 
     // USERS & DIRECTORY
     {
@@ -310,6 +317,7 @@ export function Sidebar({
     { id: 'security', label: 'Security & Accounts', href: '/dashboard/security', icon: ShieldCheck, badge: 'Admin', group: 'SETTINGS' },
     { id: 'backup', label: 'Backup Center', href: '/dashboard/backup', icon: Database, badge: 'Admin', group: 'SETTINGS' },
     { id: 'settings', label: 'Settings', href: '/dashboard/settings', icon: Settings, group: 'SETTINGS' },
+    { id: 'quran_rules', label: "Qur'an Rules", href: '/dashboard/settings/quran-rules', icon: BookMarked, badge: 'Admin', group: 'SETTINGS' },
   ];
 
   // Role-Based Access Control Filtering

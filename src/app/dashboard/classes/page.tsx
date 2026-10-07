@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useApp } from '../../../lib/context';
 import { SchoolClass } from '@/types';
 import { filterClassesForUser, filterProgrammesForUser, getHeadmasterAssignedProgramme } from '../../../lib/rbac';
-import { School, Users, UserCheck, Plus, Edit, Trash2, UserX, RefreshCw, FileSpreadsheet } from 'lucide-react';
+import { School, Users, UserCheck, Plus, Edit, Trash2, UserX, RefreshCw, FileSpreadsheet, Eye, Lightbulb, CheckCircle, X } from 'lucide-react';
 import { BilingualText } from '@/components/ui/BilingualText';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/Button';
@@ -217,18 +217,18 @@ export default function ClassesPage() {
             className="fixed top-5 right-5 z-50 px-5 py-3.5 rounded-2xl bg-emerald-600 text-white font-poppins font-bold text-xs shadow-2xl flex items-center gap-3 border border-emerald-400/50"
           >
             <div>{toastMessage}</div>
-            <button onClick={() => setToastMessage(null)} className="text-white/80 hover:text-white font-bold text-sm">
-              ✕
+            <button onClick={() => setToastMessage(null)} className="text-white/80 hover:text-white transition-colors">
+              <X className="w-4 h-4" />
             </button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Header (Exact match to Image 2: 🏫 Classes Management) */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">🏫</span>
+          <div className="flex items-center gap-2.5">
+            <School className="w-7 h-7 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Classes Management
             </h1>
@@ -347,8 +347,9 @@ export default function ClassesPage() {
                     </p>
                   </div>
 
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-extrabold text-[10px] flex items-center gap-1 shadow-xs">
-                    ✓ Active
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-extrabold text-[10px] flex items-center gap-1 shadow-xs whitespace-nowrap">
+                    <CheckCircle className="w-3 h-3 text-emerald-400" />
+                    <span>Active</span>
                   </span>
                 </div>
 
@@ -376,21 +377,22 @@ export default function ClassesPage() {
                     </div>
                   </div>
 
-                  {/* Bottom Action Buttons: [👁 View] [✏️ Edit] */}
+                  {/* Bottom Action Buttons: [View] [Edit] */}
                   <div className="pt-2 flex items-center gap-2">
                     <button
                       onClick={() => setViewingClass(c)}
-                      className="flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all"
+                      className="flex-1 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all whitespace-nowrap"
                     >
-                      <span>👁 View</span>
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>View</span>
                     </button>
 
                     {isAdmin && (
                       <button
                         onClick={() => handleOpenEdit(c)}
-                        className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-emerald-950/60 hover:bg-slate-200 dark:hover:bg-emerald-900 text-slate-700 dark:text-emerald-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200 dark:border-emerald-800/40 transition-all"
+                        className="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-emerald-950/60 hover:bg-slate-200 dark:hover:bg-emerald-900 text-slate-700 dark:text-emerald-200 font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-200 dark:border-emerald-800/40 transition-all whitespace-nowrap"
                       >
-                        <span className="text-amber-500">✏️</span>
+                        <Edit className="w-3.5 h-3.5 text-amber-500" />
                         <span>Edit</span>
                       </button>
                     )}
@@ -416,8 +418,8 @@ export default function ClassesPage() {
                 <h3 className="text-lg font-black font-poppins text-slate-900 dark:text-white flex items-center gap-2">
                   <Plus className="w-5 h-5 text-emerald-500" /> Add New Class
                 </h3>
-                <button onClick={() => setIsAddClassModalOpen(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600">
-                  ✕
+                <button onClick={() => setIsAddClassModalOpen(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -586,8 +588,8 @@ export default function ClassesPage() {
                 <h3 className="text-lg font-black font-poppins text-slate-900 dark:text-white flex items-center gap-2">
                   <Edit className="w-5 h-5 text-amber-500" /> Edit Class Details
                 </h3>
-                <button onClick={() => setEditingClass(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600">
-                  ✕
+                <button onClick={() => setEditingClass(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -756,8 +758,8 @@ export default function ClassesPage() {
                     Class: <strong>{reassigningTeacherClass.class_name_english || reassigningTeacherClass.name}</strong>
                   </p>
                 </div>
-                <button onClick={() => setReassigningTeacherClass(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600">
-                  ✕
+                <button onClick={() => setReassigningTeacherClass(null)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -780,8 +782,9 @@ export default function ClassesPage() {
                   </select>
                 </div>
 
-                <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-[11px] leading-relaxed">
-                  💡 <strong>Note:</strong> Choosing "Leave Unassigned" will set this class to have no assigned teacher.
+                <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-[11px] leading-relaxed flex items-center gap-1.5">
+                  <Lightbulb className="w-3.5 h-3.5 text-sky-500 shrink-0" />
+                  <span><strong>Note:</strong> Choosing "Leave Unassigned" will set this class to have no assigned teacher.</span>
                 </div>
               </div>
 

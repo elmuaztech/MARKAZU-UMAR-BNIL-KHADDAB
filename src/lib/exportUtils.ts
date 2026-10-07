@@ -132,7 +132,7 @@ export function printOrExportPDFReference(
         </div>
 
         <div class="watermark">
-          ⚠️ FOR TEACHER REFERENCE ONLY — THIS IS NOT AN OFFICIAL STUDENT REPORT CARD
+          FOR TEACHER REFERENCE ONLY — THIS IS NOT AN OFFICIAL STUDENT REPORT CARD
         </div>
 
         <table>

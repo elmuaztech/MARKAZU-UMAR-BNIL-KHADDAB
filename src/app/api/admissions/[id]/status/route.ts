@@ -125,7 +125,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       sendSystemEmail({
         to: application.parentEmail,
         recipientName: application.parentName,
-        subject: `🎉 Admission Accepted: ${application.studentFullName} - Markazu Umar`,
+        subject: `Admission Accepted: ${application.studentFullName} - Markazu Umar`,
         template: 'ADMISSION_ACCEPTED',
         metadata: {
           studentName: application.studentFullName,

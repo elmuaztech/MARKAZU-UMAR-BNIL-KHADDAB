@@ -35,7 +35,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await getAuthenticatedUser(req);
-    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN']);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN']);
     if (!authCheck.authorized) {
       return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
     }
@@ -72,6 +72,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     });
 
     return NextResponse.json({
+      status: 'success',
       success: true,
       message: 'Academic session updated successfully.',
       session: updated,
@@ -85,7 +86,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await getAuthenticatedUser(req);
-    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN']);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN']);
     if (!authCheck.authorized) {
       return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
     }

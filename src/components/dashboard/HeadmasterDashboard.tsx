@@ -31,6 +31,7 @@ import {
   Layers,
   FileSpreadsheet,
   CreditCard,
+  Sparkles,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { BilingualText } from '@/components/ui/BilingualText';
@@ -112,8 +113,9 @@ export function HeadmasterDashboard() {
                 </p>
               </div>
             ) : (
-              <div className="p-3 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-200 text-xs font-bold">
-                ⚠️ No Programme Assignment Found. Please contact the Super Administrator to assign your account to a school programme.
+              <div className="p-3 rounded-2xl bg-amber-500/20 border border-amber-500/30 text-amber-200 text-xs font-bold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>No Programme Assignment Found. Please contact the Super Administrator to assign your account to a school programme.</span>
               </div>
             )}
           </div>
@@ -405,10 +407,20 @@ export function HeadmasterDashboard() {
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-bold flex items-center gap-1.5">
-                      {isPaid ? '💳 Payment-Enabled Section' : '🌙 Community Waqf (Free Section)'}
+                    <span className="font-bold flex items-center gap-1.5 whitespace-nowrap">
+                      {isPaid ? (
+                        <>
+                          <CreditCard className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span>Payment-Enabled Section</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>Community Waqf (Free Section)</span>
+                        </>
+                      )}
                     </span>
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/40 dark:bg-black/30">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/40 dark:bg-black/30 shrink-0 whitespace-nowrap">
                       {isPaid ? `₦${schFee.toLocaleString()} / term` : '₦0 Fees'}
                     </span>
                   </div>

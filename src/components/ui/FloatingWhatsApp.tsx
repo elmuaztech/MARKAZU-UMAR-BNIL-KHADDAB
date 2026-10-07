@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { X, MessageSquare } from 'lucide-react';
 
 export function FloatingWhatsApp() {
   const [showTooltip, setShowTooltip] = useState(true);
@@ -20,8 +20,9 @@ export function FloatingWhatsApp() {
   return (
     <div className="fixed bottom-5 right-5 z-50 flex items-center gap-3">
       {showTooltip && (
-        <div className="relative bg-[#022417] text-emerald-100 border border-emerald-500/40 px-3.5 py-2 rounded-2xl shadow-2xl text-[11px] font-semibold flex items-center gap-2 animate-bounce">
-          <span>💬 Parents contact immediately via <strong>08167109421</strong></span>
+        <div className="relative bg-[#022417] text-emerald-100 border border-emerald-500/40 px-3.5 py-2 rounded-2xl shadow-2xl text-[11px] font-semibold flex items-center gap-2 animate-bounce whitespace-nowrap">
+          <MessageSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <span>Parents contact immediately via <strong>08167109421</strong></span>
           <button
             onClick={() => setShowTooltip(false)}
             className="p-0.5 text-emerald-400 hover:text-white"

@@ -23,6 +23,8 @@ import {
   BookOpen,
   CalendarCheck,
   Loader2,
+  ArrowRight,
+  X,
 } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { AttendanceRecord, AttendanceStatusType, SchoolClass, Student } from '@/types';
@@ -569,7 +571,10 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
 
           {/* Interactive Roster Table */}
           <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 dark:text-emerald-300/80 px-2 sm:hidden">
-            <span className="flex items-center gap-1">👉 Swipe horizontally to access status buttons & remarks →</span>
+            <span className="inline-flex items-center gap-1.5">
+              <ArrowRight className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <span>Swipe horizontally to access status buttons & remarks</span>
+            </span>
           </div>
 
           <div className="bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl overflow-hidden shadow-lg">
@@ -683,8 +688,8 @@ export function AttendanceRegister({ onSuccess }: AttendanceRegisterProps) {
                 <FileCheck className="w-5 h-5 text-emerald-500" />
                 Confirm Attendance Submission
               </h3>
-              <button onClick={() => setIsPreviewOpen(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-emerald-950">
-                ✕
+              <button onClick={() => setIsPreviewOpen(false)} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-emerald-950 transition-colors">
+                <X className="w-5 h-5" />
               </button>
             </div>
 

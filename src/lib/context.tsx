@@ -137,6 +137,7 @@ interface AppContextType {
   fetchSessions: () => Promise<void>;
   createSession: (sessionName: string, activeTerm: string, isCurrent?: boolean) => Promise<SchoolSession | null>;
   activateSession: (sessionId: string) => Promise<boolean>;
+  updateSession: (sessionId: string, data: Partial<SchoolSession>) => Promise<SchoolSession | null>;
   assessmentConfig: AssessmentConfig;
   resultSubmissions: ResultApprovalSubmission[];
   reportCardTemplate: ReportCardTemplate;
@@ -2414,6 +2415,54 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }).catch((err) => console.warn('[activateSession] sync warning:', err));
 
     return true;
+  };
+
+  const updateSession = async (sessionId: string, data: Partial<SchoolSession>): Promise<SchoolSession | null> => {
+    setSchoolSessions((prev) =>
+      prev.map((s) => {
+        if (s.id === sessionId) {
+          return { ...s, ...data };
+        }
+        if (data.isCurrent) {
+          return { ...s, isCurrent: false };
+        }
+        return s;
+      })
+    );
+
+    if (data.isCurrent) {
+      const target = schoolSessions.find((s) => s.id === sessionId);
+      if (target) {
+        const updated = { ...target, ...data, isCurrent: true };
+        setCurrentSession(updated);
+        setSelectedSessionId(sessionId);
+        localDb.sessions.put(updated).catch(() => {});
+      }
+    }
+
+    try {
+      const res = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+      });
+      const resJson = await res.json();
+      if (res.ok && resJson.session) {
+        const serverSession = resJson.session;
+        setSchoolSessions((prev) =>
+          prev.map((s) => (s.id === sessionId ? serverSession : s))
+        );
+        localDb.sessions.put(serverSession).catch(() => {});
+        if (serverSession.isCurrent) {
+          setCurrentSession(serverSession);
+          setSelectedSessionId(sessionId);
+        }
+        return serverSession;
+      }
+    } catch (err) {
+      console.warn('[updateSession] Error updating session:', err);
+    }
+    return null;
   };
 
   // Enterprise Communication Center States
@@ -5660,6 +5709,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         fetchSessions,
         createSession,
         activateSession,
+        updateSession,
         syncState,
         syncNow,
         refreshAllData,

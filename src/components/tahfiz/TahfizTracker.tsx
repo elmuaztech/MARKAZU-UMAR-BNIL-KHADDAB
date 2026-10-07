@@ -228,7 +228,7 @@ export function TahfizTracker() {
                           {log.hifzSurah} (Ayah {log.hifzFromAyah}-{log.hifzToAyah})
                         </td>
                         <td className="p-3 text-slate-600 dark:text-emerald-300">
-                          {log.sabkiSurah || 'N/A'} ({log.sabkiRating || 5}/5 ★)
+                          {log.sabkiSurah || 'N/A'} (Rating: {log.sabkiRating || 5}/5)
                         </td>
                         <td className="p-3 font-mono text-slate-700 dark:text-emerald-300">Juz {log.manzilJuz || 'N/A'}</td>
                         <td className="p-3 text-slate-500 dark:text-gray-300">{log.teacherNotes || 'Masha-Allah!'}</td>
@@ -596,9 +596,9 @@ export function TahfizTracker() {
                   </div>
 
                   <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-emerald-400 font-bold">
-                    <span>Sabki: {log.sabkiSurah} ({log.sabkiRating}/5★)</span>
+                    <span>Sabki: {log.sabkiSurah} ({log.sabkiRating}/5)</span>
                     <span>•</span>
-                    <span>Manzil: Juz {log.manzilJuz} ({log.manzilRating}/5★)</span>
+                    <span>Manzil: Juz {log.manzilJuz} ({log.manzilRating}/5)</span>
                   </div>
 
                   <div className="text-[11px] text-slate-700 dark:text-emerald-200/90 italic bg-white dark:bg-emerald-950/40 p-2 rounded-xl border border-slate-200 dark:border-emerald-800/30">

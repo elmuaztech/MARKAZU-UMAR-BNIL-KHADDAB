@@ -513,9 +513,12 @@ export default function BackupCenterPage() {
 
         {/* Live Scope Breakdown */}
         <div className="p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-3">
-          <div className="flex items-center justify-between text-[11px] font-extrabold uppercase text-slate-700 dark:text-emerald-400 tracking-wider">
-            <span>📦 Records Included in Backup Snapshot:</span>
-            <span className="font-mono text-emerald-600 dark:text-emerald-300">{totalDatabaseRecords} Total Items</span>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] font-extrabold uppercase text-slate-700 dark:text-emerald-400 tracking-wider">
+            <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+              <Archive className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              <span>Records Included in Backup Snapshot:</span>
+            </span>
+            <span className="font-mono text-emerald-600 dark:text-emerald-300 whitespace-nowrap">{totalDatabaseRecords} Total Items</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 text-xs">

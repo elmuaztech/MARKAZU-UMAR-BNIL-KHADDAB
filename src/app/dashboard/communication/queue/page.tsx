@@ -14,6 +14,7 @@ import {
   Filter,
   Play,
   RotateCcw,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function DeliveryQueuePage() {
@@ -98,7 +99,10 @@ export default function DeliveryQueuePage() {
           </div>
         </div>
 
-        <div className="sm:hidden text-[10px] text-slate-400 italic">👉 Swipe horizontally to view full queue log →</div>
+        <div className="sm:hidden text-[10px] text-slate-400 italic flex items-center gap-1.5">
+          <ArrowRight className="w-3 h-3 text-emerald-500 shrink-0" />
+          <span>Swipe horizontally to view full queue log</span>
+        </div>
 
         <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
           <table className="w-full min-w-[750px] text-left border-collapse text-xs">

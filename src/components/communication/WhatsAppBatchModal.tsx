@@ -257,7 +257,7 @@ export function WhatsAppBatchModal({
         {batchCompleted && (
           <div className="shrink-0 px-6 py-3 bg-emerald-500/20 border-b border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-extrabold text-xs flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-            <span>🎉 Automated Batch Dispatch Complete! All {selectedPayloads.length} selected WhatsApp messages sent to parents.</span>
+            <span>Automated Batch Dispatch Complete! All {selectedPayloads.length} selected WhatsApp messages sent to parents.</span>
           </div>
         )}
 

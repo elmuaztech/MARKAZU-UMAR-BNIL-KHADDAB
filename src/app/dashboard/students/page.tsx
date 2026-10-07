@@ -18,6 +18,7 @@ import {
   Baby,
   HeartHandshake,
   Upload,
+  CheckCircle,
 } from 'lucide-react';
 
 import { filterStudentsForUser, filterProgrammesForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '../../../lib/rbac';
@@ -674,8 +675,9 @@ export default function StudentsPage() {
                   {photo.tag}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-emerald-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <span className="px-4 py-2 rounded-2xl bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl tracking-wide transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    Expand Full Image 🔍
+                  <span className="px-4 py-2 rounded-2xl bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl tracking-wide transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 inline-flex items-center gap-1.5">
+                    <Search className="w-3.5 h-3.5" />
+                    <span>Expand Full Image</span>
                   </span>
                 </div>
               </div>
@@ -696,7 +698,9 @@ export default function StudentsPage() {
               <h3 className="text-base font-bold flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-emerald-500" /> Enrol New Student (Child)
               </h3>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
+              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-emerald-900/40 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Body (Scrolls Independently) */}
@@ -930,7 +934,9 @@ export default function StudentsPage() {
               <h3 className="text-base font-bold flex items-center gap-2">
                 <Edit className="w-5 h-5 text-sky-500" /> Edit Student Details
               </h3>
-              <button onClick={() => setEditingStudent(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
+              <button onClick={() => setEditingStudent(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-emerald-900/40 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Body (Scrolls Independently) */}
@@ -1114,7 +1120,9 @@ export default function StudentsPage() {
               <h3 className="text-base font-bold flex items-center gap-2">
                 <BookOpen className="w-5 h-5 text-amber-500" /> Student Profile Details
               </h3>
-              <button onClick={() => setSelectedStudent(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">✕</button>
+              <button onClick={() => setSelectedStudent(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-emerald-900/40 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             {/* Body (Scrollable) */}
@@ -1179,7 +1187,11 @@ export default function StudentsPage() {
                 <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase">Student Portal Access</span>
                 {selectedStudent.email ? (
                   <p className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
-                    <span className="text-emerald-500 font-bold">✓ Portal Active:</span> {selectedStudent.email}
+                    <span className="text-emerald-500 font-bold inline-flex items-center gap-1">
+                      <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+                      Portal Active:
+                    </span>
+                    <span className="truncate">{selectedStudent.email}</span>
                   </p>
                 ) : (
                   <p className="text-slate-500 dark:text-slate-400 italic">

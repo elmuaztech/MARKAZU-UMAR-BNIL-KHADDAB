@@ -713,20 +713,18 @@ export default function ProgrammesPage() {
                           </span>
                           <div className="flex flex-wrap items-center gap-1.5 justify-end">
                             <span
-                              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${
-                                prog.hasSubcategories
+                              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${prog.hasSubcategories
                                   ? 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-400/30'
                                   : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                              }`}
+                                }`}
                             >
                               {prog.hasSubcategories ? 'Subcategories: YES' : 'Direct Classes'}
                             </span>
                             <span
-                              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${
-                                prog.status === 'Active'
+                              className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full whitespace-nowrap ${prog.status === 'Active'
                                   ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/20'
                                   : 'bg-rose-500/10 text-rose-600 dark:text-rose-300 border border-rose-500/20'
-                              }`}
+                                }`}
                             >
                               {prog.status}
                             </span>
@@ -888,11 +886,10 @@ export default function ProgrammesPage() {
                           </td>
                           <td className="py-3.5 px-4">
                             <span
-                              className={`px-2.5 py-1 rounded-full text-[10px] font-poppins font-extrabold uppercase ${
-                                prog.status === 'Active'
+                              className={`px-2.5 py-1 rounded-full text-[10px] font-poppins font-extrabold uppercase ${prog.status === 'Active'
                                   ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30'
                                   : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                              }`}
+                                }`}
                             >
                               {prog.status}
                             </span>
@@ -916,11 +913,10 @@ export default function ProgrammesPage() {
                               </button>
                               <button
                                 onClick={() => handleToggleStatus(prog)}
-                                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors ${
-                                  prog.status === 'Active'
+                                className={`px-2 py-1 rounded-lg text-[10px] font-bold transition-colors ${prog.status === 'Active'
                                     ? 'bg-amber-500/10 hover:bg-amber-500 text-amber-600 hover:text-white'
                                     : 'bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 hover:text-white'
-                                }`}
+                                  }`}
                               >
                                 {prog.status === 'Active' ? 'Deactivate' : 'Activate'}
                               </button>
@@ -1025,22 +1021,20 @@ export default function ProgrammesPage() {
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, hasSubcategories: false })}
-                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                          !formData.hasSubcategories
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${!formData.hasSubcategories
                             ? 'bg-emerald-600 text-white shadow-md'
                             : 'bg-white dark:bg-[#021810] text-slate-700 dark:text-emerald-300 border border-slate-200 dark:border-emerald-500/20'
-                        }`}
+                          }`}
                       >
                         NO (Direct Classes)
                       </button>
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, hasSubcategories: true })}
-                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                          formData.hasSubcategories
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${formData.hasSubcategories
                             ? 'bg-emerald-600 text-white shadow-md'
                             : 'bg-white dark:bg-[#021810] text-slate-700 dark:text-emerald-300 border border-slate-200 dark:border-emerald-500/20'
-                        }`}
+                          }`}
                       >
                         YES (Subcategories)
                       </button>
@@ -1190,22 +1184,20 @@ export default function ProgrammesPage() {
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, hasSubcategories: false })}
-                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                          !formData.hasSubcategories
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${!formData.hasSubcategories
                             ? 'bg-emerald-600 text-white shadow-md'
                             : 'bg-white dark:bg-[#021810] text-slate-700 dark:text-emerald-300 border border-slate-200 dark:border-emerald-500/20'
-                        }`}
+                          }`}
                       >
                         NO (Direct Classes)
                       </button>
                       <button
                         type="button"
                         onClick={() => setFormData({ ...formData, hasSubcategories: true })}
-                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                          formData.hasSubcategories
+                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${formData.hasSubcategories
                             ? 'bg-emerald-600 text-white shadow-md'
                             : 'bg-white dark:bg-[#021810] text-slate-700 dark:text-emerald-300 border border-slate-200 dark:border-emerald-500/20'
-                        }`}
+                          }`}
                       >
                         YES (Subcategories)
                       </button>

@@ -24,6 +24,7 @@ import {
   Users,
   Eye,
   Trash2,
+  Megaphone,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -50,8 +51,8 @@ export default function CommunicationDashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">📢</span>
+          <div className="flex items-center gap-2.5">
+            <Megaphone className="w-7 h-7 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
               Communication Hub
             </h1>
