@@ -203,14 +203,15 @@
   ],
   "attendance": [
     {
-      "studentId": "22dd4671-fc89-4fce-8c66-e4f4a91a6a7e",
+      "studentId": "5a881abf-de77-43f1-96c0-0808e5d7d63b",
       "status": "PRESENT",
       "isDraft": false,
       "created_at": "2026-09-13T12:58:19.466Z",
-      "updated_at": "2026-09-16T18:57:24.966Z",
-      "classId": "cls-1786840312581-347",
-      "date": "2026-10-20",
-      "statusEnum": "PRESENT"
+      "updated_at": "2026-10-15T21:19:08.561Z",
+      "classId": "f0836ce5-0466-464b-8f94-a324df0db951",
+      "date": "2026-10-15",
+      "statusEnum": "PRESENT",
+      "remarks": "Test batch verification attendance"
     }
   ],
   "tahfizRecords": [],

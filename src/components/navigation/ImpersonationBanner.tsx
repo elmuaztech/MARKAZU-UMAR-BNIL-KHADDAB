@@ -4,6 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { ShieldAlert, ArrowLeft, UserCheck, AlertTriangle } from 'lucide-react';
 
+import { useApp } from '@/lib/context';
+import { User } from '@/types';
+
 interface ImpersonationState {
   isImpersonated: boolean;
   user?: {
@@ -11,6 +14,8 @@ interface ImpersonationState {
     name: string;
     email: string;
     role: string;
+    avatar?: string | null;
+    assignedProgrammeId?: string | null;
     assignedProgrammeName?: string | null;
   };
   impersonatedBy?: {
@@ -22,6 +27,7 @@ interface ImpersonationState {
 }
 
 export function ImpersonationBanner() {
+  const { currentUser, setCurrentUser, users } = useApp();
   const [state, setState] = useState<ImpersonationState | null>(null);
   const [isExiting, setIsExiting] = useState(false);
   const pathname = usePathname();
@@ -31,10 +37,63 @@ export function ImpersonationBanner() {
       const res = await fetch('/api/auth/impersonate', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        if (data.isImpersonated) {
+        if (data.isImpersonated && data.user) {
           setState(data);
+
+          // Synchronize client-side currentUser if currently still on Super Admin or out of sync
+          if (currentUser.id !== data.user.id || currentUser.role !== data.user.role) {
+            try {
+              const currentSaved = localStorage.getItem('markazu_current_user');
+              const existingBackup = localStorage.getItem('markazu_superadmin_backup');
+              if (!existingBackup && currentSaved) {
+                const parsed = JSON.parse(currentSaved);
+                if (parsed.role === 'SUPER_ADMIN' || !parsed.isImpersonated) {
+                  localStorage.setItem('markazu_superadmin_backup', currentSaved);
+                }
+              } else if (!existingBackup && currentUser && currentUser.role === 'SUPER_ADMIN') {
+                localStorage.setItem('markazu_superadmin_backup', JSON.stringify(currentUser));
+              }
+            } catch {}
+
+            const matched = users.find(
+              (u) =>
+                u.id === data.user.id ||
+                (data.user.email && u.email?.toLowerCase() === data.user.email.toLowerCase())
+            );
+
+            const impUser: User = {
+              ...(matched || {}),
+              id: data.user.id,
+              name: data.user.name,
+              email: data.user.email,
+              role: data.user.role as any,
+              status: (matched?.status || 'ACTIVE') as any,
+              avatar: data.user.avatar || (matched as any)?.avatar || undefined,
+              assignedProgrammeId: data.user.assignedProgrammeId || (matched as any)?.assignedProgrammeId || undefined,
+              assignedProgrammeName: data.user.assignedProgrammeName || (matched as any)?.assignedProgrammeName || undefined,
+              isImpersonated: true,
+            };
+
+            try {
+              localStorage.setItem('markazu_current_user', JSON.stringify(impUser));
+              localStorage.setItem('markazu_impersonated_user', JSON.stringify(impUser));
+            } catch {}
+
+            setCurrentUser(impUser);
+          }
         } else {
           setState(null);
+          // If server reports impersonation is not active, restore Super Admin if backup exists
+          try {
+            const backup = localStorage.getItem('markazu_superadmin_backup');
+            if (backup) {
+              const restored = JSON.parse(backup);
+              localStorage.removeItem('markazu_superadmin_backup');
+              localStorage.removeItem('markazu_impersonated_user');
+              localStorage.setItem('markazu_current_user', JSON.stringify(restored));
+              setCurrentUser(restored);
+            }
+          } catch {}
         }
       } else {
         setState(null);
@@ -55,9 +114,16 @@ export function ImpersonationBanner() {
         method: 'POST',
       });
       if (res.ok) {
-        // Clear local storage overrides if any
+        // Clear local storage overrides and restore Super Admin backup
         try {
           localStorage.removeItem('markazu_impersonated_user');
+          const backup = localStorage.getItem('markazu_superadmin_backup');
+          if (backup) {
+            const restored = JSON.parse(backup);
+            localStorage.setItem('markazu_current_user', JSON.stringify(restored));
+            localStorage.removeItem('markazu_superadmin_backup');
+            setCurrentUser(restored);
+          }
         } catch {}
 
         // Hard refresh and redirect back to Super Admin dashboard

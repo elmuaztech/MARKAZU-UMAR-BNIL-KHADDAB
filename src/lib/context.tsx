@@ -571,6 +571,54 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch {}
       }
 
+      // Synchronize with server-side impersonation status
+      fetch('/api/auth/impersonate', { cache: 'no-store' })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((impData) => {
+          if (impData && impData.isImpersonated && impData.user) {
+            const savedUser = localStorage.getItem('markazu_current_user');
+            let parsedSaved: any = null;
+            try { parsedSaved = savedUser ? JSON.parse(savedUser) : null; } catch {}
+
+            // If current saved user is Super Admin, back it up
+            const existingBackup = localStorage.getItem('markazu_superadmin_backup');
+            if (!existingBackup && parsedSaved && (parsedSaved.role === 'SUPER_ADMIN' || !parsedSaved.isImpersonated)) {
+              localStorage.setItem('markazu_superadmin_backup', JSON.stringify(parsedSaved));
+            }
+
+            if (!parsedSaved || parsedSaved.id !== impData.user.id || parsedSaved.role !== impData.user.role) {
+              const impUser: User = {
+                ...(parsedSaved || {}),
+                id: impData.user.id,
+                name: impData.user.name,
+                email: impData.user.email,
+                role: impData.user.role,
+                status: parsedSaved?.status || 'ACTIVE',
+                avatar: impData.user.avatar || parsedSaved?.avatar || undefined,
+                assignedProgrammeId: impData.user.assignedProgrammeId,
+                assignedProgrammeName: impData.user.assignedProgrammeName,
+                isImpersonated: true,
+              };
+              safeLocalStorageSet('markazu_current_user', impUser);
+              safeLocalStorageSet('markazu_impersonated_user', impUser);
+              setCurrentUser(impUser);
+            }
+          } else if (impData && !impData.isImpersonated) {
+            // No impersonation on server. If a backup exists, restore Super Admin!
+            const backup = localStorage.getItem('markazu_superadmin_backup');
+            if (backup) {
+              try {
+                const restored = JSON.parse(backup);
+                localStorage.removeItem('markazu_superadmin_backup');
+                localStorage.removeItem('markazu_impersonated_user');
+                safeLocalStorageSet('markazu_current_user', restored);
+                setCurrentUser(restored);
+              } catch {}
+            }
+          }
+        })
+        .catch(() => {});
+
       // 2. Hydrate other local storage caches safely after mount
       const savedTmpl = localStorage.getItem('markazu_report_card_template');
       if (savedTmpl) {
@@ -638,7 +686,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 const synced = {
                   ...curr,
                   ...matched,
+                  isImpersonated: curr.isImpersonated || false,
                   avatar: matched.avatar !== undefined ? matched.avatar : curr.avatar,
+                  assignedProgrammeId: matched.assignedProgrammeId || curr.assignedProgrammeId,
+                  assignedProgrammeName: matched.assignedProgrammeName || curr.assignedProgrammeName,
                 };
                 safeLocalStorageSet('markazu_current_user', synced);
                 return synced;

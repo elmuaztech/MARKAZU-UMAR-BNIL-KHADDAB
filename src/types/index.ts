@@ -7,7 +7,7 @@ export interface User {
   role: UserRole;
   avatar?: string;
   phone?: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'LOCKED' | 'SUSPENDED' | 'DEACTIVATED';
+  status?: 'ACTIVE' | 'INACTIVE' | 'LOCKED' | 'SUSPENDED' | 'DEACTIVATED';
   deletedAt?: string | null;
   passwordHash?: string;
   isFirstLogin?: boolean;
@@ -21,6 +21,7 @@ export interface User {
   assignedProgrammeId?: string;
   assignedProgrammeName?: string;
   assignmentSummary?: string;
+  isImpersonated?: boolean;
 }
 
 export interface Programme {

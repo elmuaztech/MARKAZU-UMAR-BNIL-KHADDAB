@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { useApp } from '@/lib/context';
 
 interface ImpersonateUserModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export function ImpersonateUserModal({
   preselectedUser,
   onImpersonationSuccess,
 }: ImpersonateUserModalProps) {
+  const { currentUser, setCurrentUser } = useApp();
   const [selectedUser, setSelectedUser] = useState<User | null>(preselectedUser || null);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
@@ -79,8 +81,36 @@ export function ImpersonateUserModal({
         throw new Error(data.error || 'Failed to start impersonation session.');
       }
 
-      onImpersonationSuccess(selectedUser);
-      // Hard refresh to reload application session state and active dashboard
+      // 1. Back up current Super Admin account context to markazu_superadmin_backup
+      try {
+        const savedCurrent = localStorage.getItem('markazu_current_user');
+        if (savedCurrent) {
+          const parsed = JSON.parse(savedCurrent);
+          if (parsed && (parsed.role === 'SUPER_ADMIN' || !parsed.isImpersonated)) {
+            localStorage.setItem('markazu_superadmin_backup', savedCurrent);
+          }
+        } else if (currentUser && currentUser.role === 'SUPER_ADMIN') {
+          localStorage.setItem('markazu_superadmin_backup', JSON.stringify(currentUser));
+        }
+      } catch {}
+
+      // 2. Build full impersonated target user object
+      const targetUserObj: User = {
+        ...selectedUser,
+        ...(data.targetUser || {}),
+        isImpersonated: true,
+      };
+
+      // 3. Immediately persist target user as active currentUser in localStorage
+      try {
+        localStorage.setItem('markazu_current_user', JSON.stringify(targetUserObj));
+        localStorage.setItem('markazu_impersonated_user', JSON.stringify(targetUserObj));
+      } catch {}
+
+      setCurrentUser(targetUserObj);
+      onImpersonationSuccess(targetUserObj);
+
+      // 4. Hard refresh to reload application session state and active dashboard
       window.location.href = '/dashboard';
     } catch (err: any) {
       setErrorMessage(err.message || 'An unexpected error occurred while initiating impersonation.');
