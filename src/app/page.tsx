@@ -144,7 +144,7 @@ export default function HomePage() {
               </span>
             </h1>
 
-            <div className="font-arabic font-bold text-lg md:text-xl text-amber-300 drop-shadow leading-relaxed">
+            <div dir="rtl" lang="ar" className="font-arabic font-bold text-lg md:text-xl text-amber-300 drop-shadow leading-relaxed">
               مركز عمر بن الخطاب<br className="sm:hidden" /> لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي
             </div>
 
@@ -271,8 +271,8 @@ export default function HomePage() {
                 About Markazu Umar bn Khattab
               </h2>
             </div>
-            <div className="font-arabic text-xl font-bold text-emerald-700 dark:text-amber-300">
-              العلم و التربية
+            <div dir="rtl" lang="ar" className="font-arabic text-xl font-bold text-emerald-700 dark:text-amber-300">
+              العلم والتربية
             </div>
           </div>
 

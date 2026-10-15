@@ -34,6 +34,8 @@ scratch/
 artifacts/
 *.zip
 *.sql
+*.pdf
+tests/output-samples/
 
 # Backups
 backup/

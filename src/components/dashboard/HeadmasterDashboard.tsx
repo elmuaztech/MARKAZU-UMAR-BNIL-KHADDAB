@@ -103,8 +103,8 @@ export function HeadmasterDashboard() {
                     {assignedProg.programme_name_english || assignedProg.programme_name}
                   </span>
                   {assignedProg.programme_name_arabic && (
-                    <span className="text-lg text-amber-300 font-arabic font-bold">
-                      • {assignedProg.programme_name_arabic}
+                    <span dir="rtl" lang="ar" className="text-lg text-amber-300 font-arabic font-bold">
+                      ({assignedProg.programme_name_arabic})
                     </span>
                   )}
                 </div>

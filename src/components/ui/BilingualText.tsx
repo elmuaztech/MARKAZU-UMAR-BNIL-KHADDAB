@@ -26,7 +26,7 @@ export const BilingualText: React.FC<BilingualTextProps> = ({
       <span className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
         <span className={`break-words ${englishClassName}`}>{english}</span>
         <span className="text-slate-400 font-normal select-none">•</span>
-        <span className={`break-words ${arabicClassName}`} dir="rtl">
+        <span className={`break-words font-arabic ${arabicClassName}`} dir="rtl" lang="ar">
           {arabic}
         </span>
       </span>
@@ -36,7 +36,7 @@ export const BilingualText: React.FC<BilingualTextProps> = ({
   return (
     <div className={`space-y-0.5 min-w-0 flex flex-col items-start text-left ${className}`}>
       <div className={`break-words text-left ${englishClassName}`}>{english}</div>
-      <div className={`break-words leading-relaxed text-left ${arabicClassName}`}>
+      <div className={`break-words leading-relaxed text-left font-arabic ${arabicClassName}`} dir="rtl" lang="ar">
         {arabic}
       </div>
     </div>

@@ -17,7 +17,7 @@ export function FormField({ label, labelArabic, error, helperText, children, cla
       {label && (
         <div className="flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-700 dark:text-emerald-300">
           <span>{label}</span>
-          {labelArabic && <span className="font-arabic text-xs font-bold text-amber-500">{labelArabic}</span>}
+          {labelArabic && <span className="font-arabic text-xs font-bold text-amber-500" dir="rtl" lang="ar">{labelArabic}</span>}
         </div>
       )}
       {children}

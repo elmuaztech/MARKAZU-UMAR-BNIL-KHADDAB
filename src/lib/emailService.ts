@@ -162,7 +162,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
       bodyHtml = `
         <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
           <h2 style="color: #064e3b; margin-top: 0; font-size: 18px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">
-            Account Password Reset — 4-Digit OTP Code
+            Account Password Reset — 6-Digit Verification Code
           </h2>
           <p style="font-size: 14px; line-height: 1.6;">Dear <strong>${payload.recipientName}</strong>,</p>
           <p style="font-size: 14px; line-height: 1.6;">
@@ -170,12 +170,12 @@ export function generateEmailHtml(payload: EmailPayload): string {
           </p>
 
           <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 12px; padding: 20px; margin: 24px 0; text-align: center;">
-            <p style="margin: 0 0 8px 0; font-weight: bold; color: #065f46; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Your 4-Digit Password Reset OTP:</p>
+            <p style="margin: 0 0 8px 0; font-weight: bold; color: #065f46; font-size: 13px; text-transform: uppercase; letter-spacing: 1px;">Your 6-Digit Password Reset Verification Code (OTP):</p>
             <p style="margin: 6px 0; font-family: monospace; font-size: 34px; font-weight: 900; color: #047857; letter-spacing: 8px; background-color: #d1fae5; padding: 10px 24px; border-radius: 8px; display: inline-block; border: 1px solid #6ee7b7;">
               ${payload.metadata?.resetToken}
             </p>
             <p style="margin: 12px 0 0 0; font-size: 12px; color: #047857; font-weight: 600;">
-              <strong>Strict Expiry:</strong> This 4-Digit OTP is valid for <strong>10 minutes</strong> only.
+              <strong>Strict Expiry:</strong> This 6-Digit verification code is valid for <strong>10 minutes</strong> only.
             </p>
           </div>
 
@@ -188,7 +188,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
 
           <!-- Direct URL Link Backup -->
           <div style="background-color: #f1f5f9; border-radius: 8px; padding: 14px; margin: 20px 0; font-size: 12px; color: #475569; word-break: break-all;">
-            <p style="margin: 0 0 6px 0; font-weight: bold; color: #334155;">Or enter the 4-digit OTP directly on the password reset page:</p>
+            <p style="margin: 0 0 6px 0; font-weight: bold; color: #334155;">Or enter the 6-digit verification code directly on the password reset page:</p>
             <a href="${resetLink}" style="color: #059669; text-decoration: underline;">${resetLink}</a>
           </div>
 

@@ -20,6 +20,9 @@ import {
   Baby,
   UserPlus,
   Upload,
+  Link2,
+  Unlink,
+  UserCheck,
 } from 'lucide-react';
 import { Parent } from '../../../types';
 import { filterStudentsForUser, filterParentsForUser } from '../../../lib/rbac';
@@ -31,12 +34,31 @@ import { Modal } from '@/components/ui/Modal';
 import { FormField, Input } from '@/components/ui/FormField';
 
 export default function ParentsPage() {
-  const { parents, students, teacherAssignments, currentUser, addParent, bulkImportParents, updateParent, deleteParent, showConfirm, notify } = useApp();
+  const {
+    parents,
+    students,
+    teacherAssignments,
+    currentUser,
+    addParent,
+    bulkImportParents,
+    updateParent,
+    deleteParent,
+    updateStudent,
+    syncStudentsFromBackend,
+    syncParentsFromBackend,
+    showConfirm,
+    notify,
+  } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   const [editingParent, setEditingParent] = useState<Parent | null>(null);
+
+  // Parent-Child Relationship Management State
+  const [isLinkingChild, setIsLinkingChild] = useState(false);
+  const [childSearchQuery, setChildSearchQuery] = useState('');
+  const [isSubmittingWard, setIsSubmittingWard] = useState(false);
 
   // Bulk CSV State
   const [bulkPreview, setBulkPreview] = useState<(Omit<Parent, 'id'> & { id?: string; linkedChildrenStr?: string })[]>([]);
@@ -629,27 +651,220 @@ export default function ParentsPage() {
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-1.5">
-                  <Baby className="w-4 h-4 text-amber-500" /> Linked Children:
-                </h4>
-                {students
-                  .filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId)
-                  .map((child) => (
-                    <div key={child.id} className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex justify-between items-center mb-1.5">
-                      <span className="font-bold">{child.fullName} ({child.admissionNo})</span>
-                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">{child.className}</span>
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Baby className="w-4 h-4 text-amber-500" /> Linked Children ({students.filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId).length}):
+                  </h4>
+                  {isAdmin && (
+                    <Button
+                      variant={isLinkingChild ? 'ghost' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setIsLinkingChild(!isLinkingChild);
+                        setChildSearchQuery('');
+                      }}
+                      className="text-xs h-7 px-2.5"
+                      leftIcon={isLinkingChild ? <X className="w-3.5 h-3.5" /> : <Link2 className="w-3.5 h-3.5" />}
+                    >
+                      {isLinkingChild ? 'Cancel Linking' : 'Link Student'}
+                    </Button>
+                  )}
+                </div>
+
+                {/* Inline Student Search & Link Box */}
+                {isLinkingChild && isAdmin && (
+                  <div className="mb-3 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 space-y-2 animate-fadeIn">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-emerald-800 dark:text-emerald-300 text-xs">Search Active Student to Link</span>
+                      <span className="text-[10px] text-slate-500 dark:text-emerald-400">Multiple children permitted</span>
                     </div>
-                  ))}
-                {students.filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId).length === 0 && (
-                  <p className="text-slate-400 text-xs italic">No active children currently linked.</p>
+                    <div className="relative">
+                      <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                      <input
+                        type="text"
+                        placeholder="Search student by name, admission number, or class..."
+                        value={childSearchQuery}
+                        onChange={(e) => setChildSearchQuery(e.target.value)}
+                        className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl bg-white dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                        autoFocus
+                      />
+                    </div>
+
+                    <div className="max-h-44 overflow-y-auto space-y-1 pr-1">
+                      {students
+                        .filter((s) => {
+                          const isAlreadyLinked = s.guardianId === selectedParent.id || (selectedParent.userId && s.guardianId === selectedParent.userId);
+                          if (isAlreadyLinked) return false;
+                          if (!childSearchQuery.trim()) return true;
+                          const q = childSearchQuery.toLowerCase().trim();
+                          return (
+                            s.fullName.toLowerCase().includes(q) ||
+                            (s.admissionNo && s.admissionNo.toLowerCase().includes(q)) ||
+                            (s.className && s.className.toLowerCase().includes(q))
+                          );
+                        })
+                        .slice(0, 15)
+                        .map((availStudent) => (
+                          <div
+                            key={availStudent.id}
+                            className="p-2 rounded-xl bg-white dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex items-center justify-between gap-2 hover:border-emerald-400 transition-colors"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="font-bold text-slate-900 dark:text-white truncate">{availStudent.fullName}</p>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-emerald-400/80">
+                                <span>No: {availStudent.admissionNo}</span>
+                                <span>•</span>
+                                <span>Class: {availStudent.className}</span>
+                              </div>
+                            </div>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              className="h-6 text-[11px] px-2 whitespace-nowrap"
+                              disabled={isSubmittingWard}
+                              onClick={async () => {
+                                try {
+                                  setIsSubmittingWard(true);
+                                  const res = await fetch(`/api/parents/${selectedParent.id}/wards`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({ studentId: availStudent.id }),
+                                  });
+                                  const data = await res.json();
+                                  if (!res.ok) {
+                                    throw new Error(data.error || 'Failed to link student.');
+                                  }
+                                  updateStudent(availStudent.id, { guardianId: selectedParent.id });
+                                  await syncStudentsFromBackend();
+                                  await syncParentsFromBackend();
+                                  notify({
+                                    type: 'success',
+                                    title: 'Child Linked',
+                                    message: `Successfully linked ${availStudent.fullName} to ${selectedParent.fullName}.`,
+                                  });
+                                  setIsLinkingChild(false);
+                                  setChildSearchQuery('');
+                                } catch (err: any) {
+                                  notify({
+                                    type: 'error',
+                                    title: 'Linking Error',
+                                    message: err.message || 'Could not link child.',
+                                  });
+                                } finally {
+                                  setIsSubmittingWard(false);
+                                }
+                              }}
+                              leftIcon={<Link2 className="w-3 h-3" />}
+                            >
+                              Link Child
+                            </Button>
+                          </div>
+                        ))}
+
+                      {students.filter((s) => {
+                        const isAlreadyLinked = s.guardianId === selectedParent.id || (selectedParent.userId && s.guardianId === selectedParent.userId);
+                        if (isAlreadyLinked) return false;
+                        if (!childSearchQuery.trim()) return true;
+                        const q = childSearchQuery.toLowerCase().trim();
+                        return (
+                          s.fullName.toLowerCase().includes(q) ||
+                          (s.admissionNo && s.admissionNo.toLowerCase().includes(q)) ||
+                          (s.className && s.className.toLowerCase().includes(q))
+                        );
+                      }).length === 0 && (
+                        <p className="text-center py-3 text-slate-400 text-xs italic">
+                          No matching unlinked students found.
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 )}
+
+                {/* List of currently linked children */}
+                <div className="space-y-1.5">
+                  {students
+                    .filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId)
+                    .map((child) => (
+                      <div
+                        key={child.id}
+                        className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex justify-between items-center gap-2"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-900 dark:text-white truncate">
+                            {child.fullName}{' '}
+                            <span className="text-slate-500 dark:text-emerald-400 font-normal">({child.admissionNo})</span>
+                          </p>
+                          <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">
+                            {child.className}
+                          </span>
+                        </div>
+                        {isAdmin && (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            className="h-6 text-[10px] px-2 whitespace-nowrap bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/20"
+                            disabled={isSubmittingWard}
+                            onClick={() => {
+                              showConfirm({
+                                title: 'Unlink Child from Parent',
+                                message: `Are you sure you want to unlink ${child.fullName} from ${selectedParent.fullName}? The student record, attendance, and grades will remain intact and active. You can re-link this child later.`,
+                                confirmText: 'Unlink Child',
+                                cancelText: 'Cancel',
+                                variant: 'danger',
+                                onConfirm: async () => {
+                                  try {
+                                    setIsSubmittingWard(true);
+                                    const res = await fetch(`/api/parents/${selectedParent.id}/wards`, {
+                                      method: 'DELETE',
+                                      headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ studentId: child.id }),
+                                    });
+                                    const data = await res.json();
+                                    if (!res.ok) {
+                                      throw new Error(data.error || 'Failed to unlink child.');
+                                    }
+                                    updateStudent(child.id, { guardianId: 'unassigned' });
+                                    await syncStudentsFromBackend();
+                                    await syncParentsFromBackend();
+                                    notify({
+                                      type: 'success',
+                                      title: 'Child Unlinked',
+                                      message: `Successfully unlinked ${child.fullName} from ${selectedParent.fullName}.`,
+                                    });
+                                  } catch (err: any) {
+                                    notify({
+                                      type: 'error',
+                                      title: 'Unlinking Error',
+                                      message: err.message || 'Could not unlink student.',
+                                    });
+                                  } finally {
+                                    setIsSubmittingWard(false);
+                                  }
+                                },
+                              });
+                            }}
+                            leftIcon={<Unlink className="w-3 h-3" />}
+                          >
+                            Unlink
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  {students.filter((s) => s.guardianId === selectedParent.id || s.guardianId === selectedParent.userId).length === 0 && (
+                    <p className="text-slate-400 text-xs italic py-2">No active children currently linked.</p>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Footer (Fixed) */}
             <div className="shrink-0 p-4 sm:p-5 border-t border-slate-200 dark:border-emerald-500/20 flex justify-end bg-slate-50/50 dark:bg-[#021810]">
               <button
-                onClick={() => setSelectedParent(null)}
+                onClick={() => {
+                  setSelectedParent(null);
+                  setIsLinkingChild(false);
+                  setChildSearchQuery('');
+                }}
                 className="px-5 py-2 rounded-xl bg-emerald-600 text-white font-bold shadow-md"
               >
                 Close Details

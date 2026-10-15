@@ -223,11 +223,11 @@ export function StudentAttendanceView({ studentOverride, isParentView = false }:
 
             <div className="min-w-0 space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg sm:text-2xl font-black tracking-tight text-white truncate font-poppins">
+                <h2 className="text-lg sm:text-2xl font-black tracking-tight text-white break-words font-poppins">
                   {activeStudent.fullName}
                 </h2>
                 {activeStudent.fullNameArabic && (
-                  <span className="font-arabic text-amber-300 text-sm font-semibold dir-rtl" dir="rtl">
+                  <span dir="rtl" lang="ar" className="font-arabic text-amber-300 text-sm font-semibold">
                     {activeStudent.fullNameArabic}
                   </span>
                 )}
@@ -374,7 +374,7 @@ export function StudentAttendanceView({ studentOverride, isParentView = false }:
                         <td className="py-3 px-4">
                           {getStatusBadge(rec.status)}
                         </td>
-                        <td className="py-3 px-4 text-slate-600 dark:text-emerald-200/80 max-w-xs truncate">
+                        <td className="py-3 px-4 text-slate-600 dark:text-emerald-200/80 max-w-xs break-words whitespace-normal">
                           {rec.remarks || <span className="text-slate-400 italic">None recorded</span>}
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -416,7 +416,7 @@ export function StudentAttendanceView({ studentOverride, isParentView = false }:
                     </div>
 
                     {rec.remarks && (
-                      <div className="text-[11px] text-slate-600 dark:text-emerald-200/80 bg-white dark:bg-emerald-950/40 p-2 rounded-xl border border-slate-200/80 dark:border-emerald-800/30">
+                      <div className="text-[11px] text-slate-600 dark:text-emerald-200/80 bg-white dark:bg-emerald-950/40 p-2 rounded-xl border border-slate-200/80 dark:border-emerald-800/30 break-words whitespace-normal">
                         <span className="font-bold text-slate-500 dark:text-emerald-400">Note: </span>
                         {rec.remarks}
                       </div>

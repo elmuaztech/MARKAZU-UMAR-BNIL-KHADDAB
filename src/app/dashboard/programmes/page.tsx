@@ -1259,7 +1259,7 @@ export default function ProgrammesPage() {
                       Dynamic Programme Manager
                     </span>
                   </div>
-                  <h2 className="text-xl sm:text-2xl font-black font-poppins text-slate-900 dark:text-white truncate">
+                  <h2 className="text-xl sm:text-2xl font-black font-poppins text-slate-900 dark:text-white break-words">
                     <BilingualText
                       english={viewingProgramme.programme_name_english || viewingProgramme.programme_name}
                       arabic={viewingProgramme.programme_name_arabic}

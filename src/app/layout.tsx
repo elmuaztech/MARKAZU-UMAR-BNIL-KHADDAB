@@ -92,6 +92,8 @@ const themeScript = `
   })();
 `;
 
+import { ImpersonationBanner } from '../components/navigation/ImpersonationBanner';
+
 export default function RootLayout({
   children,
 }: {
@@ -121,7 +123,10 @@ export default function RootLayout({
       <body className="antialiased bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
         <PwaRegister />
         <ThemeProvider>
-          <AppProvider>{children}</AppProvider>
+          <AppProvider>
+            <ImpersonationBanner />
+            {children}
+          </AppProvider>
         </ThemeProvider>
       </body>
     </html>

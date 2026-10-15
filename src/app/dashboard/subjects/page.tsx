@@ -167,7 +167,7 @@ export default function SubjectsPage() {
             </span>
           </div>
           {item.arabicName && (
-            <p className="text-xs text-amber-600 dark:text-amber-400 font-arabic font-semibold">{item.arabicName}</p>
+            <p dir="rtl" lang="ar" className="text-xs text-amber-600 dark:text-amber-400 font-arabic font-semibold">{item.arabicName}</p>
           )}
         </div>
       ),

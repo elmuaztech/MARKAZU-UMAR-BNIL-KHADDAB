@@ -363,7 +363,7 @@ export function Sidebar({
 
           {!isCollapsed && (
             <div className="overflow-hidden min-w-0">
-              <div className="font-arabic font-bold text-[9px] text-amber-600 dark:text-amber-300 leading-tight">
+              <div dir="rtl" lang="ar" className="font-arabic font-bold text-[10px] text-amber-600 dark:text-amber-300 leading-tight">
                 مركز عمر بن الخطاب
               </div>
               <h1 className="font-poppins font-black text-xs text-slate-900 dark:text-white tracking-tight leading-tight truncate">

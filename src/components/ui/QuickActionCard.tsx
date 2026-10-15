@@ -32,10 +32,10 @@ export function QuickActionGrid({ items, columns = 'grid-cols-2 sm:grid-cols-3 m
             className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br ${item.color} text-white font-bold text-xs flex flex-col items-center justify-center gap-2 shadow-md hover:shadow-xl transition-all text-center cursor-pointer h-full border border-white/10`}
           >
             <Icon className="w-5 h-5" />
-            <div className="flex flex-col items-center">
-              <span>{item.label}</span>
+            <div className="flex flex-col items-center w-full px-1">
+              <span className="leading-snug break-words text-center">{item.label}</span>
               {item.labelArabic && (
-                <span className="font-arabic text-[10px] opacity-90 font-semibold mt-0.5">{item.labelArabic}</span>
+                <span dir="rtl" lang="ar" className="font-arabic text-[11px] leading-normal opacity-90 font-medium mt-0.5 break-words text-center">{item.labelArabic}</span>
               )}
             </div>
           </motion.div>
@@ -43,14 +43,14 @@ export function QuickActionGrid({ items, columns = 'grid-cols-2 sm:grid-cols-3 m
 
         if (item.href) {
           return (
-            <Link key={item.href + index} href={item.href} className="block">
+            <Link key={item.href + index} href={item.href} className="block h-full">
               {content}
             </Link>
           );
         }
 
         return (
-          <button key={item.label + index} onClick={item.onClick} className="block w-full text-left">
+          <button key={item.label + index} onClick={item.onClick} className="block w-full h-full text-center">
             {content}
           </button>
         );

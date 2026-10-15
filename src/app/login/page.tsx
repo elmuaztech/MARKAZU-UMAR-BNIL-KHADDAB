@@ -88,8 +88,8 @@ export default function LoginPage() {
     setResetErrorMsg('');
 
     const cleanOtp = otpInput.trim();
-    if (cleanOtp.length < 4) {
-      setResetErrorMsg('Please enter a valid numeric verification code.');
+    if (!/^\d{6}$/.test(cleanOtp)) {
+      setResetErrorMsg('Please enter a valid 6-digit numeric verification code.');
       return;
     }
 
@@ -393,7 +393,7 @@ export default function LoginPage() {
               <div>
                 <h3 className="text-base font-bold text-slate-900 dark:text-white">Account Password Recovery</h3>
                 <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
-                  {resetStep === 1 ? 'Step 1: Request 4-Digit OTP' : 'Step 2: Enter 4-Digit OTP & New Password'}
+                  {resetStep === 1 ? 'Step 1: Request 6-Digit Verification Code' : 'Step 2: Enter 6-Digit Code & New Password'}
                 </p>
               </div>
             </div>
@@ -412,7 +412,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* STEP 1: REQUEST 4-DIGIT OTP */}
+            {/* STEP 1: REQUEST 6-DIGIT OTP */}
             {resetStep === 1 && (
               <form onSubmit={handleRequestOtpSubmit} className="space-y-4">
                 <div className="space-y-1">
@@ -431,7 +431,7 @@ export default function LoginPage() {
                     />
                   </div>
                   <p className="text-[10px] text-slate-500 dark:text-emerald-400/80">
-                    Enter your registered email address or your Staff ID / Admission Number.
+                    Enter your registered email address or your Staff ID / Admission Number. A 6-digit code will be sent.
                   </p>
                 </div>
 
@@ -443,11 +443,11 @@ export default function LoginPage() {
                   {isSendingOtp ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>Dispatching OTP Email...</span>
+                      <span>Dispatching Code...</span>
                     </>
                   ) : (
                     <>
-                      <span>Request 4-Digit OTP Code</span>
+                      <span>Request 6-Digit Code</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
@@ -458,10 +458,10 @@ export default function LoginPage() {
             {/* STEP 2: ENTER OTP & NEW PASSWORD */}
             {resetStep === 2 && (
               <form onSubmit={handleVerifyOtpAndResetPasswordSubmit} className="space-y-4 text-xs">
-                {/* 4-Digit OTP Input */}
+                {/* 6-Digit OTP Input */}
                 <div className="space-y-1">
                   <label className="block text-slate-700 dark:text-gray-300 font-bold">
-                    4-Digit OTP Code (Sent to Email)
+                    6-Digit Verification Code (Sent to Email)
                   </label>
                   <div className="relative">
                     <KeyRound className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400" />
@@ -470,13 +470,16 @@ export default function LoginPage() {
                       inputMode="numeric"
                       pattern="[0-9]*"
                       required
-                      maxLength={4}
+                      maxLength={6}
                       value={otpInput}
                       onChange={(e) => setOtpInput(e.target.value.replace(/[^0-9]/g, ''))}
-                      placeholder="Enter 4-digit code (e.g. 4819)"
-                      className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-base tracking-widest font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      placeholder="• • • • • •"
+                      className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-lg tracking-[0.35em] font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     />
                   </div>
+                  <p className="text-[10px] text-slate-500 dark:text-emerald-400/80 text-center">
+                    Enter the 6-digit code from your email (valid for 10 minutes)
+                  </p>
                 </div>
 
                 {/* New Password Input */}

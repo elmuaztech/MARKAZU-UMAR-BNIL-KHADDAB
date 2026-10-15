@@ -373,7 +373,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
             MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI
           </h3>
 
-          <div className="font-arabic font-bold text-amber-600 dark:text-amber-300 text-xs">
+          <div dir="rtl" lang="ar" className="font-arabic font-bold text-amber-600 dark:text-amber-300 text-xs">
             مركز عمر بن الخطاب لتحفيظ القرآن بالدراسات الإسلامية دنيج
           </div>
 

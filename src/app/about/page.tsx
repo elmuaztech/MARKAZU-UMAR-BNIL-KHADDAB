@@ -20,7 +20,7 @@ export default function AboutPage() {
               <BookOpen className="w-4 h-4 text-amber-400" /> About Our Institution
             </div>
 
-            <h1 className="font-arabic font-bold text-2xl md:text-3xl text-amber-300">
+            <h1 dir="rtl" lang="ar" className="font-arabic font-bold text-2xl md:text-3xl text-amber-300 leading-normal">
               مركز عمر بن الخطاب لتحفيظ القرآن بالدراسات الإسلامية دنيج
             </h1>
 
@@ -32,8 +32,8 @@ export default function AboutPage() {
             </h2>
 
             <div className="pt-2">
-              <span className="inline-block px-5 py-2 rounded-2xl bg-amber-500 text-slate-950 font-arabic font-extrabold text-sm shadow-md">
-                العلم و التربية — Knowledge and Discipline
+              <span dir="rtl" lang="ar" className="inline-block px-5 py-2 rounded-2xl bg-amber-500 text-slate-950 font-arabic font-extrabold text-sm shadow-md">
+                العلم والتربية — Knowledge and Discipline
               </span>
             </div>
           </div>

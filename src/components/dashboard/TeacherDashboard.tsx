@@ -296,7 +296,7 @@ export function TeacherDashboard() {
                     {classStudentCount} Students
                   </span>
                 </div>
-                <p className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] font-semibold">{c.class_name_arabic}</p>
+                <p dir="rtl" lang="ar" className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] font-semibold">{c.class_name_arabic}</p>
               </div>
             );
           })}

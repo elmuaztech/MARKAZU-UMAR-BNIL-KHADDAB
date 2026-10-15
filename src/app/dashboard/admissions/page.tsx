@@ -450,7 +450,7 @@ export default function AdmissionsPage() {
                           <div>
                             <div className="font-bold text-xs flex items-center gap-2">
                               <span>{p.programme_name_english}</span>
-                              <span className="font-arabic text-amber-300 text-[11px]">({p.programme_name_arabic})</span>
+                              <span dir="rtl" lang="ar" className="font-arabic text-amber-300 text-[11px]">({p.programme_name_arabic})</span>
                             </div>
                             <div className="text-[10px] opacity-75">{p.description}</div>
                           </div>

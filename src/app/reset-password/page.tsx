@@ -39,8 +39,8 @@ function ResetPasswordForm() {
     setSuccessMsg('');
 
     const cleanToken = token.trim();
-    if (!cleanToken) {
-      setErrorMsg('Please enter your 5-minute password reset token.');
+    if (!/^\d{6}$/.test(cleanToken)) {
+      setErrorMsg('Please enter your 6-digit password reset verification code.');
       return;
     }
 
@@ -141,9 +141,9 @@ function ResetPasswordForm() {
 
       {!successMsg && (
         <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4 text-xs">
-          {/* Reset 4-Digit OTP Input */}
+          {/* Reset 6-Digit OTP Input */}
           <div className="space-y-1">
-            <label className="block text-slate-700 dark:text-gray-300 font-bold">4-Digit Reset OTP Code</label>
+            <label className="block text-slate-700 dark:text-gray-300 font-bold">6-Digit Reset Verification Code</label>
             <div className="relative">
               <KeyRound className="w-4 h-4 absolute left-3 top-3.5 text-emerald-600 dark:text-emerald-400 pointer-events-none" />
               <input
@@ -152,13 +152,16 @@ function ResetPasswordForm() {
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 required
-                maxLength={8}
+                maxLength={6}
                 value={token}
                 onChange={(e) => setToken(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="Enter verification code"
-                className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-base tracking-widest font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                placeholder="• • • • • •"
+                className="w-full pl-9 pr-4 py-3 rounded-xl bg-white dark:bg-[#062c1e] border border-slate-300 dark:border-emerald-500/30 text-lg tracking-[0.35em] font-mono font-bold text-center text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
+            <p className="text-[10px] text-slate-500 dark:text-emerald-400/80 text-center">
+              Code is valid for 10 minutes
+            </p>
           </div>
 
           {/* New Password Input */}

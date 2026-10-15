@@ -16,14 +16,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please enter the verification code sent to your email.' }, { status: 400 });
     }
 
+    if (!/^\d{6}$/.test(otp)) {
+      return NextResponse.json({ error: 'Please enter a valid 6-digit numeric verification code.' }, { status: 400 });
+    }
+
     if (!newPassword) {
       return NextResponse.json({ error: 'Please enter a new password.' }, { status: 400 });
+    }
+
+    // Rate Limiting / Brute-force throttling (max 5 failed attempts per IP / token)
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'anonymous';
+    const rateLimitKey = `${clientIp}_reset_attempt`;
+    const now = Date.now();
+    
+    // In-memory attempt cache (global map)
+    const g = global as any;
+    if (!g._resetAttempts) g._resetAttempts = new Map<string, { count: number; resetAt: number }>();
+    const attemptRecord = g._resetAttempts.get(rateLimitKey);
+    
+    if (attemptRecord && attemptRecord.resetAt > now) {
+      if (attemptRecord.count >= 5) {
+        return NextResponse.json(
+          { error: 'Too many verification attempts. Please wait 10 minutes before requesting a new code.' },
+          { status: 429 }
+        );
+      }
     }
 
     // 1. Authoritative token verification strictly from PostgreSQL
     const tokenHash = crypto.createHash('sha256').update(otp).digest('hex');
 
     let tokenRecord: any = null;
+    let expiredOrUsedToken: any = null;
     try {
       tokenRecord = await prisma.passwordResetToken.findFirst({
         where: {
@@ -40,6 +64,17 @@ export async function POST(req: NextRequest) {
           user: true,
         },
       });
+
+      if (!tokenRecord) {
+        expiredOrUsedToken = await prisma.passwordResetToken.findFirst({
+          where: {
+            OR: [
+              { tokenHash },
+              { tokenHash: otp },
+            ],
+          },
+        });
+      }
     } catch (dbErr) {
       console.error('[RESET_PASSWORD_DB_ERROR]', dbErr);
       return NextResponse.json({ error: 'Database service error. Please try again.' }, { status: 500 });
@@ -48,8 +83,23 @@ export async function POST(req: NextRequest) {
     const targetUser = tokenRecord?.user;
 
     if (!tokenRecord || !targetUser || targetUser.deletedAt || targetUser.status !== 'ACTIVE') {
-      return NextResponse.json({ error: 'Invalid or expired verification code. Please request a new code.' }, { status: 400 });
+      // Record failed attempt for rate limiting
+      const currentAttempts = (attemptRecord && attemptRecord.resetAt > now) ? attemptRecord.count + 1 : 1;
+      g._resetAttempts.set(rateLimitKey, { count: currentAttempts, resetAt: now + 10 * 60 * 1000 });
+
+      if (expiredOrUsedToken?.used) {
+        return NextResponse.json({ error: 'This verification code has already been used. Please request a new code.' }, { status: 400 });
+      }
+
+      if (expiredOrUsedToken && new Date(expiredOrUsedToken.expiresAt).getTime() <= now) {
+        return NextResponse.json({ error: 'Verification code has expired (10-minute limit). Please request a new code.' }, { status: 400 });
+      }
+
+      return NextResponse.json({ error: 'Invalid verification code. Please check your email or request a new code.' }, { status: 400 });
     }
+
+    // Clear failed attempts on success
+    g._resetAttempts.delete(rateLimitKey);
 
     // 2. Validate Password Policy
     const policyResult = validatePasswordPolicy(newPassword);

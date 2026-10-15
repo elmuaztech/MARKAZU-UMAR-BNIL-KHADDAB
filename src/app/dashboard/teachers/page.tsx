@@ -749,8 +749,8 @@ export default function TeachersPage() {
                     <BilingualText
                       english={teacher.full_name_english || teacher.fullName}
                       arabic={teacher.full_name_arabic}
-                      englishClassName="text-sm font-bold text-slate-900 dark:text-white mt-1 truncate"
-                      arabicClassName="text-xs font-semibold text-amber-600 dark:text-amber-300 font-arabic truncate"
+                      englishClassName="text-sm font-bold text-slate-900 dark:text-white mt-1 break-words leading-tight"
+                      arabicClassName="text-xs font-semibold text-amber-600 dark:text-amber-300 font-arabic break-words mt-0.5"
                     />
                   </div>
                 </div>

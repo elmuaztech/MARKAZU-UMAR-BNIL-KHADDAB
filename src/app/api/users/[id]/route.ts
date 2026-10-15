@@ -57,6 +57,14 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       return NextResponse.json({ error: `User with ID "${userId}" was not found.` }, { status: 404 });
     }
 
+    if (authUser.isImpersonated) {
+      if (body.role !== undefined || body.resetPassword || body.newTempPassword || body.password || body.status !== undefined) {
+        return NextResponse.json({
+          error: 'Security Restriction (HTTP 403): Sensitive operations (role alterations, password modifications, account status changes) cannot be performed while impersonating a user account.',
+        }, { status: 403 });
+      }
+    }
+
     const isAdmin = authUser.role === 'SUPER_ADMIN' || authUser.role === 'ADMIN';
     const isSelf = dbUser.id === authUser.id;
 

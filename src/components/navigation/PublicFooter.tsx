@@ -45,12 +45,12 @@ export function PublicFooter() {
               </div>
             </div>
 
-            <div className="font-arabic font-bold text-sm text-amber-300 leading-relaxed">
+            <div dir="rtl" lang="ar" className="font-arabic font-bold text-sm text-amber-300 leading-relaxed">
               مركز عمر بن الخطاب<br />لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي
             </div>
 
-            <div className="inline-block px-3.5 py-1.5 rounded-full bg-emerald-900/60 border border-emerald-600/40 text-amber-300 text-xs font-arabic font-bold">
-              العلم و التربية — Knowledge and Discipline
+            <div dir="rtl" lang="ar" className="inline-block px-3.5 py-1.5 rounded-full bg-emerald-900/60 border border-emerald-600/40 text-amber-300 text-xs font-arabic font-bold">
+              العلم والتربية — Knowledge and Discipline
             </div>
           </div>
 

@@ -1270,7 +1270,7 @@ export default function FinanceDashboardPage() {
               <h3 className="text-base font-black text-slate-900 dark:text-white uppercase">
                 Official Payment Receipt
               </h3>
-              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold font-arabic">
+              <p dir="rtl" lang="ar" className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold font-arabic">
                 مركز عمر بن الخطاب لتحفيظ القرآن بالدراسات الإسلامية دنيج
               </p>
             </div>

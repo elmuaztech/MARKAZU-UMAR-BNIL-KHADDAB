@@ -17,14 +17,14 @@ export default function RulesPage() {
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-amber-400" /> Student Guidelines & Conduct
           </div>
 
-          <h1 className="font-arabic font-bold text-2xl md:text-3xl text-emerald-700 dark:text-amber-300">
-            قواعد و logistics المدرسة — School Regulations
+          <h1 dir="rtl" lang="ar" className="font-arabic font-bold text-2xl md:text-3xl text-emerald-700 dark:text-amber-300">
+            قواعد وضوابط المدرسة
           </h1>
 
           <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
             School Rules & Code of Conduct <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-emerald-500 to-amber-600 dark:from-emerald-400 dark:via-emerald-200 dark:to-amber-300">
-              العلم و التربية — Knowledge and Discipline
+            <span dir="rtl" lang="ar" className="font-arabic block mt-2 text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 via-emerald-500 to-amber-600 dark:from-emerald-400 dark:via-emerald-200 dark:to-amber-300">
+              العلم والتربية — Knowledge and Discipline
             </span>
           </h2>
 

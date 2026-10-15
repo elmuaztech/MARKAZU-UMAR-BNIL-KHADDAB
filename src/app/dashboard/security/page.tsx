@@ -26,6 +26,7 @@ import {
   Building2,
   BookOpen,
   X,
+  Eye,
 } from 'lucide-react';
 import { StatCard } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -33,6 +34,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { PermanentDeleteModal } from '@/components/users/PermanentDeleteModal';
 import { TeacherAssignmentModal } from '@/components/teachers/TeacherAssignmentModal';
+import { ImpersonateUserModal } from '@/components/users/ImpersonateUserModal';
 
 export default function SecurityDashboardPage() {
   const {
@@ -71,6 +73,10 @@ export default function SecurityDashboardPage() {
     staffNo?: string;
     email?: string;
   } | null>(null);
+
+  // Impersonation Modal State
+  const [showImpersonateModal, setShowImpersonateModal] = useState(false);
+  const [selectedUserForImpersonation, setSelectedUserForImpersonation] = useState<User | null>(null);
 
   // Create User Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -478,6 +484,21 @@ export default function SecurityDashboardPage() {
                     Active login credentials for School Admins, Section Headmasters, Teachers, Parents, and Students.
                   </p>
                 </div>
+
+                {currentUser.role === 'SUPER_ADMIN' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-500/20 font-bold text-xs"
+                    leftIcon={<Eye className="w-3.5 h-3.5" />}
+                    onClick={() => {
+                      setSelectedUserForImpersonation(null);
+                      setShowImpersonateModal(true);
+                    }}
+                  >
+                    Impersonate User
+                  </Button>
+                )}
               </div>
 
               <div className="overflow-x-auto">
@@ -586,6 +607,20 @@ export default function SecurityDashboardPage() {
                             <KeyRound className="w-3 h-3" />
                             <span>Reset Pass</span>
                           </button>
+
+                          {currentUser.role === 'SUPER_ADMIN' && u.role !== 'SUPER_ADMIN' && (
+                            <button
+                              onClick={() => {
+                                setSelectedUserForImpersonation(u);
+                                setShowImpersonateModal(true);
+                              }}
+                              className="px-2.5 py-1.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-700 dark:text-amber-300 font-bold text-[10px] transition-all inline-flex items-center gap-1 shadow-xs"
+                              title="Impersonate this user context securely"
+                            >
+                              <Eye className="w-3 h-3" />
+                              <span>Impersonate</span>
+                            </button>
+                          )}
 
                           {u.role === 'TEACHER' && (
                             <button
@@ -952,6 +987,24 @@ export default function SecurityDashboardPage() {
           }}
         />
       )}
+
+      <ImpersonateUserModal
+        isOpen={showImpersonateModal}
+        onClose={() => {
+          setShowImpersonateModal(false);
+          setSelectedUserForImpersonation(null);
+        }}
+        users={users}
+        preselectedUser={selectedUserForImpersonation}
+        onImpersonationSuccess={(target) => {
+          setShowImpersonateModal(false);
+          notify({
+            type: 'info',
+            title: 'Impersonation Mode Activated',
+            message: `Switched context to ${target.name} (${target.role}). Redirecting to dashboard...`,
+          });
+        }}
+      />
     </div>
   );
 }

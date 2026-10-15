@@ -265,7 +265,7 @@ export function ReportCard({ student, grades, session }: ReportCardProps) {
             )}
 
             {titleArabic && (
-              <div className="font-arabic font-bold text-base sm:text-xl leading-snug" style={{ color: accentColor }}>
+              <div dir="rtl" lang="ar" className="font-arabic font-bold text-base sm:text-xl leading-snug" style={{ color: accentColor }}>
                 {titleArabic}
               </div>
             )}

@@ -45,9 +45,9 @@ export function PortalHeroBanner({
             <BadgeIcon className="w-3.5 h-3.5" /> {badgeText}
           </div>
           <div className="flex flex-wrap items-baseline gap-3">
-            <h1 className="text-xl sm:text-3xl font-black tracking-tight text-white font-poppins">{title}</h1>
+            <h1 className="text-xl sm:text-3xl font-black tracking-tight text-white font-poppins break-words min-w-0">{title}</h1>
             {titleArabic && (
-              <span className="font-arabic text-lg sm:text-xl text-amber-300 font-semibold dir-rtl">
+              <span className="font-arabic text-lg sm:text-xl text-amber-300 font-semibold" dir="rtl" lang="ar">
                 {titleArabic}
               </span>
             )}

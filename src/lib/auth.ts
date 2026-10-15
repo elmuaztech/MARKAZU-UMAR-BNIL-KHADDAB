@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import crypto from 'crypto';
 import prisma from './prisma';
 import { UserRole } from '@prisma/client';
 
@@ -16,6 +17,39 @@ export interface AuthenticatedUser {
   mustChangePassword: boolean;
   isLocked: boolean;
   failedLoginAttempts: number;
+  isImpersonated?: boolean;
+  impersonatedBy?: {
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+  };
+}
+
+const IMPERSONATION_SECRET = process.env.SESSION_SECRET || 'markazu-session-secret-salt-2026';
+
+export function signImpersonationToken(payload: any): string {
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const hmac = crypto.createHmac('sha256', IMPERSONATION_SECRET).update(data).digest('base64url');
+  return `${data}.${hmac}`;
+}
+
+export function verifyImpersonationToken(token: string): any | null {
+  try {
+    const [data, hmac] = token.split('.');
+    if (!data || !hmac) return null;
+    const expectedHmac = crypto.createHmac('sha256', IMPERSONATION_SECRET).update(data).digest('base64url');
+    if (hmac.length !== expectedHmac.length || !crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(expectedHmac))) {
+      return null;
+    }
+    const parsed = JSON.parse(Buffer.from(data, 'base64url').toString('utf8'));
+    if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -102,6 +136,60 @@ async function resolveHeadmasterProgramme(user: any): Promise<{ id: string; name
 }
 
       if (dbSession && dbSession.user && dbSession.user.status === 'ACTIVE' && !dbSession.user.deletedAt) {
+        // If the authenticated session belongs to a SUPER_ADMIN, check for an active impersonation session
+        if (dbSession.user.role === 'SUPER_ADMIN') {
+          const impersonationCookie = req.cookies.get('mssms_impersonation')?.value;
+          if (impersonationCookie) {
+            const impPayload = verifyImpersonationToken(impersonationCookie);
+            if (impPayload && impPayload.superAdminId === dbSession.user.id && impPayload.targetUserId) {
+              const targetUser = await prisma.user.findFirst({
+                where: {
+                  id: impPayload.targetUserId,
+                  status: 'ACTIVE',
+                  deletedAt: null,
+                },
+              });
+
+              if (targetUser) {
+                let targetAssignedProgrammeId = targetUser.assignedProgrammeId;
+                let targetAssignedProgrammeName = targetUser.assignedProgrammeName;
+                if (targetUser.role === 'HEADMASTER' && !targetAssignedProgrammeId) {
+                  const resolved = await resolveHeadmasterProgramme(targetUser);
+                  if (resolved) {
+                    targetAssignedProgrammeId = resolved.id;
+                    targetAssignedProgrammeName = resolved.name;
+                  }
+                }
+
+                // Return target user context with explicit impersonation metadata
+                // Note: The role returned is the target user's role (enforcing strict RBAC/PBAC)
+                return {
+                  id: targetUser.id,
+                  name: targetUser.name,
+                  email: targetUser.email,
+                  username: (targetUser as any).username || null,
+                  role: targetUser.role,
+                  avatar: targetUser.avatar || null,
+                  assignedProgrammeId: targetAssignedProgrammeId,
+                  assignedProgrammeName: targetAssignedProgrammeName,
+                  status: targetUser.status,
+                  isFirstLogin: targetUser.isFirstLogin,
+                  mustChangePassword: targetUser.mustChangePassword,
+                  isLocked: targetUser.isLocked,
+                  failedLoginAttempts: targetUser.failedLoginAttempts,
+                  isImpersonated: true,
+                  impersonatedBy: {
+                    id: dbSession.user.id,
+                    name: dbSession.user.name,
+                    email: dbSession.user.email,
+                    role: dbSession.user.role,
+                  },
+                };
+              }
+            }
+          }
+        }
+
         let assignedProgrammeId = dbSession.user.assignedProgrammeId;
         let assignedProgrammeName = dbSession.user.assignedProgrammeName;
         if (dbSession.user.role === 'HEADMASTER' && !assignedProgrammeId) {

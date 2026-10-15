@@ -35,9 +35,14 @@ export default function ContactPage() {
             <Mail className="w-4 h-4 text-emerald-600 dark:text-amber-400" /> Get In Touch With Us
           </div>
 
-          <h1 className="font-arabic font-bold text-2xl md:text-3xl text-emerald-700 dark:text-amber-300">
-            تواصل معنا — Contact Administration
-          </h1>
+          <div className="space-y-1">
+            <h1 dir="rtl" lang="ar" className="font-arabic font-bold text-2xl md:text-3xl text-emerald-700 dark:text-amber-300">
+              تواصل معنا
+            </h1>
+            <p className="text-xs font-semibold tracking-wider uppercase text-emerald-800 dark:text-emerald-300">
+              Contact Administration
+            </p>
+          </div>
 
           <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
             We Are Here To Assist <br />

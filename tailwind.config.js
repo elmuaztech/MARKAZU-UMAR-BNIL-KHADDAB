@@ -25,7 +25,7 @@ module.exports = {
       fontFamily: {
         poppins: ['Poppins', 'Inter', 'sans-serif'],
         sans: ['Inter', 'sans-serif'],
-        arabic: ['Traditional Arabic', 'Amiri', 'serif'],
+        arabic: ['Noto Naskh Arabic', 'Amiri', 'Traditional Arabic', 'Scheherazade New', 'Tahoma', 'serif'],
       },
       boxShadow: {
         'glow-green': '0 0 20px rgba(22, 163, 74, 0.25)',

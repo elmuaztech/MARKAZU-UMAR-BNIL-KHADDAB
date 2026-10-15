@@ -79,7 +79,7 @@ export function Modal({
             <div className="shrink-0 bg-white/95 dark:bg-[#042419]/95 backdrop-blur-md p-4 sm:p-6 border-b border-slate-100 dark:border-emerald-500/20 flex items-center justify-between">
               <div>
                 <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">{title}</h3>
-                {titleArabic && <p className="font-arabic text-xs font-bold text-amber-500 mt-0.5">{titleArabic}</p>}
+                {titleArabic && <p className="font-arabic text-xs font-bold text-amber-500 mt-0.5" dir="rtl" lang="ar">{titleArabic}</p>}
               </div>
 
               <button

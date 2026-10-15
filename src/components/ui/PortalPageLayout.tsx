@@ -43,10 +43,10 @@ export function PortalPageLayout({
 
           <div className="flex items-center gap-2.5">
             {icon && <div className="text-emerald-400 shrink-0">{icon}</div>}
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{title}</h1>
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight break-words min-w-0">{title}</h1>
               {titleArabic && (
-                <p className="font-arabic text-xs font-bold text-amber-300 mt-0.5">{titleArabic}</p>
+                <p className="font-arabic text-xs font-bold text-amber-300 mt-0.5" dir="rtl" lang="ar">{titleArabic}</p>
               )}
             </div>
           </div>

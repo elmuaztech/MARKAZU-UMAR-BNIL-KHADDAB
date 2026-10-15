@@ -93,8 +93,17 @@ h1, h2, h3, h4, h5, h6, .font-heading {
   font-family: var(--font-dashboard) !important;
 }
 
+.font-arabic, [lang="ar"], [dir="rtl"] {
+  font-family: var(--font-arabic) !important;
+  letter-spacing: normal !important;
+  word-spacing: normal;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "liga" 1, "calt" 1;
+}
+
 .portal-theme .font-arabic {
   font-family: var(--font-arabic) !important;
+  letter-spacing: normal !important;
 }
 
 html.dark body {

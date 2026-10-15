@@ -244,7 +244,7 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                         {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />}
                       </div>
                       <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">{p.programme_name_english || p.programme_name}</p>
-                      <p className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] truncate">{p.programme_name_arabic}</p>
+                      <p dir="rtl" lang="ar" className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] truncate">{p.programme_name_arabic}</p>
                     </div>
                   );
                 })}
@@ -284,7 +284,7 @@ export function TeacherAssignmentWizardModal({ isOpen, onClose }: TeacherAssignm
                         {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />}
                       </div>
                       <p className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">{c.name}</p>
-                      <p className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] truncate">{c.class_name_arabic}</p>
+                      <p dir="rtl" lang="ar" className="font-arabic text-amber-600 dark:text-amber-300 text-[11px] truncate">{c.class_name_arabic}</p>
                     </div>
                   );
                 })}

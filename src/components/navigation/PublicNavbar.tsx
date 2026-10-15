@@ -137,8 +137,8 @@ export function PublicNavbar() {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-emerald-200 dark:border-emerald-800/40 bg-white dark:bg-[#032015] px-4 py-4 space-y-3 shadow-xl">
-            <div className="font-arabic font-bold text-xs text-amber-600 dark:text-amber-300 text-center pb-2 border-b border-emerald-100 dark:border-emerald-800/40">
-              العلم و التربية — Knowledge and Discipline
+            <div dir="rtl" lang="ar" className="font-arabic font-bold text-xs text-amber-600 dark:text-amber-300 text-center pb-2 border-b border-emerald-100 dark:border-emerald-800/40">
+              العلم والتربية — Knowledge and Discipline
             </div>
 
             <div className="space-y-1">
