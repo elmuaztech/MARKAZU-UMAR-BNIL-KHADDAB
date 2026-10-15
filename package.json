@@ -9,7 +9,8 @@
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "test": "node tests/quran-assessment-test-suite.js",
-    "test:quran": "node tests/quran-assessment-test-suite.js"
+    "test:quran": "node tests/quran-assessment-test-suite.js",
+    "test:batch1": "node tests/batch1-corrections-test-suite.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1130.0",

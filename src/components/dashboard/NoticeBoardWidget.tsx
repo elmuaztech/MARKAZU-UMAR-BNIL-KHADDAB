@@ -36,10 +36,18 @@ export function NoticeBoardWidget() {
         </div>
 
         <Link
-          href="/dashboard/communication"
+          href={
+            currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'
+              ? '/dashboard/communication'
+              : '/dashboard/communication/notifications'
+          }
           className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
         >
-          <span>Communication Center</span>
+          <span>
+            {currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN'
+              ? 'Communication Center'
+              : 'All Announcements'}
+          </span>
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       </div>

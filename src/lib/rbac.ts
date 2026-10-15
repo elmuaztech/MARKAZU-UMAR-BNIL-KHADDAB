@@ -189,6 +189,7 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/assessment': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/quran-assessment': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/results': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
+  '/dashboard/certificates': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/communication': ['SUPER_ADMIN', 'ADMIN'], // Restricted for Headmasters
   '/dashboard/communication/notifications': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/communication/history': ['SUPER_ADMIN', 'ADMIN'],

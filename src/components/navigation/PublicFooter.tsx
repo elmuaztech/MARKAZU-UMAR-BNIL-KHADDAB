@@ -153,7 +153,7 @@ export function PublicFooter() {
           </p>
           <div className="flex flex-wrap items-center justify-center xl:justify-end gap-3 text-xs shrink-0">
             <span className="font-semibold text-emerald-200">
-              Powered by <span className="text-amber-300 font-bold">Elmuaz Technologies Limited</span>
+              Developed by <span className="text-amber-300 font-bold">Elmuaz Technologies Limited</span>
             </span>
             <span className="text-emerald-700">|</span>
             <a

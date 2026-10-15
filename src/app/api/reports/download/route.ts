@@ -131,12 +131,18 @@ export async function GET(request: NextRequest) {
     const isStaff = authUser.role === 'SUPER_ADMIN' || authUser.role === 'ADMIN' || authUser.role === 'HEADMASTER' || authUser.role === 'TEACHER';
     const isReleased = grades.length > 0 && grades.some((g) => g.isReleased === true);
 
+    const isStudentUser = authUser.role === 'STUDENT';
+    const notReadyTitle = isStudentUser ? 'Your report is currently unavailable' : 'Report not available yet';
+    const notReadyMessage = isStudentUser
+      ? 'Your report is currently unavailable.'
+      : "You'll be notified when your child's report is ready.";
+
     if (!isStaff && !isReleased) {
       return NextResponse.json({
         success: false,
         notReady: true,
-        title: 'Report not available yet',
-        message: "You'll be notified when your child's report is ready.",
+        title: notReadyTitle,
+        message: notReadyMessage,
       }, { status: 404 });
     }
 
@@ -147,8 +153,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         success: false,
         notReady: true,
-        title: 'Report not available yet',
-        message: "You'll be notified when your child's report is ready.",
+        title: notReadyTitle,
+        message: notReadyMessage,
       }, { status: 404 });
     }
 

@@ -421,12 +421,20 @@ function ResultsContent() {
                   <Clock className="w-8 h-8" />
                 </div>
                 <div className="space-y-1">
-                  <h2 className="text-lg font-black text-slate-900 dark:text-white">Report not available yet</h2>
-                  <p className="text-xs text-slate-600 dark:text-emerald-200/80">You'll be notified when your child's report is ready.</p>
+                  <h2 className="text-lg font-black text-slate-900 dark:text-white">
+                    {isStudent ? 'Your report is currently unavailable' : 'Report not available yet'}
+                  </h2>
+                  <p className="text-xs text-slate-600 dark:text-emerald-200/80">
+                    {isStudent
+                      ? "Your report is currently unavailable. You will be notified once it has been officially published."
+                      : "You'll be notified when your child's report is ready."}
+                  </p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left pt-1">
                   <div className="p-3 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">
-                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-extrabold uppercase block mb-0.5">Child</span>
+                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-extrabold uppercase block mb-0.5">
+                      {isStudent ? 'Student' : 'Child'}
+                    </span>
                     <span className="text-xs font-bold text-slate-900 dark:text-white truncate block">{selectedStudent.fullName}</span>
                   </div>
                   <div className="p-3 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">

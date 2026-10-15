@@ -53,6 +53,13 @@ export function StudentDashboard() {
       color: 'from-sky-600 to-sky-700',
     },
     {
+      label: 'My Certificate',
+      labelArabic: 'شهادة التخرج',
+      href: '/dashboard/certificates',
+      icon: GraduationCap,
+      color: 'from-emerald-600 to-emerald-700',
+    },
+    {
       label: 'Announcements',
       labelArabic: 'الإعلانات والرسائل',
       href: '/dashboard/communication/notifications',

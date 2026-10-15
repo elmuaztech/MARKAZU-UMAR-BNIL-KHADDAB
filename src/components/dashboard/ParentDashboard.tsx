@@ -25,6 +25,7 @@ import {
   ShieldCheck,
   CreditCard,
   ArrowRight,
+  GraduationCap,
 } from 'lucide-react';
 
 export function ParentDashboard() {
@@ -93,6 +94,13 @@ export function ParentDashboard() {
       href: '/dashboard/results',
       icon: Award,
       color: 'from-amber-600 to-amber-700',
+    },
+    {
+      label: 'Certificates',
+      labelArabic: 'شهادات التخرج',
+      href: '/dashboard/certificates',
+      icon: GraduationCap,
+      color: 'from-emerald-600 to-emerald-700',
     },
     {
       label: 'Academic Subjects',

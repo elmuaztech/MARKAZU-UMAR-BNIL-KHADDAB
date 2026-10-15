@@ -23,7 +23,7 @@ export default function NotificationCenterPage() {
 
   const [filterTab, setFilterTab] = useState<'ALL' | 'UNREAD' | 'PINNED' | 'ARCHIVED'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [pushPermission, setPushPermission] = useState<NotificationPermission>('default');
+  const [pushPermission, setPushPermission] = useState<NotificationPermission | 'unsupported'>('default');
   const [isEnablingPush, setIsEnablingPush] = useState(false);
 
   useEffect(() => {
@@ -73,40 +73,47 @@ export default function NotificationCenterPage() {
         )}
       </div>
 
-      {/* Push Notification Device Card */}
-      {pushPermission !== 'granted' && pushPermission !== 'denied' && (
+      {/* Push Notification Device Status & Opt-In Card */}
+      {pushPermission !== 'granted' && pushPermission !== 'denied' && !PushNotificationManager.isOptInDismissed() && (
         <div className="p-4 rounded-3xl bg-gradient-to-r from-emerald-600/15 via-teal-600/10 to-emerald-500/10 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="p-3 rounded-2xl bg-emerald-600 text-white shrink-0 shadow-md">
               <Smartphone className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-black text-slate-900 dark:text-white text-sm">Enable Native Push Notifications</h3>
-              <p className="text-xs text-slate-500 dark:text-emerald-300/70">Receive immediate lock screen & pop-up alerts on your device for announcements, attendance, and exam scores.</p>
+              <h3 className="font-black text-slate-900 dark:text-white text-sm">Enable Device Notifications</h3>
+              <p className="text-xs text-slate-500 dark:text-emerald-300/70">
+                Receive important alerts on your device for school announcements, attendance, and academic reports.
+              </p>
             </div>
           </div>
-          <button
-            disabled={isEnablingPush}
-            onClick={async () => {
-              setIsEnablingPush(true);
-              try {
-                const perm = await PushNotificationManager.requestPermission();
-                setPushPermission(perm);
-                if (perm === 'granted') {
-                  await PushNotificationManager.showNotification({
-                    title: 'Markazu Umar SMS Alerts',
-                    body: 'Push notifications are now active! You will receive live school alerts directly on this device.',
-                    url: '/dashboard',
-                  });
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <button
+              onClick={() => {
+                PushNotificationManager.dismissOptIn();
+                // trigger re-render
+                setPushPermission(PushNotificationManager.getPermission());
+              }}
+              className="px-3.5 py-2 rounded-2xl border border-slate-300 dark:border-emerald-500/30 text-slate-600 dark:text-emerald-300 hover:bg-slate-100 dark:hover:bg-emerald-950/40 text-xs font-bold transition-all"
+            >
+              Not Now
+            </button>
+            <button
+              disabled={isEnablingPush}
+              onClick={async () => {
+                setIsEnablingPush(true);
+                try {
+                  const perm = await PushNotificationManager.requestPermission();
+                  setPushPermission(perm);
+                } finally {
+                  setIsEnablingPush(false);
                 }
-              } finally {
-                setIsEnablingPush(false);
-              }
-            }}
-            className="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 shrink-0 w-full sm:w-auto text-center"
-          >
-            {isEnablingPush ? 'Activating Alerts...' : 'Turn On Push Notifications'}
-          </button>
+              }}
+              className="px-5 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all active:scale-95 disabled:opacity-50 text-center"
+            >
+              {isEnablingPush ? 'Enabling...' : 'Enable Notifications'}
+            </button>
+          </div>
         </div>
       )}
 
@@ -116,18 +123,27 @@ export default function NotificationCenterPage() {
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             <span>Device Push Notifications Active</span>
           </div>
-          <button
-            onClick={async () => {
-              await PushNotificationManager.showNotification({
-                title: 'Markazu Umar Islamiyyah',
-                body: 'Push notification test successful! Your device is ready to receive instant alerts.',
-                url: '/dashboard/communication/notifications',
-              });
-            }}
-            className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#021810] border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 font-bold text-xs transition-all shadow-sm shrink-0"
-          >
-            Send Test Alert
-          </button>
+          {isStaff && (
+            <button
+              onClick={async () => {
+                await PushNotificationManager.showNotification({
+                  title: 'Markazu Umar SMS',
+                  body: 'System notification test successful.',
+                  url: '/dashboard/communication/notifications',
+                });
+              }}
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-[#021810] border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 font-bold text-xs transition-all shadow-sm shrink-0"
+            >
+              Staff Test Alert
+            </button>
+          )}
+        </div>
+      )}
+
+      {pushPermission === 'denied' && (
+        <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-emerald-950/40 border border-slate-200 dark:border-emerald-800/40 flex items-center gap-2.5 text-xs text-slate-600 dark:text-emerald-300/80">
+          <BellOff className="w-4 h-4 text-amber-500 shrink-0" />
+          <span>Device notifications are currently blocked in your browser settings. To receive alerts, permit notifications in your browser's site settings.</span>
         </div>
       )}
 

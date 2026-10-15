@@ -6,15 +6,47 @@ import { PortalTheme } from '@/components/ui/PortalTheme';
 import { PortalHeroBanner } from '@/components/ui/PortalHeroBanner';
 import { AttendanceRegister } from '@/components/attendance/AttendanceRegister';
 import { AttendanceFilterExplorer } from '@/components/attendance/AttendanceFilterExplorer';
-import { CalendarCheck, Filter, Users } from 'lucide-react';
+import { StudentAttendanceView } from '@/components/attendance/StudentAttendanceView';
+import { CalendarCheck, Filter, Users, UserCheck } from 'lucide-react';
 
 export default function AttendancePage() {
   const { currentUser } = useApp();
   const [activeTab, setActiveTab] = useState<'REGISTER' | 'EXPLORER'>('REGISTER');
 
+  const isStudent = currentUser.role === 'STUDENT';
+  const isParent = currentUser.role === 'PARENT';
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
   const isHeadmaster = currentUser.role === 'HEADMASTER';
 
+  // Students see their own attendance view without teacher-only controls
+  if (isStudent) {
+    return (
+      <PortalTheme>
+        <div className="space-y-6 font-poppins">
+          <StudentAttendanceView isParentView={false} />
+        </div>
+      </PortalTheme>
+    );
+  }
+
+  // Parents see their linked child's attendance with parent-appropriate language
+  if (isParent) {
+    return (
+      <PortalTheme>
+        <div className="space-y-6 font-poppins">
+          <PortalHeroBanner
+            title="Your Child's Attendance & Punctuality"
+            description="Track your child's daily school attendance, morning register punctuality, and verified attendance history."
+            badgeText="Child Attendance"
+            badgeIcon={CalendarCheck}
+          />
+          <StudentAttendanceView isParentView={true} />
+        </div>
+      </PortalTheme>
+    );
+  }
+
+  // Staff (Teachers, Headmasters, Admins) see the Register & Explorer tools
   return (
     <PortalTheme>
       <div className="space-y-6 font-poppins">

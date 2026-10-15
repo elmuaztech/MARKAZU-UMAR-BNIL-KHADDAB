@@ -44,6 +44,7 @@ import {
   User as UserIcon,
   Key,
   CreditCard,
+  GraduationCap,
 } from 'lucide-react';
 
 interface NavItem {
@@ -298,6 +299,13 @@ export function Sidebar({
       label: currentUser.role === 'HEADMASTER' ? 'Section Report Cards' : 'Report Cards',
       href: '/dashboard/results',
       icon: Award,
+      group: 'REPORTS & SETUP',
+    },
+    {
+      id: 'certificates',
+      label: currentUser.role === 'STUDENT' ? 'My Certificate' : currentUser.role === 'PARENT' ? 'Child Certificates' : 'Certificates',
+      href: '/dashboard/certificates',
+      icon: GraduationCap,
       group: 'REPORTS & SETUP',
     },
     { id: 'sessions', label: 'Academic Terms', href: '/dashboard/sessions', icon: Calendar, group: 'REPORTS & SETUP' },

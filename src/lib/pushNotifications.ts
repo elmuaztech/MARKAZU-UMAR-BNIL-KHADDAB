@@ -12,6 +12,9 @@ export interface PushNotificationPayload {
 }
 
 export class PushNotificationManager {
+  private static OPTIN_DISMISSED_KEY = 'markazu_push_optin_dismissed';
+  private static PREFS_KEY = 'markazu_push_preferences';
+
   /**
    * Check if Native Notifications & Service Workers are supported in the current environment
    */
@@ -21,17 +24,50 @@ export class PushNotificationManager {
   }
 
   /**
-   * Get current permission state: 'granted' | 'denied' | 'default'
+   * Get current permission state: 'granted' | 'denied' | 'default' | 'unsupported'
    */
-  public static getPermission(): NotificationPermission {
+  public static getPermission(): NotificationPermission | 'unsupported' {
     if (typeof window === 'undefined' || !('Notification' in window)) {
-      return 'denied';
+      return 'unsupported';
     }
     return Notification.permission;
   }
 
   /**
-   * Request user permission for native push notifications
+   * Check if the user previously dismissed the opt-in prompt
+   */
+  public static isOptInDismissed(): boolean {
+    if (typeof window === 'undefined') return false;
+    try {
+      return localStorage.getItem(this.OPTIN_DISMISSED_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Mark the opt-in prompt as dismissed so user is not repeatedly prompted
+   */
+  public static dismissOptIn(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.setItem(this.OPTIN_DISMISSED_KEY, 'true');
+    } catch {}
+  }
+
+  /**
+   * Reset the opt-in dismissal (e.g. if user visits Settings and wants to re-enable)
+   */
+  public static resetOptInDismissal(): void {
+    if (typeof window === 'undefined') return;
+    try {
+      localStorage.removeItem(this.OPTIN_DISMISSED_KEY);
+    } catch {}
+  }
+
+  /**
+   * Request user permission for native push notifications.
+   * Only called on explicit user interaction (e.g. clicking "Turn on Notifications").
    */
   public static async requestPermission(): Promise<NotificationPermission> {
     if (!this.isSupported()) {
@@ -40,6 +76,10 @@ export class PushNotificationManager {
 
     try {
       const permission = await Notification.requestPermission();
+      // If granted or denied, clear the prompt dismissal
+      if (permission === 'granted') {
+        this.resetOptInDismissal();
+      }
       return permission;
     } catch (error) {
       console.warn('[PushNotificationManager] Error requesting notification permission:', error);
@@ -49,7 +89,7 @@ export class PushNotificationManager {
 
   /**
    * Display a native device notification via the active Service Worker (preferred on mobile)
-   * or standard Notification API fallback
+   * or standard Notification API fallback.
    */
   public static async showNotification(payload: PushNotificationPayload): Promise<boolean> {
     if (typeof window === 'undefined' || !('Notification' in window)) {
