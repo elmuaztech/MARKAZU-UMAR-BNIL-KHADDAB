@@ -140,16 +140,59 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         disqualifiedDate: calcResult.disqualifiedDate,
       },
       include: {
-        student: true,
-        schoolClass: true,
-        ruleSet: true,
+        student: {
+          select: {
+            id: true,
+            fullName: true,
+            admissionNo: true,
+            gender: true,
+            currentJuz: true,
+            currentSurah: true,
+            tajweedRating: true,
+          },
+        },
+        schoolClass: {
+          select: { id: true, name: true, section: true },
+        },
+        teacher: {
+          select: { id: true, fullName: true, staffNo: true, phone: true },
+        },
+        event: {
+          select: {
+            id: true,
+            name: true,
+            durationDays: true,
+            startDate: true,
+            endDate: true,
+            status: true,
+          },
+        },
+        ruleSet: {
+          include: {
+            rules: {
+              where: { active: true },
+              orderBy: [{ mistakeCategory: 'asc' }],
+            },
+          },
+        },
+        dailyRecords: {
+          orderBy: { dayNumber: 'asc' },
+        },
       },
     });
+
+    const applicableRules = updatedCandidate.ruleSet.rules.filter(
+      (r) => r.studentType.trim().toLowerCase() === updatedCandidate.studentType.trim().toLowerCase()
+    );
 
     return NextResponse.json({
       message: 'Daily assessment records saved and calculated successfully.',
       calculation: calcResult,
-      candidate: updatedCandidate,
+      candidate: {
+        ...updatedCandidate,
+        applicableRules,
+        calculation: calcResult,
+      },
       dailyRecords: allDailyRecords,
     });
   } catch (error: any) {

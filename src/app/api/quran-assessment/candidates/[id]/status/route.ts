@@ -95,11 +95,50 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         notes: notes ? String(notes).trim() : candidate.notes,
       },
       include: {
-        student: true,
-        schoolClass: true,
-        ruleSet: true,
+        student: {
+          select: {
+            id: true,
+            fullName: true,
+            admissionNo: true,
+            gender: true,
+            currentJuz: true,
+            currentSurah: true,
+            tajweedRating: true,
+          },
+        },
+        schoolClass: {
+          select: { id: true, name: true, section: true },
+        },
+        teacher: {
+          select: { id: true, fullName: true, staffNo: true, phone: true },
+        },
+        event: {
+          select: {
+            id: true,
+            name: true,
+            durationDays: true,
+            startDate: true,
+            endDate: true,
+            status: true,
+          },
+        },
+        ruleSet: {
+          include: {
+            rules: {
+              where: { active: true },
+              orderBy: [{ mistakeCategory: 'asc' }],
+            },
+          },
+        },
+        dailyRecords: {
+          orderBy: { dayNumber: 'asc' },
+        },
       },
     });
+
+    const applicableRules = updated.ruleSet.rules.filter(
+      (r) => r.studentType.trim().toLowerCase() === updated.studentType.trim().toLowerCase()
+    );
 
     // Record audit log
     await prisma.auditLog.create({
@@ -122,7 +161,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     return NextResponse.json({
       message: `Assessment status updated to ${newStatus}.`,
-      candidate: updated,
+      candidate: {
+        ...updated,
+        applicableRules,
+        calculation: calcResult,
+      },
       calculation: calcResult,
     });
   } catch (error: any) {

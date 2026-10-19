@@ -255,8 +255,13 @@ export default function CandidateAssessmentEntryPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to save daily assessment records');
 
       notify({ type: 'success', title: 'Saved Successfully', message: 'Physical form assessment records saved and verified.' });
-      setCandidate(data.candidate);
-      setLocalCalculation(data.calculation);
+      if (data.candidate) {
+        setCandidate((prev) => (prev ? { ...prev, ...data.candidate } : data.candidate));
+      }
+      if (data.calculation) {
+        setLocalCalculation(data.calculation);
+      }
+      await fetchCandidateData();
     } catch (err: any) {
       notify({ type: 'error', title: 'Save Failed', message: err.message });
     } finally {
@@ -298,8 +303,13 @@ export default function CandidateAssessmentEntryPage() {
         message: data.message,
       });
 
-      setCandidate(data.candidate);
-      setLocalCalculation(data.calculation);
+      if (data.candidate) {
+        setCandidate((prev) => (prev ? { ...prev, ...data.candidate } : data.candidate));
+      }
+      if (data.calculation) {
+        setLocalCalculation(data.calculation);
+      }
+      await fetchCandidateData();
     } catch (err: any) {
       notify({ type: 'error', title: 'Action Failed', message: err.message });
     } finally {
@@ -375,15 +385,15 @@ export default function CandidateAssessmentEntryPage() {
                   {candidate.studentType}
                 </span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                  Rule Set v{candidate.ruleSet.version}
+                  Rule Set v{candidate.ruleSet?.version || 1}
                 </span>
               </div>
 
               <div className="flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-slate-500 dark:text-slate-400 mt-1">
-                <span>Class: <strong className="text-slate-700 dark:text-slate-200">{candidate.schoolClass.name}</strong></span>
+                <span>Class: <strong className="text-slate-700 dark:text-slate-200">{candidate.schoolClass?.name || 'Class'}</strong></span>
                 <span>Teacher: <strong className="text-slate-700 dark:text-slate-200">{candidate.teacher?.fullName || 'Not assigned'}</strong></span>
                 <span>Examiner: <strong className="text-slate-700 dark:text-slate-200">{candidate.examinerName || 'Staff'}</strong></span>
-                <span>Event: <strong className="text-slate-700 dark:text-slate-200">{candidate.event.name}</strong></span>
+                <span>Event: <strong className="text-slate-700 dark:text-slate-200">{candidate.event?.name || 'Assessment Event'}</strong></span>
               </div>
             </div>
           </div>
