@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (attemptRecord && attemptRecord.resetAt > now) {
       if (attemptRecord.count >= 5) {
         return NextResponse.json(
-          { error: 'Too many verification attempts. Please wait 10 minutes before requesting a new code.' },
+          { error: 'Too many verification attempts. Please wait 5 minutes before requesting a new code.' },
           { status: 429 }
         );
       }
@@ -85,14 +85,14 @@ export async function POST(req: NextRequest) {
     if (!tokenRecord || !targetUser || targetUser.deletedAt || targetUser.status !== 'ACTIVE') {
       // Record failed attempt for rate limiting
       const currentAttempts = (attemptRecord && attemptRecord.resetAt > now) ? attemptRecord.count + 1 : 1;
-      g._resetAttempts.set(rateLimitKey, { count: currentAttempts, resetAt: now + 10 * 60 * 1000 });
+      g._resetAttempts.set(rateLimitKey, { count: currentAttempts, resetAt: now + 5 * 60 * 1000 });
 
       if (expiredOrUsedToken?.used) {
         return NextResponse.json({ error: 'This verification code has already been used. Please request a new code.' }, { status: 400 });
       }
 
       if (expiredOrUsedToken && new Date(expiredOrUsedToken.expiresAt).getTime() <= now) {
-        return NextResponse.json({ error: 'Verification code has expired (10-minute limit). Please request a new code.' }, { status: 400 });
+        return NextResponse.json({ error: 'Verification code has expired (5-minute limit). Please request a new code.' }, { status: 400 });
       }
 
       return NextResponse.json({ error: 'Invalid verification code. Please check your email or request a new code.' }, { status: 400 });

@@ -221,7 +221,6 @@ export function Sidebar({
     // MAIN WORKSPACE
     { id: 'dashboard', label: currentUser.role === 'HEADMASTER' ? 'Main Dashboard' : 'Dashboard', href: '/dashboard', icon: LayoutDashboard, group: 'MAIN' },
     { id: 'headmaster_portal', label: 'Headmaster Portal', href: '/headmaster', icon: ShieldCheck, group: 'MAIN' },
-    { id: 'reports', label: currentUser.role === 'HEADMASTER' ? 'Section Reports' : 'Analytics', href: '/dashboard/reports', icon: BarChart3, group: 'MAIN' },
 
     // ADMISSIONS & ONBOARDING
     {

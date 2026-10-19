@@ -205,11 +205,11 @@ export function getLockoutExpiryTime(): string {
   return new Date(Date.now() + LOCKOUT_DURATION_MS).toISOString();
 }
 
-// 5. Reset Token Generator & Validator (10-Minute Expiry)
+// 5. Reset Token Generator & Validator (5-Minute Expiry)
 export function generatePasswordResetToken(email: string, userId: string): string {
   // Generate cryptographically secure 6-digit OTP (e.g., "582194")
   const otp = crypto.randomInt(100000, 1000000).toString();
-  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 Minutes Limit
+  const expiresAt = Date.now() + 5 * 60 * 1000; // 5 Minutes Limit
 
   RESET_TOKENS.push({
     token: otp,
@@ -232,7 +232,7 @@ export function verifyResetToken(token: string): { isValid: boolean; email?: str
     }
 
     if (Date.now() > record.expiresAt) {
-      return { isValid: false, error: 'Password reset code has expired (10-minute limit)' };
+      return { isValid: false, error: 'Password reset code has expired (5-minute limit)' };
     }
 
     return { isValid: true, email: record.email, userId: record.userId };

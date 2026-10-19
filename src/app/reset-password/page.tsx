@@ -110,7 +110,7 @@ function ResetPasswordForm() {
           <span>Security Link & Token Expiry</span>
         </div>
         <span className="text-[10px] bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold px-2 py-0.5 rounded-md uppercase">
-          10 Minutes Limit
+          5 Minutes Limit
         </span>
       </div>
 
@@ -160,7 +160,7 @@ function ResetPasswordForm() {
               />
             </div>
             <p className="text-[10px] text-slate-500 dark:text-emerald-400/80 text-center">
-              Code is valid for 10 minutes
+              Code is valid for 5 minutes
             </p>
           </div>
 

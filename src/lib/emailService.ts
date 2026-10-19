@@ -80,9 +80,9 @@ export function generateEmailHtml(payload: EmailPayload): string {
 
   const headerHtml = `
     <div style="background: linear-gradient(135deg, #022c1e 0%, #064e3b 100%); padding: 32px 24px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 4px solid #f59e0b;">
-      <!-- Official School Crest Logo (CID embedded with HTTP fallback) -->
+      <!-- Official School Crest Logo (CID embedded inline attachment) -->
       <div style="text-align: center; margin-bottom: 14px;">
-        <img src="cid:school_logo_header" onerror="this.onerror=null; this.src='${logoUrl}';" width="110" height="110" alt="Markazu Umar bn Al-Khattab School Logo" style="display: block; margin: 0 auto; border-radius: 50%; border: 4px solid #f59e0b; background-color: #ffffff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);" />
+        <img src="cid:school_logo_header" width="110" height="110" alt="Markazu Umar bn Al-Khattab School Logo" style="display: block; margin: 0 auto; border-radius: 50%; border: 4px solid #f59e0b; background-color: #ffffff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);" />
       </div>
 
       <!-- Full English School Title -->
@@ -175,7 +175,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
               ${payload.metadata?.resetToken}
             </p>
             <p style="margin: 12px 0 0 0; font-size: 12px; color: #047857; font-weight: 600;">
-              <strong>Strict Expiry:</strong> This 6-Digit verification code is valid for <strong>10 minutes</strong> only.
+              <strong>Strict Expiry:</strong> This 6-Digit verification code is valid for <strong>5 minutes</strong> only.
             </p>
           </div>
 
@@ -398,12 +398,33 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
     targetRecipient = devRecipient;
   }
 
+  // Resolve official school crest logo for inline CID attachment
+  let attachments: any[] = [];
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const logoPngPath = path.join(process.cwd(), 'public', 'logo.png');
+    const logoJpgPath = path.join(process.cwd(), 'public', 'logo.jpg');
+    const actualLogoPath = fs.existsSync(logoPngPath) ? logoPngPath : (fs.existsSync(logoJpgPath) ? logoJpgPath : null);
+    if (actualLogoPath) {
+      attachments.push({
+        filename: path.basename(actualLogoPath),
+        path: actualLogoPath,
+        cid: 'school_logo_header',
+        contentDisposition: 'inline',
+      });
+    }
+  } catch (attErr) {
+    console.warn('[EMAIL ATTACHMENT LOGO NOTICE]', attErr);
+  }
+
   const mailOptions = {
     from: SYSTEM_EMAIL_FROM,
     replyTo: 'markazuumarbnkhaddabdaneji@gmail.com',
     to: targetRecipient,
     subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
     html: htmlContent,
+    attachments,
   };
 
   let nodemailer: any;

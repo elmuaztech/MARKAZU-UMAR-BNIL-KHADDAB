@@ -1,123 +1,14 @@
 'use client';
 
-import React from 'react';
-import { useApp } from '../../../lib/context';
-import { BarChart3, TrendingUp, Sparkles } from 'lucide-react';
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-} from 'recharts';
-
-import { filterProgrammesForUser, filterClassesForUser, getHeadmasterAssignedProgramme } from '@/lib/rbac';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function ReportsPage() {
-  const { students, programmes, classes, currentUser } = useApp();
+  const router = useRouter();
 
-  const isHeadmaster = currentUser.role === 'HEADMASTER';
-  const assignedProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
+  useEffect(() => {
+    router.replace('/dashboard');
+  }, [router]);
 
-  const visibleProgrammes = filterProgrammesForUser(currentUser, programmes);
-  const visibleClasses = isHeadmaster ? filterClassesForUser(currentUser, classes) : classes;
-
-  const classPerformanceData = visibleClasses.length > 0
-    ? visibleClasses.slice(0, 6).map((c, i) => ({
-        class: c.name,
-        avgScore: 82 + ((i * 3) % 15),
-        hifzRate: 85 + ((i * 2) % 12),
-      }))
-    : [
-        { class: 'Tahfiz Halqa 1', avgScore: 89, hifzRate: 94 },
-        { class: 'Tahfiz Halqa 2', avgScore: 84, hifzRate: 88 },
-      ];
-
-  return (
-    <div className="space-y-6 font-sans">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064E3B] to-[#0f5132] text-white border border-emerald-500/40 shadow-xl font-poppins">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-300 uppercase tracking-widest">
-            <BarChart3 className="w-4 h-4 text-amber-400" />{' '}
-            {isHeadmaster ? `Section Reports (${currentUser.assignedProgrammeName || 'My Section'})` : 'School Analytics & Master Reporting'}
-          </div>
-          <h1 className="text-xl sm:text-3xl font-black tracking-tight mt-1">
-            {isHeadmaster ? 'Section Academic & Hifz Metrics' : 'Executive Reports & Programme Metrics'}
-          </h1>
-          <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 font-medium">
-            {isHeadmaster
-              ? `Performance analytics and Hifz completion records for ${currentUser.assignedProgrammeName || 'your assigned section'}.`
-              : 'Comparative performance, Tahfiz completion rates, and enrollment grouped by Programme.'}
-          </p>
-        </div>
-      </div>
-
-      {/* Programme Performance Overview Cards */}
-      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-4 font-poppins">
-        <h3 className="text-sm font-black uppercase text-slate-900 dark:text-white flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-500" />{' '}
-          {isHeadmaster ? 'Assigned Section Metrics' : 'Programme Performance Summary'}
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-          {visibleProgrammes.map((p) => {
-            const pClasses = classes.filter((c) => c.programmeId === p.id || c.programmeName === p.programme_name);
-            const pStudents = students.filter((s) => s.programmeId === p.id || s.programmeName === p.programme_name);
-
-            return (
-              <div key={p.id} className="p-3.5 sm:p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] font-bold text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded bg-amber-500/10 uppercase">
-                    {p.programme_code}
-                  </span>
-                  <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">{p.status}</span>
-                </div>
-                <h4 className="font-bold text-slate-900 dark:text-white truncate">{p.programme_name}</h4>
-                <div className="grid grid-cols-2 gap-2 pt-1 text-center">
-                  <div className="p-2 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">
-                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold block">Classes</span>
-                    <span className="text-xs font-black text-slate-900 dark:text-white block">{pClasses.length}</span>
-                  </div>
-                  <div className="p-2 rounded-xl bg-white dark:bg-emerald-950/60 border border-slate-200 dark:border-emerald-500/20 shadow-2xs">
-                    <span className="text-[10px] text-slate-500 dark:text-emerald-400 font-semibold block">Students</span>
-                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-300 block">{pStudents.length}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Analytics Chart */}
-      <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-md space-y-4 font-poppins">
-        <h3 className="text-sm font-black uppercase text-slate-900 dark:text-white flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-emerald-500" />
-          Academic & Tahfiz Mastery by Class
-        </h3>
-
-        <div className="h-64 sm:h-72 w-full overflow-hidden">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={classPerformanceData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-              <XAxis dataKey="class" stroke="#059669" fontSize={11} />
-              <YAxis stroke="#059669" fontSize={11} />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: '#042419',
-                  borderColor: '#10b981',
-                  borderRadius: '16px',
-                  color: '#fff',
-                }}
-              />
-              <Legend wrapperStyle={{ fontSize: '11px', color: '#059669' }} />
-              <Bar dataKey="avgScore" name="Academic Score (%)" fill="#0EA5E9" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="hifzRate" name="Tahfiz Retention (%)" fill="#10B981" radius={[8, 8, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 }

@@ -23,7 +23,7 @@ The Markazu Umar School Management System (MSSMS) was custom-architected as an e
 | **Language** | TypeScript | Static typing across all models, APIs, and client components to prevent runtime errors. |
 | **Styling & Design System** | Tailwind CSS + Framer Motion + Lucide Icons | Custom glassmorphism aesthetic, responsive Islamic-inspired branding, fluid micro-interactions, dark/light theme switching. |
 | **Database & ORM** | PostgreSQL 16 + Prisma ORM 5 | Relational database schema serving as the **single source of truth** for all records. Fully normalized with foreign key constraints. |
-| **Authentication & Security** | Custom Dual-Layer RBAC + Bcrypt/Argon2 | Case-insensitive lookup, brute-force rate-limiting, temporary password first-login enforcement, 4-digit OTP password reset. |
+| **Authentication & Security** | Custom Dual-Layer RBAC + Bcrypt/Argon2 | Case-insensitive lookup, brute-force rate-limiting, temporary password first-login enforcement, 6-digit OTP password reset. |
 | **Email Service** | Nodemailer + Custom Responsive HTML | Automated email notification engine with **dual-port fallback** (Port 465 Direct SSL with automatic failover to Port 587 STARTTLS). |
 | **Containerization** | Docker + Docker Compose | Multi-stage production container (`node:20-alpine`) ensuring identical execution across development and VPS environments. |
 | **Reverse Proxy & SSL** | Nginx + Let's Encrypt | Automated HTTPS SSL certificates with HTTP-to-HTTPS redirect, HSTS, and port isolation. |
@@ -68,7 +68,7 @@ The software coordinates school activities across **5 distinct user roles** with
    * School-wide announcement broadcasts.
    * Automated email dispatch for:
      * New account welcome emails with auto-generated temporary credentials.
-     * 4-digit OTP password recovery verification codes.
+     * 6-digit OTP password recovery verification codes.
      * Password change security confirmations.
      * Direct WhatsApp messaging integration with pre-filled parent templates.
 

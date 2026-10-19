@@ -480,20 +480,6 @@ export default function HeadmasterPortalPage() {
                     </div>
                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
                   </Link>
-
-                  <Link
-                    href="/dashboard/reports"
-                    className="w-full p-3 rounded-2xl bg-slate-50 dark:bg-[#062c1e] hover:bg-emerald-50 dark:hover:bg-emerald-950/50 border border-emerald-500/10 flex items-center justify-between transition-all group"
-                  >
-                    <div className="flex items-center gap-3">
-                      <BarChart3 className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-                      <div>
-                        <p className="text-xs font-bold text-slate-900 dark:text-white">Performance Reports</p>
-                        <p className="text-[10px] text-slate-500 dark:text-emerald-300/80">Terminal progress analytics</p>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
-                  </Link>
                 </div>
               </div>
             </div>

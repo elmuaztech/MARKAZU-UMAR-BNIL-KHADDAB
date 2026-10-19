@@ -205,7 +205,6 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/backup': ['SUPER_ADMIN'],
-  '/dashboard/reports': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
   '/dashboard/security': ['SUPER_ADMIN'], // Strictly Super Admin authority
   '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/settings/quran-rules': ['SUPER_ADMIN', 'ADMIN'],

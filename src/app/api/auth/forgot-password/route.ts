@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     // 2. Cryptographically secure 6-digit OTP code
     const otpCode = crypto.randomInt(100000, 1000000).toString();
     const tokenHash = crypto.createHash('sha256').update(otpCode).digest('hex');
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
     // Invalidate existing unused reset tokens for this user
     try {

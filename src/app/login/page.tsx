@@ -374,7 +374,7 @@ export default function LoginPage() {
         </div>
       </main>
 
-      {/* Forgot Password / 4-Digit OTP Modal */}
+      {/* Forgot Password / 6-Digit OTP Modal */}
       {showForgotModal && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
           <div className="max-w-sm sm:max-w-md w-full glass-panel border border-emerald-500/30 rounded-3xl p-4 sm:p-6 space-y-4 shadow-2xl relative max-h-[85vh] overflow-y-auto">
@@ -478,7 +478,7 @@ export default function LoginPage() {
                     />
                   </div>
                   <p className="text-[10px] text-slate-500 dark:text-emerald-400/80 text-center">
-                    Enter the 6-digit code from your email (valid for 10 minutes)
+                    Enter the 6-digit code from your email (valid for 5 minutes)
                   </p>
                 </div>
 
@@ -537,7 +537,7 @@ export default function LoginPage() {
                     onClick={() => setResetStep(1)}
                     className="w-full py-2 text-center text-slate-500 dark:text-emerald-400/80 hover:text-emerald-500 text-[11px] font-bold"
                   >
-                    ← Change Email / Resend 4-Digit OTP
+                    ← Change Email / Resend 6-Digit OTP
                   </button>
                 </div>
               </form>

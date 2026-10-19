@@ -49,7 +49,7 @@ runTest('1.1 Password Reset Email specifies 6-digit OTP template', () => {
   const emailServicePath = path.join(__dirname, '..', 'src', 'lib', 'emailService.ts');
   const content = fs.readFileSync(emailServicePath, 'utf8');
   assert(content.includes('6-Digit Password Reset Verification Code (OTP)'), 'Email service must state 6-Digit OTP');
-  assert(content.includes('10 minutes'), 'Email service must declare 10-minute validity');
+  assert(content.includes('5 minutes'), 'Email service must declare 5-minute validity');
 });
 
 runTest('1.2 Recovery Modal enforces 6-digit OTP input with maxLength=6 and 6-digit regex', () => {
@@ -65,7 +65,7 @@ runTest('1.3 Reset Password Page enforces 6-digit OTP input and preserves leadin
   const content = fs.readFileSync(resetPagePath, 'utf8');
   assert(content.includes('maxLength={6}'), 'Reset password page must specify maxLength={6}');
   assert(content.includes('^\\d{6}$'), 'Reset password page must validate 6 digits regex');
-  assert(content.includes('10 minutes'), 'Reset password page must show 10-minute expiry');
+  assert(content.includes('5 minutes'), 'Reset password page must show 5-minute expiry');
 });
 
 runTest('1.4 Backend Password Reset enforces 6-digit string format & attempt rate-limiting', () => {
@@ -74,7 +74,7 @@ runTest('1.4 Backend Password Reset enforces 6-digit string format & attempt rat
   assert(content.includes('^\\d{6}$'), 'Backend must validate 6-digit OTP string');
   assert(content.includes('attemptRecord.count >= 5'), 'Backend must enforce maximum 5 failed verification attempts');
   assert(content.includes('Too many verification attempts'), 'Backend must return 429 when attempt threshold is exceeded');
-  assert(content.includes('10 minutes'), 'Backend must document 10-minute expiry');
+  assert(content.includes('5 minutes'), 'Backend must document 5-minute expiry');
 });
 
 // 2. Parent-Child Relationship Management

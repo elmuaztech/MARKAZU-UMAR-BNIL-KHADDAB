@@ -100,7 +100,7 @@ export function AdminDashboard() {
     unlockAccount,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'security' | 'analytics' | 'system'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'security' | 'system'>('overview');
   const [userDirectorySubTab, setUserDirectorySubTab] = useState<'teachers' | 'parents' | 'students'>('teachers');
   const [userSearchQuery, setUserSearchQuery] = useState('');
   const [auditSearchQuery, setAuditSearchQuery] = useState('');
@@ -1369,83 +1369,6 @@ export function AdminDashboard() {
           </motion.div>
         )}
 
-        {activeTab === 'analytics' && (
-          <motion.div
-            key="tab-analytics"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
-          >
-            {/* Student Growth Chart */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-              <div>
-                <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" /> Student Enrollment Growth Trend
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-emerald-300/70">Total enrolled students per month across academic sessions</p>
-              </div>
-
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={studentGrowthData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                    <XAxis dataKey="month" stroke="#10b981" fontSize={11} />
-                    <YAxis stroke="#10b981" fontSize={11} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#022c22',
-                        borderColor: '#10b981',
-                        borderRadius: '12px',
-                        color: '#fff',
-                      }}
-                    />
-                    <Bar dataKey="students" fill="#10b981" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-
-            {/* Attendance Analytics */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4">
-              <div>
-                <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
-                  <CalendarCheck className="w-4 h-4 text-sky-500" /> Daily Punctuality & Attendance Breakdown
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-emerald-300/70">Overall student presence vs absence distribution</p>
-              </div>
-
-              <div className="h-64 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={attendancePie}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={75}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {attendancePie.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: '#022c22',
-                        borderColor: '#0ea5e9',
-                        borderRadius: '10px',
-                        color: '#fff',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
         {activeTab === 'system' && (
           <motion.div
             key="tab-system"
@@ -1540,7 +1463,7 @@ export function AdminDashboard() {
           <button
             onClick={() => {
               setViewingReport('ACADEMIC');
-              setActiveTab('analytics');
+              setActiveTab('overview');
             }}
             className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 hover:border-teal-500 transition-all flex flex-col items-center gap-2 font-poppins font-bold text-slate-900 dark:text-white text-center hover:scale-105 group"
           >
