@@ -3,9 +3,9 @@
 
 export interface EmailPayload {
   to: string;
-  recipientName: string;
+  recipientName?: string;
   subject: string;
-  template:
+  template?:
     | 'WELCOME_NEW_ACCOUNT'
     | 'PASSWORD_RESET_REQUEST'
     | 'PASSWORD_CHANGED_CONFIRMATION'
@@ -15,7 +15,9 @@ export interface EmailPayload {
     | 'ADMISSION_REJECTED'
     | 'INTERVIEW_INVITATION'
     | 'APPLICATION_SUBMITTED'
-    | 'FEE_PAYMENT_CONFIRMATION';
+    | 'FEE_PAYMENT_CONFIRMATION'
+    | 'CUSTOM';
+  html?: string;
   metadata?: {
     username?: string;
     tempPassword?: string;
@@ -124,7 +126,14 @@ export function generateEmailHtml(payload: EmailPayload): string {
 
   let bodyHtml = '';
 
-  switch (payload.template) {
+  if (payload.html) {
+    bodyHtml = `
+      <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
+        ${payload.html}
+      </div>
+    `;
+  } else {
+    switch (payload.template) {
     case 'WELCOME_NEW_ACCOUNT':
       bodyHtml = `
         <div style="padding: 30px; font-family: sans-serif; color: #1e293b;">
@@ -324,6 +333,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
         </div>
       `;
       break;
+    }
   }
 
   return `

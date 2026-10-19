@@ -70,7 +70,9 @@ export async function POST(req: NextRequest) {
       const adminEmail = process.env.ADMIN_NOTIFICATIONS_EMAIL || 'markazuumarbnkhaddabdaneji@gmail.com';
       await sendSystemEmail({
         to: adminEmail,
+        recipientName: 'School Administrator',
         subject: `[ACTION REQUIRED] Account Deletion Request - ${ticketId}`,
+        template: 'CUSTOM',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
             <h2 style="color: #065f46; margin-top: 0;">Account Deletion Request (Google Play Compliance)</h2>
