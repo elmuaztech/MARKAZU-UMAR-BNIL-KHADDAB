@@ -39,3 +39,8 @@ tests/output-samples/
 
 # Backups
 backup/
+
+# Android Keystore Secrets
+*.keystore
+signing-key-info.txt
+android-keystore/
