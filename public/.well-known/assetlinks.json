@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.markazuumar.app",
+      "sha256_cert_fingerprints": [
+        "14:6D:E9:7D:0F:52:AB:CE:85:40:5C:24:18:40:2F:52:97:54:15:37:7B:6C:6D:88:F9:6B:8C:7C:17:34:F2:1B"
+      ]
+    }
+  }
+]

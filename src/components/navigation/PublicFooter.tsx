@@ -81,6 +81,21 @@ export function PublicFooter() {
                 </Link>
               </li>
               <li>
+                <Link href="/privacy" className="hover:text-amber-300 transition-colors flex items-center gap-1.5">
+                  <span className="text-emerald-500">›</span> Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="hover:text-amber-300 transition-colors flex items-center gap-1.5">
+                  <span className="text-emerald-500">›</span> Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/delete-account" className="hover:text-amber-300 transition-colors flex items-center gap-1.5">
+                  <span className="text-emerald-500">›</span> Account & Data Deletion
+                </Link>
+              </li>
+              <li>
                 <Link href="/contact" className="hover:text-amber-300 transition-colors flex items-center gap-1.5">
                   <span className="text-emerald-500">›</span> Contact Administration
                 </Link>
