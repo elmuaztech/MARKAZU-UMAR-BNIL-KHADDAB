@@ -3,11 +3,13 @@ import { Metadata, Viewport } from 'next';
 import { AppProvider } from '../lib/context';
 import { ThemeProvider } from '../lib/themeContext';
 import { PwaRegister } from '../components/pwa/PwaRegister';
+import { AppSplashLoader } from '../components/pwa/AppSplashLoader';
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
+  viewportFit: 'cover',
   themeColor: '#031c13',
 };
 
@@ -121,6 +123,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 min-h-screen transition-colors duration-200">
+        <AppSplashLoader />
         <PwaRegister />
         <ThemeProvider>
           <AppProvider>

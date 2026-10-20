@@ -3,9 +3,15 @@
   "name": "Markazu Umar bn Al-Khattab SMS",
   "short_name": "Markazu Umar",
   "description": "Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School Management System - Kano, Nigeria",
-  "start_url": "/dashboard",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "minimal-ui",
+    "window-controls-overlay"
+  ],
   "background_color": "#031c13",
   "theme_color": "#031c13",
   "orientation": "any",
