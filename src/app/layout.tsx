@@ -37,11 +37,11 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Elmuaz Technologies LTD" }],
   creator: "Elmuaz Technologies LTD",
-  metadataBase: new URL("https://markazuumar.edu.ng"),
+  metadataBase: new URL("https://mubkdaneji.com"),
   openGraph: {
     title: "Markazu Umar bn Al-Khattab Centre for Qur'an Memorization and Islamic Studies - Daneji",
     description: "Fostering spiritual growth, 30-Juz Qur'an memorization, and classical Islamic education across 2,000+ students in Daneji, Kano, Nigeria.",
-    url: "https://markazuumar.edu.ng",
+    url: "https://mubkdaneji.com",
     siteName: "Markazu Umar bn Al-Khattab",
     locale: "en_NG",
     type: "website",
@@ -79,7 +79,7 @@ const jsonLd = {
   },
   "telephone": ["08167109421", "09042786093", "08037966581", "07085206969"],
   "email": "markazuumarbnkhaddabdaneji@gmail.com",
-  "url": "https://markazuumar.edu.ng"
+  "url": "https://mubkdaneji.com"
 };
 
 const themeScript = `
