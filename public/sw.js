@@ -10,7 +10,7 @@
 // 5. Periodic Background Sync (periodicsync event listener for scheduled updates)
 // ============================================================================
 
-const CACHE_NAME_PREFIX = 'markazu-sms-v2';
+const CACHE_NAME_PREFIX = 'markazu-sms-v3';
 const STATIC_CACHE = `${CACHE_NAME_PREFIX}-static`;
 const PAGES_CACHE = `${CACHE_NAME_PREFIX}-pages`;
 const IMAGES_CACHE = `${CACHE_NAME_PREFIX}-images`;
@@ -18,7 +18,6 @@ const OFFLINE_FALLBACK_PAGE = '/offline.html';
 
 const PRECACHE_ASSETS = [
   '/',
-  '/dashboard',
   '/offline.html',
   '/manifest.json',
   '/logo-rounded.png',
@@ -26,22 +25,38 @@ const PRECACHE_ASSETS = [
   '/icon-192.png',
   '/icon-512.png',
   '/favicon.ico',
-  '/school-bg.jpg',
-  '/director.jpg',
-  '/screenshots/home-1080x1920.png',
-  '/screenshots/home-1920x1080.png',
 ];
 
 // ----------------------------------------------------------------------------
-// 1. Service Worker Installation & Pre-caching
+// 1. Service Worker Installation & Resilient Pre-caching
 // ----------------------------------------------------------------------------
 self.addEventListener('install', (event) => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS).catch((err) => {
-        console.warn('[SW] Precache partial warning:', err);
-      });
+    caches.open(STATIC_CACHE).then(async (cache) => {
+      // First ensure offline fallback page is cached
+      try {
+        const offlineRes = await fetch(OFFLINE_FALLBACK_PAGE, { cache: 'reload' });
+        if (offlineRes.ok) {
+          await cache.put(OFFLINE_FALLBACK_PAGE, offlineRes);
+        }
+      } catch (err) {
+        console.warn('[SW] Offline page cache fallback note:', err);
+      }
+
+      // Then cache remaining assets safely without crashing if any single file fails
+      return Promise.allSettled(
+        PRECACHE_ASSETS.map(async (url) => {
+          try {
+            const res = await fetch(url, { cache: 'reload' });
+            if (res.ok) {
+              await cache.put(url, res);
+            }
+          } catch (e) {
+            console.warn(`[SW] Precache notice for ${url}:`, e);
+          }
+        })
+      );
     })
   );
 });
