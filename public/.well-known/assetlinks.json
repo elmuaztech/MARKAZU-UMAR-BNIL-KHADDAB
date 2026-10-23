@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "com.mubkdaneji.twa",
       "sha256_cert_fingerprints": [
-        "8B:BC:76:C7:27:7C:57:85:16:BA:EC:E9:C6:22:E3:23:33:EA:4D:88:1B:47:30:7D:A0:20:62:82:FA:FE:56:8F"
+        "8B:BC:76:C7:27:7C:57:85:16:BA:EC:E9:C6:22:E3:23:33:EA:4D:88:1B:47:30:7D:A0:20:62:82:FA:FE:56:8F",
+        "35:BE:06:A0:9F:B9:3A:63:56:52:7B:DB:B1:DD:62:24:81:E3:DB:4B:67:60:C2:09:01:79:2B:20:34:0D:90:C1"
       ]
     }
   },
@@ -15,8 +16,9 @@
       "namespace": "android_app",
       "package_name": "com.markazuumar.app",
       "sha256_cert_fingerprints": [
-        "14:6D:E9:7D:0F:52:AB:CE:85:40:5C:24:18:40:2F:52:97:54:15:37:7B:6C:6D:88:F9:6B:8C:7C:17:34:F2:1B",
-        "8B:BC:76:C7:27:7C:57:85:16:BA:EC:E9:C6:22:E3:23:33:EA:4D:88:1B:47:30:7D:A0:20:62:82:FA:FE:56:8F"
+        "8B:BC:76:C7:27:7C:57:85:16:BA:EC:E9:C6:22:E3:23:33:EA:4D:88:1B:47:30:7D:A0:20:62:82:FA:FE:56:8F",
+        "35:BE:06:A0:9F:B9:3A:63:56:52:7B:DB:B1:DD:62:24:81:E3:DB:4B:67:60:C2:09:01:79:2B:20:34:0D:90:C1",
+        "14:6D:E9:7D:0F:52:AB:CE:85:40:5C:24:18:40:2F:52:97:54:15:37:7B:6C:6D:88:F9:6B:8C:7C:17:34:F2:1B"
       ]
     }
   }
