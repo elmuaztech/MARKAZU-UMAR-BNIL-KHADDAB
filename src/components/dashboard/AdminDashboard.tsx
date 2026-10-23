@@ -231,14 +231,6 @@ export function AdminDashboard() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <Link
-              href="/dashboard/finance"
-              className="px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-md transition-all hover:scale-105"
-            >
-              <CreditCardIcon className="w-4 h-4" />
-              <span>Finance & Fee Schedules</span>
-            </Link>
-
             <button
               onClick={() => setIsAssignWizardOpen(true)}
               className="px-4 py-2.5 rounded-2xl bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-bold text-xs flex items-center gap-1.5 border border-white/20 transition-all hover:scale-105"

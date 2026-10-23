@@ -298,11 +298,11 @@ export function HeadmasterDashboard() {
           </Link>
 
           <Link
-            href="/dashboard/finance"
-            className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 border border-amber-200 dark:border-amber-500/30 text-amber-800 dark:text-amber-200 flex flex-col items-center justify-center text-center gap-2 transition-all shadow-sm group"
+            href="/dashboard/attendance"
+            className="p-4 rounded-2xl bg-teal-50 dark:bg-teal-950/40 hover:bg-teal-100 dark:hover:bg-teal-900/50 border border-teal-200 dark:border-teal-500/30 text-teal-800 dark:text-teal-200 flex flex-col items-center justify-center text-center gap-2 transition-all shadow-sm group"
           >
-            <CreditCard className="w-6 h-6 text-amber-600 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-            <span>Section Finance</span>
+            <CalendarCheck className="w-6 h-6 text-teal-600 dark:text-teal-400 group-hover:scale-110 transition-transform" />
+            <span>Daily Attendance</span>
           </Link>
         </div>
       </div>
@@ -371,13 +371,13 @@ export function HeadmasterDashboard() {
           </div>
         </div>
 
-        {/* Column 3: Section Finance Overview Card */}
+        {/* Column 3: Section Academic Roster & Overview Card */}
         <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-4 flex flex-col justify-between">
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-500 flex items-center gap-1.5">
-                <CreditCard className="w-4 h-4" />
-                Section Finance
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-500 flex items-center gap-1.5">
+                <Users className="w-4 h-4" />
+                Section Roster
               </span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold">
                 {assignedProg?.programme_code || 'PROG'}
@@ -385,57 +385,18 @@ export function HeadmasterDashboard() {
             </div>
 
             <h4 className="text-base font-black text-slate-900 dark:text-white">
-              Financial Schedule & Balances
+              Academic Section Management
             </h4>
 
-            {/* Payment Status Pill */}
-            {(() => {
-              const feeConfig = (assignedProg as any)?.feeConfig;
-              const isPaid = Boolean(
-                (assignedProg as any)?.isPaidProgramme ??
-                (feeConfig?.schoolFee > 0 || feeConfig?.schoolFeeAmount > 0 || feeConfig?.requiresApplicationFee)
-              );
-              const schFee = feeConfig?.schoolFee || feeConfig?.schoolFeeAmount || 0;
-              const appFee = feeConfig?.applicationFee || feeConfig?.applicationFeeAmount || 0;
-
-              return (
-                <div
-                  className={`p-3 rounded-2xl border text-xs space-y-1 ${
-                    isPaid
-                      ? 'bg-amber-500/10 border-amber-500/30 text-amber-900 dark:text-amber-200'
-                      : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-900 dark:text-emerald-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold flex items-center gap-1.5 whitespace-nowrap">
-                      {isPaid ? (
-                        <>
-                          <CreditCard className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                          <span>Payment-Enabled Section</span>
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                          <span>Community Waqf (Free Section)</span>
-                        </>
-                      )}
-                    </span>
-                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/40 dark:bg-black/30 shrink-0 whitespace-nowrap">
-                      {isPaid ? `₦${schFee.toLocaleString()} / term` : '₦0 Fees'}
-                    </span>
-                  </div>
-                  <p className="text-[11px] opacity-80">
-                    {isPaid
-                      ? `Enrolled students carry a ₦${schFee.toLocaleString()} termly fee.${appFee > 0 ? ` Form fee: ₦${appFee.toLocaleString()}.` : ''}`
-                      : 'Community sponsored curriculum. Students attend at ₦0 tuition cost.'}
-                  </p>
-                </div>
-              );
-            })()}
-
-            <p className="text-xs text-slate-500 dark:text-emerald-300/80 leading-relaxed">
-              Track collected school fees, verify applicant form fee transactions, and monitor outstanding tuition balances.
-            </p>
+            <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 text-xs space-y-1">
+              <span className="font-bold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Active Curriculum Section</span>
+              </span>
+              <p className="text-[11px] opacity-80">
+                Oversee student academic progress, attendance monitoring, class teachers, and lesson schedules.
+              </p>
+            </div>
 
             <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-900/40 space-y-2 text-xs">
               <div className="flex justify-between">
@@ -454,10 +415,10 @@ export function HeadmasterDashboard() {
           </div>
 
           <Link
-            href="/dashboard/finance"
-            className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all group"
+            href="/dashboard/students"
+            className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-md transition-all group"
           >
-            <span>Open Section Finance Ledger</span>
+            <span>View Enrolled Students</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>

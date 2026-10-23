@@ -311,15 +311,6 @@ export function Sidebar({
     { id: 'cms', label: 'Website CMS', href: '/dashboard/cms', icon: Globe, group: 'REPORTS & SETUP' },
     { id: 'downloads', label: 'Downloads', href: '/dashboard/downloads', icon: Download, group: 'REPORTS & SETUP' },
 
-    // FINANCE & TUITION
-    {
-      id: 'finance',
-      label: currentUser.role === 'HEADMASTER' ? 'Section Finance' : currentUser.role === 'PARENT' ? 'School Fees' : 'Finance & Fees',
-      href: '/dashboard/finance',
-      icon: CreditCard,
-      group: 'FINANCE',
-    },
-
     // SYSTEM & SECURITY
     { id: 'security', label: 'Security & Accounts', href: '/dashboard/security', icon: ShieldCheck, badge: 'Admin', group: 'SETTINGS' },
     { id: 'backup', label: 'Backup Center', href: '/dashboard/backup', icon: Database, badge: 'Admin', group: 'SETTINGS' },

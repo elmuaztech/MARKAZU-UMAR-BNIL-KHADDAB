@@ -281,11 +281,6 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
     e.preventDefault();
     if (!studentFullName || !parentName || !parentEmail || !parentPhone || !selectedProgramme) return;
 
-    if (requiresAppFee && !verifiedTxId) {
-      setSubmitError('This programme requires a verified application fee payment before submission.');
-      return;
-    }
-
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -429,12 +424,6 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                 <span className="text-emerald-400 font-semibold">Parent / Guardian:</span>
                 <span className="text-white font-bold">{submittedApp.parentName}</span>
               </div>
-              {verifiedTxRef && (
-                <div className="flex justify-between border-b border-emerald-800/40 pb-1.5">
-                  <span className="text-emerald-400 font-semibold">Payment Reference:</span>
-                  <span className="text-amber-400 font-bold">{verifiedTxRef}</span>
-                </div>
-              )}
               <div className="flex justify-between">
                 <span className="text-emerald-400 font-semibold">Status:</span>
                 <span className="text-amber-300 font-bold">SUBMITTED (Entrance Exam/Interview Pending)</span>
@@ -442,10 +431,9 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
             </div>
 
             <div className="p-3 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-[11px] text-emerald-200/90 text-left space-y-1">
-              <p className="font-bold text-amber-300">Next Steps & Official Markazu Policy:</p>
+              <p className="font-bold text-amber-300">Next Steps & Information:</p>
               <ul className="list-disc list-inside space-y-0.5 text-[10px]">
                 <li>Our Admissions Committee will review the application and contact you for the oral Qur'an screening / entrance examination.</li>
-                <li><strong>Important:</strong> School fees are completely separate from form fees and are <strong>ONLY payable after official acceptance</strong>.</li>
                 <li>Portal login credentials will be emailed upon admission confirmation.</li>
               </ul>
             </div>
@@ -466,7 +454,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
             {/* Step Navigation Bar */}
             <div className="shrink-0 px-4 sm:px-6 py-2.5 flex items-center justify-between border-b border-slate-200 dark:border-emerald-800/40 bg-slate-50 dark:bg-[#021810] overflow-x-auto gap-2">
               {[
-                { step: 0, label: 'Programme & Fee' },
+                { step: 0, label: 'Select Programme' },
                 { step: 1, label: 'Student Info' },
                 { step: 2, label: 'Parent Info' },
                 { step: 3, label: 'Emergency & Medical' },
@@ -509,6 +497,7 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
             {/* Scrollable Form Body */}
             <div className="flex-1 overflow-y-auto min-h-0 p-5 sm:p-6 space-y-4">
               {/* STEP 0: Programme Selection & Fee Payment Gating */}
+              {/* STEP 0: Programme Selection */}
               {currentStep === 0 && (
                 <div className="space-y-4 animate-in fade-in duration-150">
                   <div className="border-b border-slate-100 dark:border-emerald-800/40 pb-2">
@@ -517,32 +506,26 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                       <span>Step 1: Select Programme of Study</span>
                     </h3>
                     <p className="text-[11px] text-slate-500 dark:text-emerald-300/80 mt-0.5">
-                      Select your intended programme. Application fees vary depending on the chosen curriculum and are loaded directly from the school fee schedule.
+                      Select your intended curriculum to begin the candidate registration process.
                     </p>
                   </div>
 
                   {isLoadingProgrammes ? (
                     <div className="flex flex-col items-center justify-center py-10 space-y-2 text-slate-400">
                       <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
-                      <p className="text-xs">Loading official programmes & fee schedules...</p>
+                      <p className="text-xs">Loading available academic programmes...</p>
                     </div>
                   ) : (
                     <div className="space-y-3">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         {programmes.map((p) => {
                           const isSelected = p.id === selectedProgrammeId;
-                          const pFeeReq = Boolean(p.feeConfig?.requiresApplicationFee && (p.feeConfig.applicationFee || 0) > 0);
-                          const pAppFee = p.feeConfig?.applicationFee || 0;
 
                           return (
                             <div
                               key={p.id}
                               onClick={() => {
                                 setSelectedProgrammeId(p.id);
-                                setVerifiedTxId(null);
-                                setVerifiedTxRef(null);
-                                setIsFormUnlocked(false);
-                                setPaymentError(null);
                               }}
                               className={`p-3.5 rounded-2xl border cursor-pointer transition-all ${
                                 isSelected
@@ -572,25 +555,12 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                                   )}
                                 </div>
                               </div>
-
-                              <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-emerald-900/40 flex items-center justify-between text-[10px]">
-                                <span className="text-slate-500 dark:text-emerald-400 font-medium">Application Form:</span>
-                                {pFeeReq ? (
-                                  <span className="font-bold text-amber-600 dark:text-amber-400">
-                                    ₦{pAppFee.toLocaleString()}
-                                  </span>
-                                ) : (
-                                  <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                                    FREE (₦0)
-                                  </span>
-                                )}
-                              </div>
                             </div>
                           );
                         })}
                       </div>
 
-                      {/* Payment Gating Box */}
+                      {/* Selected Programme Summary & Continue Button */}
                       {selectedProgramme && (
                         <div className="mt-4 p-4 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-emerald-500/30 space-y-3">
                           <div className="flex items-center justify-between">
@@ -602,126 +572,21 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                                 {selectedProgramme.name} ({selectedProgramme.code})
                               </h4>
                             </div>
-                            <div className="text-right">
-                              <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-emerald-400 tracking-wider">
-                                Application Fee
-                              </span>
-                              <p className="text-sm font-black text-emerald-600 dark:text-amber-400">
-                                {requiresAppFee ? `₦${applicationFeeAmount.toLocaleString()}` : 'FREE (₦0)'}
-                              </p>
-                            </div>
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                              Admission Open
+                            </span>
                           </div>
 
-                          {/* Critical Business Notice: Application Fee != School Fee */}
-                          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-800 dark:text-amber-300 space-y-1">
-                            <p className="font-bold flex items-center gap-1.5">
-                              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                              <span>Important Markazu Fee Policy:</span>
-                            </p>
-                            <p className="text-[10px] leading-relaxed">
-                              The <strong>Application/Form Fee</strong> is strictly for screening & entrance exam processing. 
-                              <strong> School fees are completely separate</strong> and will <strong>only</strong> be payable after your child has successfully completed the entrance examination and received an official admission offer.
-                            </p>
+                          <div className="pt-2">
+                            <button
+                              type="button"
+                              onClick={handleProceedFree}
+                              className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+                            >
+                              <span>Continue to Student Information</span>
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
                           </div>
-
-                          {paymentError && (
-                            <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 text-[11px] flex items-center gap-2">
-                              <AlertCircle className="w-4 h-4 shrink-0" />
-                              <span>{paymentError}</span>
-                            </div>
-                          )}
-
-                          {isVerifyingPayment && (
-                            <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 text-[11px] flex items-center gap-2">
-                              <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
-                              <span>Verifying Flutterwave transaction server-side with bank authorities... Please wait.</span>
-                            </div>
-                          )}
-
-                          {isFormUnlocked ? (
-                            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] flex items-center justify-between">
-                              <span className="flex items-center gap-1.5 font-bold">
-                                <CheckCircle2 className="w-4 h-4" />
-                                <span>Application Form Unlocked & Ready</span>
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => setCurrentStep(1)}
-                                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold flex items-center gap-1.5 shadow"
-                              >
-                                <span>Fill Candidate Form</span>
-                                <ArrowRight className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          ) : requiresAppFee ? (
-                            <div className="space-y-3 pt-2">
-                              <div className="font-semibold text-slate-700 dark:text-gray-300 text-[11px]">
-                                Enter Payer Details to Pay Application Fee (₦{applicationFeeAmount.toLocaleString()}):
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                                <div>
-                                  <input
-                                    type="text"
-                                    required
-                                    placeholder="Full Name (Payer)"
-                                    value={payerName}
-                                    onChange={(e) => setPayerName(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#031c13] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white text-xs"
-                                  />
-                                </div>
-                                <div>
-                                  <input
-                                    type="email"
-                                    required
-                                    placeholder="Email Address"
-                                    value={payerEmail}
-                                    onChange={(e) => setPayerEmail(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#031c13] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white text-xs font-mono"
-                                  />
-                                </div>
-                                <div>
-                                  <input
-                                    type="tel"
-                                    required
-                                    placeholder="Phone Number"
-                                    value={payerPhone}
-                                    onChange={(e) => setPayerPhone(e.target.value)}
-                                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#031c13] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white text-xs font-mono"
-                                  />
-                                </div>
-                              </div>
-
-                              <button
-                                type="button"
-                                disabled={isInitializingPayment || isVerifyingPayment}
-                                onClick={handleInitiatePayment}
-                                className="w-full py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
-                              >
-                                {isInitializingPayment ? (
-                                  <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    <span>Connecting to Flutterwave...</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <CreditCard className="w-4 h-4" />
-                                    <span>Pay ₦{applicationFeeAmount.toLocaleString()} via Flutterwave to Unlock Form</span>
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="pt-2">
-                              <button
-                                type="button"
-                                onClick={handleProceedFree}
-                                className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
-                              >
-                                <span>Proceed to Free Application Form</span>
-                                <ArrowRight className="w-4 h-4" />
-                              </button>
-                            </div>
-                          )}
                         </div>
                       )}
                     </div>
@@ -1064,9 +929,9 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                             <span className="font-bold text-slate-900 dark:text-white">{selectedProgramme?.name}</span>
                           </div>
                           <div>
-                            <span className="text-slate-400 dark:text-emerald-400 font-semibold block text-[10px]">Application Fee</span>
-                            <span className="font-bold text-emerald-600 dark:text-emerald-400">
-                              {requiresAppFee ? `₦${applicationFeeAmount.toLocaleString()} (Verified)` : 'FREE'}
+                            <span className="text-slate-400 dark:text-emerald-400 font-semibold block text-[10px]">Programme Code</span>
+                            <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                              {selectedProgramme?.code || 'N/A'}
                             </span>
                           </div>
                           <div>
@@ -1086,11 +951,6 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
                             <span className="font-bold text-slate-900 dark:text-white font-mono">{parentEmail} • {parentPhone}</span>
                           </div>
                         </div>
-                        {verifiedTxRef && (
-                          <div className="border-t border-slate-200 dark:border-emerald-800/40 pt-2 font-mono text-[10px] text-amber-500">
-                            Verified Payment Reference: {verifiedTxRef}
-                          </div>
-                        )}
                       </div>
 
                       {submitError && (

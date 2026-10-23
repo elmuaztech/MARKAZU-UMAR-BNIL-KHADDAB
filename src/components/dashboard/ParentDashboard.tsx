@@ -57,30 +57,10 @@ export function ParentDashboard() {
   const [selectedChildId, setSelectedChildId] = useState<string>(childrenList[0]?.id || '');
   const activeChild = childrenList.find((w) => w.id === selectedChildId) || childrenList[0] || null;
 
-  const [financeWards, setFinanceWards] = useState<any[]>([]);
-
-  React.useEffect(() => {
-    fetch('/api/parent/finance')
-      .then((res) => res.json())
-      .then((json) => {
-        if (json.status === 'success' && json.data?.wards) {
-          setFinanceWards(json.data.wards);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
   const childGrades = activeChild ? grades.filter((g) => g.studentId === activeChild.id) : [];
   const childTahfiz = activeChild ? tahfizRecords.filter((r) => r.studentId === activeChild.id) : [];
 
   const parentActions: QuickActionItem[] = [
-    {
-      label: 'School Fees & Tuition',
-      labelArabic: 'الرسوم المدرسية',
-      href: '/dashboard/finance',
-      icon: CreditCard,
-      color: 'from-emerald-600 to-emerald-700',
-    },
     {
       label: 'Attendance History',
       labelArabic: 'سجل الحضور',
@@ -245,83 +225,6 @@ export function ParentDashboard() {
               />
             </div>
           )}
-
-          {/* Ward Tuition Status Card */}
-          {activeChild &&
-            (() => {
-              const activeWardFinance = financeWards.find((w) => w.studentId === activeChild.id);
-              if (!activeWardFinance) return null;
-
-              const isPaid = activeWardFinance.isPaidProgramme;
-              const balance = activeWardFinance.outstandingBalance || 0;
-
-              return (
-                <div className="p-5 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/20 shadow-sm space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-emerald-400 flex items-center gap-1.5 truncate">
-                      <CreditCard className="w-4 h-4 text-emerald-500 shrink-0" />
-                      Tuition & Fee Status: {activeChild.fullName}
-                    </span>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap shrink-0 self-start sm:self-auto ${
-                        isPaid
-                          ? balance > 0
-                            ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-300'
-                            : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300'
-                          : 'bg-sky-100 text-sky-800 dark:bg-sky-900/60 dark:text-sky-300'
-                      }`}
-                    >
-                      {isPaid ? (balance > 0 ? 'School Fee Due' : 'Paid in Full') : 'Waqf Sponsored (Free)'}
-                    </span>
-                  </div>
-
-                  {isPaid ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
-                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-900/40 text-center">
-                        <span className="text-[10px] text-slate-400 dark:text-emerald-400 block font-semibold">School Fee</span>
-                        <span className="text-xs font-bold text-slate-900 dark:text-white">
-                          ₦{activeWardFinance.schoolFee?.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-900/40 text-center">
-                        <span className="text-[10px] text-slate-400 dark:text-emerald-400 block font-semibold">Amount Paid</span>
-                        <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                          ₦{activeWardFinance.amountPaid?.toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-900/40 text-center">
-                        <span className="text-[10px] text-slate-400 dark:text-emerald-400 block font-semibold">Balance Due</span>
-                        <span className={`text-xs font-black ${balance > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
-                          ₦{balance.toLocaleString()}
-                        </span>
-                      </div>
-                      <div>
-                        <Link
-                          href="/dashboard/finance"
-                          className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow transition-all"
-                        >
-                          <span>{balance > 0 ? 'Pay Online' : 'View Receipts'}</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-3.5 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/40 text-[11px] text-sky-800 dark:text-sky-200 flex items-center justify-between">
-                      <p>
-                        This student is enrolled in a community-sponsored Waqf programme. <strong>No school fee is payable.</strong>
-                      </p>
-                      <Link
-                        href="/dashboard/finance"
-                        className="text-xs font-bold text-sky-700 dark:text-sky-300 hover:underline flex items-center gap-1 shrink-0 ml-2"
-                      >
-                        <span>Ledger</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
         </>
       ) : (
         <div className="p-8 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/20 text-center space-y-2">

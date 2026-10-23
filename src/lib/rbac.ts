@@ -208,7 +208,7 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/security': ['SUPER_ADMIN'], // Strictly Super Admin authority
   '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/settings/quran-rules': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/finance': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'PARENT'],
+  // '/dashboard/finance': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'PARENT'],
 };
 
 export function hasPageAccess(role: UserRole | string, pathname: string): boolean {
