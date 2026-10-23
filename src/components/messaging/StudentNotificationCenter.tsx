@@ -17,9 +17,10 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/lib/context';
 import { DirectMessage } from '@/types';
+import { isNotificationRelevantForUser } from '@/lib/notificationFilter';
 
 export function StudentNotificationCenter() {
-  const { directMessages, inAppNotifications, currentUser, markDirectMessageRead, archiveDirectMessage } = useApp();
+  const { directMessages, inAppNotifications, parents, teachers, students, currentUser, markDirectMessageRead, archiveDirectMessage } = useApp();
 
   const [activeTab, setActiveTab] = useState<'MESSAGES' | 'NOTIFICATIONS' | 'ARCHIVED'>('MESSAGES');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -45,28 +46,27 @@ export function StudentNotificationCenter() {
     });
   }, [directMessages, currentUser, activeTab, searchTerm, categoryFilter]);
 
-  // Filter in-app system notifications for user
+  // Authoritative role-based in-app system notifications for user
   const userNotifications = useMemo(() => {
     return inAppNotifications.filter((n) => {
-      const isForUser =
-        currentUser.role === 'ADMIN' ||
-        (currentUser.role as string) === 'SUPER_ADMIN' ||
-        n.userId === currentUser.id;
+      const isForUser = isNotificationRelevantForUser(n, currentUser, { parents, teachers, students });
       const matchesTab = activeTab === 'ARCHIVED' ? n.isArchived : !n.isArchived;
       const matchesSearch =
         n.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         n.body.toLowerCase().includes(searchTerm.toLowerCase());
       return isForUser && matchesTab && matchesSearch;
     });
-  }, [inAppNotifications, currentUser, activeTab, searchTerm]);
+  }, [inAppNotifications, currentUser, parents, teachers, students, activeTab, searchTerm]);
 
   const unreadMessagesCount = useMemo(() => {
-    return directMessages.filter((m) => !m.isRead && !m.isArchived).length;
-  }, [directMessages]);
+    return userDirectMessages.filter((m) => !m.isRead && !m.isArchived).length;
+  }, [userDirectMessages]);
 
   const unreadNotificationsCount = useMemo(() => {
-    return inAppNotifications.filter((n) => !n.read && !n.isArchived).length;
-  }, [inAppNotifications]);
+    return inAppNotifications.filter(
+      (n) => isNotificationRelevantForUser(n, currentUser, { parents, teachers, students }) && !n.read && !n.isArchived
+    ).length;
+  }, [inAppNotifications, currentUser, parents, teachers, students]);
 
   return (
     <div className="space-y-6 font-poppins">

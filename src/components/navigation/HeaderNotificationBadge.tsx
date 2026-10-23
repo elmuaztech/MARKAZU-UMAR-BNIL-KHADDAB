@@ -6,13 +6,16 @@ import { useApp } from '@/lib/context';
 import { PushNotificationManager } from '@/lib/pushNotifications';
 import { Bell, Check, Pin, Trash2, ArrowUpRight, Sparkles, ShieldAlert, FileText, Calendar, Eye, Smartphone, BellOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { isNotificationRelevantForUser } from '@/lib/notificationFilter';
 
 export function HeaderNotificationBadge() {
-  const { currentUser, inAppNotifications, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
+  const { currentUser, inAppNotifications, parents, teachers, students, markNotificationAsRead, markAllNotificationsAsRead } = useApp();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Filter notifications relevant to currentUser
-  const userNotifs = inAppNotifications.filter((n) => !n.isArchived);
+  // Authoritative strict role-based notification filtering
+  const userNotifs = inAppNotifications.filter((n) =>
+    isNotificationRelevantForUser(n, currentUser, { parents, teachers, students })
+  );
   const unreadCount = userNotifs.filter((n) => !n.read).length;
 
   return (

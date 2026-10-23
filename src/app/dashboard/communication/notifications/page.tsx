@@ -6,11 +6,15 @@ import { useApp } from '@/lib/context';
 import { PushNotificationManager } from '@/lib/pushNotifications';
 import { Bell, CheckCircle2, Pin, Archive, Trash2, ArrowLeft, Search, Filter, Sparkles, FileText, Eye, Smartphone, BellRing, BellOff } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { isNotificationRelevantForUser } from '@/lib/notificationFilter';
 
 export default function NotificationCenterPage() {
   const {
     currentUser,
     inAppNotifications,
+    parents,
+    teachers,
+    students,
     markNotificationAsRead,
     markAllNotificationsAsRead,
     pinNotification,
@@ -32,7 +36,13 @@ export default function NotificationCenterPage() {
     }
   }, []);
 
-  const filteredNotifs = inAppNotifications.filter((n) => {
+  // 1. Authoritative Role-Based Filtering: strictly limit to user's permitted notifications
+  const userNotifs = inAppNotifications.filter((n) =>
+    isNotificationRelevantForUser(n, currentUser, { parents, teachers, students })
+  );
+
+  // 2. Tab & Search Filtering
+  const filteredNotifs = userNotifs.filter((n) => {
     if (filterTab === 'UNREAD' && n.read) return false;
     if (filterTab === 'PINNED' && !n.pinned) return false;
     if (filterTab === 'ARCHIVED' && !n.isArchived) return false;
@@ -44,7 +54,7 @@ export default function NotificationCenterPage() {
     return matchesSearch;
   });
 
-  const unreadCount = inAppNotifications.filter((n) => !n.read && !n.isArchived).length;
+  const unreadCount = userNotifs.filter((n) => !n.read && !n.isArchived).length;
 
   return (
     <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-8 font-poppins">
