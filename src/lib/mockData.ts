@@ -82,8 +82,8 @@ export const MOCK_QUEUE_ITEMS: QueueItem[] = [];
 export const MOCK_NOTIFICATIONS: InAppNotification[] = [];
 
 export const DEFAULT_COMMUNICATION_SETTINGS: CommunicationSettings = {
-  schoolEmail: 'markazuumarbnkhaddabdaneji@gmail.com',
-  replyToEmail: 'markazuumarbnkhaddabdaneji@gmail.com',
+  schoolEmail: 'info@mubkdaneji.com',
+  replyToEmail: 'info@mubkdaneji.com',
   schoolWhatsApp: '+234 816 710 9421',
   defaultSignature: 'Management Office\nMarkazu Umar bn Al-Khattab Centre for Qur\'an Memorization and Islamic Studies - Daneji',
   footerText: 'Official Communication • Markazu Umar bn Al-Khattab Centre for Qur\'an Memorization and Islamic Studies - Daneji • Kano, Nigeria',

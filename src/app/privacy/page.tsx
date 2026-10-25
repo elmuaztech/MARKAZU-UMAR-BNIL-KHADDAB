@@ -273,10 +273,10 @@ export default function PrivacyPolicyPage() {
                   <Mail className="w-4 h-4 text-emerald-600 dark:text-amber-400" /> Official Email
                 </div>
                 <a
-                  href="mailto:markazuumarbnkhaddabdaneji@gmail.com"
-                  className="font-mono text-emerald-600 dark:text-amber-300 hover:underline block break-all"
+                  href="mailto:info@mubkdaneji.com"
+                  className="font-mono text-emerald-600 dark:text-amber-300 hover:underline block break-all font-semibold"
                 >
-                  markazuumarbnkhaddabdaneji@gmail.com
+                  info@mubkdaneji.com
                 </a>
               </div>
 

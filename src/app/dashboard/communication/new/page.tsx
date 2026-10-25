@@ -547,7 +547,7 @@ export default function NewCommunicationPage() {
                   <Mail className="w-4 h-4" /> HTML Email Template Preview
                 </div>
                 <div className="p-4 rounded-xl bg-white dark:bg-[#042419] border space-y-2 text-xs">
-                  <div className="text-slate-500">From: info@markazuumar.edu.ng</div>
+                  <div className="text-slate-500">From: info@mubkdaneji.com</div>
                   <div className="font-extrabold text-sm text-slate-900 dark:text-white">{subject}</div>
                   <div className="py-2 border-t text-slate-700 dark:text-emerald-100 whitespace-pre-line">{content}</div>
                 </div>

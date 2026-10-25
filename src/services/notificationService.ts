@@ -90,7 +90,7 @@ export class EmailProvider implements INotificationProvider {
           </div>
           <div class="footer">
             ${footer}<br/>
-            Contact: ${settings?.schoolEmail || 'info@markazuumar.edu.ng'} | WhatsApp: ${settings?.schoolWhatsApp || '+234 816 710 9421'}
+            Contact: ${settings?.schoolEmail || 'info@mubkdaneji.com'} | WhatsApp: ${settings?.schoolWhatsApp || '+234 816 710 9421'}
           </div>
         </div>
       </body>

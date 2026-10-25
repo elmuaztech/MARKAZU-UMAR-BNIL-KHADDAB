@@ -355,11 +355,11 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
         {/* Modal Header */}
         <div className="shrink-0 p-5 sm:p-6 text-center space-y-1.5 border-b border-slate-100 dark:border-emerald-800/40">
           {schoolLogo ? (
-            <div className="w-12 h-12 rounded-full bg-white border-2 border-emerald-500/50 p-0.5 mx-auto flex items-center justify-center shadow-md overflow-hidden">
-              <img src={schoolLogo} alt="Markazu Umar Logo" className="w-full h-full rounded-full object-cover" />
+            <div className="w-12 h-12 rounded-xl bg-white border border-emerald-500/50 p-1 mx-auto flex items-center justify-center shadow-md overflow-hidden">
+              <img src={schoolLogo} alt="Markazu Umar Logo" className="w-full h-full rounded-lg object-contain" />
             </div>
           ) : (
-            <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-sky-500 text-white mx-auto flex items-center justify-center border-2 border-emerald-400/40 shadow-md">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-sky-500 text-white mx-auto flex items-center justify-center border border-emerald-400/40 shadow-md">
               <BookOpen className="w-6 h-6" />
             </div>
           )}

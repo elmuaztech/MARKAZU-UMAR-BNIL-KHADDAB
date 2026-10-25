@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 
     // Send notification to school administration
     try {
-      const adminEmail = process.env.ADMIN_NOTIFICATIONS_EMAIL || 'markazuumarbnkhaddabdaneji@gmail.com';
+      const adminEmail = process.env.ADMIN_NOTIFICATIONS_EMAIL || 'info@mubkdaneji.com';
       await sendSystemEmail({
         to: adminEmail,
         recipientName: 'School Administrator',

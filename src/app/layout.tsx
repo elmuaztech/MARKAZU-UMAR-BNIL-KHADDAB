@@ -78,7 +78,7 @@ const jsonLd = {
     "addressCountry": "NG"
   },
   "telephone": ["08167109421", "09042786093", "08037966581", "07085206969"],
-  "email": "markazuumarbnkhaddabdaneji@gmail.com",
+  "email": "info@mubkdaneji.com",
   "url": "https://mubkdaneji.com"
 };
 

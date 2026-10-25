@@ -27,6 +27,9 @@ import {
   UserCheck,
   GraduationCap,
   X,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -39,6 +42,84 @@ export default function HomePage() {
   // Gallery Lightbox State
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  // Background Slideshow State (5 Rotating High-Definition Images)
+  const heroSlides = [
+    {
+      image: '/slideshow/slide-1-campus.jpg',
+      tag: 'Islamic & Academic Excellence',
+      headline: "Empowering Tomorrow's Leaders",
+      subtitle: 'Welcome to Markazu Umar Bn Al-Khattab — where Quranic excellence is a tradition and Islamic character is our compass.',
+      arabic: 'مركز عمر بن الخطاب لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي',
+    },
+    {
+      image: '/slideshow/slide-2-hall.jpg',
+      tag: "Sacred Qur'an Memorization",
+      headline: 'Preserving The Noble Book',
+      subtitle: 'Structured daily memorization, classical Tajweed phonetics, and certified supervision for over 1,000 young scholars.',
+      arabic: 'وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا — العلم والتربية',
+    },
+    {
+      image: '/slideshow/slide-3-school.jpg',
+      tag: 'Tarbiyya & Moral Character',
+      headline: 'Nurturing Moral Distinction',
+      subtitle: 'Cultivating pious minds, exemplary Sunnah etiquette, and confident Muslim leaders for contemporary society.',
+      arabic: 'إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ',
+    },
+    {
+      image: '/slideshow/slide-4-teachers.jpg',
+      tag: 'Certified Academic Faculty',
+      headline: 'Guided by Master Ustazes',
+      subtitle: 'Over 50+ certified educators, mentors, and academic inspectors ensuring each student excels spiritually and mentally.',
+      arabic: 'خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ',
+    },
+    {
+      image: '/slideshow/slide-5-students.jpg',
+      tag: 'Modern Parent-School Connection',
+      headline: 'A Modern Sanctuary of Learning',
+      subtitle: 'Instant termly report cards, live attendance, WhatsApp alerts, and dedicated supervision in Kano, Nigeria.',
+      arabic: 'رَبِّ زِدْنِي عِلْمًا — العلم نور والجهل ظلام',
+    },
+  ];
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  // Automatic slideshow transition every 3.8s with smooth pause on touch/hover
+  React.useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 3800);
+    return () => clearInterval(interval);
+  }, [isPaused, heroSlides.length]);
+
+  const handleNextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  };
+
+  const handlePrevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 40) {
+      if (diff > 0) {
+        handleNextSlide();
+      } else {
+        handlePrevSlide();
+      }
+    }
+    setTouchStartX(null);
+  };
 
   // Gallery Sample Data Categories
   const galleryCategories = [
@@ -120,54 +201,175 @@ export default function HomePage() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-12 md:py-16 space-y-24">
-        {/* HERO SECTION WITH SCHOOL BACKGROUND IMAGE */}
-        <section className="relative rounded-3xl overflow-hidden shadow-2xl border border-emerald-500/40 p-8 sm:p-12 md:p-16 text-center text-white my-4 min-h-[460px] flex flex-col items-center justify-center">
-          {/* Background Image Container with Soft Opacity and High Contrast */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-30 transition-transform duration-700 hover:scale-105"
-            style={{ backgroundImage: "url('/school-bg.jpg')" }}
-          />
-          
-          {/* Rich Dark Emerald Overlay with Backdrop Blur */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#031c13]/85 via-[#043322]/80 to-[#021810]/90 backdrop-blur-[1px]" />
+        {/* HERO SECTION WITH ANIMATED BACKGROUND SLIDESHOW */}
+        <section
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="relative rounded-3xl overflow-hidden shadow-2xl border border-emerald-500/30 text-white my-2 sm:my-4 min-h-[580px] sm:min-h-[640px] md:min-h-[680px] flex flex-col justify-between p-5 sm:p-10 md:p-14 select-none"
+        >
+          {/* Animated Background Slideshow Images (5 High-Definition School Scenes) */}
+          {heroSlides.map((slide, idx) => {
+            const isActive = idx === currentSlide;
+            return (
+              <div
+                key={slide.image}
+                aria-hidden={!isActive}
+                className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out ${
+                  isActive
+                    ? 'opacity-100 scale-100 z-0'
+                    : 'opacity-0 scale-105 pointer-events-none z-0'
+                }`}
+                style={{ backgroundImage: `url('${slide.image}')` }}
+              />
+            );
+          })}
 
-          {/* Content Layer */}
-          <div className="relative z-10 space-y-5 max-w-4xl mx-auto px-2">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/25 border border-emerald-400/40 text-amber-300 font-semibold text-xs shadow-lg backdrop-blur-md">
-              <BookOpen className="w-4 h-4 text-amber-400" /> Welcome to
+          {/* High Contrast Multi-Layer Dark Gradient Overlay with Soft Blur */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/75 backdrop-blur-[0.5px] z-[1]" />
+
+          {/* Top Tag & Arabic Calligraphy Header */}
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 w-full">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-amber-300 font-bold text-xs tracking-wide backdrop-blur-md shadow-lg">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>{heroSlides[currentSlide].tag}</span>
             </div>
 
-            <h1 className="text-xl sm:text-3xl md:text-5xl font-black tracking-tight leading-snug sm:leading-tight text-white max-w-full sm:max-w-4xl mx-auto drop-shadow-md text-center px-1">
-              MARKAZU UMAR BN KHADDAB <br className="hidden sm:inline" />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-300 via-amber-300 to-sky-300">
-                Centre for Qura'an Memorization and Islamic Studies - Daneji
-              </span>
-            </h1>
+            <div dir="rtl" lang="ar" className="hidden sm:inline-block font-arabic font-bold text-sm md:text-base text-amber-300/90 drop-shadow">
+              مركز عمر بن الخطاب — دنيجي
+            </div>
+          </div>
 
-            <div dir="rtl" lang="ar" className="font-arabic font-bold text-lg md:text-xl text-amber-300 drop-shadow leading-relaxed">
-              مركز عمر بن الخطاب<br className="sm:hidden" /> لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي
+          {/* Center/Main Headline & Action Callouts (Matching Reference Design) */}
+          <div className="relative z-10 space-y-4 sm:space-y-6 max-w-3xl my-auto py-4 sm:py-6 text-left">
+            <div className="space-y-2 sm:space-y-3">
+              <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.12] drop-shadow-md">
+                {heroSlides[currentSlide].headline}
+                <span className="text-sky-400">.</span>
+              </h1>
+
+              <div dir="rtl" lang="ar" className="sm:hidden font-arabic font-bold text-sm text-amber-300 drop-shadow">
+                {heroSlides[currentSlide].arabic}
+              </div>
+
+              <p className="text-sm sm:text-base md:text-lg text-slate-100 font-normal leading-relaxed max-w-2xl drop-shadow-sm">
+                {heroSlides[currentSlide].subtitle}
+              </p>
             </div>
 
-            <p className="text-sm md:text-base text-emerald-100/90 leading-relaxed max-w-2xl mx-auto font-medium">
-              Fostering spiritual growth, Quranic literacy, and comprehensive Islamic education across 1,000+ students and dedicated educators in Kano, Nigeria.
-            </p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">
+            {/* Action Buttons (Pill-shaped, touch friendly for 90% mobile Android users) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-1 sm:pt-2">
               <button
                 onClick={() => setAdmissionModalOpen(true)}
-                className="px-6 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-amber-500/30 transition-all hover:scale-105 text-center whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-xl shadow-sky-500/30 hover:shadow-sky-400/50 transition-all cursor-pointer"
               >
                 <FileText className="w-4 h-4 shrink-0" />
-                <span className="whitespace-nowrap">Enroll Your Child</span>
+                <span>Enroll Now</span>
               </button>
+
+              <a
+                href="#about"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full border border-white/60 hover:border-white bg-white/10 hover:bg-white/20 active:scale-95 backdrop-blur-md text-white font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer"
+              >
+                <span>Discover More</span>
+                <ChevronDown className="w-4 h-4 shrink-0" />
+              </a>
 
               <Link
                 href="/login"
-                className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs md:text-sm flex items-center justify-center gap-2 shadow-xl shadow-emerald-900/40 transition-all hover:scale-105 border border-emerald-400/30 text-center whitespace-nowrap shrink-0"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-full bg-emerald-600/80 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 border border-emerald-400/40 backdrop-blur-md transition-all text-center"
               >
-                <span className="whitespace-nowrap">Portal Login</span>
-                <ArrowRight className="w-4 h-4 shrink-0" />
+                <span>Portal Login</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
               </Link>
+            </div>
+
+            {/* Glassmorphism Floating Stat Badges (Stacked vertically on mobile, exactly as in reference!) */}
+            <div className="pt-2 sm:pt-4 flex flex-col gap-2.5 sm:gap-3 max-w-lg">
+              {/* Badge 1 */}
+              <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
+                <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shrink-0">
+                  <GraduationCap className="w-4 h-4" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-black text-white text-sm sm:text-base tracking-tight">15+</span>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Years of Excellence</span>
+                </div>
+              </div>
+
+              {/* Badge 2 */}
+              <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
+                <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shrink-0">
+                  <Users className="w-4 h-4" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-black text-white text-sm sm:text-base tracking-tight">1,000+</span>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Students Enrolled</span>
+                </div>
+              </div>
+
+              {/* Badge 3 */}
+              <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
+                <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shrink-0">
+                  <UserCheck className="w-4 h-4" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-black text-white text-sm sm:text-base tracking-tight">50+</span>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Expert Faculty & Ustazes</span>
+                </div>
+              </div>
+
+              {/* Badge 4 */}
+              <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
+                <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-4 h-4" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-black text-white text-sm sm:text-base tracking-tight">100%</span>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Quranic Memorization & Tarbiyya</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Slideshow Controls & Progress Indicators */}
+          <div className="relative z-10 flex items-center justify-between pt-4 border-t border-white/10">
+            {/* Slide Index & Dots */}
+            <div className="flex items-center gap-2">
+              {heroSlides.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentSlide(idx)}
+                  className={`h-2 rounded-full transition-all duration-300 ${
+                    idx === currentSlide
+                      ? 'w-8 bg-sky-400 shadow-md shadow-sky-400/60'
+                      : 'w-2 bg-white/40 hover:bg-white/70'
+                  }`}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+              <span className="text-[11px] font-mono text-slate-300 ml-2">
+                0{currentSlide + 1} / 0{heroSlides.length}
+              </span>
+            </div>
+
+            {/* Previous / Next Arrow Controls */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handlePrevSlide}
+                className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                aria-label="Previous slide"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleNextSlide}
+                className="w-8 h-8 rounded-full bg-black/40 hover:bg-black/70 border border-white/20 text-white flex items-center justify-center transition-all hover:scale-105 active:scale-95"
+                aria-label="Next slide"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </section>
@@ -261,7 +463,7 @@ export default function HomePage() {
         </section>
 
         {/* SECTION 1: ABOUT MARKAZU */}
-        <section className="p-8 md:p-12 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-2xl space-y-8">
+        <section id="about" className="scroll-mt-20 p-8 md:p-12 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-2xl space-y-8">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-emerald-200 dark:border-emerald-800/60 pb-6">
             <div>
               <span className="text-xs font-bold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">

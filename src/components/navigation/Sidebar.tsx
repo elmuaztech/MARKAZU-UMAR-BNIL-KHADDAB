@@ -342,11 +342,11 @@ export function Sidebar({
       <div className="p-3.5 border-b border-emerald-200/80 dark:border-emerald-800/50 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3 overflow-hidden">
           {mounted && schoolLogo ? (
-            <div className="w-10 h-10 rounded-full bg-white border-2 border-emerald-500/40 p-0.5 flex items-center justify-center shadow-md overflow-hidden shrink-0">
-              <img src={schoolLogo} alt="School Logo" className="w-full h-full rounded-full object-cover" />
+            <div className="w-10 h-10 rounded-xl bg-white border border-emerald-500/40 p-1 flex items-center justify-center shadow-md overflow-hidden shrink-0">
+              <img src={schoolLogo} alt="School Logo" className="w-full h-full rounded-lg object-contain" />
             </div>
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-sky-500 flex items-center justify-center text-white shadow-md shrink-0 border-2 border-emerald-400/40 font-black text-xs">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-sky-500 flex items-center justify-center text-white shadow-md shrink-0 border border-emerald-400/40 font-black text-xs">
               MU
             </div>
           )}

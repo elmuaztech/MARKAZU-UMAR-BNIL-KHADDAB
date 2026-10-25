@@ -48,14 +48,14 @@ export function AppSplashLoader() {
 
       {/* Main Branding Card */}
       <div className="relative flex flex-col items-center text-center px-6 max-w-sm">
-        {/* Crest Logo Container */}
+        {/* Crest Logo Container with Professional Curved Edges */}
         <div className="relative mb-5">
-          <div className="absolute -inset-1.5 rounded-full bg-gradient-to-tr from-amber-400 to-emerald-400 opacity-60 blur-sm animate-pulse" />
-          <div className="relative w-24 h-24 rounded-full p-1 bg-[#031c13] border-2 border-amber-400/80 shadow-2xl overflow-hidden flex items-center justify-center">
+          <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-tr from-amber-400 to-emerald-400 opacity-60 blur-md animate-pulse" />
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-2 bg-white border-2 border-amber-400/90 shadow-2xl overflow-hidden flex items-center justify-center">
             <img
-              src="/logo-rounded.png"
+              src="/logo.png"
               alt="Markazu Umar Logo"
-              className="w-full h-full object-cover rounded-full"
+              className="w-full h-full object-contain rounded-xl"
             />
           </div>
         </div>

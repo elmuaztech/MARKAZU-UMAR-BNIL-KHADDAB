@@ -104,10 +104,10 @@ export default function ContactPage() {
                 <div className="space-y-1 text-xs">
                   <span className="font-bold text-slate-900 dark:text-amber-300 uppercase tracking-wider block">Official Email</span>
                   <a
-                    href="mailto:markazuumarbnkhaddabdaneji@gmail.com"
-                    className="font-mono text-[11px] text-emerald-700 dark:text-emerald-300 hover:underline block break-all"
+                    href="mailto:info@mubkdaneji.com"
+                    className="font-mono text-xs text-emerald-700 dark:text-emerald-300 hover:underline block break-all font-semibold"
                   >
-                    markazuumarbnkhaddabdaneji@gmail.com
+                    info@mubkdaneji.com
                   </a>
                 </div>
               </div>

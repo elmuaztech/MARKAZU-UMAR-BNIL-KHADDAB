@@ -193,7 +193,7 @@ async function runTests() {
     assert(emailServiceCode.includes('PASSWORD_RESET_REQUEST'), 'Must preserve reset OTP template');
     assert(emailServiceCode.includes('PASSWORD_CHANGED_CONFIRMATION'), 'Must preserve password change template');
     assert(emailServiceCode.includes('ACCOUNT_LOCKOUT_ALERT'), 'Must preserve lockout template');
-    assert(emailServiceCode.includes('markazuumarbnkhaddabdaneji@gmail.com'), 'Must preserve school email address');
+    assert(emailServiceCode.includes('info@mubkdaneji.com') || emailServiceCode.includes('markazuumarbnkhaddabdaneji@gmail.com'), 'Must preserve school email address');
   });
 
   // 10. Password-reset flow still works

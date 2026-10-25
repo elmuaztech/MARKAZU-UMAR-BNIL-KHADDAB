@@ -76,6 +76,7 @@ export function isAdminAlias(input: string): boolean {
   if (!input) return false;
   const s = input.trim().toLowerCase();
   return (
+    s === 'info@mubkdaneji.com' ||
     s === 'markazuumarbnkhaddabdaneji@gmail.com' ||
     s === 'elmuazdesignservices@gmail.com' ||
     s === 'admin' ||

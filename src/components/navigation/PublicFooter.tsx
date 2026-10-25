@@ -27,11 +27,11 @@ export function PublicFooter() {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               {schoolLogo ? (
-                <div className="w-12 h-12 rounded-full bg-white border-2 border-emerald-500/50 p-0.5 flex items-center justify-center shadow-lg shadow-emerald-900/50 overflow-hidden shrink-0">
-                  <img src={schoolLogo} alt="Markazu Umar Logo" className="w-full h-full rounded-full object-cover" />
+                <div className="w-12 h-12 rounded-xl bg-white border-2 border-emerald-500/50 p-1 flex items-center justify-center shadow-lg shadow-emerald-900/50 overflow-hidden shrink-0">
+                  <img src={schoolLogo} alt="Markazu Umar Logo" className="w-full h-full rounded-lg object-contain" />
                 </div>
               ) : (
-                <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-emerald-600 to-sky-500 flex items-center justify-center text-white shadow-lg shadow-emerald-900/50 shrink-0 border-2 border-emerald-400/40">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-600 to-sky-500 flex items-center justify-center text-white shadow-lg shadow-emerald-900/50 shrink-0 border-2 border-emerald-400/40">
                   <BookOpen className="w-6 h-6" />
                 </div>
               )}
@@ -130,11 +130,11 @@ export function PublicFooter() {
               <div className="flex items-center gap-2 pt-1">
                 <Mail className="w-3.5 h-3.5 text-amber-400 shrink-0" />
                 <a
-                  href="mailto:markazuumarbnkhaddabdaneji@gmail.com"
+                  href="mailto:info@mubkdaneji.com"
                   className="hover:text-amber-300 truncate font-mono text-[11px] text-emerald-300"
                   title="Official School Email"
                 >
-                  markazuumarbnkhaddabdaneji@gmail.com
+                  info@mubkdaneji.com
                 </a>
               </div>
             </div>

@@ -77,14 +77,14 @@ export function generateEmailHtml(payload: EmailPayload): string {
     const configuredUrl = process.env.NEXT_PUBLIC_APP_URL || (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '');
     portalUrl = configuredUrl.replace(/\/+$/, '');
   }
-  const supportEmail = 'markazuumarbnkhaddabdaneji@gmail.com';
+  const supportEmail = 'info@mubkdaneji.com';
   const logoUrl = `${portalUrl}/logo.png`;
 
   const headerHtml = `
     <div style="background: linear-gradient(135deg, #022c1e 0%, #064e3b 100%); padding: 32px 24px; text-align: center; border-top-left-radius: 12px; border-top-right-radius: 12px; border-bottom: 4px solid #f59e0b;">
       <!-- Official School Crest Logo (CID embedded inline attachment) -->
       <div style="text-align: center; margin-bottom: 14px;">
-        <img src="cid:school_logo_header" width="110" height="110" alt="Markazu Umar bn Al-Khattab School Logo" style="display: block; margin: 0 auto; border-radius: 50%; border: 4px solid #f59e0b; background-color: #ffffff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);" />
+        <img src="cid:school_logo_header" width="110" height="110" alt="Markazu Umar bn Al-Khattab School Logo" style="display: block; margin: 0 auto; border-radius: 16px; border: 3px solid #f59e0b; background-color: #ffffff; padding: 4px; box-shadow: 0 4px 14px rgba(0,0,0,0.35);" />
       </div>
 
       <!-- Full English School Title -->
@@ -357,7 +357,7 @@ export function generateEmailHtml(payload: EmailPayload): string {
 export const SYSTEM_EMAIL_FROM =
   process.env.SYSTEM_EMAIL_FROM ||
   process.env.SMTP_FROM ||
-  `"MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI" <${process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'markazuumarbnkhaddabdaneji@gmail.com'}>`;
+  `"MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES - DANEJI" <${process.env.SMTP_USER || process.env.EMAIL_SERVER_USER || 'info@mubkdaneji.com'}>`;
 
 export async function sendSystemEmail(payload: EmailPayload): Promise<{ success: boolean; messageId: string; error?: string }> {
   const messageId = `msg-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
@@ -430,7 +430,7 @@ export async function sendSystemEmail(payload: EmailPayload): Promise<{ success:
 
   const mailOptions = {
     from: SYSTEM_EMAIL_FROM,
-    replyTo: 'markazuumarbnkhaddabdaneji@gmail.com',
+    replyTo: 'info@mubkdaneji.com',
     to: targetRecipient,
     subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
     html: htmlContent,
