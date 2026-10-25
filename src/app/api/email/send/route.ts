@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     const mailOptions = {
       from: SYSTEM_EMAIL_FROM,
-      replyTo: 'info@mubkdaneji.com',
+      replyTo: payload.replyTo || 'info@mubkdaneji.com',
       to: targetRecipient,
       subject: emailMode === 'development' ? `[DEV TEST -> ${payload.to}] ${payload.subject}` : payload.subject,
       html: htmlContent,

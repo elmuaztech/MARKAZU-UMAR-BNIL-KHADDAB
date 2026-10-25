@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 import { PublicNavbar } from '../../components/navigation/PublicNavbar';
 import { PublicFooter } from '../../components/navigation/PublicFooter';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, Sparkles, Building, ShieldCheck } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle2, Building, ShieldCheck, Loader2 } from 'lucide-react';
 
 export default function ContactPage() {
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,13 +17,28 @@ export default function ContactPage() {
     message: '',
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormSubmitted(true);
-    setTimeout(() => {
-      setFormSubmitted(false);
-      setFormData({ name: '', email: '', phone: '', subject: 'Admission Inquiry', message: '' });
-    }, 4000);
+    setIsSubmitting(true);
+    setErrorMessage('');
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setFormSubmitted(true);
+        setFormData({ name: '', email: '', phone: '', subject: 'Admission Inquiry', message: '' });
+      } else {
+        setErrorMessage(data.error || 'Failed to deliver message. Please contact us via phone or WhatsApp.');
+      }
+    } catch (err: any) {
+      setErrorMessage('Network error while dispatching your inquiry. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -123,8 +140,14 @@ export default function ContactPage() {
 
               {formSubmitted && (
                 <div className="p-4 rounded-2xl bg-emerald-100 dark:bg-emerald-900/60 border border-emerald-400 text-emerald-900 dark:text-emerald-200 text-xs font-bold flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Thank you! Your message has been submitted to Markazu Umar Administration. We will respond promptly.</span>
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>Thank you! Your message has been delivered to <strong>info@mubkdaneji.com</strong>. School administration will reply to your email promptly.</span>
+                </div>
+              )}
+
+              {errorMessage && (
+                <div className="p-4 rounded-2xl bg-red-100 dark:bg-red-950/60 border border-red-400 text-red-900 dark:text-red-200 text-xs font-bold">
+                  {errorMessage}
                 </div>
               )}
 
@@ -196,10 +219,20 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all scale-[1.01]"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 disabled:opacity-60 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all scale-[1.01] cursor-pointer"
                 >
-                  <Send className="w-4 h-4" />
-                  <span>Submit Message to Administration</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Sending Message to info@mubkdaneji.com...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Submit Message to Administration</span>
+                    </>
+                  )}
                 </button>
               </form>
             </div>

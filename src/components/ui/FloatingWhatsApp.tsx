@@ -1,16 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { X, MessageSquare } from 'lucide-react';
+import React from 'react';
 
 export function FloatingWhatsApp() {
-  const [showTooltip, setShowTooltip] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setShowTooltip(false), 9000);
-    return () => clearTimeout(timer);
-  }, []);
-
   const whatsappNumber = '2348167109421';
   const fullSchoolName = "Markazu Umar bn Al-Khattab Centre for Qur'an Memorization and Islamic Studies - Daneji";
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(
@@ -18,20 +10,7 @@ export function FloatingWhatsApp() {
   )}`;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex items-center gap-3">
-      {showTooltip && (
-        <div className="relative bg-[#022417] text-emerald-100 border border-emerald-500/40 px-3.5 py-2 rounded-2xl shadow-2xl text-[11px] font-semibold flex items-center gap-2 animate-bounce whitespace-nowrap">
-          <MessageSquare className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <span>Parents contact immediately via <strong>08167109421</strong></span>
-          <button
-            onClick={() => setShowTooltip(false)}
-            className="p-0.5 text-emerald-400 hover:text-white"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-          <div className="absolute top-1/2 -right-1.5 -translate-y-1/2 w-2.5 h-2.5 bg-[#022417] border-r border-t border-emerald-500/40 rotate-45" />
-        </div>
-      )}
+    <div className="fixed bottom-5 right-5 z-50 flex items-center">
 
       <a
         href={whatsappUrl}

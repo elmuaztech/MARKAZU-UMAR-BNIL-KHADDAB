@@ -29,7 +29,6 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -43,38 +42,38 @@ export default function HomePage() {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
-  // Background Slideshow State (5 Rotating High-Definition Images)
+  // Background Slideshow State (5 Rotating Real School Gallery Photos)
   const heroSlides = [
     {
-      image: '/slideshow/slide-1-campus.jpg',
+      image: '/school-bg.jpg',
       tag: 'Islamic & Academic Excellence',
       headline: "Empowering Tomorrow's Leaders",
       subtitle: 'Welcome to Markazu Umar Bn Al-Khattab — where Quranic excellence is a tradition and Islamic character is our compass.',
       arabic: 'مركز عمر بن الخطاب لتحفيظ القرآن الكريم والدراسات الإسلامية - دنيجي',
     },
     {
-      image: '/slideshow/slide-2-hall.jpg',
+      image: '/gallery/huffazu-umar-bin-khaddab.jpg',
       tag: "Sacred Qur'an Memorization",
       headline: 'Preserving The Noble Book',
       subtitle: 'Structured daily memorization, classical Tajweed phonetics, and certified supervision for over 1,000 young scholars.',
       arabic: 'وَرَتِّلِ الْقُرْآنَ تَرْتِيلًا — العلم والتربية',
     },
     {
-      image: '/slideshow/slide-3-school.jpg',
+      image: '/gallery/teachers-1.jpg',
+      tag: 'Certified Academic Faculty',
+      headline: 'Guided by Master Ustazes',
+      subtitle: 'Certified educators, mentors, and academic inspectors ensuring each student excels spiritually and mentally.',
+      arabic: 'خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ',
+    },
+    {
+      image: '/gallery/gallery-4.jpg',
       tag: 'Tarbiyya & Moral Character',
       headline: 'Nurturing Moral Distinction',
       subtitle: 'Cultivating pious minds, exemplary Sunnah etiquette, and confident Muslim leaders for contemporary society.',
       arabic: 'إِنَّ هَٰذَا الْقُرْآنَ يَهْدِي لِلَّتِي هِيَ أَقْوَمُ',
     },
     {
-      image: '/slideshow/slide-4-teachers.jpg',
-      tag: 'Certified Academic Faculty',
-      headline: 'Guided by Master Ustazes',
-      subtitle: 'Over 50+ certified educators, mentors, and academic inspectors ensuring each student excels spiritually and mentally.',
-      arabic: 'خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ',
-    },
-    {
-      image: '/slideshow/slide-5-students.jpg',
+      image: '/gallery/students-group-1.jpg',
       tag: 'Modern Parent-School Connection',
       headline: 'A Modern Sanctuary of Learning',
       subtitle: 'Instant termly report cards, live attendance, WhatsApp alerts, and dedicated supervision in Kano, Nigeria.',
@@ -232,7 +231,6 @@ export default function HomePage() {
           {/* Top Tag & Arabic Calligraphy Header */}
           <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 w-full">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-amber-300 font-bold text-xs tracking-wide backdrop-blur-md shadow-lg">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
               <span>{heroSlides[currentSlide].tag}</span>
             </div>
 
@@ -241,12 +239,11 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Center/Main Headline & Action Callouts (Matching Reference Design) */}
+          {/* Center/Main Headline & Action Callouts */}
           <div className="relative z-10 space-y-4 sm:space-y-6 max-w-3xl my-auto py-4 sm:py-6 text-left">
             <div className="space-y-2 sm:space-y-3">
               <h1 className="text-3xl sm:text-5xl md:text-6xl font-black tracking-tight text-white leading-[1.12] drop-shadow-md">
                 {heroSlides[currentSlide].headline}
-                <span className="text-sky-400">.</span>
               </h1>
 
               <div dir="rtl" lang="ar" className="sm:hidden font-arabic font-bold text-sm text-amber-300 drop-shadow">
@@ -258,11 +255,11 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Action Buttons (Pill-shaped, touch friendly for 90% mobile Android users) */}
+            {/* Action Buttons (Yellow Enroll Now Button + Discover More) */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 pt-1 sm:pt-2">
               <button
                 onClick={() => setAdmissionModalOpen(true)}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-sky-500 hover:bg-sky-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-xl shadow-sky-500/30 hover:shadow-sky-400/50 transition-all cursor-pointer"
+                className="w-full sm:w-auto px-8 py-3.5 rounded-full bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-xl shadow-amber-500/30 hover:shadow-amber-400/50 transition-all cursor-pointer"
               >
                 <FileText className="w-4 h-4 shrink-0" />
                 <span>Enroll Now</span>
@@ -285,22 +282,11 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Glassmorphism Floating Stat Badges (Stacked vertically on mobile, exactly as in reference!) */}
+            {/* Glassmorphism Floating Stat Badges (Stacked vertically on mobile) */}
             <div className="pt-2 sm:pt-4 flex flex-col gap-2.5 sm:gap-3 max-w-lg">
-              {/* Badge 1 */}
+              {/* Badge 1: 1,000+ Students Enrolled */}
               <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
-                <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shrink-0">
-                  <GraduationCap className="w-4 h-4" />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-black text-white text-sm sm:text-base tracking-tight">15+</span>
-                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Years of Excellence</span>
-                </div>
-              </div>
-
-              {/* Badge 2 */}
-              <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
-                <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center shrink-0">
                   <Users className="w-4 h-4" />
                 </div>
                 <div className="flex items-baseline gap-2">
@@ -309,25 +295,25 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Badge 3 */}
+              {/* Badge 2: 100% Quranic Studies */}
               <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
-                <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shrink-0">
-                  <UserCheck className="w-4 h-4" />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-black text-white text-sm sm:text-base tracking-tight">50+</span>
-                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Expert Faculty & Ustazes</span>
-                </div>
-              </div>
-
-              {/* Badge 4 */}
-              <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
-                <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-400/40 text-sky-400 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-400 flex items-center justify-center shrink-0">
                   <BookOpen className="w-4 h-4" />
                 </div>
                 <div className="flex items-baseline gap-2">
                   <span className="font-black text-white text-sm sm:text-base tracking-tight">100%</span>
-                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Quranic Memorization & Tarbiyya</span>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Quranic Studies</span>
+                </div>
+              </div>
+
+              {/* Badge 3: 100% Islamic Tarbiyya */}
+              <div className="flex items-center gap-3.5 px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-black/45 hover:bg-black/60 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300">
+                <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-black text-white text-sm sm:text-base tracking-tight">100%</span>
+                  <span className="text-xs sm:text-sm font-semibold text-slate-200">Islamic Tarbiyya</span>
                 </div>
               </div>
             </div>
@@ -343,7 +329,7 @@ export default function HomePage() {
                   onClick={() => setCurrentSlide(idx)}
                   className={`h-2 rounded-full transition-all duration-300 ${
                     idx === currentSlide
-                      ? 'w-8 bg-sky-400 shadow-md shadow-sky-400/60'
+                      ? 'w-8 bg-amber-400 shadow-md shadow-amber-400/60'
                       : 'w-2 bg-white/40 hover:bg-white/70'
                   }`}
                   aria-label={`Go to slide ${idx + 1}`}
@@ -812,59 +798,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SECTION 6: SCHOOL PHOTO GALLERY */}
-        <section className="space-y-8">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-bold text-emerald-600 dark:text-amber-400 uppercase tracking-widest">
-              Visual Highlights
-            </span>
-            <h2 className="text-3xl font-black text-slate-900 dark:text-white">
-              Markazu Umar School Photo Gallery
-            </h2>
-            <p className="text-xs text-slate-600 dark:text-emerald-200/80">
-              Explore photo archives categorized by Teachers, Students, Classes, Officials, and Events.
-            </p>
-
-            {/* Gallery Category Filter Tabs */}
-            <div className="flex flex-wrap items-center justify-center gap-2 pt-4">
-              {galleryCategories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveGalleryTab(cat)}
-                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                    activeGalleryTab === cat
-                      ? 'bg-emerald-600 text-white shadow-lg'
-                      : 'bg-emerald-50 dark:bg-emerald-950/60 text-slate-700 dark:text-emerald-300 hover:bg-emerald-100'
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredGallery.map((item, idx) => (
-              <div
-                key={item.id || idx}
-                onClick={() => openLightbox(idx)}
-                className="group cursor-pointer p-3 rounded-3xl bg-white dark:bg-[#032417] border border-emerald-200 dark:border-emerald-500/30 shadow-xl space-y-3"
-              >
-                <div className="relative w-full h-52 rounded-2xl overflow-hidden bg-slate-100 dark:bg-emerald-950">
-                  <img
-                    src={item.image}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <span className="absolute top-3 left-3 text-[10px] font-bold bg-black/60 text-white px-2 py-0.5 rounded-full backdrop-blur-md border border-white/20 uppercase">
-                    {item.category}
-                  </span>
-                </div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{item.title}</h4>
-              </div>
-            ))}
-          </div>
-        </section>
 
         {/* Lightbox Modal */}
         {lightboxOpen && filteredGallery[lightboxIndex] && (
