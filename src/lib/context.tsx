@@ -33,6 +33,8 @@ import {
   AcademicEvent,
   ReportCardTemplate,
   DEFAULT_REPORT_CARD_TEMPLATE,
+  CertificateTemplate,
+  DEFAULT_CERTIFICATE_TEMPLATE,
   NewsArticle,
   GalleryItem,
   ValidatedImportRow,
@@ -142,6 +144,8 @@ interface AppContextType {
   resultSubmissions: ResultApprovalSubmission[];
   reportCardTemplate: ReportCardTemplate;
   updateReportCardTemplate: (updated: Partial<ReportCardTemplate>) => void;
+  certificateTemplate: CertificateTemplate;
+  updateCertificateTemplate: (updated: Partial<CertificateTemplate>) => void;
 
   newsArticles: NewsArticle[];
   addNewsArticle: (article: NewsArticle) => void;
@@ -624,6 +628,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (savedTmpl) {
         try {
           setReportCardTemplateState(JSON.parse(savedTmpl));
+        } catch {}
+      }
+
+      const savedCertTmpl = localStorage.getItem('markazu_certificate_template');
+      if (savedCertTmpl) {
+        try {
+          setCertificateTemplateState(JSON.parse(savedCertTmpl));
         } catch {}
       }
 
@@ -1352,6 +1363,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [assessmentConfig, setAssessmentConfig] = useState<AssessmentConfig>(DEFAULT_ASSESSMENT_CONFIG);
   const [resultSubmissions, setResultSubmissions] = useState<ResultApprovalSubmission[]>([]);
   const [reportCardTemplate, setReportCardTemplateState] = useState<ReportCardTemplate>(DEFAULT_REPORT_CARD_TEMPLATE);
+  const [certificateTemplate, setCertificateTemplateState] = useState<CertificateTemplate>(DEFAULT_CERTIFICATE_TEMPLATE);
   const [newsArticles, setNewsArticles] = useState<NewsArticle[]>([]);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(DEFAULT_GALLERY_ITEMS);
 
@@ -1500,6 +1512,32 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       type: 'success',
       title: 'Report Sheet Template Saved',
       message: 'Default report card template & signature settings updated successfully across all student report cards.',
+    });
+  };
+
+  const updateCertificateTemplate = (updated: Partial<CertificateTemplate>) => {
+    setCertificateTemplateState((prev) => {
+      const next = { ...prev, ...updated, updatedAt: new Date().toISOString(), updatedBy: currentUser.name };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('markazu_certificate_template', JSON.stringify(next));
+        } catch (e) {
+          console.warn('[localStorage] Failed to save certificate template:', e);
+        }
+      }
+      return next;
+    });
+
+    fetch('/api/certificates/template', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
+    }).catch((err) => console.warn('[updateCertificateTemplate] sync warning:', err));
+
+    notify({
+      type: 'success',
+      title: 'Certificate Template Updated',
+      message: 'Institutional Certificate configuration & signatures updated immediately.',
     });
   };
 
@@ -5676,6 +5714,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         resultSubmissions,
         reportCardTemplate,
         updateReportCardTemplate,
+        certificateTemplate,
+        updateCertificateTemplate,
         saveAttendanceBatch,
         adminOverrideAttendance,
         saveTahfizRecord,

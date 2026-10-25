@@ -75,39 +75,53 @@ export function TimetableWidget() {
         </div>
       </div>
 
-      {/* Today's Classes & Current Class Highlights */}
+      {/* Today's Classes & Current Class Highlights (Strictly authentic database schedule, no mock fallbacks) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950 text-white space-y-3 shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-extrabold text-emerald-200">CURRENT ACTIVE CLASS</span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-slate-950 font-black text-[9px] animate-pulse">
-              LIVE NOW
-            </span>
-          </div>
-
-          <div>
-            <div className="text-base font-black">
-              {todaySchedule[0]?.subjectName || "Hifz & Revision (Qur'an)"}
+        {todaySchedule.length > 0 ? (
+          <div className="p-5 rounded-3xl bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950 text-white space-y-3 shadow-lg">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold text-emerald-200">CURRENT ACTIVE CLASS</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-400 text-slate-950 font-black text-[9px] animate-pulse">
+                LIVE NOW
+              </span>
             </div>
-            <div className="text-xs text-emerald-200/80 font-medium">
-              {todaySchedule[0]?.className || 'Tahfiz Halqa 1'} • {todaySchedule[0]?.room || 'Halqa Room A1'}
+
+            <div>
+              <div className="text-base font-black">
+                {todaySchedule[0]?.subjectName}
+              </div>
+              <div className="text-xs text-emerald-200/80 font-medium">
+                {todaySchedule[0]?.className} • {todaySchedule[0]?.room || 'Classroom'}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-300 pt-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{todaySchedule[0]?.startTime} - {todaySchedule[0]?.endTime}</span>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 text-xs font-mono font-bold text-emerald-300 pt-1">
-            <Clock className="w-3.5 h-3.5" />
-            <span>07:30 AM - 09:00 AM</span>
+        ) : (
+          <div className="p-5 rounded-3xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 flex flex-col justify-between space-y-2">
+            <div className="text-[11px] font-extrabold text-slate-500 dark:text-emerald-300">CURRENT PERIOD</div>
+            <div className="text-sm font-bold text-slate-600 dark:text-emerald-400/80">
+              No live periods in session right now
+            </div>
+            <div className="text-xs text-slate-400 dark:text-emerald-500/60 font-medium">
+              Check the daily schedule below
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="p-5 rounded-3xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 space-y-2">
             <div className="text-[11px] font-extrabold text-slate-500 dark:text-emerald-300">UPCOMING LESSON</div>
             <div className="text-sm font-black text-slate-900 dark:text-white">
-              {todaySchedule[1]?.subjectName || 'Tajweed Rules & Recitation'}
+              {todaySchedule.length > 1 ? todaySchedule[1]?.subjectName : 'None Scheduled'}
             </div>
             <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-              09:15 AM - 10:30 AM • {todaySchedule[1]?.teacherName || 'Ustaz Ahmad'}
+              {todaySchedule.length > 1
+                ? `${todaySchedule[1]?.startTime} - ${todaySchedule[1]?.endTime} • ${todaySchedule[1]?.teacherName || 'Assigned Ustaz'}`
+                : 'No additional periods today'}
             </div>
           </div>
 
@@ -117,7 +131,7 @@ export function TimetableWidget() {
               {todaySchedule.length} Sessions
             </div>
             <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-              100% On-Schedule
+              {todaySchedule.length > 0 ? '100% On-Schedule' : 'No active sessions scheduled'}
             </div>
           </div>
         </div>

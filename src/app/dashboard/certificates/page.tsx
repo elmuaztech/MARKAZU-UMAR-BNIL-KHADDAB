@@ -21,7 +21,9 @@ import {
   Loader2,
   FileText,
   User,
+  FileSignature,
 } from 'lucide-react';
+import { CertificateTemplateModal } from '@/components/certificates/CertificateTemplateModal';
 
 export default function CertificatesPage() {
   const { currentUser, students } = useApp();
@@ -51,6 +53,7 @@ export default function CertificatesPage() {
 
   // Staff search state
   const [staffSearchQuery, setStaffSearchQuery] = useState('');
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
 
   // Initial student selection
   useEffect(() => {
@@ -174,15 +177,28 @@ export default function CertificatesPage() {
                 </p>
               </div>
 
-              <div className="relative w-full sm:w-72">
-                <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-                <input
-                  type="text"
-                  placeholder="Search student or admission no..."
-                  value={staffSearchQuery}
-                  onChange={(e) => setStaffSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
-                />
+              <div className="flex items-center gap-2">
+                {currentUser.role === 'SUPER_ADMIN' && (
+                  <button
+                    onClick={() => setIsTemplateModalOpen(true)}
+                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shadow-sm transition-all whitespace-nowrap"
+                    title="Customize Certificate Titles, Signatures & Seals"
+                  >
+                    <FileSignature className="w-3.5 h-3.5" />
+                    <span>Edit Certificate Template</span>
+                  </button>
+                )}
+
+                <div className="relative w-full sm:w-72">
+                  <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+                  <input
+                    type="text"
+                    placeholder="Search student or admission no..."
+                    value={staffSearchQuery}
+                    onChange={(e) => setStaffSearchQuery(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
 
@@ -295,6 +311,12 @@ export default function CertificatesPage() {
         {!isLoading && certificateData && (
           <StudentCertificate certificate={certificateData} />
         )}
+
+        {/* Super Admin Certificate Template Editor Modal */}
+        <CertificateTemplateModal
+          isOpen={isTemplateModalOpen}
+          onClose={() => setIsTemplateModalOpen(false)}
+        />
       </div>
     </PortalTheme>
   );

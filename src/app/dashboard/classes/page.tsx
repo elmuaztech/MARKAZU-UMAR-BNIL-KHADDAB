@@ -16,23 +16,28 @@ import { FormField, Input, Select } from '@/components/ui/FormField';
 import { ImportSchoolStructureModal } from '@/components/classes/ImportSchoolStructureModal';
 
 export default function ClassesPage() {
-  const { currentUser, classes, programmes, teachers, students, addClass, updateClass, deleteClass } = useApp();
+  const { currentUser, classes, programmes, teachers, teacherAssignments, students, addClass, updateClass, deleteClass } = useApp();
   const isAdmin = currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN';
   const isHeadmaster = currentUser.role === 'HEADMASTER';
+  const isTeacher = currentUser.role === 'TEACHER';
 
-  const userProgrammes = filterProgrammesForUser(currentUser, programmes);
+  const userProgrammes = filterProgrammesForUser(currentUser, programmes, teacherAssignments);
   const headmasterProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
+  const teacherProg = isTeacher ? userProgrammes[0] : null;
 
   const [selectedProgrammeFilter, setSelectedProgrammeFilter] = useState<string>(() => {
     if (isHeadmaster && headmasterProg) return headmasterProg.id;
+    if (isTeacher && teacherProg) return teacherProg.id;
     return 'ALL';
   });
 
   React.useEffect(() => {
     if (isHeadmaster && headmasterProg && selectedProgrammeFilter !== headmasterProg.id) {
       setSelectedProgrammeFilter(headmasterProg.id);
+    } else if (isTeacher && teacherProg && selectedProgrammeFilter !== teacherProg.id) {
+      setSelectedProgrammeFilter(teacherProg.id);
     }
-  }, [isHeadmaster, headmasterProg, selectedProgrammeFilter]);
+  }, [isHeadmaster, headmasterProg, isTeacher, teacherProg, selectedProgrammeFilter]);
 
   // Modals state
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -264,7 +269,7 @@ export default function ClassesPage() {
       </div>
 
       {/* Programme Filter Tabs */}
-      {!isHeadmaster ? (
+      {isAdmin ? (
         <div className="p-3.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-xs flex items-center gap-2 overflow-x-auto">
           <button
             onClick={() => setSelectedProgrammeFilter('ALL')}
@@ -296,9 +301,14 @@ export default function ClassesPage() {
       ) : (
         <div className="p-3.5 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-800/40 shadow-xs flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-600 dark:text-emerald-300">Assigned Section:</span>
+            <span className="text-xs font-bold text-slate-600 dark:text-emerald-300">
+              {isTeacher ? 'Assigned Programme:' : 'Assigned Section:'}
+            </span>
             <span className="px-3 py-1 rounded-xl bg-emerald-600 text-white font-extrabold text-xs">
-              {headmasterProg?.programme_name_english || headmasterProg?.programme_name || currentUser.assignedProgrammeName || 'My Section'} ({userClasses.length} Classes)
+              {(isTeacher
+                ? teacherProg?.programme_name_english || teacherProg?.programme_name
+                : headmasterProg?.programme_name_english || headmasterProg?.programme_name || currentUser.assignedProgrammeName) || 'Assigned Programme'}{' '}
+              ({userClasses.length} Classes)
             </span>
           </div>
         </div>

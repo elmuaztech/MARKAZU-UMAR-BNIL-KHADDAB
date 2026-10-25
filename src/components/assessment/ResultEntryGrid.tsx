@@ -21,8 +21,11 @@ interface ResultEntryGridProps {
   students: Student[];
   initialGrades: GradeRecord[];
   config: AssessmentConfig;
+  programmeId?: string;
   programmeName: string;
+  classId?: string;
   className: string;
+  subjectId?: string;
   subjectName: string;
   term: string;
   session: string;
@@ -35,8 +38,11 @@ export function ResultEntryGrid({
   students,
   initialGrades,
   config,
+  programmeId = '',
   programmeName,
+  classId = '',
   className,
+  subjectId = '',
   subjectName,
   term,
   session,
@@ -47,43 +53,62 @@ export function ResultEntryGrid({
   // Local state for interactive spreadsheet editing
   const [gridGrades, setGridGrades] = useState<GradeRecord[]>([]);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const activeScopeKey = `${classId || className}-${subjectId || subjectName}-${term}-${session}`;
+  const loadedScopeRef = React.useRef<string>('');
 
   // Sync initialGrades or build rows for enrolled students
   useEffect(() => {
-    const rows: GradeRecord[] = students.map((std) => {
-      const existing = initialGrades.find((g) => g.studentId === std.id);
-      if (existing) {
-        return existing;
-      }
-      return {
-        id: `grd-temp-${std.id}`,
-        studentId: std.id,
-        studentName: std.fullName,
-        admissionNo: std.admissionNo,
-        programmeId: std.programmeId,
-        programmeName: std.programmeName,
-        classId: std.classId,
-        className: std.className,
-        subjectId: '',
-        subjectName,
-        term,
-        session,
-        assignmentScore: 0,
-        ca1Score: 0,
-        ca2Score: 0,
-        testScore: 0,
-        projectScore: 0,
-        practicalScore: 0,
-        examScore: 0,
-        totalScore: 0,
-        grade: 'F',
-        remarks: 'Satisfactory effort.',
-        status: 'DRAFT',
-      };
-    });
+    // Only re-initialize when the selection scope (class, subject, term, session) changes or if grid is empty
+    if (loadedScopeRef.current !== activeScopeKey || gridGrades.length === 0) {
+      loadedScopeRef.current = activeScopeKey;
 
-    setGridGrades(rows);
-  }, [students, initialGrades, subjectName, term, session]);
+      const rows: GradeRecord[] = students.map((std) => {
+        const existing = initialGrades.find(
+          (g) => g.studentId === std.id && (g.subjectId === subjectId || !g.subjectId)
+        );
+        if (existing) {
+          return {
+            ...existing,
+            subjectId: subjectId || existing.subjectId,
+            subjectName: subjectName || existing.subjectName,
+            classId: std.classId || classId || existing.classId,
+            className: std.className || className || existing.className,
+            programmeId: std.programmeId || programmeId || existing.programmeId,
+            programmeName: std.programmeName || programmeName || existing.programmeName,
+            term,
+            session,
+          };
+        }
+        return {
+          id: `grd-temp-${std.id}-${subjectId || 'subj'}`,
+          studentId: std.id,
+          studentName: std.fullName,
+          admissionNo: std.admissionNo,
+          programmeId: std.programmeId || programmeId,
+          programmeName: std.programmeName || programmeName,
+          classId: std.classId || classId,
+          className: std.className || className,
+          subjectId: subjectId,
+          subjectName,
+          term,
+          session,
+          assignmentScore: 0,
+          ca1Score: 0,
+          ca2Score: 0,
+          testScore: 0,
+          projectScore: 0,
+          practicalScore: 0,
+          examScore: 0,
+          totalScore: 0,
+          grade: 'F',
+          remarks: 'Satisfactory effort.',
+          status: 'DRAFT',
+        };
+      });
+
+      setGridGrades(rows);
+    }
+  }, [students, initialGrades, subjectId, subjectName, classId, className, programmeId, programmeName, term, session, activeScopeKey]);
 
   // Helper to calculate total, grade, remark
   const calculateScore = (record: Partial<GradeRecord>) => {
@@ -114,17 +139,20 @@ export function ResultEntryGrid({
   const handleScoreChange = (
     studentId: string,
     field: keyof GradeRecord,
-    val: number | string,
+    val: string,
     maxLimit?: number
   ) => {
-    const numVal = Number(val);
+    const trimmed = val.trim();
+    const numVal = trimmed === '' ? 0 : Math.max(0, Number(trimmed));
+    if (isNaN(numVal)) return;
+
     const errKey = `${studentId}-${field}`;
 
     // Validate score limits
-    if (maxLimit !== undefined && (numVal < 0 || numVal > maxLimit)) {
+    if (maxLimit !== undefined && numVal > maxLimit) {
       setValidationErrors((prev) => ({
         ...prev,
-        [errKey]: `Score cannot be less than 0 or exceed maximum of ${maxLimit}`,
+        [errKey]: `Max limit: ${maxLimit}`,
       }));
     } else {
       setValidationErrors((prev) => {
@@ -134,22 +162,27 @@ export function ResultEntryGrid({
       });
     }
 
-    setGridGrades((prev) =>
-      prev.map((item) => {
+    setGridGrades((prev) => {
+      const next = prev.map((item) => {
         if (item.studentId === studentId) {
           const updated = { ...item, [field]: numVal };
           const calc = calculateScore(updated);
           return { ...updated, ...calc };
         }
         return item;
-      })
-    );
+      });
+      // Save draft immediately to context & Dexie/local DB so scores never disappear
+      onSaveDraft(next);
+      return next;
+    });
   };
 
   const handleRemarkChange = (studentId: string, val: string) => {
-    setGridGrades((prev) =>
-      prev.map((item) => (item.studentId === studentId ? { ...item, remarks: val } : item))
-    );
+    setGridGrades((prev) => {
+      const next = prev.map((item) => (item.studentId === studentId ? { ...item, remarks: val } : item));
+      onSaveDraft(next);
+      return next;
+    });
   };
 
   const missingScoresCount = gridGrades.filter(
@@ -175,15 +208,6 @@ export function ResultEntryGrid({
         </div>
 
         <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto [&>*]:flex-1 sm:[&>*]:flex-initial">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<Download className="w-4 h-4" />}
-            onClick={() => exportResultGridToCSV(gridGrades, programmeName, className, subjectName, session, term, config)}
-          >
-            CSV
-          </Button>
-
           <Button
             variant="outline"
             size="sm"
@@ -285,11 +309,12 @@ export function ResultEntryGrid({
                         type="number"
                         min={0}
                         max={config.maxAssignment}
-                        value={record.assignmentScore ?? 0}
+                        placeholder="0"
+                        value={record.assignmentScore === 0 ? '' : (record.assignmentScore ?? '')}
                         onChange={(e) =>
                           handleScoreChange(record.studentId, 'assignmentScore', e.target.value, config.maxAssignment)
                         }
-                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] border ${
+                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] placeholder:text-slate-400 dark:placeholder:text-emerald-700/60 border ${
                           validationErrors[`${record.studentId}-assignmentScore`]
                             ? 'border-rose-500 text-rose-500 focus:ring-rose-500'
                             : 'border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white'
@@ -305,11 +330,12 @@ export function ResultEntryGrid({
                         type="number"
                         min={0}
                         max={config.maxCa1}
-                        value={record.ca1Score}
+                        placeholder="0"
+                        value={record.ca1Score === 0 ? '' : (record.ca1Score ?? '')}
                         onChange={(e) =>
                           handleScoreChange(record.studentId, 'ca1Score', e.target.value, config.maxCa1)
                         }
-                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] border ${
+                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] placeholder:text-slate-400 dark:placeholder:text-emerald-700/60 border ${
                           validationErrors[`${record.studentId}-ca1Score`]
                             ? 'border-rose-500 text-rose-500 focus:ring-rose-500'
                             : 'border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white'
@@ -325,11 +351,12 @@ export function ResultEntryGrid({
                         type="number"
                         min={0}
                         max={config.maxCa2}
-                        value={record.ca2Score}
+                        placeholder="0"
+                        value={record.ca2Score === 0 ? '' : (record.ca2Score ?? '')}
                         onChange={(e) =>
                           handleScoreChange(record.studentId, 'ca2Score', e.target.value, config.maxCa2)
                         }
-                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] border ${
+                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] placeholder:text-slate-400 dark:placeholder:text-emerald-700/60 border ${
                           validationErrors[`${record.studentId}-ca2Score`]
                             ? 'border-rose-500 text-rose-500 focus:ring-rose-500'
                             : 'border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white'
@@ -345,11 +372,12 @@ export function ResultEntryGrid({
                         type="number"
                         min={0}
                         max={config.maxTest}
-                        value={record.testScore ?? 0}
+                        placeholder="0"
+                        value={record.testScore === 0 ? '' : (record.testScore ?? '')}
                         onChange={(e) =>
                           handleScoreChange(record.studentId, 'testScore', e.target.value, config.maxTest)
                         }
-                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] border ${
+                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] placeholder:text-slate-400 dark:placeholder:text-emerald-700/60 border ${
                           validationErrors[`${record.studentId}-testScore`]
                             ? 'border-rose-500 text-rose-500 focus:ring-rose-500'
                             : 'border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white'
@@ -365,11 +393,12 @@ export function ResultEntryGrid({
                         type="number"
                         min={0}
                         max={config.maxProject}
-                        value={record.projectScore ?? 0}
+                        placeholder="0"
+                        value={record.projectScore === 0 ? '' : (record.projectScore ?? '')}
                         onChange={(e) =>
                           handleScoreChange(record.studentId, 'projectScore', e.target.value, config.maxProject)
                         }
-                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] border ${
+                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] placeholder:text-slate-400 dark:placeholder:text-emerald-700/60 border ${
                           validationErrors[`${record.studentId}-projectScore`]
                             ? 'border-rose-500 text-rose-500 focus:ring-rose-500'
                             : 'border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white'
@@ -385,11 +414,12 @@ export function ResultEntryGrid({
                         type="number"
                         min={0}
                         max={config.maxPractical}
-                        value={record.practicalScore ?? 0}
+                        placeholder="0"
+                        value={record.practicalScore === 0 ? '' : (record.practicalScore ?? '')}
                         onChange={(e) =>
                           handleScoreChange(record.studentId, 'practicalScore', e.target.value, config.maxPractical)
                         }
-                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] border ${
+                        className={`w-16 p-2 rounded-xl text-center font-bold bg-slate-50 dark:bg-[#021810] placeholder:text-slate-400 dark:placeholder:text-emerald-700/60 border ${
                           validationErrors[`${record.studentId}-practicalScore`]
                             ? 'border-rose-500 text-rose-500 focus:ring-rose-500'
                             : 'border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white'
@@ -405,11 +435,12 @@ export function ResultEntryGrid({
                         type="number"
                         min={0}
                         max={config.maxExam}
-                        value={record.examScore}
+                        placeholder="0"
+                        value={record.examScore === 0 ? '' : (record.examScore ?? '')}
                         onChange={(e) =>
                           handleScoreChange(record.studentId, 'examScore', e.target.value, config.maxExam)
                         }
-                        className={`w-18 p-2 rounded-xl text-center font-black bg-slate-50 dark:bg-[#021810] border ${
+                        className={`w-18 p-2 rounded-xl text-center font-black bg-slate-50 dark:bg-[#021810] placeholder:text-slate-400 dark:placeholder:text-emerald-700/60 border ${
                           validationErrors[`${record.studentId}-examScore`]
                             ? 'border-rose-500 text-rose-500 focus:ring-rose-500'
                             : 'border-slate-200 dark:border-emerald-800/40 text-slate-900 dark:text-white'

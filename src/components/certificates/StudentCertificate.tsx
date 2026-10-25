@@ -18,7 +18,10 @@ import {
   Maximize2,
   Minimize2,
   CheckCircle2,
+  FileSignature,
 } from 'lucide-react';
+import { useApp } from '@/lib/context';
+import { CertificateTemplateModal } from './CertificateTemplateModal';
 
 export interface CertificateData {
   certificateNo: string;
@@ -61,6 +64,9 @@ interface StudentCertificateProps {
 }
 
 export function StudentCertificate({ certificate, onBack }: StudentCertificateProps) {
+  const { currentUser, certificateTemplate } = useApp();
+  const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+
   const certificateRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -170,6 +176,28 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
 
   const { student, school } = certificate;
 
+  // Dynamically resolve template overrides from Super Admin
+  const tmpl = certificateTemplate;
+  const schoolNameArabic = tmpl?.schoolNameArabic || school.nameArabic;
+  const schoolNameEnglish = tmpl?.schoolNameEnglish || school.nameEnglish;
+  const schoolLocationEnglish = tmpl?.schoolLocationEnglish || school.locationEnglish;
+  const schoolLocationArabic = tmpl?.schoolLocationArabic || school.locationArabic;
+  const qualificationTitleEnglish = tmpl?.qualificationTitleEnglish || certificate.qualificationTitleEnglish;
+  const qualificationTitleArabic = tmpl?.qualificationTitleArabic || certificate.qualificationTitleArabic;
+  const qualificationReason = tmpl?.qualificationReason || certificate.qualificationReason;
+  const principalName = tmpl?.principalName || school.principalName;
+  const principalTitle = tmpl?.principalTitle || school.principalTitle;
+  const principalTitleArabic = tmpl?.principalTitleArabic || school.principalTitleArabic;
+  const principalSignatureUrl = tmpl?.principalSignatureUrl;
+  const headOfTahfiz = tmpl?.headOfTahfiz || school.headOfTahfiz;
+  const headOfTahfizTitle = tmpl?.headOfTahfizTitle || school.headOfTahfizTitle;
+  const headOfTahfizTitleArabic = tmpl?.headOfTahfizTitleArabic || "رئيس هيئة التحفيظ ولجنة الامتحانات";
+  const headOfTahfizSignatureUrl = tmpl?.headOfTahfizSignatureUrl;
+  const sealText = tmpl?.sealText || school.sealText;
+  const logoUrl = tmpl?.logoUrl || school.logoUrl;
+
+  const isSuperAdmin = currentUser?.role === 'SUPER_ADMIN';
+
   return (
     <div className="space-y-6 font-poppins">
       {/* Action Navigation Bar (Hidden when printing) */}
@@ -195,8 +223,20 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
           </div>
         </div>
 
-        {/* Action Controls: PDF, Image, Print, Viewport Toggle */}
+        {/* Action Controls: PDF, Image, Print, Viewport Toggle, Super Admin Edit */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Super Admin Edit Option */}
+          {isSuperAdmin && (
+            <button
+              onClick={() => setIsTemplateModalOpen(true)}
+              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all hover:scale-102"
+              title="Edit Certificate Template & Signatures"
+            >
+              <FileSignature className="w-3.5 h-3.5 text-amber-300" />
+              <span>Edit Certificate</span>
+            </button>
+          )}
+
           {/* Mobile Zoom / Fit Toggle */}
           <button
             onClick={() => setFitScreen(!fitScreen)}
@@ -289,7 +329,7 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
                 <div
                   className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]"
                   style={{
-                    backgroundImage: `url(${school.logoUrl})`,
+                    backgroundImage: `url(${logoUrl})`,
                     backgroundPosition: 'center',
                     backgroundRepeat: 'no-repeat',
                     backgroundSize: '400px',
@@ -312,7 +352,7 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
                     {/* Left: School Official Logo */}
                     <div className="w-20 h-20 rounded-full border-2 border-emerald-800/40 p-1 flex items-center justify-center shrink-0 bg-white shadow-xs">
                       <img
-                        src={school.logoUrl}
+                        src={logoUrl}
                         alt="School Logo"
                         className="w-full h-full object-contain rounded-full"
                       />
@@ -325,15 +365,15 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
                         dir="rtl"
                         lang="ar"
                       >
-                        {school.nameArabic}
+                        {schoolNameArabic}
                       </h1>
                       <h2 className="font-poppins text-xs sm:text-sm font-black text-slate-900 tracking-tight uppercase">
-                        {school.nameEnglish}
+                        {schoolNameEnglish}
                       </h2>
                       <p className="text-[11px] font-semibold text-emerald-800">
-                        {school.locationEnglish} •{' '}
+                        {schoolLocationEnglish} •{' '}
                         <span dir="rtl" lang="ar" className="font-arabic font-bold">
-                          {school.locationArabic}
+                          {schoolLocationArabic}
                         </span>
                       </p>
                     </div>
@@ -342,10 +382,10 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
                     <div className="w-20 h-20 rounded-full border-2 border-amber-600/50 p-1 flex flex-col items-center justify-center shrink-0 bg-amber-50/60 text-amber-900 text-center shadow-xs">
                       <Award className="w-7 h-7 text-amber-600" />
                       <span className="text-[8px] font-extrabold uppercase tracking-tighter leading-none mt-0.5">
-                        SEAL OF EXCELLENCE
+                        {sealText.split('•')[0]?.trim() || 'SEAL OF EXCELLENCE'}
                       </span>
                       <span className="text-[7px] text-amber-800 font-bold leading-none mt-0.5">
-                        DANEJI • KANO
+                        {sealText.includes('•') ? sealText.split('•').slice(1).join('•').trim() : 'DANEJI • KANO'}
                       </span>
                     </div>
                   </div>
@@ -366,10 +406,10 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
                       dir="rtl"
                       lang="ar"
                     >
-                      {certificate.qualificationTitleArabic}
+                      {qualificationTitleArabic}
                     </h3>
                     <h4 className="font-poppins text-base sm:text-lg font-black tracking-widest text-emerald-950 uppercase">
-                      {certificate.qualificationTitleEnglish}
+                      {qualificationTitleEnglish}
                     </h4>
                   </div>
 
@@ -381,7 +421,7 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
                     </span>
                   </div>
 
-                  {/* Student Full Name Display (Highlighted & Gracefully Wrapped for Any Length) */}
+                  {/* Student Full Name Display */}
                   <div className="py-1">
                     <div className="inline-block border-b-2 border-emerald-900/60 px-8 pb-1 max-w-2xl mx-auto">
                       <div className="font-poppins text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight leading-tight break-words">
@@ -409,7 +449,7 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
                     </p>
 
                     <p className="text-slate-700 font-normal px-6 break-words leading-relaxed">
-                      {certificate.qualificationReason}
+                      {qualificationReason}
                     </p>
 
                     {student.juzCompleted > 0 && (
@@ -429,16 +469,24 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
                   <div className="grid grid-cols-3 items-end text-center gap-4">
                     {/* Left Signature: Principal / Director */}
                     <div className="space-y-1">
-                      <div className="h-9 flex items-center justify-center font-serif text-emerald-900 text-lg italic">
-                        {school.principalName}
+                      <div className="h-10 flex items-center justify-center font-serif text-emerald-900 text-lg italic">
+                        {principalSignatureUrl ? (
+                          <img
+                            src={principalSignatureUrl}
+                            alt="Principal Signature"
+                            className="h-10 max-w-[140px] mx-auto object-contain"
+                          />
+                        ) : (
+                          principalName
+                        )}
                       </div>
                       <div className="w-40 mx-auto border-t border-slate-400" />
-                      <p className="text-xs font-bold text-slate-900">{school.principalName}</p>
+                      <p className="text-xs font-bold text-slate-900">{principalName}</p>
                       <p className="text-[10px] text-slate-500 font-semibold leading-tight">
-                        {school.principalTitle}
+                        {principalTitle}
                       </p>
                       <p className="text-[9px] font-arabic font-bold text-emerald-800 leading-none" dir="rtl" lang="ar">
-                        {school.principalTitleArabic}
+                        {principalTitleArabic}
                       </p>
                     </div>
 
@@ -460,16 +508,24 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
 
                     {/* Right Signature: Head of Tahfiz */}
                     <div className="space-y-1">
-                      <div className="h-9 flex items-center justify-center font-serif text-emerald-900 text-lg italic">
-                        {school.headOfTahfiz}
+                      <div className="h-10 flex items-center justify-center font-serif text-emerald-900 text-lg italic">
+                        {headOfTahfizSignatureUrl ? (
+                          <img
+                            src={headOfTahfizSignatureUrl}
+                            alt="Head of Tahfiz Signature"
+                            className="h-10 max-w-[140px] mx-auto object-contain"
+                          />
+                        ) : (
+                          headOfTahfiz
+                        )}
                       </div>
                       <div className="w-40 mx-auto border-t border-slate-400" />
-                      <p className="text-xs font-bold text-slate-900">{school.headOfTahfiz}</p>
+                      <p className="text-xs font-bold text-slate-900">{headOfTahfiz}</p>
                       <p className="text-[10px] text-slate-500 font-semibold leading-tight">
-                        {school.headOfTahfizTitle}
+                        {headOfTahfizTitle}
                       </p>
                       <p className="text-[9px] font-arabic font-bold text-emerald-800 leading-none" dir="rtl" lang="ar">
-                        رئيس هيئة التحفيظ ولجنة الامتحانات
+                        {headOfTahfizTitleArabic}
                       </p>
                     </div>
                   </div>
@@ -479,6 +535,12 @@ export function StudentCertificate({ certificate, onBack }: StudentCertificatePr
           </div>
         </div>
       </div>
+
+      {/* Super Admin Certificate Template Editor Modal */}
+      <CertificateTemplateModal
+        isOpen={isTemplateModalOpen}
+        onClose={() => setIsTemplateModalOpen(false)}
+      />
     </div>
   );
 }

@@ -358,7 +358,8 @@ export function getHeadmasterAssignedProgramme(
  */
 export function filterProgrammesForUser(
   currentUser: User | null | undefined,
-  allProgrammes: Programme[]
+  allProgrammes: Programme[],
+  teacherAssignments?: TeacherAssignment[]
 ): Programme[] {
   if (!currentUser || !Array.isArray(allProgrammes)) {
     return [];
@@ -387,6 +388,31 @@ export function filterProgrammesForUser(
     }
     // If still unmatched, never leak all programmes to headmaster: default to empty array
     return [];
+  }
+
+  if (currentUser.role === 'TEACHER') {
+    const assignedProgIds = new Set<string>();
+    if (currentUser.assignedProgrammeId) {
+      assignedProgIds.add(currentUser.assignedProgrammeId);
+    }
+    if (teacherAssignments && teacherAssignments.length > 0) {
+      teacherAssignments
+        .filter(
+          (ta) =>
+            ta.teacherId === currentUser.id ||
+            (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
+            (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase())
+        )
+        .forEach((ta) => {
+          if (ta.programmeId) assignedProgIds.add(ta.programmeId);
+        });
+    }
+    if (assignedProgIds.size > 0) {
+      const matched = allProgrammes.filter((p) => assignedProgIds.has(p.id));
+      if (matched.length > 0) return matched;
+    }
+    // Strict RBAC: never expose all programmes to teacher
+    return allProgrammes.slice(0, 1);
   }
 
   return allProgrammes;

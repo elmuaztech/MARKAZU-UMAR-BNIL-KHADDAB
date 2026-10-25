@@ -145,7 +145,7 @@ export function AssessmentDashboard() {
   // Preview Modal State
   const [previewGrades, setPreviewGrades] = useState<GradeRecord[] | null>(null);
 
-  // Quick Action Items
+  // Quick Action Items (Teachers only see Score Entry Grid & Attendance Register)
   const assessmentQuickActions: QuickActionItem[] = [
     {
       label: 'Score Entry Grid',
@@ -154,13 +154,17 @@ export function AssessmentDashboard() {
       icon: FileSpreadsheet,
       color: 'from-emerald-600 to-emerald-700',
     },
-    {
-      label: 'Approval Queue',
-      labelArabic: 'قائمة الموافقة',
-      href: '/dashboard/assessment',
-      icon: Clock,
-      color: 'from-amber-600 to-amber-700',
-    },
+    ...(!isTeacher
+      ? [
+          {
+            label: 'Approval Queue',
+            labelArabic: 'قائمة الموافقة',
+            href: '/dashboard/assessment',
+            icon: Clock,
+            color: 'from-amber-600 to-amber-700',
+          },
+        ]
+      : []),
     {
       label: 'Class Attendance Register',
       labelArabic: 'سجل حضور الفصل',
@@ -168,19 +172,25 @@ export function AssessmentDashboard() {
       icon: Award,
       color: 'from-sky-600 to-sky-700',
     },
-    {
-      label: 'Assessment Settings',
-      labelArabic: 'إعدادات التقييم',
-      href: '/dashboard/assessment',
-      icon: Sliders,
-      color: 'from-purple-600 to-purple-700',
-    },
+    ...(!isTeacher
+      ? [
+          {
+            label: 'Assessment Settings',
+            labelArabic: 'إعدادات التقييم',
+            href: '/dashboard/assessment',
+            icon: Sliders,
+            color: 'from-purple-600 to-purple-700',
+          },
+        ]
+      : []),
   ];
 
-  // Grade records matching active selection
-  const activeGrades = grades.filter(
-    (g) => g.classId === selectedClassId && g.subjectId === selectedSubjectId
-  );
+  // Grade records matching active selection - memoized to prevent infinite re-render cycles
+  const activeGrades = React.useMemo(() => {
+    return grades.filter(
+      (g) => g.classId === selectedClassId && g.subjectId === selectedSubjectId
+    );
+  }, [grades, selectedClassId, selectedSubjectId]);
 
   const handleSaveDraft = (draftGrades: GradeRecord[]) => {
     saveGradeGridDraft(draftGrades);
@@ -326,13 +336,13 @@ export function AssessmentDashboard() {
               {/* Step 3: Programme */}
               <div>
                 <label className="block text-slate-600 dark:text-emerald-300 font-bold mb-1">
-                  3. Programme {isHeadmaster && <span className="text-[10px] text-emerald-500 font-bold">(Section Locked)</span>}
+                  3. Programme {(isHeadmaster || (isTeacher && availableProgrammes.length <= 1)) && <span className="text-[10px] text-emerald-500 font-bold">(Assigned)</span>}
                 </label>
                 <select
-                  disabled={isHeadmaster}
+                  disabled={isHeadmaster || (isTeacher && availableProgrammes.length <= 1)}
                   value={selectedProgrammeId}
                   onChange={(e) => {
-                    if (!isHeadmaster) {
+                    if (!isHeadmaster && (!isTeacher || availableProgrammes.length > 1)) {
                       setSelectedProgrammeId(e.target.value);
                       const matchingClasses = classes.filter((c) => c.programmeId === e.target.value);
                       if (matchingClasses.length > 0) {
@@ -353,12 +363,13 @@ export function AssessmentDashboard() {
               {/* Step 4: Class */}
               <div>
                 <label className="block text-slate-600 dark:text-emerald-300 font-bold mb-1">
-                  4. Class
+                  4. Class {isTeacher && availableClasses.length <= 1 && <span className="text-[10px] text-emerald-500 font-bold">(Assigned)</span>}
                 </label>
                 <select
+                  disabled={isTeacher && availableClasses.length <= 1}
                   value={selectedClassId}
                   onChange={(e) => setSelectedClassId(e.target.value)}
-                  className="w-full p-2.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 font-bold text-slate-900 dark:text-white"
+                  className="w-full p-2.5 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 font-bold text-slate-900 dark:text-white disabled:opacity-75 disabled:cursor-not-allowed"
                 >
                   {availableClasses.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -394,8 +405,11 @@ export function AssessmentDashboard() {
               students={enrolledStudents}
               initialGrades={activeGrades}
               config={assessmentConfig}
+              programmeId={activeProgrammeObj?.id || selectedProgrammeId}
               programmeName={activeProgrammeObj?.programme_name || activeProgrammeObj?.programme_name_english || 'General'}
+              classId={activeClassObj?.id || selectedClassId}
               className={activeClassObj?.name || 'Class Roster'}
+              subjectId={activeSubjectObj?.id || selectedSubjectId}
               subjectName={activeSubjectObj?.name || 'Subject Marks'}
               term={selectedTerm}
               session={selectedSession}

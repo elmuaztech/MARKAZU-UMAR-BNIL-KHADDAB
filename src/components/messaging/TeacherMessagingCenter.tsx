@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   MessageSquare,
   Send,
@@ -14,30 +14,103 @@ import { DirectMessage } from '@/types';
 import { canTeacherMessageStudent } from '@/lib/rbac';
 
 export function TeacherMessagingCenter() {
-  const { students, classes, programmes, teacherAssignments, currentUser, sendTeacherDirectMessage } = useApp();
+  const { students, classes, programmes, teachers, teacherAssignments, currentUser, sendTeacherDirectMessage } = useApp();
+  const isTeacher = currentUser.role === 'TEACHER';
 
-  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>('prog-02');
-  const [selectedClassId, setSelectedClassId] = useState<string>('cls-tahfiz-1');
+  // Resolve active teacher record
+  const currentTeacher = useMemo(() => {
+    return (
+      teachers.find(
+        (t) =>
+          t.id === currentUser.id ||
+          (t.userId && t.userId === currentUser.id) ||
+          (t.email && currentUser.email && t.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (t.staffNo && currentUser.username && t.staffNo.toLowerCase() === currentUser.username.toLowerCase()) ||
+          (t.fullName && currentUser.name && t.fullName.toLowerCase() === currentUser.name.toLowerCase())
+      ) || null
+    );
+  }, [teachers, currentUser]);
+
+  // Compute teacher-assigned classes
+  const teacherClasses = useMemo(() => {
+    if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+      return classes;
+    }
+    const teacherId = currentTeacher?.id || currentUser.id;
+    const directClassIds = currentTeacher?.classesAssigned || [];
+    const assignmentClassIds = teacherAssignments
+      .filter(
+        (ta) =>
+          ta.teacherId === teacherId ||
+          ta.teacherId === currentUser.id ||
+          (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase())
+      )
+      .map((ta) => ta.classId);
+
+    const allAssignedIds = new Set([...directClassIds, ...assignmentClassIds]);
+
+    const matched = classes.filter(
+      (c) =>
+        allAssignedIds.has(c.id) ||
+        allAssignedIds.has(c.name) ||
+        c.classTeacherId === teacherId ||
+        c.classTeacherId === currentUser.id
+    );
+
+    // If teacher has classes, return them; otherwise if teacher has none assigned, return empty array
+    return matched;
+  }, [currentUser, currentTeacher, teacherAssignments, classes]);
+
+  // Filter available programmes: for teacher, only programmes they teach in
+  const availableProgrammes = useMemo(() => {
+    if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+      return programmes;
+    }
+    if (isTeacher) {
+      const progIds = new Set(teacherClasses.map((c) => c.programmeId).filter(Boolean));
+      if (currentTeacher?.programmeIds) {
+        currentTeacher.programmeIds.forEach((pid) => progIds.add(pid));
+      }
+      const matched = programmes.filter((p) => progIds.has(p.id));
+      return matched.length > 0 ? matched : programmes.slice(0, 1);
+    }
+    return programmes;
+  }, [currentUser, isTeacher, teacherClasses, currentTeacher, programmes]);
+
+  const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>('');
+  const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
-
-  const [messageType, setMessageType] = useState<DirectMessage['messageType']>('GENERAL_NOTICE');
+  const [messageType, setMessageType] = useState<
+    'HOMEWORK' | 'ASSIGNMENT' | 'GENERAL_NOTICE' | 'REMINDER' | 'BEHAVIOUR' | 'EXAMINATION' | 'TAHFIZ_REMINDER' | 'CUSTOM'
+  >('GENERAL_NOTICE');
   const [subject, setSubject] = useState<string>('');
   const [content, setContent] = useState<string>('');
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState<boolean>(false);
 
-  // Filter available classes assigned to teacher
-  const availableClasses = useMemo(() => {
-    if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
-      return classes.filter((c) => !selectedProgrammeId || c.programmeId === selectedProgrammeId);
+  // Auto-select assigned programme and class on initial load or assignment change
+  useEffect(() => {
+    const activeClasses = teacherClasses.length > 0 ? teacherClasses : classes;
+    if (activeClasses.length > 0) {
+      if (!selectedClassId || !activeClasses.some((c) => c.id === selectedClassId)) {
+        const first = activeClasses[0];
+        setSelectedClassId(first.id);
+        if (first.programmeId) {
+          setSelectedProgrammeId(first.programmeId);
+        }
+      }
     }
-    const assignedClassIds = new Set(
-      teacherAssignments
-        .filter((ta) => ta.teacherId === currentUser.id || currentUser.id.includes('teacher'))
-        .filter((ta) => !selectedProgrammeId || ta.programmeId === selectedProgrammeId)
-        .map((ta) => ta.classId)
-    );
-    return classes.filter((c) => assignedClassIds.has(c.id));
-  }, [currentUser, teacherAssignments, classes, selectedProgrammeId]);
+    if (availableProgrammes.length > 0 && !selectedProgrammeId) {
+      setSelectedProgrammeId(availableProgrammes[0].id);
+    }
+  }, [teacherClasses, classes, availableProgrammes, selectedClassId, selectedProgrammeId]);
+
+  // Available classes under selected programme
+  const availableClasses = useMemo(() => {
+    const baseClasses = isTeacher ? teacherClasses : classes;
+    if (!selectedProgrammeId) return baseClasses;
+    return baseClasses.filter((c) => c.programmeId === selectedProgrammeId);
+  }, [isTeacher, teacherClasses, classes, selectedProgrammeId]);
 
   // Students in selected class
   const classStudents = useMemo(() => {
@@ -108,18 +181,19 @@ export function TeacherMessagingCenter() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 bg-slate-50 dark:bg-[#021810] p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-emerald-500/20">
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-emerald-200 mb-1">
-              Select Programme
+              Select Programme {isTeacher && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">(Assigned)</span>}
             </label>
             <select
+              disabled={isTeacher}
               value={selectedProgrammeId}
               onChange={(e) => {
                 setSelectedProgrammeId(e.target.value);
                 const matched = classes.find((c) => c.programmeId === e.target.value);
                 if (matched) setSelectedClassId(matched.id);
               }}
-              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white"
+              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white disabled:opacity-80 disabled:cursor-not-allowed"
             >
-              {programmes.map((p) => (
+              {availableProgrammes.map((p) => (
                 <option key={p.id} value={p.id}>
                   {p.programme_name_english || p.programme_name}
                 </option>
@@ -129,18 +203,23 @@ export function TeacherMessagingCenter() {
 
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-emerald-200 mb-1">
-              Select Assigned Class
+              Select Assigned Class {isTeacher && availableClasses.length <= 1 && <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">(Assigned)</span>}
             </label>
             <select
+              disabled={isTeacher && availableClasses.length <= 1}
               value={selectedClassId}
               onChange={(e) => setSelectedClassId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white"
+              className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white disabled:opacity-80 disabled:cursor-not-allowed"
             >
-              {availableClasses.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {availableClasses.length === 0 ? (
+                <option value="">No assigned class</option>
+              ) : (
+                availableClasses.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 

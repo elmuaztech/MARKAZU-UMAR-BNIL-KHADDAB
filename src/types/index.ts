@@ -506,6 +506,50 @@ export const DEFAULT_REPORT_CARD_TEMPLATE: ReportCardTemplate = {
   signatureText: "SIGNATURE",
 };
 
+export interface CertificateTemplate {
+  schoolNameEnglish: string;
+  schoolNameArabic: string;
+  schoolLocationEnglish: string;
+  schoolLocationArabic: string;
+  qualificationTitleEnglish: string;
+  qualificationTitleArabic: string;
+  qualificationReason: string;
+  principalName: string;
+  principalTitle: string;
+  principalTitleArabic: string;
+  principalSignatureUrl?: string;
+  headOfTahfiz: string;
+  headOfTahfizTitle: string;
+  headOfTahfizTitleArabic: string;
+  headOfTahfizSignatureUrl?: string;
+  sealText: string;
+  logoUrl: string;
+  signatureType: 'CANVAS' | 'IMAGE' | 'TEXT_STAMP';
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export const DEFAULT_CERTIFICATE_TEMPLATE: CertificateTemplate = {
+  schoolNameEnglish: "MARKAZU UMAR BN AL-KHATTAB CENTRE FOR QUR'AN MEMORIZATION & ISLAMIC STUDIES",
+  schoolNameArabic: "مركز عمر بن الخطاب لتحفيظ القرآن الكريم والدراسات الإسلامية",
+  schoolLocationEnglish: "Daneji, Kano State, Nigeria",
+  schoolLocationArabic: "دنيجي، ولاية كانو، نيجيريا",
+  qualificationTitleEnglish: "CERTIFICATE OF TAHFIZUL QUR'AN & ISLAMIC STUDIES GRADUATION",
+  qualificationTitleArabic: "شهادة إتمام حفظ القرآن الكريم والتخرج والدراسات الإسلامية",
+  qualificationReason: "Successful completion of 30-Juz Holy Qur'an memorization and exemplary Islamic character (Akhlaq).",
+  principalName: "Malam Umar Faruq",
+  principalTitle: "School Director & Head of Studies",
+  principalTitleArabic: "مدير المركز ورئيس هيئة التدريس",
+  principalSignatureUrl: "",
+  headOfTahfiz: "Sheikh Ahmad Muhammad",
+  headOfTahfizTitle: "Head of Tahfiz & Examination Board",
+  headOfTahfizTitleArabic: "رئيس هيئة التحفيظ ولجنة الامتحانات",
+  headOfTahfizSignatureUrl: "",
+  sealText: "OFFICIAL SEAL • MARKAZU UMAR BN AL-KHATTAB • KANO",
+  logoUrl: "/logo-rounded.png",
+  signatureType: "TEXT_STAMP",
+};
+
 export interface NewsArticle {
   id: string;
   title: string;
