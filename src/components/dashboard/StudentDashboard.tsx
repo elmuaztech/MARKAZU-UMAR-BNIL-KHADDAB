@@ -117,14 +117,18 @@ export function StudentDashboard() {
     );
   }
 
+  const studentClassDisplay = student.className || 'General Student';
+  const studentAdmissionDisplay = student.admissionNo || 'N/A';
+  const studentAkhlaqDisplay = student.akhlaqRating || 'Excellent (Mumtaz)';
+
   return (
     <PortalTheme>
       <PortalHeroBanner
-        badgeText={`Student Profile • ${student.admissionNo}`}
+        badgeText={`Student Profile • ${studentAdmissionDisplay}`}
         badgeIcon={GraduationCap}
-        title={student.fullName}
-        titleArabic={student.fullNameArabic}
-        description={`${student.className} • Admission: ${student.admissionNo}. Comprehensive Islamic and Arabic academic studies.`}
+        title={student.fullName || currentUser.name || 'Student'}
+        titleArabic={student.fullNameArabic || undefined}
+        description={`${studentClassDisplay} • Admission: ${studentAdmissionDisplay}. Comprehensive Islamic and Arabic academic studies.`}
         actions={
           <Link
             href="/dashboard/results"
@@ -143,8 +147,8 @@ export function StudentDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           title="Class Enrollment"
-          value={student.className}
-          subtitle={`Admission: ${student.admissionNo}`}
+          value={studentClassDisplay}
+          subtitle={`Admission: ${studentAdmissionDisplay}`}
           icon={<GraduationCap className="w-5 h-5" />}
           variant="emerald"
         />
@@ -159,7 +163,7 @@ export function StudentDashboard() {
 
         <StatCard
           title="Akhlaq Rating"
-          value={student.akhlaqRating}
+          value={studentAkhlaqDisplay}
           subtitle="Islamic Conduct & Discipline"
           icon={<Award className="w-5 h-5" />}
           variant="amber"
@@ -177,7 +181,7 @@ export function StudentDashboard() {
         title="Term 2 Academic Performance"
         subtitle="Detailed breakdown of Continuous Assessment and Exam scores"
         columns={columns}
-        data={studentGrades}
+        data={studentGrades || []}
         searchPlaceholder="Search subject..."
       />
     </PortalTheme>

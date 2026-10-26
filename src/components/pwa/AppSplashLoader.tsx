@@ -34,7 +34,7 @@ export function AppSplashLoader() {
   return (
     <div
       aria-hidden="true"
-      className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-gradient-to-b from-[#031c13] via-[#04281c] to-[#02130d] text-white transition-opacity duration-400 ease-out pointer-events-none select-none ${
+      className={`fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#031c13] text-white transition-opacity duration-300 ease-out pointer-events-none select-none ${
         fading ? 'opacity-0' : 'opacity-100'
       }`}
       style={{
@@ -42,16 +42,11 @@ export function AppSplashLoader() {
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
-      {/* Ambient Radial Glow */}
-      <div className="absolute w-72 h-72 rounded-full bg-emerald-500/15 blur-3xl -top-10 pointer-events-none animate-pulse" />
-      <div className="absolute w-64 h-64 rounded-full bg-amber-500/10 blur-3xl bottom-10 pointer-events-none" />
-
       {/* Main Branding Card */}
       <div className="relative flex flex-col items-center text-center px-6 max-w-sm">
-        {/* Crest Logo Container with Professional Curved Edges */}
+        {/* Crest Logo Container */}
         <div className="relative mb-5">
-          <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-tr from-amber-400 to-emerald-400 opacity-60 blur-md animate-pulse" />
-          <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-2 bg-white border-2 border-amber-400/90 shadow-2xl overflow-hidden flex items-center justify-center">
+          <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl p-2 bg-white border-2 border-amber-400 shadow-2xl overflow-hidden flex items-center justify-center">
             <img
               src="/logo.png"
               alt="Markazu Umar Logo"
@@ -61,7 +56,7 @@ export function AppSplashLoader() {
         </div>
 
         {/* School Name & Arabic Motto */}
-        <p className="text-amber-400 font-arabic text-lg tracking-wide mb-1 drop-shadow">
+        <p className="text-amber-400 font-arabic text-lg tracking-wide mb-1">
           مَرْكَزُ عُمَرَ بْنِ الْخَطَّابِ
         </p>
         <h1 className="text-xl font-bold tracking-tight text-white mb-1">
@@ -72,11 +67,11 @@ export function AppSplashLoader() {
         </p>
 
         {/* Minimalist Progress Loader */}
-        <div className="w-40 h-1 bg-emerald-950/80 rounded-full overflow-hidden border border-emerald-800/40 shadow-inner">
-          <div className="h-full bg-gradient-to-r from-amber-400 via-emerald-400 to-amber-300 w-full animate-marquee-smooth" />
+        <div className="w-36 h-1 bg-emerald-950 rounded-full overflow-hidden border border-emerald-800/40">
+          <div className="h-full bg-amber-400 w-full" />
         </div>
 
-        <span className="text-[10px] text-emerald-400/60 mt-3 font-medium">
+        <span className="text-[10px] text-emerald-400/80 mt-3 font-medium">
           Loading portal...
         </span>
       </div>

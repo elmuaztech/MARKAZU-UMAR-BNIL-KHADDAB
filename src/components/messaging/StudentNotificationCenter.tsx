@@ -47,14 +47,6 @@ export function StudentNotificationCenter() {
     );
   }, [students, currentUser]);
 
-  // Request notification permission and alert on new teacher messages
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      if (Notification.permission === 'default') {
-        PushNotificationManager.requestPermission().catch(() => {});
-      }
-    }
-  }, []);
 
   // Listen for new unread messages directed to this student and pop immediate notification
   useEffect(() => {

@@ -30,7 +30,7 @@ export default function DashboardClientShell({
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-slate-100 flex transition-colors duration-200 portal-theme relative">
+    <div className="min-h-screen max-w-full overflow-x-hidden bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-slate-100 flex transition-colors duration-200 portal-theme relative">
       {/* Mobile Drawer Backdrop Overlay */}
       {mobileOpen && (
         <div
@@ -44,10 +44,10 @@ export default function DashboardClientShell({
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-all duration-200">
+      <div className="flex-1 flex flex-col min-w-0 max-w-full overflow-x-hidden lg:pl-64 transition-all duration-200">
         <NotificationOptInBanner />
         <Header mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
-        <main className="flex-1 p-3 sm:p-6 lg:p-8 pb-24 sm:pb-12 max-w-7xl w-full mx-auto space-y-6">
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 pb-24 sm:pb-12 max-w-7xl w-full mx-auto space-y-6 min-w-0 overflow-x-hidden">
           <RBACGuard>{children}</RBACGuard>
         </main>
       </div>
