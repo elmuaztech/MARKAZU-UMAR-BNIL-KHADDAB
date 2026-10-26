@@ -18,15 +18,16 @@ import {
 } from 'lucide-react';
 
 export default function DeliveryQueuePage() {
-  const { deliveryQueue, retryFailedDelivery, retryAllFailedDeliveries } = useApp();
+  const { deliveryQueue = [], retryFailedDelivery, retryAllFailedDeliveries } = useApp();
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
 
-  const filteredQueue = deliveryQueue.filter((q) => filterStatus === 'ALL' || q.status === filterStatus);
+  const safeQueue = deliveryQueue || [];
+  const filteredQueue = safeQueue.filter((q) => q && (filterStatus === 'ALL' || q.status === filterStatus));
 
-  const queuedCount = deliveryQueue.filter((q) => q.status === 'QUEUED').length;
-  const processingCount = deliveryQueue.filter((q) => q.status === 'PROCESSING').length;
-  const completedCount = deliveryQueue.filter((q) => q.status === 'COMPLETED').length;
-  const failedCount = deliveryQueue.filter((q) => q.status === 'FAILED').length;
+  const queuedCount = safeQueue.filter((q) => q && q.status === 'QUEUED').length;
+  const processingCount = safeQueue.filter((q) => q && q.status === 'PROCESSING').length;
+  const completedCount = safeQueue.filter((q) => q && q.status === 'COMPLETED').length;
+  const failedCount = safeQueue.filter((q) => q && q.status === 'FAILED').length;
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-8 font-poppins">

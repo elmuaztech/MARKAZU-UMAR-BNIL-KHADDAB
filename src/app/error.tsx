@@ -29,6 +29,12 @@ export default function Error({
           <p className="text-xs text-emerald-300">
             An unexpected error occurred while rendering this page.
           </p>
+          {error?.message && (
+            <div className="p-3 rounded-2xl bg-black/40 border border-emerald-500/20 text-amber-300 text-xs font-mono text-left break-words max-h-32 overflow-y-auto">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Details:</span>
+              {error.message}
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">

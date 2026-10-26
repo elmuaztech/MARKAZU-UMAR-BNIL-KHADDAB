@@ -6,13 +6,15 @@ import { useApp } from '@/lib/context';
 import { BarChart3, Search, Download, ArrowLeft, Eye, CheckCircle2, FileText, Send } from 'lucide-react';
 
 export default function DeliveryHistoryPage() {
-  const { communications } = useApp();
+  const { communications = [] } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filtered = communications.filter(
+  const safeSearch = (searchQuery || '').toLowerCase();
+  const filtered = (communications || []).filter(
     (c) =>
-      c.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.subject.toLowerCase().includes(searchQuery.toLowerCase())
+      c &&
+      ((c.title || '').toLowerCase().includes(safeSearch) ||
+        (c.subject || '').toLowerCase().includes(safeSearch))
   );
 
   return (
@@ -74,18 +76,18 @@ export default function DeliveryHistoryPage() {
                 filtered.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50 dark:hover:bg-emerald-900/20">
                     <td className="py-3.5 px-4">
-                      <div className="font-extrabold text-slate-900 dark:text-white">{c.title}</div>
-                      <div className="text-[10px] text-slate-500">{c.type}</div>
+                      <div className="font-extrabold text-slate-900 dark:text-white">{c.title || 'Untitled'}</div>
+                      <div className="text-[10px] text-slate-500">{c.type || 'ANNOUNCEMENT'}</div>
                     </td>
                     <td className="py-3.5 px-4 text-slate-600 dark:text-emerald-200 font-mono">
                       {c.sentAt ? new Date(c.sentAt).toLocaleDateString() : 'N/A'}
                     </td>
-                    <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-100">{c.senderName}</td>
-                    <td className="py-3.5 px-4 font-bold text-emerald-700 dark:text-emerald-300">{c.recipientType}</td>
-                    <td className="py-3.5 px-4 font-mono">{c.stats.emailCount}</td>
-                    <td className="py-3.5 px-4 font-mono">{c.stats.whatsappCount}</td>
+                    <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-100">{c.senderName || 'Staff'}</td>
+                    <td className="py-3.5 px-4 font-bold text-emerald-700 dark:text-emerald-300">{c.recipientType || 'ALL'}</td>
+                    <td className="py-3.5 px-4 font-mono">{c.stats?.emailCount || 0}</td>
+                    <td className="py-3.5 px-4 font-mono">{c.stats?.whatsappCount || 0}</td>
                     <td className="py-3.5 px-4 font-black text-emerald-600 dark:text-emerald-400">
-                      {Math.round((c.stats.readCount / Math.max(1, c.stats.totalRecipients)) * 100)}%
+                      {Math.round(((c.stats?.readCount || 0) / Math.max(1, c.stats?.totalRecipients || 1)) * 100)}%
                     </td>
                   </tr>
                 ))

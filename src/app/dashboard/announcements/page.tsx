@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 
 export default function AnnouncementsPage() {
-  const { announcements, programmes, addAnnouncement, currentUser } = useApp();
+  const { announcements = [], programmes = [], addAnnouncement, currentUser } = useApp();
   const [showModal, setShowModal] = useState(false);
 
   const [title, setTitle] = useState('');
@@ -19,7 +19,7 @@ export default function AnnouncementsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const targetProg = programmes.find((p) => p.id === targetProgrammeId);
+    const targetProg = (programmes || []).find((p) => p && p.id === targetProgrammeId);
 
     addAnnouncement({
       title,
@@ -30,7 +30,7 @@ export default function AnnouncementsPage() {
       targetAudienceType: targetProgrammeId === 'ALL' ? 'ALL_SCHOOL' : 'PROGRAMME',
       programmeId: targetProgrammeId === 'ALL' ? undefined : targetProgrammeId,
       programmeName: targetProgrammeId === 'ALL' ? undefined : targetProg?.programme_name,
-      author: currentUser.name,
+      author: currentUser?.name || 'Administrator',
       pinned: false,
     });
     setShowModal(false);
@@ -63,7 +63,7 @@ export default function AnnouncementsPage() {
 
       {/* Announcements List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {announcements.map((ann) => (
+        {(announcements || []).map((ann) => (
           <div key={ann.id} className="p-5 rounded-2xl glass-card border border-emerald-500/30 space-y-3 relative">
             {ann.pinned && (
               <div className="absolute top-4 right-4 flex items-center gap-1 text-[10px] font-bold text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">

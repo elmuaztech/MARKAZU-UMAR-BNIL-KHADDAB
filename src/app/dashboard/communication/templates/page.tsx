@@ -29,10 +29,12 @@ export default function MessageTemplatesPage() {
   const [formSubject, setFormSubject] = useState('');
   const [formContent, setFormContent] = useState('');
 
-  const filteredTemplates = messageTemplates.filter(
+  const safeSearch = (searchQuery || '').toLowerCase();
+  const filteredTemplates = (messageTemplates || []).filter(
     (t) =>
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.subject.toLowerCase().includes(searchQuery.toLowerCase())
+      t &&
+      ((t.title || '').toLowerCase().includes(safeSearch) ||
+        (t.subject || '').toLowerCase().includes(safeSearch))
   );
 
   const handleOpenCreate = () => {

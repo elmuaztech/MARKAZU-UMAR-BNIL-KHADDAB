@@ -6,9 +6,9 @@ import { useApp } from '@/lib/context';
 import { AlertTriangle, RotateCcw, ArrowLeft, ShieldAlert, CheckCircle2 } from 'lucide-react';
 
 export default function FailedDeliveriesPage() {
-  const { deliveryQueue, retryFailedDelivery, retryAllFailedDeliveries } = useApp();
+  const { deliveryQueue = [], retryFailedDelivery, retryAllFailedDeliveries } = useApp();
 
-  const failedItems = deliveryQueue.filter((q) => q.status === 'FAILED');
+  const failedItems = (deliveryQueue || []).filter((q) => q && q.status === 'FAILED');
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-8 font-poppins">

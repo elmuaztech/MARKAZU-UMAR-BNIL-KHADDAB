@@ -6,9 +6,9 @@ import { useApp } from '@/lib/context';
 import { Clock, ArrowLeft, Send, Calendar, Trash2 } from 'lucide-react';
 
 export default function ScheduledMessagesPage() {
-  const { communications } = useApp();
+  const { communications = [] } = useApp();
 
-  const scheduledList = communications.filter((c) => c.status === 'SCHEDULED');
+  const scheduledList = (communications || []).filter((c) => c && c.status === 'SCHEDULED');
 
   return (
     <div className="p-4 sm:p-8 max-w-6xl mx-auto space-y-8 font-poppins">

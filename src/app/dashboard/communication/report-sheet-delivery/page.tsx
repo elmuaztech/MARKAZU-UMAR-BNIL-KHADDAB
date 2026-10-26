@@ -46,24 +46,24 @@ export default function ReportSheetDeliveryPage() {
 
   // Filter classes by programme
   const filteredClasses = selectedProgrammeId
-    ? classes.filter((c) => c.programmeId === selectedProgrammeId)
-    : classes;
+    ? (classes || []).filter((c) => c && c.programmeId === selectedProgrammeId)
+    : (classes || []);
 
   // Filter students by dispatch scope
-  let targetedStudents = students;
+  let targetedStudents = students || [];
 
   if (dispatchScope === 'PROGRAMME' && selectedProgrammeId) {
-    targetedStudents = students.filter((s) => s.programmeId === selectedProgrammeId);
+    targetedStudents = (students || []).filter((s) => s && s.programmeId === selectedProgrammeId);
   } else if (dispatchScope === 'CLASS' && selectedClassId) {
-    targetedStudents = students.filter((s) => s.classId === selectedClassId);
+    targetedStudents = (students || []).filter((s) => s && s.classId === selectedClassId);
   } else if (dispatchScope === 'SINGLE_STUDENT' && selectedStudentId) {
-    targetedStudents = students.filter((s) => s.id === selectedStudentId);
+    targetedStudents = (students || []).filter((s) => s && s.id === selectedStudentId);
   } else if (dispatchScope === 'ALL_SCHOOL') {
-    targetedStudents = students;
+    targetedStudents = students || [];
   }
 
   // Apply Smart Parent Grouping calculation for preview
-  const parentGroups = NotificationService.groupParentsWithMultipleWards(targetedStudents, parents);
+  const parentGroups = NotificationService.groupParentsWithMultipleWards(targetedStudents, parents || []);
 
   const toggleChannel = (channel: string) => {
     if (selectedChannels.includes(channel)) {

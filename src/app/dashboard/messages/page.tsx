@@ -6,6 +6,7 @@ import { PortalTheme } from '@/components/ui/PortalTheme';
 import { PortalHeroBanner } from '@/components/ui/PortalHeroBanner';
 import { TeacherMessagingCenter } from '@/components/messaging/TeacherMessagingCenter';
 import { StudentNotificationCenter } from '@/components/messaging/StudentNotificationCenter';
+import { ComponentErrorBoundary } from '@/components/ui/ComponentErrorBoundary';
 import { MessageSquare, Bell, Send, Inbox, Sparkles } from 'lucide-react';
 
 export default function MessagesPage() {
@@ -67,11 +68,16 @@ export default function MessagesPage() {
         </div>
 
         {/* Active Tab View */}
-        {activeTab === 'COMPOSE' && isTeacherOrAdmin ? (
-          <TeacherMessagingCenter />
-        ) : (
-          <StudentNotificationCenter />
-        )}
+        <ComponentErrorBoundary
+          fallbackTitle="Message Center Notice"
+          fallbackMessage="The messaging center is currently refreshing its data records."
+        >
+          {activeTab === 'COMPOSE' && isTeacherOrAdmin ? (
+            <TeacherMessagingCenter />
+          ) : (
+            <StudentNotificationCenter />
+          )}
+        </ComponentErrorBoundary>
       </div>
     </PortalTheme>
   );

@@ -8,11 +8,11 @@ import { Sparkles, Save, ArrowLeft, Mail, MessageSquare, Bell, CheckCircle2 } fr
 export default function CommunicationSettingsPage() {
   const { communicationSettings, updateCommunicationSettings } = useApp();
 
-  const [schoolEmail, setSchoolEmail] = useState(communicationSettings.schoolEmail);
-  const [replyToEmail, setReplyToEmail] = useState(communicationSettings.replyToEmail);
-  const [schoolWhatsApp, setSchoolWhatsApp] = useState(communicationSettings.schoolWhatsApp);
-  const [defaultSignature, setDefaultSignature] = useState(communicationSettings.defaultSignature);
-  const [footerText, setFooterText] = useState(communicationSettings.footerText);
+  const [schoolEmail, setSchoolEmail] = useState(communicationSettings?.schoolEmail || '');
+  const [replyToEmail, setReplyToEmail] = useState(communicationSettings?.replyToEmail || '');
+  const [schoolWhatsApp, setSchoolWhatsApp] = useState(communicationSettings?.schoolWhatsApp || '');
+  const [defaultSignature, setDefaultSignature] = useState(communicationSettings?.defaultSignature || '');
+  const [footerText, setFooterText] = useState(communicationSettings?.footerText || '');
 
   const [savedToast, setSavedToast] = useState(false);
 

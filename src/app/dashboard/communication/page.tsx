@@ -227,19 +227,19 @@ export default function CommunicationDashboardPage() {
                 filteredComms.map((comm) => (
                   <tr key={comm.id} className="hover:bg-slate-50 dark:hover:bg-emerald-900/20 transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-extrabold text-slate-900 dark:text-white">{comm.title}</div>
-                      <div className="text-[11px] text-slate-500 dark:text-emerald-300/70 truncate max-w-xs">{comm.subject}</div>
+                      <div className="font-extrabold text-slate-900 dark:text-white">{comm.title || 'Untitled'}</div>
+                      <div className="text-[11px] text-slate-500 dark:text-emerald-300/70 truncate max-w-xs">{comm.subject || ''}</div>
                     </td>
 
                     <td className="py-3.5 px-4">
                       <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold text-[10px]">
-                        {comm.type.replace('_', ' ')}
+                        {(comm.type || 'ANNOUNCEMENT').replace(/_/g, ' ')}
                       </span>
                     </td>
 
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-1.5">
-                        {comm.channels.map((ch) => (
+                        {(comm.channels || []).map((ch) => (
                           <span
                             key={ch}
                             className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 font-mono text-[9px] font-black"
@@ -251,7 +251,7 @@ export default function CommunicationDashboardPage() {
                     </td>
 
                     <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-emerald-200">
-                      {comm.stats.totalRecipients} ({comm.recipientType.replace('_', ' ')})
+                      {comm.stats?.totalRecipients || 0} ({(comm.recipientType || 'ALL').replace(/_/g, ' ')})
                     </td>
 
                     <td className="py-3.5 px-4">
@@ -264,7 +264,7 @@ export default function CommunicationDashboardPage() {
                             : 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
                         }`}
                       >
-                        {comm.status}
+                        {comm.status || 'UNKNOWN'}
                       </span>
                     </td>
 
@@ -272,13 +272,13 @@ export default function CommunicationDashboardPage() {
                       <div className="w-28 space-y-1">
                         <div className="flex justify-between text-[10px] font-bold text-slate-600 dark:text-emerald-300">
                           <span>Delivered</span>
-                          <span>{comm.stats.deliveredCount}/{comm.stats.totalRecipients}</span>
+                          <span>{comm.stats?.deliveredCount || 0}/{comm.stats?.totalRecipients || 0}</span>
                         </div>
                         <div className="h-1.5 rounded-full bg-slate-100 dark:bg-emerald-950 overflow-hidden">
                           <div
                             className="h-full bg-emerald-500 rounded-full"
                             style={{
-                              width: `${(comm.stats.deliveredCount / Math.max(1, comm.stats.totalRecipients)) * 100}%`,
+                              width: `${((comm.stats?.deliveredCount || 0) / Math.max(1, comm.stats?.totalRecipients || 1)) * 100}%`,
                             }}
                           />
                         </div>
