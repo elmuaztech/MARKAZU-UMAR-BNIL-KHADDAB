@@ -89,7 +89,7 @@ export function isNotificationRelevantForUser(
     ];
 
     if (publicParentCategories.includes(notif.category as string)) {
-      const titleLower = notif.title.toLowerCase();
+      const titleLower = (notif.title || '').toLowerCase();
       const isInternalStaff =
         titleLower.includes('staff only') ||
         titleLower.includes('result batch') ||

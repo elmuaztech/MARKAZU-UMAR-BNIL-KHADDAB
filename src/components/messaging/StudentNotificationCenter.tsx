@@ -22,7 +22,17 @@ import { PushNotificationManager } from '@/lib/pushNotifications';
 import { Send, CornerDownLeft, X } from 'lucide-react';
 
 export function StudentNotificationCenter() {
-  const { directMessages, inAppNotifications, parents, teachers, students, currentUser, markDirectMessageRead, archiveDirectMessage, sendTeacherDirectMessage } = useApp();
+  const {
+    directMessages = [],
+    inAppNotifications = [],
+    parents = [],
+    teachers = [],
+    students = [],
+    currentUser,
+    markDirectMessageRead,
+    archiveDirectMessage,
+    sendTeacherDirectMessage,
+  } = useApp();
 
   const [activeTab, setActiveTab] = useState<'MESSAGES' | 'NOTIFICATIONS' | 'ARCHIVED'>('MESSAGES');
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -36,13 +46,14 @@ export function StudentNotificationCenter() {
 
   // Resolve current student record if logged in as student
   const currentStudentRecord = useMemo(() => {
-    if (currentUser.role !== 'STUDENT') return null;
+    if (!currentUser || currentUser.role !== 'STUDENT') return null;
     return (
-      students.find(
+      (students || []).find(
         (s) =>
-          s.userId === currentUser.id ||
-          s.id === currentUser.id ||
-          (s.admissionNo && currentUser.username && s.admissionNo.toLowerCase() === currentUser.username.toLowerCase())
+          s &&
+          (s.userId === currentUser.id ||
+            s.id === currentUser.id ||
+            (s.admissionNo && currentUser.username && s.admissionNo.toLowerCase() === currentUser.username.toLowerCase()))
       ) || null
     );
   }, [students, currentUser]);
@@ -50,23 +61,34 @@ export function StudentNotificationCenter() {
 
   // Listen for new unread messages directed to this student and pop immediate notification
   useEffect(() => {
+    if (!currentUser) return;
     if (!currentStudentRecord && currentUser.role !== 'PARENT' && currentUser.role !== 'TEACHER') return;
 
-    const unread = directMessages.filter((m) => {
+    const unread = (directMessages || []).filter((m) => {
+      if (!m) return false;
       if (currentUser.role === 'STUDENT') {
-        return (m.recipientStudentId === currentStudentRecord?.id || m.recipientStudentId === currentUser.id) && !m.isRead && !m.isArchived;
+        return (
+          (m.recipientStudentId === currentStudentRecord?.id || m.recipientStudentId === currentUser.id) &&
+          !m.isRead &&
+          !m.isArchived
+        );
       }
       return false;
     });
 
     if (unread.length > 0 && PushNotificationManager.getPermission() === 'granted') {
       const latest = unread[0];
+      if (!latest || !latest.id) return;
       const seenKey = `markazu_notified_msg_${latest.id}`;
       if (typeof window !== 'undefined' && !sessionStorage.getItem(seenKey)) {
         sessionStorage.setItem(seenKey, '1');
+        const subject = latest.subject || 'New Notice';
+        const contentSnippet = (latest.content || '').slice(0, 80);
+        const sender = latest.senderName || 'School Staff';
+        const role = latest.senderRole || 'Teacher';
         PushNotificationManager.showNotification({
-          title: `School Notice: ${latest.subject}`,
-          body: `${latest.senderName} (${latest.senderRole}): ${latest.content.slice(0, 80)}...`,
+          title: `School Notice: ${subject}`,
+          body: `${sender} (${role}): ${contentSnippet}...`,
           url: '/dashboard/messages',
           tag: `msg-${latest.id}`,
         }).catch(() => {});
@@ -74,21 +96,28 @@ export function StudentNotificationCenter() {
     }
   }, [directMessages, currentStudentRecord, currentUser]);
 
-  // Filter messages for current logged in user (student or parent linked ward)
+  // Filter messages for current logged in user (student, parent linked ward, teacher, admin)
   const userDirectMessages = useMemo(() => {
-    return directMessages.filter((msg) => {
-      const isForUser =
-        currentUser.role === 'ADMIN' ||
-        (currentUser.role as string) === 'SUPER_ADMIN' ||
-        (currentStudentRecord && msg.recipientStudentId === currentStudentRecord.id) ||
-        msg.recipientStudentId === currentUser.id ||
-        msg.senderId === currentUser.id;
+    if (!currentUser) return [];
+    const role = currentUser.role || '';
+    const userId = currentUser.id || '';
+    const safeTerm = (searchTerm || '').toLowerCase();
 
-      const matchesTab = activeTab === 'ARCHIVED' ? msg.isArchived : !msg.isArchived;
+    return (directMessages || []).filter((msg) => {
+      if (!msg) return false;
+
+      const isForUser =
+        role === 'ADMIN' ||
+        (role as string) === 'SUPER_ADMIN' ||
+        (currentStudentRecord && msg.recipientStudentId === currentStudentRecord.id) ||
+        msg.recipientStudentId === userId ||
+        msg.senderId === userId;
+
+      const matchesTab = activeTab === 'ARCHIVED' ? Boolean(msg.isArchived) : !msg.isArchived;
       const matchesSearch =
-        msg.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        msg.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        msg.senderName.toLowerCase().includes(searchTerm.toLowerCase());
+        (msg.subject || '').toLowerCase().includes(safeTerm) ||
+        (msg.content || '').toLowerCase().includes(safeTerm) ||
+        (msg.senderName || '').toLowerCase().includes(safeTerm);
       const matchesCategory = categoryFilter === 'ALL' || msg.messageType === categoryFilter;
 
       return isForUser && matchesTab && matchesSearch && matchesCategory;
@@ -97,23 +126,28 @@ export function StudentNotificationCenter() {
 
   // Authoritative role-based in-app system notifications for user
   const userNotifications = useMemo(() => {
-    return inAppNotifications.filter((n) => {
+    if (!currentUser) return [];
+    const safeTerm = (searchTerm || '').toLowerCase();
+
+    return (inAppNotifications || []).filter((n) => {
+      if (!n) return false;
       const isForUser = isNotificationRelevantForUser(n, currentUser, { parents, teachers, students });
-      const matchesTab = activeTab === 'ARCHIVED' ? n.isArchived : !n.isArchived;
+      const matchesTab = activeTab === 'ARCHIVED' ? Boolean(n.isArchived) : !n.isArchived;
       const matchesSearch =
-        n.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        n.body.toLowerCase().includes(searchTerm.toLowerCase());
+        (n.title || '').toLowerCase().includes(safeTerm) ||
+        (n.body || '').toLowerCase().includes(safeTerm);
       return isForUser && matchesTab && matchesSearch;
     });
   }, [inAppNotifications, currentUser, parents, teachers, students, activeTab, searchTerm]);
 
   const unreadMessagesCount = useMemo(() => {
-    return userDirectMessages.filter((m) => !m.isRead && !m.isArchived).length;
+    return userDirectMessages.filter((m) => m && !m.isRead && !m.isArchived).length;
   }, [userDirectMessages]);
 
   const unreadNotificationsCount = useMemo(() => {
-    return inAppNotifications.filter(
-      (n) => isNotificationRelevantForUser(n, currentUser, { parents, teachers, students }) && !n.read && !n.isArchived
+    if (!currentUser) return 0;
+    return (inAppNotifications || []).filter(
+      (n) => n && isNotificationRelevantForUser(n, currentUser, { parents, teachers, students }) && !n.read && !n.isArchived
     ).length;
   }, [inAppNotifications, currentUser, parents, teachers, students]);
 
@@ -233,10 +267,10 @@ export function StudentNotificationCenter() {
                   <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-black text-sm text-slate-900 dark:text-white">
-                        {msg.subject}
+                        {msg.subject || 'School Notice'}
                       </span>
                       <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-extrabold text-[10px]">
-                        {msg.messageType.replace('_', ' ')}
+                        {(msg.messageType || 'NOTICE').replace(/_/g, ' ')}
                       </span>
                       {!msg.isRead && (
                         <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[9px]">
@@ -246,11 +280,11 @@ export function StudentNotificationCenter() {
                     </div>
 
                     <div className="text-xs font-bold text-slate-500 dark:text-emerald-300/80">
-                      From: <span className="text-slate-900 dark:text-white font-extrabold">{msg.senderName}</span> ({msg.senderRole}) • Recipient: {msg.studentName}
+                      From: <span className="text-slate-900 dark:text-white font-extrabold">{msg.senderName || 'Staff'}</span> ({msg.senderRole || 'Teacher'}) • Recipient: {msg.studentName || 'Student'}
                     </div>
 
                     <p className="text-xs text-slate-700 dark:text-emerald-100/90 leading-relaxed pt-1">
-                      {msg.content}
+                      {msg.content || ''}
                     </p>
 
                     {msg.attachments && msg.attachments.length > 0 && (
@@ -317,14 +351,18 @@ export function StudentNotificationCenter() {
               >
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-sm text-slate-900 dark:text-white">
-                    {notif.title}
+                    {notif.title || 'Notification'}
                   </span>
                   <span className="text-[10px] text-slate-400 font-mono">
-                    {notif.createdAt}
+                    {typeof notif.createdAt === 'string'
+                      ? notif.createdAt
+                      : notif.createdAt
+                      ? new Date(notif.createdAt).toLocaleDateString()
+                      : ''}
                   </span>
                 </div>
                 <p className="text-xs text-slate-700 dark:text-emerald-200">
-                  {notif.body}
+                  {notif.body || ''}
                 </p>
               </div>
             ))

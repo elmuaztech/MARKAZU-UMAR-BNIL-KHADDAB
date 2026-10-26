@@ -213,8 +213,8 @@ export function Sidebar({
   };
 
   // Live Notification Badges Calculation
-  const pendingAdmissionsCount = admissionApplications.filter((a) => a.status === 'PENDING_REVIEW').length;
-  const unreadMessagesCount = directMessages.filter((m) => !m.isRead).length;
+  const pendingAdmissionsCount = (admissionApplications || []).filter((a) => a && a.status === 'PENDING_REVIEW').length;
+  const unreadMessagesCount = (directMessages || []).filter((m) => m && !m.isRead).length;
 
   // Master Navigation Definition grouped into logical sections with simple, short words
   const allNavItems: NavItem[] = [

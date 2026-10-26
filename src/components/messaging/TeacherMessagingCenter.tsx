@@ -14,48 +14,61 @@ import { DirectMessage } from '@/types';
 import { canTeacherMessageStudent } from '@/lib/rbac';
 
 export function TeacherMessagingCenter() {
-  const { students, classes, programmes, teachers, teacherAssignments, currentUser, sendTeacherDirectMessage } = useApp();
-  const isTeacher = currentUser.role === 'TEACHER';
+  const {
+    students = [],
+    classes = [],
+    programmes = [],
+    teachers = [],
+    teacherAssignments = [],
+    currentUser,
+    sendTeacherDirectMessage,
+  } = useApp();
+  const isTeacher = currentUser?.role === 'TEACHER';
 
   // Resolve active teacher record
   const currentTeacher = useMemo(() => {
+    if (!currentUser) return null;
     return (
-      teachers.find(
+      (teachers || []).find(
         (t) =>
-          t.id === currentUser.id ||
-          (t.userId && t.userId === currentUser.id) ||
-          (t.email && currentUser.email && t.email.toLowerCase() === currentUser.email.toLowerCase()) ||
-          (t.staffNo && currentUser.username && t.staffNo.toLowerCase() === currentUser.username.toLowerCase()) ||
-          (t.fullName && currentUser.name && t.fullName.toLowerCase() === currentUser.name.toLowerCase())
+          t &&
+          (t.id === currentUser.id ||
+            (t.userId && t.userId === currentUser.id) ||
+            (t.email && currentUser.email && t.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+            (t.staffNo && currentUser.username && t.staffNo.toLowerCase() === currentUser.username.toLowerCase()) ||
+            (t.fullName && currentUser.name && t.fullName.toLowerCase() === currentUser.name.toLowerCase()))
       ) || null
     );
   }, [teachers, currentUser]);
 
   // Compute teacher-assigned classes
   const teacherClasses = useMemo(() => {
+    if (!currentUser) return [];
     if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
-      return classes;
+      return classes || [];
     }
     const teacherId = currentTeacher?.id || currentUser.id;
     const directClassIds = currentTeacher?.classesAssigned || [];
-    const assignmentClassIds = teacherAssignments
+    const assignmentClassIds = (teacherAssignments || [])
       .filter(
         (ta) =>
-          ta.teacherId === teacherId ||
-          ta.teacherId === currentUser.id ||
-          (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
-          (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase())
+          ta &&
+          (ta.teacherId === teacherId ||
+            ta.teacherId === currentUser.id ||
+            (currentUser.email && ta.teacherId && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
+            (currentUser.username && ta.teacherId && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase()))
       )
       .map((ta) => ta.classId);
 
     const allAssignedIds = new Set([...directClassIds, ...assignmentClassIds]);
 
-    const matched = classes.filter(
+    const matched = (classes || []).filter(
       (c) =>
-        allAssignedIds.has(c.id) ||
-        allAssignedIds.has(c.name) ||
-        c.classTeacherId === teacherId ||
-        c.classTeacherId === currentUser.id
+        c &&
+        (allAssignedIds.has(c.id) ||
+          allAssignedIds.has(c.name) ||
+          c.classTeacherId === teacherId ||
+          c.classTeacherId === currentUser.id)
     );
 
     // If teacher has classes, return them; otherwise if teacher has none assigned, return empty array
@@ -64,18 +77,19 @@ export function TeacherMessagingCenter() {
 
   // Filter available programmes: for teacher, only programmes they teach in
   const availableProgrammes = useMemo(() => {
+    if (!currentUser) return programmes || [];
     if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
-      return programmes;
+      return programmes || [];
     }
     if (isTeacher) {
-      const progIds = new Set(teacherClasses.map((c) => c.programmeId).filter(Boolean));
+      const progIds = new Set(teacherClasses.map((c) => c?.programmeId).filter(Boolean));
       if (currentTeacher?.programmeIds) {
         currentTeacher.programmeIds.forEach((pid) => progIds.add(pid));
       }
-      const matched = programmes.filter((p) => progIds.has(p.id));
-      return matched.length > 0 ? matched : programmes.slice(0, 1);
+      const matched = (programmes || []).filter((p) => p && progIds.has(p.id));
+      return matched.length > 0 ? matched : (programmes || []).slice(0, 1);
     }
-    return programmes;
+    return programmes || [];
   }, [currentUser, isTeacher, teacherClasses, currentTeacher, programmes]);
 
   const [selectedProgrammeId, setSelectedProgrammeId] = useState<string>('');
@@ -90,40 +104,45 @@ export function TeacherMessagingCenter() {
 
   // Auto-select assigned programme and class on initial load or assignment change
   useEffect(() => {
-    const activeClasses = teacherClasses.length > 0 ? teacherClasses : classes;
+    const activeClasses = teacherClasses.length > 0 ? teacherClasses : (classes || []);
     if (activeClasses.length > 0) {
-      if (!selectedClassId || !activeClasses.some((c) => c.id === selectedClassId)) {
+      if (!selectedClassId || !activeClasses.some((c) => c?.id === selectedClassId)) {
         const first = activeClasses[0];
-        setSelectedClassId(first.id);
-        if (first.programmeId) {
-          setSelectedProgrammeId(first.programmeId);
+        if (first?.id) {
+          setSelectedClassId(first.id);
+          if (first.programmeId) {
+            setSelectedProgrammeId(first.programmeId);
+          }
         }
       }
     }
-    if (availableProgrammes.length > 0 && !selectedProgrammeId) {
-      setSelectedProgrammeId(availableProgrammes[0].id);
+    if ((availableProgrammes || []).length > 0 && !selectedProgrammeId) {
+      const firstProg = availableProgrammes[0];
+      if (firstProg?.id) {
+        setSelectedProgrammeId(firstProg.id);
+      }
     }
   }, [teacherClasses, classes, availableProgrammes, selectedClassId, selectedProgrammeId]);
 
   // Available classes under selected programme
   const availableClasses = useMemo(() => {
-    const baseClasses = isTeacher ? teacherClasses : classes;
+    const baseClasses = isTeacher ? teacherClasses : (classes || []);
     if (!selectedProgrammeId) return baseClasses;
-    return baseClasses.filter((c) => c.programmeId === selectedProgrammeId);
+    return baseClasses.filter((c) => c && c.programmeId === selectedProgrammeId);
   }, [isTeacher, teacherClasses, classes, selectedProgrammeId]);
 
   // Students in selected class: categorize active portal vs no portal
   const classStudents = useMemo(() => {
     if (!selectedClassId) return [];
-    return students.filter((s) => s.classId === selectedClassId);
+    return (students || []).filter((s) => s && s.classId === selectedClassId);
   }, [students, selectedClassId]);
 
   const portalStudents = useMemo(() => {
-    return classStudents.filter((s) => Boolean(s.userId));
+    return classStudents.filter((s) => s && Boolean(s.userId));
   }, [classStudents]);
 
   const noPortalStudents = useMemo(() => {
-    return classStudents.filter((s) => !s.userId);
+    return classStudents.filter((s) => s && !s.userId);
   }, [classStudents]);
 
   const handleSubmitMessage = async (e: React.FormEvent) => {

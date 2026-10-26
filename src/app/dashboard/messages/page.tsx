@@ -11,14 +11,21 @@ import { MessageSquare, Bell, Send, Inbox, Sparkles } from 'lucide-react';
 export default function MessagesPage() {
   const { currentUser } = useApp();
 
+  const userRole = currentUser?.role || '';
   const isTeacherOrAdmin =
-    currentUser.role === 'TEACHER' ||
-    currentUser.role === 'ADMIN' ||
-    (currentUser.role as string) === 'SUPER_ADMIN';
+    userRole === 'TEACHER' ||
+    userRole === 'ADMIN' ||
+    (userRole as string) === 'SUPER_ADMIN';
 
-  const [activeTab, setActiveTab] = useState<'MESSAGES' | 'COMPOSE'>(
-    isTeacherOrAdmin ? 'COMPOSE' : 'MESSAGES'
-  );
+  const [activeTab, setActiveTab] = useState<'MESSAGES' | 'COMPOSE'>('MESSAGES');
+
+  React.useEffect(() => {
+    if (isTeacherOrAdmin) {
+      setActiveTab('COMPOSE');
+    } else {
+      setActiveTab('MESSAGES');
+    }
+  }, [isTeacherOrAdmin]);
 
   return (
     <PortalTheme>

@@ -29,19 +29,21 @@ import {
 import { motion } from 'framer-motion';
 
 export default function CommunicationDashboardPage() {
-  const { currentUser, communications, deliveryQueue, inAppNotifications, messageTemplates } = useApp();
+  const { currentUser, communications = [], deliveryQueue = [], inAppNotifications = [], messageTemplates = [] } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState('ALL');
 
-  const totalDispatched = communications.filter((c) => c.status === 'SENT').length;
-  const totalScheduled = communications.filter((c) => c.status === 'SCHEDULED').length;
-  const totalFailedQueue = deliveryQueue.filter((q) => q.status === 'FAILED').length;
-  const activeQueueCount = deliveryQueue.filter((q) => q.status === 'QUEUED' || q.status === 'PROCESSING').length;
+  const totalDispatched = (communications || []).filter((c) => c && c.status === 'SENT').length;
+  const totalScheduled = (communications || []).filter((c) => c && c.status === 'SCHEDULED').length;
+  const totalFailedQueue = (deliveryQueue || []).filter((q) => q && q.status === 'FAILED').length;
+  const activeQueueCount = (deliveryQueue || []).filter((q) => q && (q.status === 'QUEUED' || q.status === 'PROCESSING')).length;
 
-  const filteredComms = communications.filter((c) => {
+  const safeSearch = (searchQuery || '').toLowerCase();
+  const filteredComms = (communications || []).filter((c) => {
+    if (!c) return false;
     const matchesSearch =
-      (c.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (c.subject || '').toLowerCase().includes(searchQuery.toLowerCase());
+      (c.title || '').toLowerCase().includes(safeSearch) ||
+      (c.subject || '').toLowerCase().includes(safeSearch);
     const matchesType = selectedTypeFilter === 'ALL' || c.type === selectedTypeFilter;
     return matchesSearch && matchesType;
   });
@@ -71,7 +73,7 @@ export default function CommunicationDashboardPage() {
             <span>Inbox</span>
           </Link>
 
-          {(currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN' || currentUser.role === 'HEADMASTER') && (
+          {(currentUser?.role === 'SUPER_ADMIN' || currentUser?.role === 'ADMIN' || currentUser?.role === 'HEADMASTER') && (
             <>
               <Link
                 href="/dashboard/communication/report-sheet-delivery"

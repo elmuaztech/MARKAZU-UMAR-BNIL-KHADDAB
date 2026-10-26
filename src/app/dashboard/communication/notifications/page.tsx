@@ -37,24 +37,26 @@ export default function NotificationCenterPage() {
   }, []);
 
   // 1. Authoritative Role-Based Filtering: strictly limit to user's permitted notifications
-  const userNotifs = inAppNotifications.filter((n) =>
-    isNotificationRelevantForUser(n, currentUser, { parents, teachers, students })
+  const userNotifs = (inAppNotifications || []).filter((n) =>
+    n && isNotificationRelevantForUser(n, currentUser, { parents, teachers, students })
   );
 
   // 2. Tab & Search Filtering
+  const safeSearch = (searchQuery || '').toLowerCase();
   const filteredNotifs = userNotifs.filter((n) => {
+    if (!n) return false;
     if (filterTab === 'UNREAD' && n.read) return false;
     if (filterTab === 'PINNED' && !n.pinned) return false;
     if (filterTab === 'ARCHIVED' && !n.isArchived) return false;
     if (filterTab !== 'ARCHIVED' && n.isArchived) return false;
 
     const matchesSearch =
-      n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      n.body.toLowerCase().includes(searchQuery.toLowerCase());
+      (n.title || '').toLowerCase().includes(safeSearch) ||
+      (n.body || '').toLowerCase().includes(safeSearch);
     return matchesSearch;
   });
 
-  const unreadCount = userNotifs.filter((n) => !n.read && !n.isArchived).length;
+  const unreadCount = userNotifs.filter((n) => n && !n.read && !n.isArchived).length;
 
   return (
     <div className="p-4 sm:p-8 max-w-5xl mx-auto space-y-8 font-poppins">
