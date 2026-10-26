@@ -31,6 +31,7 @@ import { filterAdmissionsForUser } from '../../../lib/rbac';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
+import { ComponentErrorBoundary } from '@/components/ui/ComponentErrorBoundary';
 
 export default function AdmissionsPage() {
   const {
@@ -56,7 +57,7 @@ export default function AdmissionsPage() {
   const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
+  const isAdmin = currentUser?.role === 'ADMIN' || (currentUser?.role as string) === 'SUPER_ADMIN';
 
   const userAdmissions = filterAdmissionsForUser(currentUser, admissionApplications);
 
@@ -123,7 +124,8 @@ export default function AdmissionsPage() {
   };
 
   return (
-    <div className="space-y-6 text-xs selection:bg-emerald-500 selection:text-white">
+    <ComponentErrorBoundary componentName="Admissions & Application Management">
+      <div className="space-y-6 text-xs selection:bg-emerald-500 selection:text-white">
       {/* Header Banner */}
       <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-r from-emerald-900 via-emerald-800 to-sky-900 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border border-emerald-700/50">
         <div className="space-y-2 max-w-2xl">
@@ -286,7 +288,7 @@ export default function AdmissionsPage() {
                         }
                         className="text-[10px]"
                       >
-                        {app.status.replace('_', ' ')}
+                        {(app.status || 'PENDING').replace(/_/g, ' ')}
                       </Badge>
                     </td>
 
@@ -609,6 +611,7 @@ export default function AdmissionsPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </ComponentErrorBoundary>
   );
 }

@@ -217,9 +217,11 @@ export function Sidebar({
   const unreadMessagesCount = (directMessages || []).filter((m) => m && !m.isRead).length;
 
   // Master Navigation Definition grouped into logical sections with simple, short words
+  const userRole = currentUser?.role || 'GUEST';
+
   const allNavItems: NavItem[] = [
     // MAIN WORKSPACE
-    { id: 'dashboard', label: currentUser.role === 'HEADMASTER' ? 'Main Dashboard' : 'Dashboard', href: '/dashboard', icon: LayoutDashboard, group: 'MAIN' },
+    { id: 'dashboard', label: userRole === 'HEADMASTER' ? 'Main Dashboard' : 'Dashboard', href: '/dashboard', icon: LayoutDashboard, group: 'MAIN' },
     { id: 'headmaster_portal', label: 'Headmaster Portal', href: '/headmaster', icon: ShieldCheck, group: 'MAIN' },
 
     // ADMISSIONS & ONBOARDING
@@ -235,29 +237,29 @@ export function Sidebar({
     // ACADEMICS & CURRICULUM
     {
       id: 'programmes',
-      label: currentUser.role === 'HEADMASTER' ? 'My Section' : currentUser.role === 'TEACHER' ? 'My Programmes' : 'Programmes',
+      label: userRole === 'HEADMASTER' ? 'My Section' : userRole === 'TEACHER' ? 'My Programmes' : 'Programmes',
       href: '/dashboard/programmes',
       icon: Layers,
       group: 'ACADEMICS',
     },
     {
       id: 'classes',
-      label: currentUser.role === 'HEADMASTER' ? 'Section Classes' : currentUser.role === 'TEACHER' ? 'My Classes' : 'Classes',
+      label: userRole === 'HEADMASTER' ? 'Section Classes' : userRole === 'TEACHER' ? 'My Classes' : 'Classes',
       href: '/dashboard/classes',
       icon: School,
       group: 'ACADEMICS',
     },
     {
       id: 'subjects',
-      label: currentUser.role === 'HEADMASTER' ? 'Section Subjects' : currentUser.role === 'TEACHER' ? 'My Subjects' : currentUser.role === 'STUDENT' ? 'My Subjects' : 'Subjects',
+      label: userRole === 'HEADMASTER' ? 'Section Subjects' : userRole === 'TEACHER' ? 'My Subjects' : userRole === 'STUDENT' ? 'My Subjects' : 'Subjects',
       href: '/dashboard/subjects',
       icon: BookMarked,
       group: 'ACADEMICS',
     },
-    { id: 'attendance', label: currentUser.role === 'HEADMASTER' ? 'Section Attendance' : 'Attendance', href: '/dashboard/attendance', icon: CalendarCheck, group: 'ACADEMICS' },
+    { id: 'attendance', label: userRole === 'HEADMASTER' ? 'Section Attendance' : 'Attendance', href: '/dashboard/attendance', icon: CalendarCheck, group: 'ACADEMICS' },
     {
       id: 'assessment',
-      label: currentUser.role === 'TEACHER' ? 'Grade Entry' : currentUser.role === 'HEADMASTER' ? 'Section Assessments' : 'Assessments',
+      label: userRole === 'TEACHER' ? 'Grade Entry' : userRole === 'HEADMASTER' ? 'Section Assessments' : 'Assessments',
       href: '/dashboard/assessment',
       icon: FileSpreadsheet,
       group: 'ACADEMICS',
@@ -273,12 +275,12 @@ export function Sidebar({
     // USERS & DIRECTORY
     {
       id: 'students',
-      label: currentUser.role === 'HEADMASTER' ? 'Section Students' : currentUser.role === 'TEACHER' ? 'My Students' : currentUser.role === 'PARENT' ? 'My Children' : 'Students',
+      label: userRole === 'HEADMASTER' ? 'Section Students' : userRole === 'TEACHER' ? 'My Students' : userRole === 'PARENT' ? 'My Children' : 'Students',
       href: '/dashboard/students',
       icon: Users,
       group: 'PEOPLE',
     },
-    { id: 'teachers', label: currentUser.role === 'HEADMASTER' ? 'Section Teachers' : 'Staff', href: '/dashboard/teachers', icon: UserCheck, group: 'PEOPLE' },
+    { id: 'teachers', label: userRole === 'HEADMASTER' ? 'Section Teachers' : 'Staff', href: '/dashboard/teachers', icon: UserCheck, group: 'PEOPLE' },
     { id: 'parents', label: 'Parents', href: '/dashboard/parents', icon: HeartHandshake, group: 'PEOPLE' },
 
     // COMMUNICATION
@@ -295,14 +297,14 @@ export function Sidebar({
     // REPORTS & SESSIONS
     {
       id: 'results',
-      label: currentUser.role === 'HEADMASTER' ? 'Section Report Cards' : 'Report Cards',
+      label: userRole === 'HEADMASTER' ? 'Section Report Cards' : 'Report Cards',
       href: '/dashboard/results',
       icon: Award,
       group: 'REPORTS & SETUP',
     },
     {
       id: 'certificates',
-      label: currentUser.role === 'STUDENT' ? 'My Certificate' : currentUser.role === 'PARENT' ? 'Child Certificates' : 'Certificates',
+      label: userRole === 'STUDENT' ? 'My Certificate' : userRole === 'PARENT' ? 'Child Certificates' : 'Certificates',
       href: '/dashboard/certificates',
       icon: GraduationCap,
       group: 'REPORTS & SETUP',
@@ -319,7 +321,7 @@ export function Sidebar({
   ];
 
   // Role-Based Access Control Filtering
-  const authorizedNavItems = allNavItems.filter((item) => hasPageAccess(currentUser.role, item.href));
+  const authorizedNavItems = allNavItems.filter((item) => hasPageAccess(userRole, item.href));
 
   // Search Filtering
   const searchFilteredItems = authorizedNavItems.filter((item) => {
@@ -508,15 +510,15 @@ export function Sidebar({
           >
             <div className="flex items-center gap-2.5 overflow-hidden">
               <div className="relative shrink-0">
-                {currentUser.avatar ? (
+                {currentUser?.avatar ? (
                   <img
                     src={currentUser.avatar}
-                    alt={currentUser.name || 'User Profile'}
+                    alt={currentUser?.name || 'User Profile'}
                     className="w-8 h-8 rounded-full border-2 border-emerald-400/50 object-cover"
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-xs flex items-center justify-center border-2 border-emerald-400/50 uppercase shadow-xs">
-                    {(currentUser.name || 'U').substring(0, 2)}
+                    {(currentUser?.name || 'U').substring(0, 2)}
                   </div>
                 )}
                 <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white dark:border-slate-900" />
@@ -524,8 +526,8 @@ export function Sidebar({
 
               {!isCollapsed && (
                 <div className="overflow-hidden min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-emerald-100 truncate">{currentUser.name}</p>
-                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold truncate">{currentUser.role ? currentUser.role.replace('_', ' ') : ''}</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-emerald-100 truncate">{currentUser?.name || 'Markazu Umar'}</p>
+                  <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold truncate">{(currentUser?.role || 'User').replace(/_/g, ' ')}</p>
                 </div>
               )}
             </div>

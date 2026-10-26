@@ -209,7 +209,7 @@ export default function SettingsPage() {
             </p>
           </div>
           <span className="px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-700 dark:text-emerald-300 text-xs font-bold uppercase">
-            {currentUser.role.replace('_', ' ')}
+            {(currentUser?.role || 'ADMIN').replace(/_/g, ' ')}
           </span>
         </div>
 

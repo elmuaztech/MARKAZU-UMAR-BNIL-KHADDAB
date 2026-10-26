@@ -10,9 +10,20 @@ import { PortalTheme } from '@/components/ui/PortalTheme';
 
 export function RBACGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { currentUser } = useApp();
+  const { currentUser, isHydrated } = useApp();
 
-  const isAllowed = hasPageAccess(currentUser.role, pathname);
+  const userRole = (currentUser?.role || 'GUEST') as string;
+
+  // During initial hydration before user is loaded from storage, display spinner instead of crashing or denying
+  if (!isHydrated && userRole === 'GUEST') {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+
+  const isAllowed = hasPageAccess(userRole, pathname);
 
   if (!isAllowed) {
     return (
@@ -35,7 +46,7 @@ export function RBACGuard({ children }: { children: React.ReactNode }) {
                 Access Denied / غير مصرح بالدخول
               </h2>
               <p className="text-xs text-slate-600 dark:text-emerald-200/80 leading-relaxed max-w-sm mx-auto">
-                Your logged-in role (<span className="font-bold text-slate-900 dark:text-white uppercase">{currentUser.role}</span>) does not have authorization to access the requested route:
+                Your logged-in role (<span className="font-bold text-slate-900 dark:text-white uppercase">{userRole}</span>) does not have authorization to access the requested route:
               </p>
               <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-[#021810] border border-slate-200 dark:border-emerald-800/40 text-xs font-mono font-bold text-rose-600 dark:text-rose-300">
                 {pathname}

@@ -5,6 +5,7 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
+  componentName?: string;
   fallbackTitle?: string;
   fallbackMessage?: string;
 }
@@ -37,7 +38,7 @@ export class ComponentErrorBoundary extends Component<Props, State> {
           </div>
           <div className="space-y-1">
             <h3 className="text-base font-black text-slate-900 dark:text-white">
-              {this.props.fallbackTitle || 'Section Unavailable'}
+              {this.props.fallbackTitle || (this.props.componentName ? `${this.props.componentName} Temporarily Unavailable` : 'Section Unavailable')}
             </h3>
             <p className="text-xs text-slate-600 dark:text-emerald-300">
               {this.props.fallbackMessage || 'This section encountered an issue loading its data.'}

@@ -30,6 +30,7 @@ import { FormField, Input, Select } from '@/components/ui/FormField';
 import { Card } from '@/components/ui/Card';
 import { StudentPhotoCaptureModal } from '@/components/students/StudentPhotoCaptureModal';
 import { BulkStudentGridModal } from '@/components/students/BulkStudentGridModal';
+import { ComponentErrorBoundary } from '@/components/ui/ComponentErrorBoundary';
 
 export default function StudentsPage() {
   const { students, parents, classes, programmes, teacherAssignments, teachers, addStudent, bulkImportStudents, updateStudent, deleteStudent, currentUser, showConfirm, notify } = useApp();
@@ -53,10 +54,11 @@ export default function StudentsPage() {
     return filterStudentsForUser(currentUser, students, parents, teacherAssignments, teachers, classes);
   }, [currentUser, students, parents, teacherAssignments, teachers, classes]);
 
-  const isTeacher = currentUser.role === 'TEACHER';
-  const isHeadmaster = currentUser.role === 'HEADMASTER';
-  const canManageStudents = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN' || isHeadmaster;
-  const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
+  const role = currentUser?.role || 'GUEST';
+  const isTeacher = role === 'TEACHER';
+  const isHeadmaster = role === 'HEADMASTER';
+  const canManageStudents = role === 'ADMIN' || (role as string) === 'SUPER_ADMIN' || isHeadmaster;
+  const isAdmin = role === 'ADMIN' || (role as string) === 'SUPER_ADMIN';
 
   // Teacher Class Filtering
   const teacherClassOptions = useMemo(() => {
@@ -416,7 +418,7 @@ export default function StudentsPage() {
   });
 
   const handleExportCSV = () => {
-    if (!canManageStudents || currentUser.role === 'PARENT' || currentUser.role === 'STUDENT') return;
+    if (!canManageStudents || currentUser?.role === 'PARENT' || currentUser?.role === 'STUDENT') return;
     const headers = 'Student ID,Full Name (English),Assigned Programme,Assigned Class\n';
     const rows = filteredStudents
       .map(
@@ -568,7 +570,8 @@ export default function StudentsPage() {
   ];
 
   return (
-    <div className="space-y-6 text-slate-900 dark:text-gray-100 font-sans">
+    <ComponentErrorBoundary componentName="Students Directory & Management">
+      <div className="space-y-6 text-slate-900 dark:text-gray-100 font-sans">
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064e3b] to-[#0284c7] text-white border border-emerald-500/30 shadow-xl">
         <div>
@@ -577,7 +580,7 @@ export default function StudentsPage() {
             {isTeacher
               ? 'Assigned Students'
               : isHeadmaster
-              ? `Section Students (${currentUser.assignedProgrammeName || 'My Section'})`
+              ? `Section Students (${currentUser?.assignedProgrammeName || 'My Section'})`
               : 'Student & Child Management'}
           </div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
@@ -591,7 +594,7 @@ export default function StudentsPage() {
             {isTeacher
               ? 'Students currently assigned to your classes and halqas.'
               : isHeadmaster
-              ? `Managing student records, class allocations, and Hifz progress for ${currentUser.assignedProgrammeName || 'your assigned section'}.`
+              ? `Managing student records, class allocations, and Hifz progress for ${currentUser?.assignedProgrammeName || 'your assigned section'}.`
               : 'Managing student records, class allocations, Hifz progress, and parent/guardian linkages.'}
           </p>
         </div>
@@ -1345,6 +1348,7 @@ export default function StudentsPage() {
         availableProgrammes={availableProgrammes}
         availableClasses={classes}
       />
-    </div>
+      </div>
+    </ComponentErrorBoundary>
   );
 }

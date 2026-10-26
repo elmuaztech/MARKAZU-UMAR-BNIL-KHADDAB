@@ -10,14 +10,16 @@ export function NoticeBoardWidget() {
   const { currentUser, communications, announcements } = useApp();
 
   // Filter sent communications that target currentUser's role or ENTIRE_SCHOOL
-  const relevantComms = communications.filter((c) => {
-    if (c.status !== 'SENT') return false;
+  const relevantComms = (communications || []).filter((c) => {
+    if (!c || c.status !== 'SENT') return false;
     if (c.recipientType === 'ENTIRE_SCHOOL') return true;
-    if (currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN') return true;
 
-    if (currentUser.role === 'TEACHER' && (c.recipientType === 'TEACHERS' || c.recipientType === 'PROGRAMME' || c.recipientType === 'CLASS')) return true;
-    if (currentUser.role === 'PARENT' && (c.recipientType === 'PARENTS' || c.recipientType === 'PROGRAMME' || c.recipientType === 'CLASS')) return true;
-    if (currentUser.role === 'STUDENT' && (c.recipientType === 'STUDENTS' || c.recipientType === 'PROGRAMME' || c.recipientType === 'CLASS')) return true;
+    const role = currentUser?.role || 'GUEST';
+    if (role === 'SUPER_ADMIN' || role === 'ADMIN') return true;
+
+    if (role === 'TEACHER' && (c.recipientType === 'TEACHERS' || c.recipientType === 'PROGRAMME' || c.recipientType === 'CLASS')) return true;
+    if (role === 'PARENT' && (c.recipientType === 'PARENTS' || c.recipientType === 'PROGRAMME' || c.recipientType === 'CLASS')) return true;
+    if (role === 'STUDENT' && (c.recipientType === 'STUDENTS' || c.recipientType === 'PROGRAMME' || c.recipientType === 'CLASS')) return true;
 
     return false;
   });
@@ -74,21 +76,21 @@ export function NoticeBoardWidget() {
                       : 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
                   }`}
                 >
-                  {comm.type.replace('_', ' ')}
+                  {(comm.type || 'NOTICE').replace(/_/g, ' ')}
                 </span>
 
                 <span className="text-[10px] text-slate-400 font-mono" suppressHydrationWarning>
-                  {new Date(comm.createdAt).toLocaleDateString()}
+                  {comm.createdAt ? new Date(comm.createdAt).toLocaleDateString() : 'Recent'}
                 </span>
               </div>
 
-              <h3 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{comm.title}</h3>
-              <p className="text-xs text-slate-600 dark:text-emerald-100/80 line-clamp-2">{comm.subject || comm.content}</p>
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-sm leading-snug">{comm.title || 'School Announcement'}</h3>
+              <p className="text-xs text-slate-600 dark:text-emerald-100/80 line-clamp-2">{comm.subject || comm.content || ''}</p>
 
               <div className="pt-2 flex flex-wrap items-center justify-between gap-1 border-t border-slate-100 dark:border-emerald-500/10 text-[10px] text-slate-500 dark:text-emerald-400">
-                <span className="font-medium">By: {comm.senderName}</span>
+                <span className="font-medium">By: {comm.senderName || 'Administration'}</span>
                 <span className="font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300">
-                  Target: {comm.recipientType.replace('_', ' ')}
+                  Target: {(comm.recipientType || 'ALL').replace(/_/g, ' ')}
                 </span>
               </div>
             </motion.div>

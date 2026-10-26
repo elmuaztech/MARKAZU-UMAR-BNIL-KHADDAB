@@ -45,19 +45,19 @@ export function Header({
 
         {/* User Account Badge */}
         <div className="flex items-center gap-1.5 sm:gap-2 pl-1.5 sm:pl-2 border-l border-emerald-200 dark:border-emerald-800/50">
-          {currentUser.avatar ? (
+          {currentUser?.avatar ? (
             <img
               src={currentUser.avatar}
-              alt={currentUser.name || 'User Avatar'}
+              alt={currentUser?.name || 'User Avatar'}
               className="w-8 h-8 rounded-full border-2 border-emerald-400/50 object-cover shrink-0"
             />
           ) : (
             <div className="w-8 h-8 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center border-2 border-emerald-400/50 uppercase shadow-xs shrink-0">
-              {(currentUser.name || 'U').substring(0, 2)}
+              {(currentUser?.name || 'U').substring(0, 2)}
             </div>
           )}
           <span className="hidden xl:inline-block text-xs font-bold text-slate-800 dark:text-emerald-100 max-w-[120px] truncate">
-            {currentUser.name}
+            {currentUser?.name || 'User'}
           </span>
         </div>
       </div>
