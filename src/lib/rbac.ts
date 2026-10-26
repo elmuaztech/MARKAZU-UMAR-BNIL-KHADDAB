@@ -203,7 +203,7 @@ export const PAGE_ROLE_ACCESS: Record<string, ExtendedRole[]> = {
   '/dashboard/messages': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT', 'PARENT'],
   '/dashboard/sessions': ['SUPER_ADMIN'], // Strictly Super Admin authority
   '/dashboard/cms': ['SUPER_ADMIN', 'ADMIN'],
-  '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER'],
+  '/dashboard/downloads': ['SUPER_ADMIN', 'ADMIN'],
   '/dashboard/backup': ['SUPER_ADMIN'],
   '/dashboard/security': ['SUPER_ADMIN'], // Strictly Super Admin authority
   '/dashboard/settings': ['SUPER_ADMIN', 'ADMIN'],
@@ -418,11 +418,87 @@ export function filterProgrammesForUser(
   return allProgrammes;
 }
 
+export function filterClassesForUser(
+  currentUser: User | null | undefined,
+  allClasses: SchoolClass[],
+  teacherAssignments: TeacherAssignment[] = [],
+  teachers: Teacher[] = [],
+  programmes: Programme[] = []
+): SchoolClass[] {
+  if (!currentUser || !Array.isArray(allClasses)) {
+    return [];
+  }
+
+  if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
+    return allClasses;
+  }
+
+  if (currentUser.role === 'HEADMASTER') {
+    const prog = getHeadmasterAssignedProgramme(currentUser, programmes);
+    const progId = prog?.id || currentUser.assignedProgrammeId;
+    const progName = prog?.programme_name_english?.toLowerCase() || currentUser.assignedProgrammeName?.toLowerCase() || '';
+    return allClasses.filter((c) => {
+      if (progId && c.programmeId === progId) return true;
+      if (progName && c.programmeName?.toLowerCase().includes(progName)) return true;
+      return false;
+    });
+  }
+
+  if (currentUser.role === 'TEACHER') {
+    const teacher = teachers.find(
+      (t) =>
+        t.id === currentUser.id ||
+        t.userId === currentUser.id ||
+        (t.email && currentUser.email && t.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (t.staffNo && currentUser.username && t.staffNo.toLowerCase() === currentUser.username.toLowerCase()) ||
+        (t.fullName && currentUser.name && t.fullName.toLowerCase() === currentUser.name.toLowerCase())
+    );
+
+    const assignedClassIds = new Set<string>();
+    const assignedClassNames = new Set<string>();
+
+    teacherAssignments
+      .filter(
+        (ta) =>
+          ta.teacherId === currentUser.id ||
+          (teacher && ta.teacherId === teacher.id) ||
+          (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase())
+      )
+      .forEach((ta) => {
+        if (ta.classId) assignedClassIds.add(ta.classId);
+      });
+
+    if (teacher?.classesAssigned && Array.isArray(teacher.classesAssigned)) {
+      teacher.classesAssigned.forEach((c) => {
+        if (c) {
+          assignedClassIds.add(c);
+          assignedClassNames.add(c.toLowerCase());
+        }
+      });
+    }
+
+    return allClasses.filter((c) => {
+      if (assignedClassIds.has(c.id)) return true;
+      if (c.name && (assignedClassIds.has(c.name) || assignedClassNames.has(c.name.toLowerCase()))) return true;
+      if (c.class_name_english && assignedClassNames.has(c.class_name_english.toLowerCase())) return true;
+      if (c.classTeacherId === currentUser.id || (teacher && c.classTeacherId === teacher.id)) return true;
+      if (c.assignedTeacherIds?.includes(currentUser.id) || (teacher && c.assignedTeacherIds?.includes(teacher.id))) return true;
+      if (currentUser.name && c.classTeacherName && c.classTeacherName.toLowerCase().includes(currentUser.name.toLowerCase())) return true;
+      return false;
+    });
+  }
+
+  return allClasses;
+}
+
 export function filterStudentsForUser(
   currentUser: User,
   allStudents: Student[],
   parents: Parent[],
-  teacherAssignments: TeacherAssignment[] = []
+  teacherAssignments: TeacherAssignment[] = [],
+  teachers: Teacher[] = [],
+  classes: SchoolClass[] = []
 ): Student[] {
   const activeStudents = allStudents.filter(
     (s: any) => !s.deletedAt && s.status !== 'SUSPENDED' && s.status !== 'DEACTIVATED'
@@ -457,27 +533,77 @@ export function filterStudentsForUser(
   }
 
   if (currentUser.role === 'TEACHER') {
-    const assignedClassIds = new Set(
-      teacherAssignments
-        .filter(
-          (ta) =>
-            ta.teacherId === currentUser.id ||
-            (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
-            (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase())
-        )
-        .map((ta) => ta.classId)
+    const teacher = teachers.find(
+      (t) =>
+        t.id === currentUser.id ||
+        t.userId === currentUser.id ||
+        (t.email && currentUser.email && t.email.toLowerCase() === currentUser.email.toLowerCase()) ||
+        (t.staffNo && currentUser.username && t.staffNo.toLowerCase() === currentUser.username.toLowerCase()) ||
+        (t.fullName && currentUser.name && t.fullName.toLowerCase() === currentUser.name.toLowerCase())
     );
 
-    if (assignedClassIds.size === 0) {
-      return [];
+    const assignedClassIds = new Set<string>();
+    const assignedClassNames = new Set<string>();
+
+    teacherAssignments
+      .filter(
+        (ta) =>
+          ta.teacherId === currentUser.id ||
+          (teacher && ta.teacherId === teacher.id) ||
+          (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase()) ||
+          (currentUser.username && ta.teacherId.toLowerCase() === currentUser.username.toLowerCase())
+      )
+      .forEach((ta) => {
+        if (ta.classId) assignedClassIds.add(ta.classId);
+      });
+
+    if (teacher?.classesAssigned && Array.isArray(teacher.classesAssigned)) {
+      teacher.classesAssigned.forEach((c) => {
+        if (c) {
+          assignedClassIds.add(c);
+          assignedClassNames.add(c.toLowerCase());
+        }
+      });
     }
 
-    return allStudents.filter(
-      (s) =>
-        assignedClassIds.has(s.classId) ||
-        (s.className && assignedClassIds.has(s.className)) ||
-        (s.class_name && assignedClassIds.has(s.class_name))
-    );
+    classes.forEach((cls) => {
+      const isClassTeacher =
+        cls.classTeacherId === currentUser.id ||
+        (teacher && cls.classTeacherId === teacher.id) ||
+        cls.assignedTeacherIds?.includes(currentUser.id) ||
+        (teacher && cls.assignedTeacherIds?.includes(teacher.id)) ||
+        (currentUser.name && cls.classTeacherName && cls.classTeacherName.toLowerCase().includes(currentUser.name.toLowerCase()));
+
+      if (isClassTeacher) {
+        assignedClassIds.add(cls.id);
+        if (cls.name) assignedClassNames.add(cls.name.toLowerCase());
+        if (cls.class_name_english) assignedClassNames.add(cls.class_name_english.toLowerCase());
+      }
+    });
+
+    classes.forEach((cls) => {
+      if (assignedClassIds.has(cls.id)) {
+        if (cls.name) assignedClassNames.add(cls.name.toLowerCase());
+        if (cls.class_name_english) assignedClassNames.add(cls.class_name_english.toLowerCase());
+      }
+    });
+
+    if (assignedClassIds.size === 0 && assignedClassNames.size === 0) {
+      return activeStudents.filter(
+        (s: any) =>
+          s.teacherId === currentUser.id ||
+          (teacher && s.teacherId === teacher.id) ||
+          (currentUser.name && s.teacherName && s.teacherName.toLowerCase().includes(currentUser.name.toLowerCase()))
+      );
+    }
+
+    return activeStudents.filter((s: any) => {
+      if (assignedClassIds.has(s.classId)) return true;
+      if (s.className && (assignedClassIds.has(s.className) || assignedClassNames.has(s.className.toLowerCase()))) return true;
+      if (s.class_name && (assignedClassIds.has(s.class_name) || assignedClassNames.has(s.class_name.toLowerCase()))) return true;
+      if (s.teacherId === currentUser.id || (teacher && s.teacherId === teacher.id)) return true;
+      return false;
+    });
   }
 
   if (currentUser.role === 'PARENT') {
@@ -555,52 +681,6 @@ export function filterTeachersForUser(currentUser: User, allTeachers: Teacher[])
   }
 
   return allTeachers;
-}
-
-export function filterClassesForUser(
-  currentUser: User,
-  allClasses: SchoolClass[],
-  teacherAssignments?: TeacherAssignment[]
-): SchoolClass[] {
-  if (currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN') {
-    return allClasses;
-  }
-
-  if (currentUser.role === 'TEACHER' && teacherAssignments && teacherAssignments.length > 0) {
-    const userAssignments = teacherAssignments.filter(
-      (ta) =>
-        ta.teacherId === currentUser.id ||
-        (currentUser.email && ta.teacherId.toLowerCase() === currentUser.email.toLowerCase())
-    );
-    const assignedClassIds = new Set(userAssignments.map((ta) => ta.classId));
-    const teacherClasses = allClasses.filter((c) => assignedClassIds.has(c.id) || c.classTeacherId === currentUser.id);
-    if (teacherClasses.length > 0) return teacherClasses;
-  }
-
-  if (currentUser.role === 'HEADMASTER') {
-    const progId = currentUser.assignedProgrammeId;
-    const progName = currentUser.assignedProgrammeName?.toLowerCase() || '';
-    const userText = `${currentUser.name || ''} ${currentUser.email || ''} ${currentUser.username || ''}`.toLowerCase();
-    const isMatanAureHM = progName.includes('matan') || progId === 'prog-04' || userText.includes('muazzam') || userText.includes('elmuaz') || userText.includes('ahmad abba');
-    const isAsubaHM = progName.includes('asuba') || progId === 'prog-01' || userText.includes('sirad') || userText.includes('balarabe');
-    const isSuperHM = progName.includes('super') || progId === 'prog-02';
-    const isIslamHM = progName.includes('islam') || progId === 'prog-03';
-
-    return allClasses.filter((c) => {
-      if (progId && c.programmeId === progId) return true;
-      if (progName && c.programmeName?.toLowerCase().includes(progName)) return true;
-      if (progName && progName.includes(c.programmeName?.toLowerCase() || '')) return true;
-
-      if (isAsubaHM && (c.id?.startsWith('cls-asm') || c.programmeId === 'prog-01' || c.programmeName?.toLowerCase().includes('asuba') || c.name?.toLowerCase().includes('asuba'))) return true;
-      if (isSuperHM && (c.id?.startsWith('cls-sm') || c.programmeId === 'prog-02' || c.programmeName?.toLowerCase().includes('super') || c.name?.toLowerCase().includes('super'))) return true;
-      if (isIslamHM && (c.id?.startsWith('cls-is') || c.programmeId === 'prog-03' || c.programmeName?.toLowerCase().includes('islam') || c.name?.toLowerCase().includes('islam'))) return true;
-      if (isMatanAureHM && (c.id?.startsWith('cls-ma') || c.programmeId === 'prog-04' || c.programmeName?.toLowerCase().includes('matan') || c.name?.toLowerCase().includes('matan'))) return true;
-
-      return false;
-    });
-  }
-
-  return allClasses;
 }
 
 export function filterSubjectsForUser(
@@ -786,25 +866,78 @@ export function canTeacherMessageStudent(
   user: User,
   teacherAssignments: TeacherAssignment[],
   allStudents: Student[],
-  studentId: string
+  studentId: string,
+  teachers: Teacher[] = [],
+  classes: SchoolClass[] = []
 ): boolean {
   if (user.role === 'ADMIN' || (user.role as string) === 'SUPER_ADMIN') {
     return true;
+  }
+
+  const targetStudent = allStudents.find((s) => s.id === studentId);
+  if (!targetStudent) return false;
+
+  // Student MUST have an active portal account
+  if (!targetStudent.userId) {
+    return false;
   }
 
   if (user.role !== 'TEACHER') {
     return false;
   }
 
-  const targetStudent = allStudents.find((s) => s.id === studentId);
-  if (!targetStudent) return false;
+  const teacher = teachers.find(
+    (t) =>
+      t.id === user.id ||
+      t.userId === user.id ||
+      (t.email && user.email && t.email.toLowerCase() === user.email.toLowerCase()) ||
+      (t.staffNo && user.username && t.staffNo.toLowerCase() === user.username.toLowerCase()) ||
+      (t.fullName && user.name && t.fullName.toLowerCase() === user.name.toLowerCase())
+  );
 
-  return teacherAssignments.some((assignment) => {
-    const isTeacherMatch = assignment.teacherId === user.id || user.id.includes('teacher');
-    if (!isTeacherMatch) return false;
+  const assignedClassIds = new Set<string>();
+  const assignedClassNames = new Set<string>();
 
-    return assignment.classId === targetStudent.classId;
+  teacherAssignments
+    .filter(
+      (ta) =>
+        ta.teacherId === user.id ||
+        (teacher && ta.teacherId === teacher.id) ||
+        (user.email && ta.teacherId.toLowerCase() === user.email.toLowerCase()) ||
+        (user.username && ta.teacherId.toLowerCase() === user.username.toLowerCase())
+    )
+    .forEach((ta) => {
+      if (ta.classId) assignedClassIds.add(ta.classId);
+    });
+
+  if (teacher?.classesAssigned && Array.isArray(teacher.classesAssigned)) {
+    teacher.classesAssigned.forEach((c) => {
+      if (c) {
+        assignedClassIds.add(c);
+        assignedClassNames.add(c.toLowerCase());
+      }
+    });
+  }
+
+  classes.forEach((cls) => {
+    const isClassTeacher =
+      cls.classTeacherId === user.id ||
+      (teacher && cls.classTeacherId === teacher.id) ||
+      cls.assignedTeacherIds?.includes(user.id) ||
+      (teacher && cls.assignedTeacherIds?.includes(teacher.id)) ||
+      (user.name && cls.classTeacherName && cls.classTeacherName.toLowerCase().includes(user.name.toLowerCase()));
+
+    if (isClassTeacher) {
+      assignedClassIds.add(cls.id);
+      if (cls.name) assignedClassNames.add(cls.name.toLowerCase());
+    }
   });
+
+  return Boolean(
+    assignedClassIds.has(targetStudent.classId) ||
+    (targetStudent.className && (assignedClassIds.has(targetStudent.className) || assignedClassNames.has(targetStudent.className.toLowerCase()))) ||
+    (targetStudent.class_name && (assignedClassIds.has(targetStudent.class_name) || assignedClassNames.has(targetStudent.class_name.toLowerCase())))
+  );
 }
 
 /**

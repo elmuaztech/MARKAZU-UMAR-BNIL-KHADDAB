@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Bell,
   CheckCircle2,
@@ -18,13 +18,69 @@ import {
 import { useApp } from '@/lib/context';
 import { DirectMessage } from '@/types';
 import { isNotificationRelevantForUser } from '@/lib/notificationFilter';
+import { PushNotificationManager } from '@/lib/pushNotifications';
+import { Send, CornerDownLeft, X } from 'lucide-react';
 
 export function StudentNotificationCenter() {
-  const { directMessages, inAppNotifications, parents, teachers, students, currentUser, markDirectMessageRead, archiveDirectMessage } = useApp();
+  const { directMessages, inAppNotifications, parents, teachers, students, currentUser, markDirectMessageRead, archiveDirectMessage, sendTeacherDirectMessage } = useApp();
 
   const [activeTab, setActiveTab] = useState<'MESSAGES' | 'NOTIFICATIONS' | 'ARCHIVED'>('MESSAGES');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
+
+  // Reply Modal State
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [replyTargetMessage, setReplyTargetMessage] = useState<DirectMessage | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [isSendingReply, setIsSendingReply] = useState(false);
+
+  // Resolve current student record if logged in as student
+  const currentStudentRecord = useMemo(() => {
+    if (currentUser.role !== 'STUDENT') return null;
+    return (
+      students.find(
+        (s) =>
+          s.userId === currentUser.id ||
+          s.id === currentUser.id ||
+          (s.admissionNo && currentUser.username && s.admissionNo.toLowerCase() === currentUser.username.toLowerCase())
+      ) || null
+    );
+  }, [students, currentUser]);
+
+  // Request notification permission and alert on new teacher messages
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        PushNotificationManager.requestPermission().catch(() => {});
+      }
+    }
+  }, []);
+
+  // Listen for new unread messages directed to this student and pop immediate notification
+  useEffect(() => {
+    if (!currentStudentRecord && currentUser.role !== 'PARENT' && currentUser.role !== 'TEACHER') return;
+
+    const unread = directMessages.filter((m) => {
+      if (currentUser.role === 'STUDENT') {
+        return (m.recipientStudentId === currentStudentRecord?.id || m.recipientStudentId === currentUser.id) && !m.isRead && !m.isArchived;
+      }
+      return false;
+    });
+
+    if (unread.length > 0 && PushNotificationManager.getPermission() === 'granted') {
+      const latest = unread[0];
+      const seenKey = `markazu_notified_msg_${latest.id}`;
+      if (typeof window !== 'undefined' && !sessionStorage.getItem(seenKey)) {
+        sessionStorage.setItem(seenKey, '1');
+        PushNotificationManager.showNotification({
+          title: `School Notice: ${latest.subject}`,
+          body: `${latest.senderName} (${latest.senderRole}): ${latest.content.slice(0, 80)}...`,
+          url: '/dashboard/messages',
+          tag: `msg-${latest.id}`,
+        }).catch(() => {});
+      }
+    }
+  }, [directMessages, currentStudentRecord, currentUser]);
 
   // Filter messages for current logged in user (student or parent linked ward)
   const userDirectMessages = useMemo(() => {
@@ -32,6 +88,7 @@ export function StudentNotificationCenter() {
       const isForUser =
         currentUser.role === 'ADMIN' ||
         (currentUser.role as string) === 'SUPER_ADMIN' ||
+        (currentStudentRecord && msg.recipientStudentId === currentStudentRecord.id) ||
         msg.recipientStudentId === currentUser.id ||
         msg.senderId === currentUser.id;
 
@@ -44,7 +101,7 @@ export function StudentNotificationCenter() {
 
       return isForUser && matchesTab && matchesSearch && matchesCategory;
     });
-  }, [directMessages, currentUser, activeTab, searchTerm, categoryFilter]);
+  }, [directMessages, currentUser, currentStudentRecord, activeTab, searchTerm, categoryFilter]);
 
   // Authoritative role-based in-app system notifications for user
   const userNotifications = useMemo(() => {
@@ -220,6 +277,20 @@ export function StudentNotificationCenter() {
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
+                    {msg.senderRole === 'TEACHER' && (
+                      <button
+                        onClick={() => {
+                          setReplyTargetMessage(msg);
+                          setReplyContent('');
+                          setReplyModalOpen(true);
+                        }}
+                        className="px-3 py-1.5 rounded-xl bg-emerald-700/20 hover:bg-emerald-600 hover:text-white text-emerald-800 dark:text-emerald-300 font-extrabold text-xs flex items-center gap-1.5 transition-all"
+                      >
+                        <CornerDownLeft className="w-3.5 h-3.5" />
+                        <span>Reply</span>
+                      </button>
+                    )}
+
                     {!msg.isRead && (
                       <button
                         onClick={() => markDirectMessageRead(msg.id)}
@@ -273,6 +344,101 @@ export function StudentNotificationCenter() {
           )
         )}
       </div>
+
+      {/* Student Reply Modal */}
+      {replyModalOpen && replyTargetMessage && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-[#042419] border border-emerald-500/30 rounded-3xl w-full max-w-lg shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-emerald-500/20 pb-3">
+              <div className="flex items-center gap-2">
+                <CornerDownLeft className="w-5 h-5 text-emerald-500" />
+                <h3 className="text-base font-black text-slate-900 dark:text-white">
+                  Reply to Teacher: {replyTargetMessage.senderName}
+                </h3>
+              </div>
+              <button
+                onClick={() => setReplyModalOpen(false)}
+                className="p-1 rounded-xl text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/20 text-xs space-y-1">
+              <span className="text-[10px] font-bold text-slate-400">Replying to:</span>
+              <div className="font-extrabold text-slate-800 dark:text-emerald-200">
+                {replyTargetMessage.subject}
+              </div>
+              <p className="text-slate-500 dark:text-emerald-400/80 line-clamp-2">
+                "{replyTargetMessage.content}"
+              </p>
+            </div>
+
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!replyContent.trim()) return;
+                setIsSendingReply(true);
+                try {
+                  await sendTeacherDirectMessage({
+                    senderId: currentUser.id,
+                    senderName: currentStudentRecord?.fullName || currentUser.name,
+                    senderRole: 'STUDENT',
+                    recipientStudentId: replyTargetMessage.recipientStudentId || currentStudentRecord?.id || currentUser.id,
+                    studentName: currentStudentRecord?.fullName || currentUser.name,
+                    programmeId: replyTargetMessage.programmeId,
+                    classId: replyTargetMessage.classId,
+                    className: replyTargetMessage.className,
+                    messageType: 'STUDENT_REPLY',
+                    subject: `Re: ${replyTargetMessage.subject}`,
+                    content: replyContent.trim(),
+                    attachments: [],
+                  });
+                  setReplyModalOpen(false);
+                  setReplyContent('');
+                } catch (err: any) {
+                  alert(err.message || 'Failed to submit reply');
+                } finally {
+                  setIsSendingReply(false);
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-emerald-200 mb-1">
+                  Your Reply Message
+                </label>
+                <textarea
+                  rows={4}
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  placeholder="Type your message to your teacher here..."
+                  className="w-full p-3 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-200 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setReplyModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 dark:text-emerald-300 hover:bg-slate-100 dark:hover:bg-emerald-950"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingReply}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-900/30"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isSendingReply ? 'Sending...' : 'Send Reply'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

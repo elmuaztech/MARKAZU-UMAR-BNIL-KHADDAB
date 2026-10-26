@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useApp } from '../../../lib/context';
 import { Student } from '../../../types';
 import {
@@ -32,7 +32,7 @@ import { StudentPhotoCaptureModal } from '@/components/students/StudentPhotoCapt
 import { BulkStudentGridModal } from '@/components/students/BulkStudentGridModal';
 
 export default function StudentsPage() {
-  const { students, parents, classes, programmes, teacherAssignments, addStudent, bulkImportStudents, updateStudent, deleteStudent, currentUser, showConfirm, notify } = useApp();
+  const { students, parents, classes, programmes, teacherAssignments, teachers, addStudent, bulkImportStudents, updateStudent, deleteStudent, currentUser, showConfirm, notify } = useApp();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [programmeFilter, setProgrammeFilter] = useState('ALL');
@@ -48,16 +48,39 @@ export default function StudentsPage() {
   const [bulkPreview, setBulkPreview] = useState<Omit<Student, 'id'>[]>([]);
   const [isImporting, setIsImporting] = useState(false);
 
-  // Gallery Lightbox Modal State
-  const [galleryModalImg, setGalleryModalImg] = useState<string | null>(null);
-  const [galleryModalTitle, setGalleryModalTitle] = useState<string>('');
-
   // RBAC Data Scoping
-  const userStudents = filterStudentsForUser(currentUser, students, parents, teacherAssignments);
+  const userStudents = useMemo(() => {
+    return filterStudentsForUser(currentUser, students, parents, teacherAssignments, teachers, classes);
+  }, [currentUser, students, parents, teacherAssignments, teachers, classes]);
 
+  const isTeacher = currentUser.role === 'TEACHER';
   const isHeadmaster = currentUser.role === 'HEADMASTER';
   const canManageStudents = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN' || isHeadmaster;
   const isAdmin = currentUser.role === 'ADMIN' || (currentUser.role as string) === 'SUPER_ADMIN';
+
+  // Teacher Class Filtering
+  const teacherClassOptions = useMemo(() => {
+    if (!isTeacher) return [];
+    const classMap = new Map<string, { id: string; name: string; count: number }>();
+    userStudents.forEach((s) => {
+      const cId = s.classId || 'unknown';
+      const cName = s.className || s.class_name || 'Assigned Class';
+      if (!classMap.has(cId)) {
+        classMap.set(cId, { id: cId, name: cName, count: 0 });
+      }
+      classMap.get(cId)!.count += 1;
+    });
+    return Array.from(classMap.values());
+  }, [isTeacher, userStudents]);
+
+  const [teacherSelectedClassId, setTeacherSelectedClassId] = useState<string>('ALL');
+
+  const displayedStudents = useMemo(() => {
+    if (isTeacher && teacherSelectedClassId !== 'ALL') {
+      return userStudents.filter((s) => s.classId === teacherSelectedClassId);
+    }
+    return userStudents;
+  }, [isTeacher, teacherSelectedClassId, userStudents]);
 
   const headmasterProg = isHeadmaster ? getHeadmasterAssignedProgramme(currentUser, programmes) : null;
   const availableProgrammes = filterProgrammesForUser(currentUser, programmes);
@@ -550,11 +573,24 @@ export default function StudentsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-gradient-to-r from-[#042f1e] via-[#064e3b] to-[#0284c7] text-white border border-emerald-500/30 shadow-xl">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 uppercase tracking-widest mb-1">
-            <Baby className="w-4 h-4 text-emerald-400" /> {isHeadmaster ? `Section Students (${currentUser.assignedProgrammeName || 'My Section'})` : 'Student & Child Management'}
+            <Baby className="w-4 h-4 text-emerald-400" />{' '}
+            {isTeacher
+              ? 'Assigned Students'
+              : isHeadmaster
+              ? `Section Students (${currentUser.assignedProgrammeName || 'My Section'})`
+              : 'Student & Child Management'}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{isHeadmaster ? 'Section Children & Students Directory' : 'Children & Students Directory'}</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
+            {isTeacher
+              ? 'My Students'
+              : isHeadmaster
+              ? 'Section Children & Students Directory'
+              : 'Children & Students Directory'}
+          </h1>
           <p className="text-xs sm:text-sm text-emerald-100/90 mt-1 max-w-2xl">
-            {isHeadmaster
+            {isTeacher
+              ? 'Students currently assigned to your classes and halqas.'
+              : isHeadmaster
               ? `Managing student records, class allocations, and Hifz progress for ${currentUser.assignedProgrammeName || 'your assigned section'}.`
               : 'Managing student records, class allocations, Hifz progress, and parent/guardian linkages.'}
           </p>
@@ -612,82 +648,44 @@ export default function StudentsPage() {
         </div>
       </div>
 
-      {/* Enterprise Data Table */}
-      <EnterpriseTable<Student>
-        data={userStudents}
-        columns={studentColumns}
-        searchPlaceholder="Search by student name, admission no, or guardian..."
-      />
-
-      {/* Student Activity & Campus Life Gallery */}
-      <div className="p-6 rounded-3xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-200 dark:border-emerald-500/20 pb-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
-              <Baby className="w-4 h-4 text-emerald-500" /> Student Campus Life & Recitation Events
-            </div>
-            <h2 className="text-xl font-black text-slate-900 dark:text-white mt-1">Students Photo Gallery</h2>
-          </div>
-          <Badge variant="emerald" className="text-xs">
-            4 Campus Photos
-          </Badge>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            {
-              title: 'Markazu Umar Female Tahfiz Students & Instructors',
-              image: '/gallery/gallery-1.jpg',
-              tag: 'Tahfiz Halqa',
-            },
-            {
-              title: 'Annual Markazu Umar Islamiyyah Student Assembly',
-              image: '/gallery/gallery-2.jpg',
-              tag: 'Assembly',
-            },
-            {
-              title: 'Outdoor Islamic Studies & Recitation Assembly',
-              image: '/gallery/gallery-3.jpg',
-              tag: 'Communal Recitation',
-            },
-            {
-              title: 'Tahfiz Quran Recitation Class',
-              image: '/gallery/gallery-4.jpg',
-              tag: 'Hifz Class',
-            },
-          ].map((photo, pIdx) => (
-            <div
-              key={pIdx}
-              onClick={() => {
-                setGalleryModalImg(photo.image);
-                setGalleryModalTitle(photo.title);
-              }}
-              className="rounded-3xl overflow-hidden glass-card border border-slate-200 dark:border-emerald-500/30 group hover:shadow-2xl hover:border-emerald-400/60 transition-all duration-300 cursor-pointer bg-slate-50 dark:bg-[#021d14] flex flex-col"
+      {/* Teacher Multi-Class Filter Pills */}
+      {isTeacher && teacherClassOptions.length > 1 && (
+        <div className="flex flex-wrap items-center gap-2 p-3 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-sm">
+          <span className="text-xs font-bold text-slate-500 dark:text-emerald-400 mr-1">Classes:</span>
+          <button
+            type="button"
+            onClick={() => setTeacherSelectedClassId('ALL')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              teacherSelectedClassId === 'ALL'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-700 dark:text-emerald-200 hover:bg-slate-200 dark:hover:bg-emerald-900/40'
+            }`}
+          >
+            All Classes ({userStudents.length})
+          </button>
+          {teacherClassOptions.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => setTeacherSelectedClassId(c.id)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                teacherSelectedClassId === c.id
+                  ? 'bg-emerald-600 text-white shadow-sm'
+                  : 'bg-slate-100 dark:bg-emerald-950/60 text-slate-700 dark:text-emerald-200 hover:bg-slate-200 dark:hover:bg-emerald-900/40'
+              }`}
             >
-              <div className="h-56 relative overflow-hidden bg-emerald-950/80 rounded-t-3xl">
-                <img
-                  src={photo.image}
-                  alt={photo.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  onContextMenu={(e) => e.preventDefault()}
-                />
-                <span className="absolute top-3 left-3 px-3 py-1 rounded-full bg-slate-950/80 text-amber-300 text-[10px] font-bold backdrop-blur-md border border-amber-500/30 shadow-md">
-                  {photo.tag}
-                </span>
-                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/80 via-emerald-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                  <span className="px-4 py-2 rounded-2xl bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl tracking-wide transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300 inline-flex items-center gap-1.5">
-                    <Search className="w-3.5 h-3.5" />
-                    <span>Expand Full Image</span>
-                  </span>
-                </div>
-              </div>
-              <div className="p-4 flex-1 flex flex-col justify-between">
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-relaxed line-clamp-2">{photo.title}</h4>
-              </div>
-            </div>
+              {c.name} ({c.count})
+            </button>
           ))}
         </div>
-      </div>
+      )}
+
+      {/* Enterprise Data Table */}
+      <EnterpriseTable<Student>
+        data={displayedStudents}
+        columns={studentColumns}
+        searchPlaceholder={isTeacher ? "Search assigned students by name or admission no..." : "Search by student name, admission no, or guardian..."}
+      />
 
       {/* Enrolment Modal */}
       {showAddModal && (
@@ -1320,45 +1318,6 @@ export default function StudentsPage() {
         </div>
       )}
 
-      {/* Gallery Photo Lightbox Modal */}
-      {galleryModalImg && (
-        <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setGalleryModalImg(null)}
-        >
-          <div
-            className="max-w-4xl w-full bg-slate-900 border border-emerald-500/40 rounded-3xl p-4 sm:p-6 space-y-4 shadow-2xl relative text-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-white tracking-wide truncate pr-4">{galleryModalTitle}</h3>
-              <button
-                onClick={() => setGalleryModalImg(null)}
-                className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors"
-                title="Close Lightbox"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="max-h-[75vh] overflow-hidden rounded-2xl border border-slate-800 bg-black flex items-center justify-center">
-              <img
-                src={galleryModalImg}
-                alt={galleryModalTitle}
-                className="max-h-[72vh] w-auto object-contain rounded-2xl shadow-2xl"
-                onContextMenu={(e) => e.preventDefault()}
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-slate-400 pt-1 font-mono">
-              <span>Markazu Umar Bn Al-Khattab Centre</span>
-              <Button variant="secondary" size="sm" onClick={() => setGalleryModalImg(null)}>
-                Close Preview
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Student Passport Photo Webcam Capture & Upload Modal */}
       {photoModalStudent && (

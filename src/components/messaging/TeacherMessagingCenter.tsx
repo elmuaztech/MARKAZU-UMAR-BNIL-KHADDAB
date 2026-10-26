@@ -112,53 +112,68 @@ export function TeacherMessagingCenter() {
     return baseClasses.filter((c) => c.programmeId === selectedProgrammeId);
   }, [isTeacher, teacherClasses, classes, selectedProgrammeId]);
 
-  // Students in selected class
+  // Students in selected class: categorize active portal vs no portal
   const classStudents = useMemo(() => {
     if (!selectedClassId) return [];
     return students.filter((s) => s.classId === selectedClassId);
   }, [students, selectedClassId]);
 
-  const handleSubmitMessage = (e: React.FormEvent) => {
+  const portalStudents = useMemo(() => {
+    return classStudents.filter((s) => Boolean(s.userId));
+  }, [classStudents]);
+
+  const noPortalStudents = useMemo(() => {
+    return classStudents.filter((s) => !s.userId);
+  }, [classStudents]);
+
+  const handleSubmitMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!subject.trim() || !content.trim()) {
       alert('Please complete the subject and message body content.');
       return;
     }
 
-    // Determine target students: specific student or entire assigned class roster
-    const targets = selectedStudentId
+    // Determine target students: specific student or entire assigned class roster with active portals
+    let targets = selectedStudentId
       ? classStudents.filter((s) => s.id === selectedStudentId)
-      : classStudents;
+      : portalStudents;
+
+    // Filter out any student without active portal account
+    targets = targets.filter((s) => Boolean(s.userId));
 
     if (targets.length === 0) {
-      alert('No recipient students selected.');
+      alert('No eligible recipients with active portal accounts found.');
       return;
     }
 
-    targets.forEach((student) => {
-      // Validate RBAC scope
-      const isAllowed = canTeacherMessageStudent(currentUser, teacherAssignments, students, student.id);
-      if (!isAllowed) return;
+    try {
+      for (const student of targets) {
+        // Validate RBAC scope
+        const isAllowed = canTeacherMessageStudent(currentUser, teacherAssignments, students, student.id, teachers, classes);
+        if (!isAllowed) continue;
 
-      sendTeacherDirectMessage({
-        senderId: currentUser.id,
-        senderName: currentUser.name,
-        senderRole: currentUser.role,
-        recipientStudentId: student.id,
-        studentName: student.fullName,
-        programmeId: selectedProgrammeId,
-        classId: selectedClassId,
-        className: classes.find((c) => c.id === selectedClassId)?.name,
-        messageType,
-        subject,
-        content,
-        attachments: [],
-      });
-    });
+        await sendTeacherDirectMessage({
+          senderId: currentUser.id,
+          senderName: currentUser.name,
+          senderRole: currentUser.role,
+          recipientStudentId: student.id,
+          studentName: student.fullName,
+          programmeId: selectedProgrammeId,
+          classId: selectedClassId,
+          className: classes.find((c) => c.id === selectedClassId)?.name,
+          messageType,
+          subject,
+          content,
+          attachments: [],
+        });
+      }
 
-    setIsSuccessModalOpen(true);
-    setSubject('');
-    setContent('');
+      setIsSuccessModalOpen(true);
+      setSubject('');
+      setContent('');
+    } catch (err: any) {
+      alert(err.message || 'Error dispatching message');
+    }
   };
 
   return (
@@ -166,13 +181,13 @@ export function TeacherMessagingCenter() {
       <div className="p-4 sm:p-6 bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 rounded-2xl sm:rounded-3xl shadow-md space-y-3 sm:space-y-4">
         <div className="flex items-center gap-2 text-xs font-bold text-emerald-600 dark:text-emerald-400">
           <ShieldCheck className="w-4 h-4 shrink-0" />
-          <span className="truncate">Scope-Restricted In-App Teacher Communication Gateway</span>
+          <span className="truncate">Teacher Communication Gateway</span>
         </div>
         <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
-          Teacher-to-Student Direct Messaging Engine
+          Teacher-to-Student Direct Messaging
         </h2>
         <p className="text-xs text-slate-500 dark:text-emerald-300/80">
-          Teachers may send in-app notices, homework, assignments, and reminders strictly to students enrolled in their assigned classes.
+          Send notices, homework, assignments, and reminders directly to your assigned students who have active portal accounts.
         </p>
       </div>
 
@@ -232,15 +247,24 @@ export function TeacherMessagingCenter() {
               onChange={(e) => setSelectedStudentId(e.target.value)}
               className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 text-xs font-bold text-slate-900 dark:text-white"
             >
-              <option value="">Entire Class Roster ({classStudents.length} Students)</option>
-              {classStudents.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.fullName} ({s.admissionNo})
-                </option>
-              ))}
+              <option value="">All Portal Students ({portalStudents.length} Active)</option>
+              {classStudents.map((s) => {
+                const hasPortal = Boolean(s.userId);
+                return (
+                  <option key={s.id} value={s.id} disabled={!hasPortal}>
+                    {hasPortal ? '✓ ' : '⚠️ '}{s.fullName} ({s.admissionNo}) {hasPortal ? '' : '- [No Portal Account]'}
+                  </option>
+                );
+              })}
             </select>
           </div>
         </div>
+
+        {noPortalStudents.length > 0 && (
+          <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs flex items-center gap-2">
+            <span className="font-bold">Notice:</span> {noPortalStudents.length} students without portal accounts cannot receive messages. Only active portal students receive notifications.
+          </div>
+        )}
 
         {/* Message Type Selector */}
         <div>

@@ -268,12 +268,14 @@ export default function QuranAssessmentDashboardPage() {
             </Link>
           )}
 
-          <button
-            onClick={() => setShowRegisterModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-emerald-500 hover:bg-emerald-400 text-emerald-950 shadow-sm transition"
-          >
-            <Plus className="w-4 h-4" /> Enroll Candidate
-          </button>
+          {(currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN' || currentUser.role === 'HEADMASTER') && (
+            <button
+              onClick={() => setShowRegisterModal(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg bg-emerald-500 hover:bg-emerald-400 text-emerald-950 shadow-sm transition"
+            >
+              <Plus className="w-4 h-4" /> Enroll Candidate
+            </button>
+          )}
 
           {(currentUser.role === 'SUPER_ADMIN' || currentUser.role === 'ADMIN') && (
             <button

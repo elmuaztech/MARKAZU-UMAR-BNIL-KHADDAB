@@ -173,14 +173,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         if (rawEmail.length > 0) {
           if (student.userId) {
             // Already has a user account: update user details
-            await tx.user.update({
-              where: { id: student.userId },
-              data: {
-                email: rawEmail,
-                ...(body.fullName ? { name: body.fullName.trim() } : {}),
-              },
-            }).catch((err) => console.warn('[UPDATE_STUDENT_USER_EMAIL_WARN]', err));
-          } else {
+              await tx.user.update({
+                where: { id: student.userId },
+                data: {
+                  email: rawEmail,
+                  ...(body.fullName ? { name: body.fullName.trim() } : {}),
+                  ...(body.avatar !== undefined ? { avatar: body.avatar } : {}),
+                },
+              }).catch((err) => console.warn('[UPDATE_STUDENT_USER_EMAIL_WARN]', err));
+            } else {
             // Student was offline without a user account: create user account now!
             const existingUser = await tx.user.findFirst({
               where: {

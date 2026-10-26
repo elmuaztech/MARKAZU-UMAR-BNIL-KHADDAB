@@ -285,6 +285,7 @@ export interface DirectMessage {
   | 'BEHAVIOUR'
   | 'EXAMINATION'
   | 'TAHFIZ_REMINDER'
+  | 'STUDENT_REPLY'
   | 'CUSTOM';
   subject: string;
   content: string;

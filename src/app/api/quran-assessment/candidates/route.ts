@@ -46,16 +46,40 @@ export async function GET(req: NextRequest) {
     // Role-based teacher scoping
     if (authUser?.role === 'TEACHER' && authUser.id) {
       const teacher = await prisma.teacher.findFirst({
-        where: { userId: authUser.id },
+        where: {
+          OR: [
+            { userId: authUser.id },
+            { id: authUser.id },
+            { email: { equals: authUser.email, mode: 'insensitive' } },
+            { staffNo: { equals: authUser.username || '', mode: 'insensitive' } },
+          ],
+        },
       });
+
+      const orConditions: any[] = [];
       if (teacher) {
-        // Teacher can see candidates they teach or examine
-        whereClause.OR = [
-          { teacherId: teacher.id },
-          { examinerId: teacher.id },
-          { examinerName: { contains: teacher.fullName, mode: 'insensitive' } },
-        ];
+        orConditions.push({ teacherId: teacher.id });
+        orConditions.push({ examinerId: teacher.id });
+        orConditions.push({ examinerName: { contains: teacher.fullName, mode: 'insensitive' } });
       }
+      orConditions.push({ teacherId: authUser.id });
+
+      // Check classes taught by teacher
+      const managedClasses = await prisma.schoolClass.findMany({
+        where: {
+          OR: [
+            { classTeacherId: teacher?.id || authUser.id },
+            { teacherAssignments: { some: { teacherId: teacher?.id || authUser.id } } },
+          ],
+        },
+        select: { id: true },
+      });
+
+      if (managedClasses.length > 0) {
+        orConditions.push({ classId: { in: managedClasses.map((c) => c.id) } });
+      }
+
+      whereClause.OR = orConditions.length > 0 ? orConditions : [{ teacherId: '__NONE__' }];
     }
 
     const candidates = await prisma.quranStudentAssessment.findMany({
@@ -179,9 +203,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const authUser = await getAuthenticatedUser(req);
-    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER']);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER']);
     if (!authCheck.authorized) {
-      return NextResponse.json({ error: authCheck.reason }, { status: authCheck.status });
+      return NextResponse.json({ error: authCheck.reason || 'Candidate enrollment is restricted to school leadership.' }, { status: authCheck.status });
     }
 
     const body = await req.json();

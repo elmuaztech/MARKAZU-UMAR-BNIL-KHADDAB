@@ -922,4 +922,12 @@ model QuranDailyAssessmentRecord {
   @@map("quran_daily_assessment_records")
 }
 
+model SystemSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updatedAt")
+
+  @@map("system_settings")
+}
+
 

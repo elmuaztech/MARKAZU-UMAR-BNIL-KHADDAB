@@ -382,14 +382,23 @@ export function AdmissionFormModal({ isOpen, onClose }: AdmissionFormModalProps)
 
         {/* Admission Closed Banner */}
         {admissionStatus === 'CLOSED' ? (
-          <div className="p-6 sm:p-8 flex-1 overflow-y-auto min-h-0 text-center space-y-3">
-            <div className="w-12 h-12 mx-auto rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center border border-rose-500/30">
-              <Lock className="w-6 h-6" />
+          <div className="p-6 sm:p-8 flex-1 overflow-y-auto min-h-0 text-center space-y-4 my-auto">
+            <div className="w-16 h-16 mx-auto rounded-3xl bg-rose-100 dark:bg-rose-950/80 text-rose-600 dark:text-rose-400 flex items-center justify-center border-2 border-rose-500/40 shadow-lg shadow-rose-500/10">
+              <Lock className="w-8 h-8" />
             </div>
-            <h3 className="text-base font-bold text-rose-300">Online Admissions Closed</h3>
-            <p className="text-xs text-rose-200/80 leading-relaxed max-w-md mx-auto">
-              Admissions for the 2026/2027 Academic Session are currently closed. Please contact the school administration office for inquiry.
-            </p>
+            <div className="space-y-2">
+              <h3 className="text-xl sm:text-2xl font-black text-rose-600 dark:text-rose-400 uppercase tracking-tight">
+                Online Admissions Closed
+              </h3>
+              <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-rose-100/90 leading-relaxed max-w-md mx-auto">
+                Admissions for the 2026/2027 Academic Session are currently closed. Please contact the school administration office at No. 32 Daneji Quarters, Kano for in-person registration or inquiries.
+              </p>
+            </div>
+            <div className="pt-2">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-rose-500/10 dark:bg-rose-500/20 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs font-bold font-mono">
+                Status: Application Window Locked
+              </span>
+            </div>
           </div>
         ) : submittedApp ? (
           /* Success Screen */

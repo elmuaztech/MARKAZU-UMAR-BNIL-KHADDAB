@@ -179,23 +179,23 @@ export default function AdmissionsPage() {
         </div>
 
         <div className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-amber-500/30 space-y-1">
-          <div className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase">Pending Review</div>
+          <div className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-tight">Pending Review</div>
           <div className="text-2xl font-black text-amber-500 font-mono">{pendingCount}</div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-emerald-500/30 space-y-1">
-          <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase">Approved & Portals Created</div>
+          <div className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-tight">Approved & Enrolled</div>
           <div className="text-2xl font-black text-emerald-400 font-mono">{approvedCount}</div>
         </div>
 
         <div className="p-4 rounded-2xl bg-white dark:bg-[#042419] border border-rose-500/30 space-y-1">
-          <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-400 uppercase">Rejected Applications</div>
+          <div className="text-[10px] font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-tight">Rejected</div>
           <div className="text-2xl font-black text-rose-400 font-mono">{rejectedCount}</div>
         </div>
       </div>
 
       {/* Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-4 rounded-2xl bg-white dark:bg-[#042419] border border-slate-200 dark:border-emerald-500/30 shadow-sm">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
           <input
@@ -203,19 +203,19 @@ export default function AdmissionsPage() {
             placeholder="Search candidate name, app no, email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-slate-900 dark:text-white"
+            className="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-50 dark:bg-[#021810] border border-slate-300 dark:border-emerald-500/30 text-xs text-slate-900 dark:text-white"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto">
           {(['ALL', 'PENDING_REVIEW', 'APPROVED', 'REJECTED'] as const).map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-3 py-1.5 rounded-xl font-bold text-[11px] transition-all ${
+              className={`px-3 py-1.5 rounded-xl font-bold text-[11px] transition-all shrink-0 ${
                 statusFilter === st
                   ? 'bg-emerald-600 text-white shadow'
-                  : 'bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300'
+                  : 'bg-slate-100 dark:bg-emerald-950 text-slate-700 dark:text-emerald-300 hover:bg-slate-200'
               }`}
             >
               {st === 'ALL' ? 'All Applications' : st.replace('_', ' ')}
@@ -227,7 +227,7 @@ export default function AdmissionsPage() {
       {/* Applications Table */}
       <div className="rounded-3xl border border-slate-200 dark:border-emerald-500/30 bg-white dark:bg-[#042419] shadow-xl overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full min-w-[700px] text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-100 dark:bg-[#021c13] text-slate-700 dark:text-emerald-300 border-b border-slate-200 dark:border-emerald-500/20 font-bold uppercase tracking-wider text-[10px]">
                 <th className="p-4">App No / Date</th>
@@ -241,7 +241,7 @@ export default function AdmissionsPage() {
             <tbody className="divide-y divide-slate-200 dark:divide-emerald-500/20">
               {filteredApps.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-slate-500 dark:text-emerald-400/60 italic">
+                  <td colSpan={6} className="p-8 text-center text-slate-500 dark:text-emerald-400/80 font-medium">
                     No admission applications match your current filters.
                   </td>
                 </tr>

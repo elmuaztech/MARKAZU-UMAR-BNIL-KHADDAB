@@ -1026,6 +1026,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         resRes,
         sessRes,
         auditRes,
+        admStatusRes,
+        galleryRes,
       ] = await Promise.allSettled([
         fetch('/api/programmes').then((r) => r.json()),
         fetch('/api/classes').then((r) => r.json()),
@@ -1037,6 +1039,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         fetch('/api/results').then((r) => r.json()),
         fetch('/api/sessions').then((r) => r.json()),
         fetch('/api/audit').then((r) => r.json()),
+        fetch('/api/admissions/status').then((r) => r.json()),
+        fetch('/api/settings?key=gallery_items').then((r) => r.json()),
       ]);
 
       if (progRes.status === 'fulfilled' && progRes.value && Array.isArray(progRes.value.programmes)) {
@@ -1181,6 +1185,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (auditRes.status === 'fulfilled' && auditRes.value && Array.isArray(auditRes.value.auditLogs)) {
         setAuditLogs(auditRes.value.auditLogs);
         safeLocalStorageSet('markazu_audit_logs', auditRes.value.auditLogs);
+      }
+
+      if (admStatusRes.status === 'fulfilled' && admStatusRes.value && admStatusRes.value.status) {
+        setAdmissionStatusState(admStatusRes.value.status);
+        safeLocalStorageSet('markazu_admission_status', admStatusRes.value.status);
+      }
+
+      if (galleryRes.status === 'fulfilled' && galleryRes.value && Array.isArray(galleryRes.value.value)) {
+        setGalleryItems(galleryRes.value.value);
+        safeLocalStorageSet('markazu_gallery_items', galleryRes.value.value);
       }
     } catch (e) {
       console.warn('[refreshAllData] Background auto-sync warning:', e);
@@ -1466,6 +1480,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('markazu_gallery_items', JSON.stringify(updated));
+          fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'gallery_items', value: updated }),
+          }).catch((e) => console.warn('[addGalleryItem sync error]', e));
         } catch {}
       }
       return updated;
@@ -1478,6 +1497,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('markazu_gallery_items', JSON.stringify(updated));
+          fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'gallery_items', value: updated }),
+          }).catch((e) => console.warn('[updateGalleryItem sync error]', e));
         } catch {}
       }
       return updated;
@@ -1490,6 +1514,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== 'undefined') {
         try {
           localStorage.setItem('markazu_gallery_items', JSON.stringify(updated));
+          fetch('/api/settings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'gallery_items', value: updated }),
+          }).catch((e) => console.warn('[deleteGalleryItem sync error]', e));
         } catch {}
       }
       return updated;
@@ -1634,6 +1663,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setAdmissionStatusState(status);
     if (typeof window !== 'undefined') {
       localStorage.setItem('markazu_admission_status', status);
+      fetch('/api/admissions/status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      }).catch((e) => console.warn('[toggleAdmissionStatus sync error]', e));
     }
     notify({
       type: 'info',
@@ -2032,49 +2066,70 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const sendTeacherDirectMessage = (msg: Omit<DirectMessage, 'id' | 'createdAt' | 'isRead'>) => {
-    const fullMsg: DirectMessage = {
-      ...msg,
-      id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-      createdAt: new Date().toISOString(),
-      isRead: false,
-    };
+  const sendTeacherDirectMessage = async (msg: Omit<DirectMessage, 'id' | 'createdAt' | 'isRead'>) => {
+    try {
+      const res = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(msg),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to dispatch message');
+      }
 
-    setDirectMessages((prev) => [fullMsg, ...prev]);
-
-    addAuditLog({
-      action: 'TEACHER_MESSAGE_SENT',
-      performedBy: currentUser.name,
-      userRole: currentUser.role,
-      details: `Sent direct message (${msg.messageType}) to student ${msg.studentName}: "${msg.subject}"`,
-      ipAddress: '197.210.227.14',
-      status: 'SUCCESS',
-    });
-
-    // Notify student via in-app notification
-    setInAppNotifications((prev) => [
-      {
-        id: `notif-msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
-        userId: msg.recipientStudentId,
-        title: `Teacher Message: ${msg.subject}`,
-        body: msg.content,
-        priority: msg.messageType === 'EXAMINATION' || msg.messageType === 'HOMEWORK' ? 'IMPORTANT' : 'NORMAL',
-        category: 'GENERAL_NOTICE',
-        channels: ['IN_APP'],
-        senderName: currentUser.name,
-        read: false,
-        pinned: false,
-        isArchived: false,
+      const fullMsg: DirectMessage = data.data || {
+        ...msg,
+        id: `msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
         createdAt: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
+        isRead: false,
+      };
 
-    notify({
-      type: 'success',
-      title: 'Direct Message Sent',
-      message: `Message dispatched to ${msg.studentName} (${msg.subject}).`,
-    });
+      setDirectMessages((prev) => [fullMsg, ...prev]);
+
+      addAuditLog({
+        action: 'TEACHER_MESSAGE_SENT',
+        performedBy: currentUser.name,
+        userRole: currentUser.role,
+        details: `Sent direct message (${msg.messageType}) to student ${msg.studentName}: "${msg.subject}"`,
+        ipAddress: '197.210.227.14',
+        status: 'SUCCESS',
+      });
+
+      // Notify student via in-app notification
+      setInAppNotifications((prev) => [
+        {
+          id: `notif-msg-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+          userId: msg.recipientStudentId,
+          title: `Teacher Message: ${msg.subject}`,
+          body: msg.content,
+          priority: msg.messageType === 'EXAMINATION' || msg.messageType === 'HOMEWORK' ? 'IMPORTANT' : 'NORMAL',
+          category: 'GENERAL_NOTICE',
+          channels: ['IN_APP'],
+          senderName: currentUser.name,
+          read: false,
+          pinned: false,
+          isArchived: false,
+          createdAt: new Date().toISOString(),
+        },
+        ...prev,
+      ]);
+
+      notify({
+        type: 'success',
+        title: 'Direct Message Sent',
+        message: `Message dispatched to ${msg.studentName} (${msg.subject}).`,
+      });
+
+      return fullMsg;
+    } catch (err: any) {
+      notify({
+        type: 'error',
+        title: 'Message Delivery Failed',
+        message: err.message || 'Could not send message.',
+      });
+      throw err;
+    }
   };
 
   const markDirectMessageRead = (messageId: string) => {
@@ -3378,6 +3433,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         sabkiRating: updated.hifzProgress?.sabkiRating,
         manzilRating: updated.hifzProgress?.manzilRating,
         akhlaqRating: updated.akhlaqRating,
+        avatar: updated.avatar !== undefined ? updated.avatar : undefined,
       },
       entityType: 'STUDENT',
       entityId: id,

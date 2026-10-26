@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthenticatedUser(request);
-    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER']);
+    const authCheck = enforceRoleAndProgramme(authUser, ['SUPER_ADMIN', 'ADMIN', 'HEADMASTER', 'TEACHER', 'STUDENT']);
     if (!authCheck.authorized || !authUser) {
       return NextResponse.json({ success: false, error: authCheck.reason || 'Unauthorized' }, { status: authCheck.status || 401 });
     }
@@ -93,13 +93,52 @@ export async function POST(request: NextRequest) {
       attachments,
     } = body;
 
-    if (!recipientStudentId || !subject || !content) {
-      return NextResponse.json({ success: false, error: 'recipientStudentId, subject, and content are required' }, { status: 400 });
+    if (!subject || !content) {
+      return NextResponse.json({ success: false, error: 'Subject and content are required' }, { status: 400 });
+    }
+
+    let targetStudentId = recipientStudentId;
+
+    if (authUser.role === 'STUDENT') {
+      // If student is sending/replying, resolve their own student record
+      const student = await prisma.student.findFirst({
+        where: { OR: [{ userId: authUser.id }, { id: authUser.id }], status: 'ACTIVE', deletedAt: null },
+        include: { schoolClass: true },
+      });
+      if (!student) {
+        return NextResponse.json({ success: false, error: 'Active student record not found.' }, { status: 404 });
+      }
+      targetStudentId = student.id;
+
+      const replyMessage = await prisma.directMessage.create({
+        data: {
+          senderId: authUser.id,
+          senderName: student.fullName,
+          senderRole: 'STUDENT',
+          recipientStudentId: student.id,
+          studentName: student.fullName,
+          parentPhone: null,
+          programmeId: student.programmeId || student.schoolClass?.programmeId || null,
+          classId: student.classId,
+          className: student.schoolClass?.name || null,
+          messageType: messageType || 'STUDENT_REPLY',
+          subject: subject.trim(),
+          content: content.trim(),
+          attachments: typeof attachments === 'string' ? attachments : JSON.stringify(attachments || []),
+        },
+      });
+
+      return NextResponse.json({ success: true, data: replyMessage }, { status: 201 });
+    }
+
+    // Sender is Teacher or Staff/Admin
+    if (!targetStudentId) {
+      return NextResponse.json({ success: false, error: 'recipientStudentId is required' }, { status: 400 });
     }
 
     // Verify recipient student exists in database
     const recipientStudent = await prisma.student.findUnique({
-      where: { id: recipientStudentId },
+      where: { id: targetStudentId },
       include: {
         schoolClass: {
           select: { id: true, name: true, programmeId: true },
@@ -114,11 +153,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Recipient student not found.' }, { status: 404 });
     }
 
+    // Strict Enforcement: Cannot message student without active portal account
+    if (!recipientStudent.userId) {
+      return NextResponse.json({
+        success: false,
+        error: `Cannot send message: Student ${recipientStudent.fullName} does not have an active portal account. Messages can only be sent to students with an active portal.`,
+      }, { status: 400 });
+    }
+
     // Teacher assignment scope enforcement
     if (authUser?.role === 'TEACHER') {
       const scope = await resolveTeacherScope(authUser.id);
       const teacherClasses = Array.from(new Set([...scope.teachingClassIds, ...scope.attendanceClassIds]));
-      if (!teacherClasses.includes(recipientStudent.classId)) {
+      if (teacherClasses.length > 0 && !teacherClasses.includes(recipientStudent.classId)) {
         return NextResponse.json({
           success: false,
           error: 'Access Forbidden (HTTP 403): You cannot dispatch messages to students outside your assigned classes.',
@@ -129,7 +176,7 @@ export async function POST(request: NextRequest) {
     // Headmaster programme scope enforcement
     if (authUser?.role === 'HEADMASTER') {
       const assignedProg = authUser.assignedProgrammeId;
-      if (!assignedProg || recipientStudent.programmeId !== assignedProg) {
+      if (assignedProg && recipientStudent.programmeId && recipientStudent.programmeId !== assignedProg) {
         return NextResponse.json({
           success: false,
           error: 'Access Forbidden (HTTP 403): Headmaster cannot dispatch messages to students outside assigned section.',
