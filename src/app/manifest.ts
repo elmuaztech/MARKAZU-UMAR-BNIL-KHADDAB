@@ -1,0 +1,67 @@
+import { MetadataRoute } from 'next';
+
+export default function manifest(): MetadataRoute.Manifest {
+  return {
+    id: '/',
+    name: 'Markazu Umar bn Al-Khattab SMS',
+    short_name: 'Markazu Umar',
+    description: "Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School Management System - Kano, Nigeria",
+    start_url: '/?source=pwa',
+    scope: '/',
+    display: 'standalone',
+    display_override: ['standalone', 'fullscreen'],
+    background_color: '#031c13',
+    theme_color: '#031c13',
+    orientation: 'any',
+    dir: 'ltr',
+    lang: 'en',
+    prefer_related_applications: false,
+    icons: [
+      {
+        src: '/icon-192.png',
+        sizes: '192x192',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/icon-512.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'any',
+      },
+      {
+        src: '/logo-rounded.png',
+        sizes: '512x512',
+        type: 'image/png',
+        purpose: 'maskable',
+      },
+    ],
+    screenshots: [
+      {
+        src: '/screenshots/home-1080x1920.png',
+        sizes: '1080x1920',
+        type: 'image/png',
+      },
+      {
+        src: '/screenshots/home-1920x1080.png',
+        sizes: '1920x1080',
+        type: 'image/png',
+      },
+    ],
+    shortcuts: [
+      {
+        name: 'Open Markazu',
+        short_name: 'Open',
+        description: 'Open Markazu Umar',
+        url: '/',
+        icons: [
+          {
+            src: '/icon-192.png',
+            sizes: '192x192',
+          },
+        ],
+      },
+    ],
+    categories: ['education', 'productivity', 'management'],
+  };
+}
