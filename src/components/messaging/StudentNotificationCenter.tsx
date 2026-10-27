@@ -242,7 +242,7 @@ export function StudentNotificationCenter() {
                 <option value="HOMEWORK">Homework</option>
                 <option value="ASSIGNMENT">Assignments</option>
                 <option value="EXAMINATION">Exams</option>
-                <option value="TAHFIZ_REMINDER">Tahfiz Reminders</option>
+                <option value="QURAN_REMINDER">Qur'an Reminders</option>
                 <option value="BEHAVIOUR">Behaviour</option>
               </select>
             )}
@@ -416,8 +416,8 @@ export function StudentNotificationCenter() {
                     senderRole: 'STUDENT',
                     recipientStudentId: replyTargetMessage.recipientStudentId || currentStudentRecord?.id || currentUser.id,
                     studentName: currentStudentRecord?.fullName || currentUser.name,
-                    programmeId: replyTargetMessage.programmeId,
-                    classId: replyTargetMessage.classId,
+                    programmeId: replyTargetMessage.programmeId || currentStudentRecord?.programmeId,
+                    classId: replyTargetMessage.classId || currentStudentRecord?.classId,
                     className: replyTargetMessage.className,
                     messageType: 'STUDENT_REPLY',
                     subject: `Re: ${replyTargetMessage.subject}`,

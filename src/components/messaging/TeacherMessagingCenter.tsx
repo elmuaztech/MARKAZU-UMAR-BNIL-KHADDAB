@@ -96,7 +96,7 @@ export function TeacherMessagingCenter() {
   const [selectedClassId, setSelectedClassId] = useState<string>('');
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [messageType, setMessageType] = useState<
-    'HOMEWORK' | 'ASSIGNMENT' | 'GENERAL_NOTICE' | 'REMINDER' | 'BEHAVIOUR' | 'EXAMINATION' | 'TAHFIZ_REMINDER' | 'CUSTOM'
+    'HOMEWORK' | 'ASSIGNMENT' | 'GENERAL_NOTICE' | 'REMINDER' | 'BEHAVIOUR' | 'EXAMINATION' | 'QURAN_REMINDER' | 'CUSTOM'
   >('GENERAL_NOTICE');
   const [subject, setSubject] = useState<string>('');
   const [content, setContent] = useState<string>('');
@@ -299,7 +299,7 @@ export function TeacherMessagingCenter() {
                 'REMINDER',
                 'BEHAVIOUR',
                 'EXAMINATION',
-                'TAHFIZ_REMINDER',
+                'QURAN_REMINDER',
                 'CUSTOM',
               ] as const
             ).map((type) => (

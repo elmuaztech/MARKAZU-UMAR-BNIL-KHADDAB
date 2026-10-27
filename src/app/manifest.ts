@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: 'Markazu Umar bn Al-Khattab SMS',
     short_name: 'Markazu Umar',
     description: "Markazu Umar bn Khattab Tahfizul Qur'an & Islamic Studies School Management System - Kano, Nigeria",
-    start_url: '/?source=pwa',
+    start_url: '/login?source=pwa',
     scope: '/',
     display: 'standalone',
     display_override: ['standalone', 'fullscreen'],
@@ -50,10 +50,10 @@ export default function manifest(): MetadataRoute.Manifest {
     ],
     shortcuts: [
       {
-        name: 'Open Markazu',
-        short_name: 'Open',
-        description: 'Open Markazu Umar',
-        url: '/',
+        name: 'Portal Login',
+        short_name: 'Login',
+        description: 'Log in to Markazu Umar School Management Portal',
+        url: '/login',
         icons: [
           {
             src: '/icon-192.png',

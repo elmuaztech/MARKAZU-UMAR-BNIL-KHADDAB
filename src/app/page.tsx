@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useApp } from '../lib/context';
 import { PublicNavbar } from '../components/navigation/PublicNavbar';
 import { PublicFooter } from '../components/navigation/PublicFooter';
@@ -32,7 +33,26 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
-  const { academicEvents, galleryItems: cmsGalleryItems, newsArticles: cmsNewsArticles } = useApp();
+  const router = useRouter();
+  const { academicEvents, galleryItems: cmsGalleryItems, newsArticles: cmsNewsArticles, currentUser } = useApp();
+
+  // App-First PWA Mode Detection: If launched as an installed app (PWA/TWA), immediately present the app portal
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isStandalone =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true ||
+      window.location.search.includes('source=pwa') ||
+      document.referrer.includes('android-app://');
+
+    if (isStandalone) {
+      if (currentUser) {
+        router.replace('/dashboard');
+      } else {
+        router.replace('/login');
+      }
+    }
+  }, [currentUser, router]);
 
   const [admissionModalOpen, setAdmissionModalOpen] = useState(false);
   const [activeGalleryTab, setActiveGalleryTab] = useState<string>('All');

@@ -16,7 +16,8 @@ export default function MessagesPage() {
   const isTeacherOrAdmin =
     userRole === 'TEACHER' ||
     userRole === 'ADMIN' ||
-    (userRole as string) === 'SUPER_ADMIN';
+    (userRole as string) === 'SUPER_ADMIN' ||
+    userRole === 'HEADMASTER';
 
   const [activeTab, setActiveTab] = useState<'MESSAGES' | 'COMPOSE'>('MESSAGES');
 

@@ -128,9 +128,9 @@ export function TeacherDashboard() {
       color: 'from-amber-600 to-amber-700',
     },
     {
-      label: 'Tahfiz Tracker',
-      labelArabic: 'متابعة التحفيظ',
-      href: '/dashboard/tahfiz',
+      label: "Qur'an Assessment",
+      labelArabic: 'تقييم القرآن',
+      href: '/dashboard/quran-assessment',
       icon: BookOpen,
       color: 'from-sky-600 to-sky-700',
     },

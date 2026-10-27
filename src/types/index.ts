@@ -284,6 +284,7 @@ export interface DirectMessage {
   | 'REMINDER'
   | 'BEHAVIOUR'
   | 'EXAMINATION'
+  | 'QURAN_REMINDER'
   | 'TAHFIZ_REMINDER'
   | 'STUDENT_REPLY'
   | 'CUSTOM';

@@ -31,7 +31,7 @@ import { buildAnnouncementWhatsAppPayload, WhatsAppPayload } from '@/lib/whatsap
 
 export default function NewCommunicationPage() {
   const router = useRouter();
-  const { programmes, classes, teachers, parents, students, createCommunication, testSendCommunication, messageTemplates } = useApp();
+  const { programmes, classes, teachers, parents, students, currentUser, createCommunication, testSendCommunication, messageTemplates } = useApp();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
@@ -150,9 +150,9 @@ export default function NewCommunicationPage() {
           subject,
           content,
           plainContent: content.replace(/<[^>]*>?/gm, ''),
-          senderId: 'usr-admin-1',
-          senderName: 'Management Office',
-          senderRole: 'ADMIN',
+          senderId: currentUser?.id || 'usr-admin-1',
+          senderName: currentUser?.name || 'Management Office',
+          senderRole: (currentUser?.role as any) || 'ADMIN',
         },
         isScheduleMode ? scheduledFor : undefined
       );
