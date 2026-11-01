@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useApp, getDeletedUserIdentifiers } from '../../lib/context';
 import { UserRole, User } from '../../types';
@@ -12,7 +12,50 @@ import { BookOpen, ShieldCheck, Crown, UserCheck, GraduationCap, HeartHandshake,
 
 export default function LoginPage() {
   const router = useRouter();
-  const { users, setCurrentUser, updateUserPasswordByEmail, addAuditLog, schoolLogo, notify } = useApp();
+  const { users, currentUser, setCurrentUser, updateUserPasswordByEmail, addAuditLog, schoolLogo, notify } = useApp();
+
+  const [isAppMode, setIsAppMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const checkAppMode = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const isPwaParam =
+        urlParams.get('source') === 'pwa' ||
+        urlParams.get('app') === 'true' ||
+        urlParams.get('mode') === 'app';
+      const isStandalone =
+        document.documentElement.classList.contains('app-mode') ||
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
+        window.matchMedia('(display-mode: minimal-ui)').matches ||
+        (window.navigator as any).standalone === true ||
+        document.referrer.includes('android-app://') ||
+        sessionStorage.getItem('markazu_app_mode') === 'true';
+
+      const activeAppMode = Boolean(isPwaParam || isStandalone);
+      if (activeAppMode) {
+        document.documentElement.classList.add('app-mode');
+        sessionStorage.setItem('markazu_app_mode', 'true');
+      }
+      setIsAppMode(activeAppMode);
+    };
+
+    checkAppMode();
+  }, []);
+
+  // If user already has an active session, redirect to role-based destination
+  useEffect(() => {
+    if (currentUser && currentUser.status === 'ACTIVE') {
+      const targetUrl =
+        currentUser.isFirstLogin || currentUser.mustChangePassword
+          ? '/change-password'
+          : currentUser.role === 'HEADMASTER'
+          ? '/headmaster'
+          : '/dashboard';
+      router.replace(targetUrl);
+    }
+  }, [currentUser, router]);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -271,10 +314,38 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200">
-      <PublicNavbar />
+    <div
+      className={
+        isAppMode
+          ? "min-h-screen min-h-[100dvh] bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 flex flex-col items-center justify-center p-4 sm:p-6 selection:bg-emerald-500 selection:text-white transition-colors duration-200 relative"
+          : "min-h-screen bg-[#f4f8f5] dark:bg-[#031c13] text-slate-900 dark:text-gray-100 flex flex-col justify-between selection:bg-emerald-500 selection:text-white transition-colors duration-200"
+      }
+      style={
+        isAppMode
+          ? {
+              paddingTop: 'calc(env(safe-area-inset-top, 0px) + 1rem)',
+              paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1rem)',
+            }
+          : undefined
+      }
+    >
+      {!isAppMode && (
+        <div className="pwa-hide-in-app">
+          <PublicNavbar />
+        </div>
+      )}
 
-      <main className="flex-1 flex items-center justify-center p-3 sm:p-6 py-8 sm:py-12 md:py-16">
+      {isAppMode && (
+        <div className="w-full max-w-md flex items-center justify-between mb-3 px-1">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold text-xs">
+            <ShieldCheck className="w-4 h-4" />
+            <span>SMS Mobile Portal</span>
+          </div>
+          <ThemeToggle />
+        </div>
+      )}
+
+      <main className={isAppMode ? "w-full max-w-md" : "flex-1 flex items-center justify-center p-3 sm:p-6 py-8 sm:py-12 md:py-16"}>
         <div className="w-full max-w-md glass-panel border border-emerald-500/30 rounded-2xl sm:rounded-3xl p-5 sm:p-8 space-y-5 sm:space-y-6 shadow-2xl relative overflow-hidden">
 
           {/* Brand Header */}
@@ -373,6 +444,13 @@ export default function LoginPage() {
           </form>
         </div>
       </main>
+
+      {isAppMode && (
+        <div className="text-center mt-4 text-[11px] text-slate-500 dark:text-emerald-400/60 flex items-center justify-center gap-1.5 font-medium">
+          <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>Official Portal &bull; Encrypted & Secure</span>
+        </div>
+      )}
 
       {/* Forgot Password / 6-Digit OTP Modal */}
       {showForgotModal && (
@@ -546,7 +624,11 @@ export default function LoginPage() {
         </div>
       )}
 
-      <PublicFooter />
+      {!isAppMode && (
+        <div className="pwa-hide-in-app">
+          <PublicFooter />
+        </div>
+      )}
     </div>
   );
 }

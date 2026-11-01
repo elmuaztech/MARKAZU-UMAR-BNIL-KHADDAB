@@ -41,7 +41,7 @@ export function PublicNavbar() {
   ];
 
   return (
-    <>
+    <div className="pwa-hide-in-app">
       {/* Continuous Right-to-Left Announcement Ticker */}
       <div suppressHydrationWarning className="bg-gradient-to-r from-amber-600 via-amber-500 to-emerald-700 text-slate-950 font-bold text-xs py-1.5 px-4 overflow-hidden border-b border-amber-400/40 relative shadow-md">
         {mounted && admissionStatus === 'OPEN' ? (
@@ -191,6 +191,6 @@ export function PublicNavbar() {
         isOpen={admissionModalOpen}
         onClose={() => setAdmissionModalOpen(false)}
       />
-    </>
+    </div>
   );
 }

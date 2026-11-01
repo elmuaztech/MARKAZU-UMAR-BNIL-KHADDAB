@@ -53,7 +53,7 @@ export default function manifest(): MetadataRoute.Manifest {
         name: 'Portal Login',
         short_name: 'Login',
         description: 'Log in to Markazu Umar School Management Portal',
-        url: '/login',
+        url: '/login?source=pwa',
         icons: [
           {
             src: '/icon-192.png',

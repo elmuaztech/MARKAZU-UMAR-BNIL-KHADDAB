@@ -40,16 +40,22 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const isStandalone =
+      document.documentElement.classList.contains('app-mode') ||
       window.matchMedia('(display-mode: standalone)').matches ||
+      window.matchMedia('(display-mode: fullscreen)').matches ||
       (window.navigator as any).standalone === true ||
       window.location.search.includes('source=pwa') ||
+      window.location.search.includes('app=true') ||
+      window.location.search.includes('mode=app') ||
+      sessionStorage.getItem('markazu_app_mode') === 'true' ||
       document.referrer.includes('android-app://');
 
     if (isStandalone) {
+      sessionStorage.setItem('markazu_app_mode', 'true');
       if (currentUser) {
         router.replace('/dashboard');
       } else {
-        router.replace('/login');
+        router.replace('/login?source=pwa');
       }
     }
   }, [currentUser, router]);

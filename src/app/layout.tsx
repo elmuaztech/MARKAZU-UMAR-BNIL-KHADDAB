@@ -94,6 +94,26 @@ const themeScript = `
   })();
 `;
 
+const appDetectionScript = `
+  (function() {
+    try {
+      var isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                         window.matchMedia('(display-mode: fullscreen)').matches ||
+                         window.matchMedia('(display-mode: minimal-ui)').matches ||
+                         (window.navigator && window.navigator.standalone === true) ||
+                         window.location.search.indexOf('source=pwa') !== -1 ||
+                         window.location.search.indexOf('mode=app') !== -1 ||
+                         window.location.search.indexOf('app=true') !== -1 ||
+                         (document.referrer && document.referrer.indexOf('android-app://') !== -1) ||
+                         sessionStorage.getItem('markazu_app_mode') === 'true';
+      if (isStandalone) {
+        document.documentElement.classList.add('app-mode');
+        sessionStorage.setItem('markazu_app_mode', 'true');
+      }
+    } catch (e) {}
+  })();
+`;
+
 import { ImpersonationBanner } from '../components/navigation/ImpersonationBanner';
 
 export default function RootLayout({
@@ -116,6 +136,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700;800&family=Manrope:wght@300;400;500;600;700;800&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet" />
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <script dangerouslySetInnerHTML={{ __html: appDetectionScript }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

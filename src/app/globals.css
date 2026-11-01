@@ -54,6 +54,14 @@ body {
   backface-visibility: hidden;
 }
 
+/* PWA / Installed App Focused Experience */
+html.app-mode .pwa-hide-in-app,
+@media all and (display-mode: standalone), (display-mode: fullscreen) {
+  .pwa-hide-in-app {
+    display: none !important;
+  }
+}
+
 .content-visibility-auto {
   content-visibility: auto;
   contain-intrinsic-size: 1px 400px;
